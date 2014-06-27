@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -45,6 +46,22 @@ public class ObservableTest {
         ObjectProperty<Integer> source = new SimpleObjectProperty<>(initial); 
         // illegal as expected
         //source.setValue(10.5);
+    }
+    
+    @Test
+    public void testFloatCore() {
+        Float initial = 10.f;
+        ObjectProperty<Float> source = new SimpleObjectProperty<>(initial); 
+        FloatProperty wrapper = FloatProperty.floatProperty(source);
+        assertEquals(initial, source.getValue());
+    }
+    
+    @Test
+    public void testFloatFix() {
+        Float initial = 10.f;
+        ObjectProperty<Float> source = new SimpleObjectProperty<>(initial); 
+        FloatProperty wrapper = floatProperty(source);
+        assertEquals(initial, source.getValue());
     }
     
     @Test

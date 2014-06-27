@@ -23,7 +23,7 @@ import javax.swing.SwingUtilities;
  * http://stackoverflow.com/q/19589542/203657
  * http://stackoverflow.com/q/19656810/203657
  * 
- * (this is the latest experiment, extracted from the profx code base,
+ * (this is the latest experiment, extracted from the pro-fx code base,
  * used in the example on SO)
  * 
  * @author Jeanette Winzenburg, Berlin

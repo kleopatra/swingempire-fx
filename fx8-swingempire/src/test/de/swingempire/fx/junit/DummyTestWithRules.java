@@ -44,7 +44,7 @@ public class DummyTestWithRules { //extends TestCase {
     
     @Test
     public void failingTest() {
-        fail("just saying ...");
+        fail("just saying ....");
     }
     
     @Before

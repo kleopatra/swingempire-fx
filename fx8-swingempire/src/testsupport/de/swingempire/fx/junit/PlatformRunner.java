@@ -26,6 +26,7 @@ import org.junit.runners.model.InitializationError;
 * http://andrewtill.blogspot.de/2012/10/junit-rule-for-javafx-controller-testing.html
 * @author Andy Till
 *
+* PENDING: still experimenting with several options to kick off the fx-at. 
 */
 public class PlatformRunner extends BlockJUnit4ClassRunner {
 

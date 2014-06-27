@@ -41,7 +41,7 @@ public class DummyTestWithPlatformRunner { //extends TestCase {
     
     @Test
     public void failingTest() {
-        fail("just saying ...");
+        fail("just saying ....");
     }
     
     @Before

@@ -6,6 +6,8 @@ package de.swingempire.fx.property;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.DoublePropertyBase;
+import javafx.beans.property.FloatProperty;
+import javafx.beans.property.FloatPropertyBase;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.IntegerPropertyBase;
 import javafx.beans.property.Property;
@@ -20,6 +22,43 @@ import com.sun.javafx.binding.BidirectionalBinding;
  */
 public class BugPropertyAdapters {
 
+    public static FloatProperty floatProperty(final Property<Float> property) {
+        if (property == null) {
+            throw new NullPointerException("Property cannot be null");
+        }
+        return new FloatPropertyBase() {
+            {
+                bindBidirectional(cast(property));
+                // original:
+                //BidirectionalBinding.bindNumber(property, this);
+            }
+            
+            @Override
+            public Object getBean() {
+                return null; // Virtual property, no bean
+            }
+            
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+            
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    unbindBidirectional(cast(property));
+                    // this is fine in core, even with the core fix
+                    // because the BidirectionalBinding (aka: listener registered
+                    // to each of the properties) is created with this sequence
+                    // original
+                    // BidirectionalBinding.unbindNumber(property, this);
+                } finally {
+                    super.finalize();
+                }
+            }
+        };
+    }
+    
     public static DoubleProperty doubleProperty(final Property<Double> property) {
         if (property == null) {
             throw new NullPointerException("Property cannot be null");

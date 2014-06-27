@@ -11,7 +11,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- *
+ * Method rule as precondition for all fx-tests.
  * @author kleopatra
  */
 public class FXThreadingRule implements TestRule {
