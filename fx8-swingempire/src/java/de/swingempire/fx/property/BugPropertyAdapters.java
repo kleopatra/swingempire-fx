@@ -4,12 +4,16 @@
  */
 package de.swingempire.fx.property;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.DoublePropertyBase;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.FloatPropertyBase;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.IntegerPropertyBase;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.LongPropertyBase;
 import javafx.beans.property.Property;
 
 import com.sun.javafx.binding.BidirectionalBinding;
@@ -22,6 +26,73 @@ import com.sun.javafx.binding.BidirectionalBinding;
  */
 public class BugPropertyAdapters {
 
+    public static BooleanProperty booleanProperty(final Property<Boolean> property) {
+        if (property == null) {
+            throw new NullPointerException("Property cannot be null");
+        }
+        return property instanceof BooleanProperty ? (BooleanProperty)property : new BooleanPropertyBase() {
+            {
+                BidirectionalBinding.bind(this, property);
+            }
+
+            @Override
+            public Object getBean() {
+                return null; // Virtual property, no bean
+            }
+
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    BidirectionalBinding.unbind(property, this);
+                } finally {
+                    super.finalize();
+                }
+            }
+        };
+    }
+
+    public static LongProperty longProperty(final Property<Long> property) {
+        if (property == null) {
+            throw new NullPointerException("Property cannot be null");
+        }
+        return new LongPropertyBase() {
+            {
+                bindBidirectional(cast(property));
+                // original:
+                //BidirectionalBinding.bindNumber(property, this);
+            }
+            
+            @Override
+            public Object getBean() {
+                return null; // Virtual property, no bean
+            }
+            
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+            
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    unbindBidirectional(cast(property));
+                    // this is fine in core, even with the core fix
+                    // because the BidirectionalBinding (aka: listener registered
+                    // to each of the properties) is created with this sequence
+                    // original
+                    // BidirectionalBinding.unbindNumber(property, this);
+                } finally {
+                    super.finalize();
+                }
+            }
+        };
+    }
+    
     public static FloatProperty floatProperty(final Property<Float> property) {
         if (property == null) {
             throw new NullPointerException("Property cannot be null");

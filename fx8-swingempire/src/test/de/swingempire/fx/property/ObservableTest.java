@@ -8,9 +8,11 @@ import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -46,6 +48,38 @@ public class ObservableTest {
         ObjectProperty<Integer> source = new SimpleObjectProperty<>(initial); 
         // illegal as expected
         //source.setValue(10.5);
+    }
+    
+    @Test
+    public void testBooleanCore() {
+        Boolean initial = true;
+        ObjectProperty<Boolean> source = new SimpleObjectProperty<>(initial); 
+        BooleanProperty wrapper = BooleanProperty.booleanProperty(source);
+        assertEquals(initial, source.getValue());
+    }
+    
+    @Test
+    public void testBooleanFix() {
+        Boolean initial = true;
+        ObjectProperty<Boolean> source = new SimpleObjectProperty<>(initial); 
+        BooleanProperty wrapper = booleanProperty(source);
+        assertEquals(initial, source.getValue());
+    }
+    
+    @Test
+    public void testLongCore() {
+        Long initial = 10l;
+        ObjectProperty<Long> source = new SimpleObjectProperty<>(initial); 
+        LongProperty wrapper = LongProperty.longProperty(source);
+        assertEquals(initial, source.getValue());
+    }
+    
+    @Test
+    public void testLongFix() {
+        Long initial = 10l;
+        ObjectProperty<Long> source = new SimpleObjectProperty<>(initial); 
+        LongProperty wrapper = longProperty(source);
+        assertEquals(initial, source.getValue());
     }
     
     @Test
