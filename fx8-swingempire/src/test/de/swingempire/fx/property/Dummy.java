@@ -9,5 +9,5 @@ package de.swingempire.fx.property;
  */
 public class Dummy {
 
-    // jsut changing
+    // jsut changing, again
 }

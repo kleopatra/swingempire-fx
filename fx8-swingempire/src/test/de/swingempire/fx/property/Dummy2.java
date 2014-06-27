@@ -9,4 +9,5 @@ package de.swingempire.fx.property;
  */
 public class Dummy2 {
 
+    // some ...
 }
