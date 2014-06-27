@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -21,9 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -35,9 +35,8 @@ public class ObservableTest {
     public void testNumberTyping() {
         int initial = 10;
         IntegerProperty base = new SimpleIntegerProperty(initial);
-        LOG.info("type of Number: " + base.getValue().getClass());
         base.setValue(10.5);
-        LOG.info("type of Number: " + base.getValue() + base.getValue().getClass());
+        assertEquals(Integer.class, base.getValue().getClass());
     }
     
     @Test
@@ -46,6 +45,22 @@ public class ObservableTest {
         ObjectProperty<Integer> source = new SimpleObjectProperty<>(initial); 
         // illegal as expected
         //source.setValue(10.5);
+    }
+    
+    @Test
+    public void testDoubleCore() {
+        Double initial = 10.;
+        ObjectProperty<Double> source = new SimpleObjectProperty<>(initial); 
+        DoubleProperty wrapper = DoubleProperty.doubleProperty(source);
+        assertEquals(initial, source.getValue());
+    }
+    
+    @Test
+    public void testDoubleFix() {
+        Double initial = 10.;
+        ObjectProperty<Double> source = new SimpleObjectProperty<>(initial); 
+        DoubleProperty wrapper = doubleProperty(source);
+        assertEquals(initial, source.getValue());
     }
     
     /**
@@ -131,7 +146,6 @@ public class ObservableTest {
             public void invalidated(Observable observable) {
                 if (!sourceValue.equals(source.getValue() )) {
                     source.setValue(sourceValue);
-                    LOG.info("reverted ...");
                 }
             }
         };
