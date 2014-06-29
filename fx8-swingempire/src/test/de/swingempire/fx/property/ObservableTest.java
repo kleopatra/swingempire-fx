@@ -43,19 +43,12 @@ public class ObservableTest {
     }
     
     @Test
-    public void testObjectTyping() {
-        Integer initial = 10;
-        ObjectProperty<Integer> source = new SimpleObjectProperty<>(initial); 
-        // illegal as expected
-        //source.setValue(10.5);
-    }
-    
-    @Test
     public void testBooleanCore() {
         Boolean initial = true;
         ObjectProperty<Boolean> source = new SimpleObjectProperty<>(initial); 
         BooleanProperty wrapper = BooleanProperty.booleanProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -64,6 +57,7 @@ public class ObservableTest {
         ObjectProperty<Boolean> source = new SimpleObjectProperty<>(initial); 
         BooleanProperty wrapper = booleanProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -72,6 +66,7 @@ public class ObservableTest {
         ObjectProperty<Long> source = new SimpleObjectProperty<>(initial); 
         LongProperty wrapper = LongProperty.longProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -80,6 +75,7 @@ public class ObservableTest {
         ObjectProperty<Long> source = new SimpleObjectProperty<>(initial); 
         LongProperty wrapper = longProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -88,6 +84,7 @@ public class ObservableTest {
         ObjectProperty<Float> source = new SimpleObjectProperty<>(initial); 
         FloatProperty wrapper = FloatProperty.floatProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -96,6 +93,7 @@ public class ObservableTest {
         ObjectProperty<Float> source = new SimpleObjectProperty<>(initial); 
         FloatProperty wrapper = floatProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -104,6 +102,7 @@ public class ObservableTest {
         ObjectProperty<Double> source = new SimpleObjectProperty<>(initial); 
         DoubleProperty wrapper = DoubleProperty.doubleProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     @Test
@@ -112,6 +111,7 @@ public class ObservableTest {
         ObjectProperty<Double> source = new SimpleObjectProperty<>(initial); 
         DoubleProperty wrapper = doubleProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     /**
@@ -123,6 +123,7 @@ public class ObservableTest {
         ObjectProperty<Integer> source = new SimpleObjectProperty<>(initial); 
         IntegerProperty wrapper = IntegerProperty.integerProperty(source);
         assertEquals(initial, source.getValue());
+        assertEquals(initial, wrapper.getValue());
     }
     
     /**
