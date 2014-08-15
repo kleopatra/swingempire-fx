@@ -1,0 +1,115 @@
+.table-view:focused:row-selection > .virtual-flow > .clipped-container > .sheet > .table-cell:focused,
+.table-cell:focused 
+{
+ -fx-border-color: yellow;
+ -fx-border-insets: 2;
+}
+
+.tab-pane {
+# -fx-table-cell-border-color: #derive(-fx-selection-bar, 20%)
+   -fx-background-color: -fx-background, -fx-cell-focus-inner-border, -fx-background;
+    -fx-background-insets: 0, 1, 10;
+ -fx-background-color: white;
+ -fx-background-insets:0;
+ -fx-padding: 0;
+}
+
+*.tab-header-background {
+ -fx-padding:0;
+ -fx-background-insets:0;
+}
+
+.tab-pane *.tab-header-background {
+ -fx-padding:0;
+ -fx-background-insets:0;
+}
+
+.tab:selected {
+ -fx-background-color: white;
+ -fx-background-insets: 0;
+ -fx-background-radius: 0;    
+}
+
+.tab {
+ -fx-background-color: white;
+ -fx-padding: 0;
+ -fx-background-insets: 0;   
+}
+
+.tab:top {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab:right {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab:bottom {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab:left {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab:hover {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab-header-area {
+ -fx-padding: 0;
+ -fx-background-insets: 0;
+}
+
+.tab-pane:top *.tab-header-area {
+ -fx-background-insets: 0;
+ -fx-padding: 0;
+}
+
+.tab-pane:bottom *.tab-header-area {
+ -fx-background-insets: 0;
+ -fx-padding: 0;
+}
+
+.tab-pane:left *.tab-header-area {
+ -fx-background-insets: 0;
+ -fx-padding: 0;
+}
+
+.tab-pane:right *.tab-header-area {
+ -fx-background-insets: 0;
+ -fx-padding: 0;
+}
+
+.control-buttons-tab {
+ -fx-background-insets: 0;
+ -fx-background-radius: 0;
+ -fx-padding: 0;
+}
+
+.tab-down-button {
+ -fx-background-color: green;
+ -fx-padding: 0;
+}
+
+.tab-down-button .arrow {
+ -fx-background-insets: 0;
+ -fx-background:black;
+ -fx-width:0;
+ -fx-padding: 0;
+ -fx-shape: " ";
+}
+
+.arrow {
+ -fx-background-insets: 0;
+ -fx-background:black;
+ -fx-width:0;
+ -fx-padding: 0;
+ -fx-shape: " ";
+}
+
