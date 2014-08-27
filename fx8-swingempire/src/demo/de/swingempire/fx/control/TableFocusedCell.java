@@ -53,7 +53,7 @@ public class TableFocusedCell extends Application {
         table.setItems(data);
         table.getColumns().addAll(language, country);
         Scene scene = new Scene(new BorderPane(table));
-//        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
 //        Callback cf = p -> new FocusableTableCell<>();
 //        language.setCellFactory(cf);
 //        country.setCellFactory(cf);

@@ -108,6 +108,10 @@ public class XTextFieldTableCell<S, T> extends TextFieldTableCell<S, T> {
 
     /**
      * Implemented to create XTableCellSkin which supports terminating edits.
+     * 
+     * <b>NOTE</b>: XTableCellSkin is HIGHLY version-dependent! The 
+     * implementation for version jdk8_u5 doesn't compile for jdk8_u20 (and
+     * the other way round)
      */
     @Override
     protected Skin<?> createDefaultSkin() {

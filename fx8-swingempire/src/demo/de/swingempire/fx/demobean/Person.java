@@ -7,6 +7,10 @@ package de.swingempire.fx.demobean;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ * Example fx bean. Copied from tutorial with added
+ * property accessors.
+ */
 public class Person {
     private final SimpleStringProperty firstName;
     private final SimpleStringProperty lastName;
