@@ -11,13 +11,15 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 
 /**
  * Reported: https://javafx-jira.kenai.com/browse/RT-38326
@@ -29,7 +31,18 @@ import de.swingempire.fx.scene.control.cell.FocusableTableCell;
  * - move around with arrow keys: focusedCell changes both row and column
  *   according to the navigation (expected behaviour)
  * - move up/down with ctrl-up/down: focusedCell row
- *   keeps updating according to navigation, column is set to null (bug) 
+ *   keeps updating according to navigation, column is set to null (bug)
+ *   
+ * Plus: incorrect focus cell on adding items at/above the focus
+ * reported https://javafx-jira.kenai.com/browse/RT-38491  
+ *   - select first row
+ *   - press f1 to insert row at top
+ *   - expected: second row selected and focused
+ *   - actual: second row selected and third row focused [1]
+ *   - press shift-down to extend selection
+ *   - expected: second and third row selected [2]
+ *   - actual: first to fourth row selected 
+ *    
  */
 public class TableFocusedCell extends Application {
     private final ObservableList<Locale> data =
@@ -50,10 +63,30 @@ public class TableFocusedCell extends Application {
         language.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));
         TableColumn<Locale, String> country = new TableColumn<>("Country");
         country.setCellValueFactory(new PropertyValueFactory<>("country"));
+        
+        // quick addition to make table editable in second column
+        // for issue ?? : not able to start editing with f2
+//        table.setEditable(true);
+//        country.setCellFactory(TextFieldTableCell.forTableColumn());
+        
         table.setItems(data);
         table.getColumns().addAll(language, country);
-        Scene scene = new Scene(new BorderPane(table));
-        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
+        
+        // https://javafx-jira.kenai.com/browse/RT-38491
+        // incorrect extend selection after inserting item
+        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F1) {
+                data.add(0, new Locale("dummy"));
+            }
+        });
+        Button button = new Button("Add");
+        button.setOnAction(ev -> {
+            data.add(0, new Locale("dummy"));
+        });
+        BorderPane root = new BorderPane(table);
+        Scene scene = new Scene(root);
+//        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
 //        Callback cf = p -> new FocusableTableCell<>();
 //        language.setCellFactory(cf);
 //        country.setCellFactory(cf);

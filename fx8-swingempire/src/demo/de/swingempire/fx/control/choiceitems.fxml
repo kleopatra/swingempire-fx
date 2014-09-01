@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<Pane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="90.0" prefWidth="180.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.swingempire.fx.control.ChoiceItemsView">
+   <children>
+      <ChoiceBox fx:id="firstCB" layoutX="14.0" layoutY="14.0" prefWidth="150.0" />
+      <ChoiceBox fx:id="secondCB" layoutX="14.0" layoutY="52.0" prefWidth="150.0" />
+   </children>
+</Pane>
+

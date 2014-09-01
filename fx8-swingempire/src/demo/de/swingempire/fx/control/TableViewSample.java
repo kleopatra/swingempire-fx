@@ -22,6 +22,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
@@ -338,17 +339,30 @@ public class TableViewSample extends Application {
 
     }
     protected Tab addTab(TabPane pane, String title, Callback cellFactory) {
+        boolean useExtended = false;
+        return addTab(pane, title, cellFactory, useExtended);
+    }
+
+    protected Tab addTab(TabPane pane, String title, Callback cellFactory,
+            boolean useExtended) {
         Tab tab = new Tab(title);
         pane.getTabs().add(tab); 
-        tab.setContent(createTabContent(cellFactory));
+        tab.setContent(createTabContent(cellFactory, useExtended));
         return tab;
     }
 
     protected Parent createTabContent(
             Callback<TableColumn<Person, String>, TableCell<Person, String>> coreTextFieldCellFactory) {
+        boolean useExtended = false;
+        return createTabContent(coreTextFieldCellFactory, useExtended);
+    }
+
+    protected Parent createTabContent(
+            Callback<TableColumn<Person, String>, TableCell<Person, String>> coreTextFieldCellFactory,
+            boolean useExtended) {
         final Label label = new Label("Address Book");
         label.setFont(new Font("Arial", 20));
-        TableView<Person> table = createBaseTable();
+        TableView<Person> table = createBaseTable(useExtended);
         setCellFactories(table, coreTextFieldCellFactory);
         final TextField addFirstName = new TextField();
         addFirstName.setPromptText("First Name");
@@ -359,18 +373,23 @@ public class TableViewSample extends Application {
         final TextField addEmail = new TextField();
         addEmail.setMaxWidth(table.getColumns().get(2).getPrefWidth());
         addEmail.setPromptText("Email");
-        final Button addButton = new Button("Change");
+        final Button addButton = new Button("Add");
         addButton.setOnAction((ActionEvent e) -> {
             // check: change item is reflected in cell using BoundTableCell
    //            Person selected = table.getSelectionModel().getSelectedItem();
    //            if (selected == null) return;
    //            selected.setFirstName(selected.getFirstName() + "x");
             // original
-            data.add(new Person(addFirstName.getText(), addLastName.getText(),
-                    addEmail.getText()));
+            // except inserting at top to see problem with incorrect focus on
+            // inserting
+            // http://stackoverflow.com/q/25559022/203657
+            // might be fixed by https://javafx-jira.kenai.com/browse/RT-37632
+            data.add(0, new Person(addFirstName.getText() + "x", addLastName.getText() + "x",
+                    addEmail.getText()+ "x"));
             addFirstName.clear();
             addLastName.clear();
             addEmail.clear();
+            
         });
    
         HBox hb = new HBox(3);
@@ -392,12 +411,19 @@ public class TableViewSample extends Application {
         table.getColumns().stream().forEach(c -> c.setCellFactory(factory));
     }
 
-    protected TableView<Person> createBaseTable() {
-        TableView<Person> table = new XTableView<>();
+    protected TableView<Person> createBaseTable(boolean useExtended) {
+        TableView<Person> table = useExtended ? new XTableView<>() : new TableView<>();
+        // quick check for https://javafx-jira.kenai.com/browse/RT-18937
+        // requirement: no selection
+        // side-effect here: can't start edits
+        // table.setSelectionModel(null);
         table.setEditable(true);
         
+        // side-testing: focus not updated correctly
+        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
             LOG.info("old/new " + oldValue + "\n  " + newValue);
+            LOG.info("anchor? " + table.getProperties().get("anchor"));
         });
         TableColumn<Person, String> firstNameCol = new TableColumn<>(
                 "First Name");
@@ -432,7 +458,6 @@ public class TableViewSample extends Application {
         Scene scene = new Scene(pane);
         Stylesheet s;
         scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
-//        scene.setRoot(pane);
         stage.setScene(scene);
         stage.show();
     }

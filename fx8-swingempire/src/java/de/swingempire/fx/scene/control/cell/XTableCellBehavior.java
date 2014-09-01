@@ -53,7 +53,7 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
     }
     
     /**
-     * This method is called prior to jdk8_u20. Signature changed
+     * This method is called in jdk8_u5. Signature changed
      * in jdk8_u20.
      * 
      * @param e
@@ -74,7 +74,6 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
             ((XTableView<S>) table).terminateEdit();
         }
     }
-
 
     /**
      * This method is introduced in jdk8_u20. It's the editing
