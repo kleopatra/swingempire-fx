@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.SingleSelectionModel;
 import static junit.framework.TestCase.assertTrue;
 
@@ -31,4 +32,15 @@ public class ChoiceSelectionIssues extends SelectionIssues<ChoiceBox, SingleSele
     protected ChoiceBox createView(ObservableList items) {
         return new ChoiceBox(items);
     }
+
+    @Override
+    protected FocusModel getFocusModel() {
+        return null;
+    }
+    
+    @Override
+    protected int getAnchorIndex(int index) {
+        return index;
+    }
+
 }

@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.selection;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -16,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
-
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 
@@ -90,5 +90,11 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
             pane.getTabs().add(tab);
         }
         return pane;
+    }
+
+
+    @Override
+    protected FocusModel getFocusModel() {
+        return null;
     }
 }

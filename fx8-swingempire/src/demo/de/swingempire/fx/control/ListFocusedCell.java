@@ -12,9 +12,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -44,66 +44,59 @@ import javafx.stage.Stage;
  *   - actual: first to fourth row selected 
  *    
  */
-public class TableFocusedCell extends Application {
+public class ListFocusedCell extends Application {
     private final ObservableList<Locale> data =
             FXCollections.observableArrayList(Locale.getAvailableLocales()
                     );
    
-    private final TableView<Locale> table = new TableView<>(data);
+    private final ListView<Locale> list = new ListView<>(data);
     
     @Override
     public void start(Stage stage) {
         stage.setTitle("Table FocusedCell Bug");
         // add a listener to see loosing the column
-        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
+        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
             LOG.info("old/new " + oldValue + "\n  " + newValue);
         });
-        TableColumn<Locale, String> language = new TableColumn<>(
-                "Language");
-        language.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));
-        TableColumn<Locale, String> country = new TableColumn<>("Country");
-        country.setCellValueFactory(new PropertyValueFactory<>("country"));
         
         // quick addition to make table editable in second column
         // for issue ?? : not able to start editing with f2
 //        table.setEditable(true);
 //        country.setCellFactory(TextFieldTableCell.forTableColumn());
         
-        table.setItems(data);
-        table.getColumns().addAll(language, country);
+        list.setItems(data);
         
         // https://javafx-jira.kenai.com/browse/RT-38491
         // incorrect extend selection after inserting item
-        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+        list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F1) {
                 data.add(0, new Locale("dummy"));
             }
         });
         
         // extend selection after programmatically select?
-        table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+        list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F3) {
-                table.getSelectionModel().clearAndSelect(2);
+                list.getSelectionModel().clearAndSelect(2);
             }
         });
         
         // extend selection after programmatically select?
-        table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+        list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F4) {
-                table.getSelectionModel().clearSelection(table.getSelectionModel().getSelectedIndex());
-//                table.getSelectionModel().clearSelection();
-                table.getSelectionModel().selectRange(2, 4);
-                LOG.info("anchor after range: " + table.getProperties().get("anchor"));
+                list.getSelectionModel().clearSelection(list.getSelectionModel().getSelectedIndex());
+                list.getSelectionModel().selectRange(2, 4);
+                LOG.info("anchor after range: " + list.getProperties().get("anchor"));
             }
         });
         
-
+        
         Button button = new Button("Add");
         button.setOnAction(ev -> {
             data.add(0, new Locale("dummy"));
         });
-        BorderPane root = new BorderPane(table);
+        BorderPane root = new BorderPane(list);
         Scene scene = new Scene(root);
 //        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
 //        Callback cf = p -> new FocusableTableCell<>();
@@ -117,6 +110,6 @@ public class TableFocusedCell extends Application {
         launch(args);
     }
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(TableFocusedCell.class
+    private static final Logger LOG = Logger.getLogger(ListFocusedCell.class
             .getName());
 }

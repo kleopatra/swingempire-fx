@@ -7,10 +7,12 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBuilder;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableViewBuilder;
 
@@ -54,6 +56,22 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
         MultipleSelectionModel model = getView().getSelectionModel();
         return model;
     }
+
+    
+    @Override
+    protected FocusModel getFocusModel() {
+        return getView().getFocusModel();
+    }
+
+    
+
+    @Override
+    protected int getAnchorIndex(int index) {
+        TablePosition anchor = (TablePosition) getView().getProperties().get(ANCHOR_KEY);
+        return anchor != null ? anchor.getRow() : -1;
+    }
+
+
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

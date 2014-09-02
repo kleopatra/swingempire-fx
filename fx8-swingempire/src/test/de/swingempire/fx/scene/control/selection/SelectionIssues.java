@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.SelectionModel;
 
 import org.junit.Before;
@@ -16,19 +17,25 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import fx.util.FXUtils;
 import static org.junit.Assert.*;
 
 /**
  * Testing SingleSelection api.
+ * 
+ * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+ * mismatch between spec and implementation
+ * 
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class SelectionIssues<V extends Control, T extends SelectionModel> {
+    
+    public final static String ANCHOR_KEY = "anchor";
   
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
@@ -40,7 +47,58 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     protected ObservableList items;
     protected V view;
+
+//------------  test interplay of selection/focus/anchor    
+    @Test
+    public void testFocus() {
+        int index = 2;
+        getSelectionModel().select(index);
+        assertEquals("focus must be same as selected index", index, getFocusIndex(index));
+    }
     
+    /**
+     * Anchor not set on selecting 
+     * 
+     * Note: anchor testing doesn't make sense here - it's controlled by behaviour which is 
+     * part of skin which is not yet installed after instantiation ... 
+     */
+    @Test
+    public void testAnchor() {
+        int index = 2;
+        getSelectionModel().select(index);
+        assertEquals("anchor must be same as selected index", index, 
+                getAnchorIndex(index));
+    }
+    
+    /**
+     * Anchor not set on selecting next
+     */
+    @Test
+    public void testAnchorNext() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectNext();
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
+    
+    /**
+     * Anchor not set on selecting next
+     */
+    @Test
+    public void testAnchorClearAndSelect() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearAndSelect(index + 1);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
+    
+    
+//    * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+//    * mismatch between spec and implementation
     /**
      * Bug or feature? Can select the item in empty selection
      * which then still reports to be empty.
@@ -48,6 +106,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Violates doc of isEmpty:
      * "test whether there are any selected indices/items.
      * It will return true if there are no selected items."
+     * 
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
      * 
      */
     @Test
@@ -76,6 +137,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * _general_ case - it's a special need if we have selections that are not necessarily 
      * backed in the model (like in swing comboboxModel)  
      * 
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
+     * 
      */
     @Test
     public void testSelectUncontainedIfNotEmptySelection() {
@@ -100,6 +164,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * The invariant isn't explicitly documented, just ... 
      * Note: in 8u113 the behaviour is changed - selecting null clears the selection
      * in SingleSelectionModel and TableViewSelectionModel in singleSelection 
+     * 
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
      */
     @Test
     public void testSelectNullItem() {
@@ -111,6 +178,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         fail("unspecified behaviour for selecting null item");
     }
     
+    /**
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
+     */
     @Test
     public void testSelectNullIndex() {
         int index = 2;
@@ -124,6 +195,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     /**
      * SelectionModel is documented to do nothing if the index is out of range.
      * Test that selectedItem is unchanged.
+     * 
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
      */
     @Test
     public void testSelectMinusOneItem() {
@@ -136,6 +210,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     /**
      * SelectionModel is documented to do nothing if the index is out of range.
      * Test that the selectedIndex is unchanged.
+     * 
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38494
+     * mismatch between spec and implementation
      */
     @Test
     public void testSelectMinusOneIndex() {
@@ -243,9 +320,41 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     protected abstract T getSelectionModel();
 
+    /**
+     * Returns the index of the anchor value. Note that subclasses which store a
+     * compound value need to override and extract the index.
+     * 
+     * Same trick as with focusIndex: 
+     * Subclasses that don't have the notion of anchor shcould override to
+     * return the input index.
+     * 
+     * @return
+     */
+    protected int getAnchorIndex(int index) {
+        Object anchor = getView().getProperties().get(ANCHOR_KEY);
+        return anchor != null ? (int) anchor : -1;
+    }
+
+
     protected V getView() {
         return view;
     }
+    
+    /**
+     * The signature is a bit of a hack: simple singleSelectionModels don't have the
+     * notion of focus/anchor. The related tests don't make much sense then. Without 
+     * having (or me not knowing them) parameterized ignors, the tests would fail. Too
+     * lazy to override/ignore in each subclass, so this method will simply
+     * return  the input index if focusModel == null.
+     *  
+     * @param index the default value for views that don't have a focusModel
+     * @return 
+     */
+    protected int getFocusIndex(int index) {
+        return getFocusModel() != null? getFocusModel().getFocusedIndex() : index;
+    }
+    
+    protected abstract FocusModel getFocusModel();
     
 
 }

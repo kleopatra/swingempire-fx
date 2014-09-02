@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.SingleSelectionModel;
 
 import org.junit.runner.RunWith;
@@ -29,4 +30,16 @@ public class ComboBoxSelectionIssues extends SelectionIssues<ComboBox, SingleSel
     protected ComboBox createView(ObservableList items) {
         return new ComboBox(items);
     }
+
+    @Override
+    protected FocusModel getFocusModel() {
+        return null;
+    }
+
+    @Override
+    protected int getAnchorIndex(int index) {
+        return index;
+    }
+    
+    
 }
