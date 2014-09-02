@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBuilder;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableSelectionModel;
@@ -57,14 +58,9 @@ public class TableMultipleSelectionIssues extends MultipleSelectionIssues<TableV
 
     @Override
     protected TableView createView(ObservableList items) {
-        TableView table = TableViewBuilder
-                .create()
-                .items(items)
-                .columns(
-                        TableColumnBuilder.create().text("numberedItems")
-//                        .cellValueFactory(factory)
-                                .build())
-                .build();
+        TableView table = new TableView(items);
+        TableColumn column = new TableColumn("numberedItems");
+        table.getColumns().add(column);
         TableViewSelectionModel model = table.getSelectionModel();
         assertEquals("sanity: test setup assumes that initial mode is single", 
                 SelectionMode.SINGLE, model.getSelectionMode());

@@ -28,6 +28,8 @@ import org.junit.runners.Parameterized;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 
 /**
+ * Tests behaviour of MultipleSelection api.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -43,25 +45,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      */
     protected ObservableList items;
     protected V view;
+    protected boolean multipleMode;
 
     
-        protected boolean multipleMode;
-    
-    public MultipleSelectionIssues(boolean multiple) {
-        this.multipleMode = multiple;
-    }
-
-    @Parameterized.Parameters
-    public static Collection primeNumbers() {
-        return Arrays.asList(new Object[][] { { false }, { true } });
-    }
-
-    protected void checkMode(T model) {
-       if (multipleMode && model.getSelectionMode() != SelectionMode.MULTIPLE) {
-           model.setSelectionMode(SelectionMode.MULTIPLE);
-       }
-    }
-
     @Test
     public void testSelectedIndicesAfterSort() {
         int first = 0;
@@ -242,7 +228,26 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals(item, getSelectionModel().getSelectedItem());
     }
 
-     @Before
+     public MultipleSelectionIssues(boolean multiple) {
+        this.multipleMode = multiple;
+    }
+
+    /**
+     * PENDING: why not parameterize directly on the mode?
+     * @return
+     */
+    @Parameterized.Parameters
+    public static Collection selectionModes() {
+        return Arrays.asList(new Object[][] { { false }, { true } });
+    }
+
+    protected void checkMode(T model) {
+       if (multipleMode && model.getSelectionMode() != SelectionMode.MULTIPLE) {
+           model.setSelectionMode(SelectionMode.MULTIPLE);
+       }
+    }
+
+    @Before
     public void setUp() throws Exception {
 //        JFXPanel panel = new JFXPanel();
 

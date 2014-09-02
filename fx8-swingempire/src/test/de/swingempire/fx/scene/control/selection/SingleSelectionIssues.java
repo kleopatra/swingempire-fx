@@ -11,12 +11,22 @@ import javafx.scene.control.Control;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import fx.util.StageLoader;
+
+import static org.junit.Assert.*;
 
 /**
  * Super class for testing single selection behaviour of MultipleSelectionModel 
  * in both modes.
+ * 
+ * Also contains (for now) mode-dependent anchor behaviour tests, probably
+ * should be moved.
+ * 
+ *  
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -26,6 +36,63 @@ import org.junit.runners.Parameterized;
 public abstract class SingleSelectionIssues<C extends Control, M extends MultipleSelectionModel> extends SelectionIssues<C, M> {
 
     protected boolean multipleMode;
+    
+    /**
+     * Anchor behaviour on selectNext (it's mode dependent!)
+     * 
+     * - single: anchor moved
+     * - multiple: anchor not moved (TODO check UX)
+     * 
+     * THINK: move into MultipleSelection? 
+     * 
+     * 
+     */
+    @Test
+    public void testAnchorPrevious() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectPrevious();
+        int selected = getSelectionModel().getSelectedIndex();
+        if (multipleMode) {
+            assertEquals("multipleMode: anchor must unchanged on adding selection", 
+                    index, getAnchorIndex(index));
+        } else {
+            assertEquals("singleMode: anchor must move with selection",
+                    selected, getAnchorIndex(selected));
+            
+        }
+    }
+    
+    
+    /**
+     * Anchor behaviour on selectNext (it's mode dependent!)
+     * 
+     * - single: anchor moved
+     * - multiple: anchor not moved (TODO check UX)
+     * 
+     * THINK: move into MultipleSelection? 
+     * 
+     * 
+     */
+    @Test
+    public void testAnchorNext() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectNext();
+        int selected = getSelectionModel().getSelectedIndex();
+        if (multipleMode) {
+            assertEquals("multipleMode: anchor must unchanged on adding selection", 
+                    index, getAnchorIndex(index));
+        } else {
+            assertEquals("singleMode: anchor must move with selection",
+                    selected, getAnchorIndex(selected));
+                    
+        }
+    }
+    
+
     
     public SingleSelectionIssues(boolean multiple) {
         this.multipleMode = multiple;

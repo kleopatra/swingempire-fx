@@ -12,19 +12,28 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
+import javafx.scene.control.ListView;
 
 import com.sun.javafx.tk.Toolkit;
 
 /**
  * Collection of static utility methods (mostly for debugging)
  * 
+ * threading code copied from jfxtras
+ * https://github.com/JFXtras/jfxtras/blob/8.0/jfxtras-test-support/src/main/java/jfxtras/test/TestUtil.java
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class FXUtils {
 
+    public final static String ANCHOR_KEY = "anchor";
     private FXUtils() {
     }
 
+    public static int getAnchorIndex(ListView<?> view) {
+        Object anchor = view.getProperties().get(ANCHOR_KEY);
+        return anchor != null ? (int) anchor : -1;
+    }
 //--------------- copied from TBee's TestUtils    
     static public void sleep(int ms) {
         try {

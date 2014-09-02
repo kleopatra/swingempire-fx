@@ -7,6 +7,7 @@ package de.swingempire.fx.control;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,7 +54,7 @@ public class ListFocusedCell extends Application {
     
     @Override
     public void start(Stage stage) {
-        stage.setTitle("Table FocusedCell Bug");
+        stage.setTitle("List Focus/Anchor Bug");
         // add a listener to see loosing the column
         list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
             LOG.info("old/new " + oldValue + "\n  " + newValue);
@@ -71,7 +72,9 @@ public class ListFocusedCell extends Application {
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F1) {
+                int before = FXUtils.getAnchorIndex(list);
                 data.add(0, new Locale("dummy"));
+                LOG.info("anchor before/after insert: " + before + "/" + FXUtils.getAnchorIndex(list));
             }
         });
         

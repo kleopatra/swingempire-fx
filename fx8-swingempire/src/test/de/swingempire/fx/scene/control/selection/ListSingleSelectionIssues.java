@@ -31,37 +31,30 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
 
-    
-    @Test
-    public void testDummy() {
-        
-    }
+
     /**
-     * Anchor not set on selecting 
+     * PENDING JW: unexpected failure on inserting items
+     * (ListViewBehaviour _is_ listening to selection changes)
+     * Fails with anchor == 4 when we expect 2 ...
      * 
-     * Note: anchor testing doesn't make sense here - it's controlled by behaviour which is 
-     * part of skin which is not yet installed after instantiation ... 
-     * 
-     * ListViewBehaviour _is_ listening to selection changes and updates the anchor as
-     * needed (not quite right, but at least it does) but without skin it doesn't show
-     * Yet another reason for having the anchor at the model?
-     * 
-     * Trying the paintPulse approach .. hangs.
+     * Overridden for commenting, only.
      */
-//    @Override
-//    public void testAnchor() {
-//        int index = 2;
-//        Scene scene = new Scene(getView());
-//        getSelectionModel().getSelectedIndices().addListener((Change c) -> {
-//            FXUtils.prettyPrint(c);
-//        });
-////        FXUtils.waitForPaintPulse();
-//        FXUtils.runThenWaitForPaintPulse(() -> {
-//            LOG.info("has skin? " + getView().getSkin());
-//            getSelectionModel().select(index);
-//        }) ;
-//        assertEquals("anchor must be same as selected index", index, getAnchorIndex(index));
-//    }
+    @Override
+    public void testAnchorMovedOnInsertItemAbove() {
+        super.testAnchorMovedOnInsertItemAbove();
+    }
+
+    /**
+     * PENDING JW: unexpected failure on removing items
+     * (ListViewBehaviour _is_ listening to selection changes)
+     * Fails with anchor == 0 when we expect 1 ...
+     * 
+     * Overridden for commenting, only.
+     */
+    @Override
+    public void testAnchorMovedOnRemoveItemAbove() {
+        super.testAnchorMovedOnRemoveItemAbove();
+    }
 
     /**
      * @param multiple

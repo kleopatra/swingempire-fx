@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.logging.Logger;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
@@ -18,7 +20,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import fx.util.FXUtils;
+import fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -57,13 +60,15 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
     
     /**
-     * Anchor not set on selecting 
+     * Anchor must be set on select in empty selection.
      * 
-     * Note: anchor testing doesn't make sense here - it's controlled by behaviour which is 
-     * part of skin which is not yet installed after instantiation ... 
+     * Note: plain anchor testing doesn't make sense here - it's controlled by behaviour which is 
+     * part of skin which is not yet installed after instantiation ... so 
+     * need to force the creation by adding it to a life stage.
      */
     @Test
     public void testAnchor() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
         assertEquals("anchor must be same as selected index", index, 
@@ -71,23 +76,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
     
     /**
-     * Anchor not set on selecting next
-     */
-    @Test
-    public void testAnchorNext() {
-        int index = 2;
-        getSelectionModel().select(index);
-        getSelectionModel().selectNext();
-        int selected = getSelectionModel().getSelectedIndex();
-        assertEquals("anchor must be same as selected index", 
-                selected, getAnchorIndex(selected));
-    }
-    
-    /**
-     * Anchor not set on selecting next
+     * Anchor testing: must be reset on clearAndSelect.
      */
     @Test
     public void testAnchorClearAndSelect() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearAndSelect(index + 1);
@@ -96,6 +89,33 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 selected, getAnchorIndex(selected));
     }
     
+    /**
+     * Anchor must be move after adding/removing items above.
+     */
+    @Test
+    public void testAnchorMovedOnInsertItemAbove() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        items.add(0, "6-item");
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
+    
+    /**
+     * Anchor must be move after adding/removing items above.
+     */
+    @Test
+    public void testAnchorMovedOnRemoveItemAbove() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(0);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
     
 //    * Reported: https://javafx-jira.kenai.com/browse/RT-38494
 //    * mismatch between spec and implementation
@@ -252,6 +272,25 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
     
 //---------------------------- passing tests    
+    
+    @Test
+    public void testSelectionAfterInsertAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.add(0, "6-item");
+        assertEquals("selection moved by one after inserting item", 
+                index +1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSelectionAfterRemoveAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(0);
+        assertEquals("selection moved by one after inserting item", 
+                index -1, getSelectionModel().getSelectedIndex());
+        
+    }
     /**
      * Incorrect selection behaviour after sorting the model
      * 
@@ -356,5 +395,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     protected abstract FocusModel getFocusModel();
     
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(SelectionIssues.class
+            .getName());
 
 }
