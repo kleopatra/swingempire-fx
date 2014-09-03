@@ -15,8 +15,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import fx.util.StageLoader;
+import static org.junit.Assert.*;
 
+import fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
@@ -38,6 +39,30 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
     protected boolean multipleMode;
     
     /**
+     * Testing selectHome after having moved the focus below the last
+     * selection.
+     * 
+     * MultipleMode only, need StageLoader because the behaviour is
+     * spec'd against anchor by UX.
+     * 
+     * Hmm ... selectFirst != expandSelectionToHome - what I'm really after
+     * is a clearAndSelectRange ... 
+     */
+    @Test
+    public void testSelectionFirstWithUnselectedFocus() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getFocusModel().focusNext();
+        getSelectionModel().selectFirst();
+        assertEquals("anchor must be unchanged when moving focus", 
+                index, getAnchorIndex(index));
+        int next = getFocusModel().getFocusedIndex();
+        assertEquals("focus must be on first", 0, next);
+    }
+
+    /**
      * Anchor behaviour on selectNext (it's mode dependent!)
      * 
      * - single: anchor moved
@@ -55,15 +80,13 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
         getSelectionModel().selectPrevious();
         int selected = getSelectionModel().getSelectedIndex();
         if (multipleMode) {
-            assertEquals("multipleMode: anchor must unchanged on adding selection", 
+            assertEquals("multipleMode: anchor unchanged on adding selection", 
                     index, getAnchorIndex(index));
         } else {
             assertEquals("singleMode: anchor must move with selection",
                     selected, getAnchorIndex(selected));
-            
         }
     }
-    
     
     /**
      * Anchor behaviour on selectNext (it's mode dependent!)
@@ -72,7 +95,6 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
      * - multiple: anchor not moved (TODO check UX)
      * 
      * THINK: move into MultipleSelection? 
-     * 
      * 
      */
     @Test

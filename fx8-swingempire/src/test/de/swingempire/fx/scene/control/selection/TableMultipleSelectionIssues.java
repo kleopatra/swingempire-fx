@@ -4,22 +4,19 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import static org.junit.Assert.*;
 import javafx.collections.ObservableList;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumnBuilder;
 import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.TableViewFocusModel;
 import javafx.scene.control.TableView.TableViewSelectionModel;
-import javafx.scene.control.TableViewBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -55,7 +52,6 @@ public class TableMultipleSelectionIssues extends MultipleSelectionIssues<TableV
     /**
      * 
      */
-
     @Override
     protected TableView createView(ObservableList items) {
         TableView table = new TableView(items);
@@ -69,6 +65,11 @@ public class TableMultipleSelectionIssues extends MultipleSelectionIssues<TableV
         // the problem is to keep super blissfully unaware of possible modes
         assertEquals(multipleMode, model.getSelectionMode() == SelectionMode.MULTIPLE);
         return table;
+    }
+
+    @Override
+    protected TableViewFocusModel getFocusModel() {
+        return getView().getFocusModel();
     }
 
 }

@@ -5,27 +5,25 @@
 package de.swingempire.fx.scene.control.selection;
 import java.util.Arrays;
 import java.util.Collection;
-
-import static org.junit.Assert.*;
-
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
-import static junit.framework.TestCase.assertFalse;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import fx.util.StageLoader;
+import static junit.framework.TestCase.*;
 
 /**
  * Tests behaviour of MultipleSelection api.
@@ -40,13 +38,182 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 
 
     /**
-     * The model set to the views. It contains 5 string items, originally
+     * The model set to the views. It contains 9 string items, originally
      * in descending order. Invoking sort will revert the order.
      */
     protected ObservableList items;
     protected V view;
     protected boolean multipleMode;
 
+    
+    /**
+     * Test how the anchor behaves when clearing individual selected items.
+     * 
+     * Here we select a range by repeated selectNext.
+     */
+    @Test
+    public void testAnchorOnSelectRangeWithNext() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        getSelectionModel().select(first);
+        int last = 4;
+        for (int i = first+ 1; i <= last; i++) {
+            getSelectionModel().selectNext();
+        }
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be kept on first of range", first, getAnchorIndex());
+
+    }
+    
+    /**
+     * Here we select the range by repeated selectNext, anchor updating as expected.
+     */
+    @Test
+    public void testAnchorOnClearSelectionInRangeWithNext() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        getSelectionModel().select(first);
+        int last = 4;
+        for (int i = first+ 1; i <= last; i++) {
+            getSelectionModel().selectNext();
+        }
+        getSelectionModel().clearSelection();
+        assertEquals(0, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be cleared", -1, getAnchorIndex());
+        
+    }
+    
+    /**
+     * Here we select the range by repeated selectNext, anchor updating as expected.
+     */
+    @Test
+    public void testAnchorOnClearSelectionAtInRangeWithNext() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        getSelectionModel().select(first);
+        int last = 4;
+        for (int i = first+ 1; i <= last; i++) {
+            getSelectionModel().selectNext();
+        }
+        getSelectionModel().clearSelection(3);
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be kept when clearing index in range", first, getAnchorIndex());
+        
+    }
+    
+    /**
+     * Here we select the range by repeated selectNext, anchor updating as expected.
+     */
+    @Test
+    public void testAnchorOnClearSelectionOfAnchorInRangeWithNext() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        getSelectionModel().select(first);
+        int last = 4;
+        for (int i = first+ 1; i <= last; i++) {
+            getSelectionModel().selectNext();
+        }
+        getSelectionModel().clearSelection(first);
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals("expected behavior when clearing anchor?", first, getAnchorIndex());
+        
+    }
+    
+    /**
+     * Test how the anchor behaves when clearing individual selected items.
+     * Here we select a range with the range method.
+     * Fails because anchorOnSelectRangeAscending fails?
+     */
+    @Test
+    public void testAnchorOnClearSelectionAtAfterRange() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        getSelectionModel().clearSelection(3);
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be kept when clearing index in range", first, getAnchorIndex());
+    }
+    
+    @Test
+    public void testAnchorOnSelectRangeAscending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be kept on first of range", first, getAnchorIndex());
+    }
+    
+    @Test
+    public void testAnchorOnSelectRangeDescending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(last, first - 1);
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(last, getAnchorIndex());
+    }
+    
+    @Test
+    public void testFocusOnClearSelectionAtFocusRangeAscending() {
+        if (!multipleMode) return;
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        getSelectionModel().clearSelection(last);
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
+    }
+    
+    @Test
+    public void testFocusOnClearSelectionAtRangeAscending() {
+        if (!multipleMode) return;
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        getSelectionModel().clearSelection(3);
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals("focus must be unchanged on clearSelection in range", last, getFocusIndex());
+    }
+    
+    @Test
+    public void testFocusOnClearSelectionRangeAscending() {
+        if (!multipleMode) return;
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        getSelectionModel().clearSelection();
+        assertEquals(0, getSelectionModel().getSelectedIndices().size());
+        assertEquals("focus must be cleared", -1, getFocusIndex());
+    }
+    
+    @Test
+    public void testFocusOnSelectRangeAscending() {
+        if (!multipleMode) return;
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(first, last + 1);
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(last, getFocusIndex());
+    }
+    
+    @Test
+    public void testFocusOnSelectRangeDescending() {
+        if (!multipleMode) return;
+        int first = 2;
+        int last = 4;
+        getSelectionModel().selectRange(last, first - 1);
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(first, getFocusIndex());
+    }
     
     @Test
     public void testSelectedIndicesAfterSort() {
@@ -249,9 +416,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 
     @Before
     public void setUp() throws Exception {
-//        JFXPanel panel = new JFXPanel();
-
+        // JW: need more items for multipleSelection
         items = FXCollections.observableArrayList(
+                "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         view = createView(items);
     }
@@ -263,6 +430,31 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     protected V getView() {
         return view;
     }
+
+    /**
+     * Returns the index of the anchor value. Note that subclasses which store a
+     * compound value need to override and extract the index.
+     * 
+     * @return
+     */
+    protected int getAnchorIndex() {
+        Object anchor = getView().getProperties().get(SelectionIssues.ANCHOR_KEY);
+        return anchor != null ? (int) anchor : -1;
+    }
+
+
+    /**
+     * We expect views with MultipleSelectionModel to have a FocusModel as well.
+     * 
+     * @param index the default value for views that don't have a focusModel
+     * @return 
+     */
+    protected int getFocusIndex() {
+        return getFocusModel().getFocusedIndex();
+    }
+    
+    protected abstract FocusModel getFocusModel();
+    
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

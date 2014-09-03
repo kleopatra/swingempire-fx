@@ -23,48 +23,26 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
- * Reported: https://javafx-jira.kenai.com/browse/RT-38326
- * Simple demo to demonstrate the focusedCell bug.
- *
- * To reproduce:
- * 
- * - click into any cell: focusedCell has both row and column
- * - move around with arrow keys: focusedCell changes both row and column
- *   according to the navigation (expected behaviour)
- * - move up/down with ctrl-up/down: focusedCell row
- *   keeps updating according to navigation, column is set to null (bug)
- *   
- * Plus: incorrect focus cell on adding items at/above the focus
- * reported https://javafx-jira.kenai.com/browse/RT-38491  
- *   - select first row
- *   - press f1 to insert row at top
- *   - expected: second row selected and focused
- *   - actual: second row selected and third row focused [1]
- *   - press shift-down to extend selection
- *   - expected: second and third row selected [2]
- *   - actual: first to fourth row selected 
- *    
  */
 public class ListFocusedCell extends Application {
     private final ObservableList<Locale> data =
-            FXCollections.observableArrayList(Locale.getAvailableLocales()
-                    );
+            FXCollections.observableArrayList(Locale.getAvailableLocales());
    
-    private final ListView<Locale> list = new ListView<>(data);
+    private final ListView<Locale> list = new ListView<>();
     
     @Override
     public void start(Stage stage) {
         stage.setTitle("List Focus/Anchor Bug");
         // add a listener to see loosing the column
         list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("old/new " + oldValue + "\n  " + newValue);
+            LOG.info("focused old/new " + oldValue + "\n  " + newValue);
         });
         
-        // quick addition to make table editable in second column
-        // for issue ?? : not able to start editing with f2
-//        table.setEditable(true);
-//        country.setCellFactory(TextFieldTableCell.forTableColumn());
-        
+        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
+            LOG.info("selected old/new " + oldValue + "\n  " + newValue);
+        });
+        // prevent selection on focusGained
+//        list.getProperties().put("selectOnFocusGain", Boolean.FALSE);
         list.setItems(data);
         
         // https://javafx-jira.kenai.com/browse/RT-38491
@@ -82,6 +60,17 @@ public class ListFocusedCell extends Application {
         list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F3) {
                 list.getSelectionModel().clearAndSelect(2);
+                LOG.info("anchor after clearAndSelect 2: " + FXUtils.getAnchorIndex(list) );
+            }
+        });
+        
+        // clear selected?
+        list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F5) {
+                list.getSelectionModel().select(3);
+                list.getSelectionModel().clearSelection(list.getSelectionModel().getSelectedIndex());
+                LOG.info("focus/anchor after clearSelection(selected): " 
+                   + list.getFocusModel().getFocusedIndex() + "/" + FXUtils.getAnchorIndex(list) );
             }
         });
         
@@ -99,12 +88,14 @@ public class ListFocusedCell extends Application {
         button.setOnAction(ev -> {
             data.add(0, new Locale("dummy"));
         });
+        Button clear = new Button("Clear Selection");
+        clear.setOnAction(ev -> {
+            list.getSelectionModel().clearSelection();;
+        });
         BorderPane root = new BorderPane(list);
+        root.setLeft(button);
+        root.setTop(clear);
         Scene scene = new Scene(root);
-//        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
-//        Callback cf = p -> new FocusableTableCell<>();
-//        language.setCellFactory(cf);
-//        country.setCellFactory(cf);
         stage.setScene(scene);
         stage.show();
     }

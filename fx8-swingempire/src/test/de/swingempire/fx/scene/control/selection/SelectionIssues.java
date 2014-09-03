@@ -51,7 +51,25 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     protected ObservableList items;
     protected V view;
 
-//------------  test interplay of selection/focus/anchor    
+//------------  test interplay of selection/focus/anchor 
+//------------ focus    
+    
+    @Test
+    public void testFocusOnClearSelection() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection();
+        assertEquals("focus must be cleared clearSelection", -1, getFocusIndex(index));
+        
+    }
+    @Test
+    public void testFocusOnClearAndSelect() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearAndSelect(index + 1);
+        assertEquals("focus must same as selected", index + 1, getFocusIndex(index + 1));
+        
+    }
     @Test
     public void testFocus() {
         int index = 2;
@@ -59,6 +77,75 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals("focus must be same as selected index", index, getFocusIndex(index));
     }
     
+    @Test
+    public void testFocusOnClearSelectionAt() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index);
+        assertEquals("focus must be cleared", -1, getFocusIndex(-1));
+    }
+    @Test
+    public void testFocusOnSelectNext() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectNext();
+        int next = index + 1;
+        assertEquals("focus must be same as next index", next, 
+                getFocusIndex(next));
+    }
+
+    @Test
+    public void testFocusOnSelectPrevious() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectPrevious();
+        int previous = index - 1;
+        assertEquals("focus must be same as previous index", previous, 
+                getFocusIndex(previous));
+    }
+
+    @Test
+    public void testFocusOnSelectFirst() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectFirst();
+        int first = 0;
+        assertEquals("focus must be same as first index", first, 
+                getFocusIndex(first));
+    }
+
+    @Test
+    public void testFocusOnSelectLast() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectLast();
+        int last = items.size() - 1;
+        assertEquals("focus must be same as first index", last, 
+                getFocusIndex(last));
+    }
+    
+    @Test
+    public void testFocusWithoutSelection() {
+        if (getFocusModel() == null) return;
+        int index = 2;
+        getSelectionModel().select(index);
+        getFocusModel().focusNext();
+        int next = getFocusModel().getFocusedIndex();
+        assertEquals(index +1, next);
+        assertFalse(getSelectionModel().isSelected(next));
+    }
+    
+    @Test
+    public void testAnchorOnFocusNextWithoutSelection() {
+        if (getFocusModel() == null) return;
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getFocusModel().focusNext();
+        int next = getFocusModel().getFocusedIndex();
+        assertEquals("anchor must be unchanged when moving focus", 
+                index, getAnchorIndex(index));
+    }
     /**
      * Anchor must be set on select in empty selection.
      * 
@@ -89,6 +176,16 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 selected, getAnchorIndex(selected));
     }
     
+    @Test
+    public void testAnchorClearSelectionAt() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index);
+        assertEquals("anchor must be cleared", 
+                -1, getAnchorIndex(-1));
+        
+    }
     /**
      * Anchor must be move after adding/removing items above.
      */
@@ -271,6 +368,14 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(index +1, getSelectionModel().getSelectedIndex());
     }
     
+// ---------------- sugar methods on empty selection
+    
+    @Test
+    public void testSelectNextEmpty() {
+        getSelectionModel().selectNext();
+        assertEquals("frist index must be selected", 0, getSelectionModel().getSelectedIndex());
+        assertEquals("first index must be focused", 0, getFocusIndex(0));
+    }
 //---------------------------- passing tests    
     
     @Test
@@ -341,16 +446,36 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(items.get(index), getSelectionModel().getSelectedItem());
     }
 
+//-------------- initial state
+    
+    // as of 8u20, the ListView, TableView have the first row selected
+    // done in a focusListener as fix for rt-25679
+    // further changes expected in 8u40 - looks like moved to the model somehow
+    // recent changeset has all tests calling clearSelection
+    // http://hg.openjdk.java.net/openjfx/8u-dev/rt/rev/258d08a27dc0
+    // == fix for F2 having no effect
     @Test
     public void testInitialSelection() {
         assertEquals(-1, getSelectionModel().getSelectedIndex());
         assertEquals(null, getSelectionModel().getSelectedItem());
+        assertTrue(getSelectionModel().isEmpty());
     }
 
+    @Test
+    public void testInitialFocus() {
+        assertEquals(-1, getFocusIndex(-1));
+    }
 
+    @Test
+    public void testInitialAnchor() {
+        assertEquals(-1, getAnchorIndex(-1));
+    }
+    
     @Before
     public void setUp() throws Exception {
+        // JW: need more items for multipleSelection
         items = FXCollections.observableArrayList(
+                "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         view = createView(items);
     }
@@ -359,6 +484,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     protected abstract T getSelectionModel();
 
+    protected V getView() {
+        return view;
+    }
+    
     /**
      * Returns the index of the anchor value. Note that subclasses which store a
      * compound value need to override and extract the index.
@@ -375,10 +504,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
 
 
-    protected V getView() {
-        return view;
-    }
-    
     /**
      * The signature is a bit of a hack: simple singleSelectionModels don't have the
      * notion of focus/anchor. The related tests don't make much sense then. Without 
