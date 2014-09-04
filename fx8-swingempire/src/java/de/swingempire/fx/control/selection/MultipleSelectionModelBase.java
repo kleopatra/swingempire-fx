@@ -34,7 +34,12 @@ import static javafx.scene.control.SelectionMode.*;
  * abstract class. However, this class is package-protected and not intended
  * for public use.
  * 
- * Plain copy of original to play with extending it.
+ * Plain copy of original to play with extending it. 
+ * 
+ * Ideally, implementation of anchor decorations would
+ * go here - then the index-related api is already implemented for usage in 
+ * subclasses (like List/TableXXSelection). Can't due in prototype because
+ * of fixed class hierarchy.
  * 
  * @param <T> The type of the underlying data model for the UI control.
  */
@@ -214,7 +219,8 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
     }
     
     // package only
-    void shiftSelection(int position, int shift, final Callback<ShiftParams, Void> callback) {
+    // CHANGED JW: widened scope to protected
+    protected void shiftSelection(int position, int shift, final Callback<ShiftParams, Void> callback) {
         // with no check here, we get RT-15024
         if (position < 0) return;
         if (shift == 0) return;

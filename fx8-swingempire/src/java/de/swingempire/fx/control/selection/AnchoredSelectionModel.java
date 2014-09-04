@@ -59,11 +59,54 @@ public interface AnchoredSelectionModel {
      * 
      * PENDING JW: what if index == anchor? 
      * @param index
+     * @see javafx.scene.control.SelectionModel#clearSelection(index)
      */
     void clearSelection(int index);
     
     /**
      * Clears anchor.
+     * @see javafx.scene.control.SelectionModel#clearSelection()
      */
     void clearSelection();
+    
+    /**
+     * Updates anchor depending on selection state and selectionMode.
+     * In singleSelectionMode, sets the anchor to the selected index. In 
+     * mulitpleSelectionMode, the update depends on whether or not the selection
+     * is empty: if so, sets the anchor to the start index, if not 
+     * keeps the anchor where it was.<p>
+     * 
+     * Note that start may be < end as well as > end. Mapped to sequential first ... last
+     * 
+     * start < end:
+     * first == start
+     * last == end - 1
+     * 
+     * start > end
+     * first == end + 1
+     * last == start
+     * 
+     * 
+     * PENDING JW: start == end? do nothing, there is no range
+     * 
+     * @param start the start of the range, inclusive
+     * @param end the end of the range, exclusive
+     * @see javafx.scene.control.MultipleSelectionModel#selectRange(int, int)
+     */
+    void selectRange(int start, int end);
+    
+    /**
+     * Updates anchor depending on selection state and selectionMode.
+     * In singleSelectionMode, sets the anchor to the selected index. In 
+     * mulitpleSelectionMode, the update depends on whether or not the selection
+     * is empty: if so, sets the anchor to the first valid index, if not 
+     * keeps the anchor where it was.<p>
+     * 
+     * @param index
+     * @param indices
+     * 
+     * @see javafx.scene.control.MultipleSelectionModel#selectIndices(int, int...)
+     * 
+     */
+    void selectIndices(int index, int... indices);
 }

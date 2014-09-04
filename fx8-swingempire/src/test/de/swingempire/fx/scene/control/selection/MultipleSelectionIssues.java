@@ -23,6 +23,7 @@ import org.junit.runners.Parameterized;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import fx.util.StageLoader;
+
 import static junit.framework.TestCase.*;
 
 /**
@@ -63,7 +64,6 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         assertEquals(3, getSelectionModel().getSelectedIndices().size());
         assertEquals("anchor must be kept on first of range", first, getAnchorIndex());
-
     }
     
     /**
@@ -82,7 +82,6 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearSelection();
         assertEquals(0, getSelectionModel().getSelectedIndices().size());
         assertEquals("anchor must be cleared", -1, getAnchorIndex());
-        
     }
     
     /**
@@ -101,7 +100,6 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearSelection(3);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("anchor must be kept when clearing index in range", first, getAnchorIndex());
-        
     }
     
     /**
@@ -120,7 +118,6 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearSelection(first);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("expected behavior when clearing anchor?", first, getAnchorIndex());
-        
     }
     
     /**
@@ -132,42 +129,43 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testAnchorOnClearSelectionAtAfterRange() {
         if (!multipleMode) return;
         StageLoader loader = new StageLoader(getView());
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
         getSelectionModel().clearSelection(3);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
-        assertEquals("anchor must be kept when clearing index in range", first, getAnchorIndex());
+        assertEquals("anchor must be kept when clearing index in range", start, getAnchorIndex());
     }
     
     @Test
     public void testAnchorOnSelectRangeAscending() {
         if (!multipleMode) return;
         StageLoader loader = new StageLoader(getView());
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
         assertEquals(3, getSelectionModel().getSelectedIndices().size());
-        assertEquals("anchor must be kept on first of range", first, getAnchorIndex());
+        assertEquals("anchor must be kept on first of range", start, getAnchorIndex());
     }
     
     @Test
     public void testAnchorOnSelectRangeDescending() {
         if (!multipleMode) return;
         StageLoader loader = new StageLoader(getView());
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(last, first - 1);
+        int start = 5;
+        int end = 2;
+        getSelectionModel().selectRange(start, end);
         assertEquals(3, getSelectionModel().getSelectedIndices().size());
-        assertEquals(last, getAnchorIndex());
+        assertEquals(start, getAnchorIndex());
     }
     
     @Test
     public void testFocusOnClearSelectionAtFocusRangeAscending() {
         if (!multipleMode) return;
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int last = end - 1;
         getSelectionModel().clearSelection(last);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
@@ -176,9 +174,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testFocusOnClearSelectionAtRangeAscending() {
         if (!multipleMode) return;
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int last = end - 1;
         getSelectionModel().clearSelection(3);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection in range", last, getFocusIndex());
@@ -187,9 +186,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testFocusOnClearSelectionRangeAscending() {
         if (!multipleMode) return;
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
         getSelectionModel().clearSelection();
         assertEquals(0, getSelectionModel().getSelectedIndices().size());
         assertEquals("focus must be cleared", -1, getFocusIndex());
@@ -198,9 +197,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testFocusOnSelectRangeAscending() {
         if (!multipleMode) return;
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(first, last + 1);
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int last = end - 1;
         assertEquals(3, getSelectionModel().getSelectedIndices().size());
         assertEquals(last, getFocusIndex());
     }
@@ -208,11 +208,32 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testFocusOnSelectRangeDescending() {
         if (!multipleMode) return;
-        int first = 2;
-        int last = 4;
-        getSelectionModel().selectRange(last, first - 1);
+        int start = 5;
+        int end = 2;
+        getSelectionModel().selectRange(start, end);
+        int last = end + 1;
         assertEquals(3, getSelectionModel().getSelectedIndices().size());
-        assertEquals(first, getFocusIndex());
+        assertEquals(last, getFocusIndex());
+    }
+    
+    @Test
+    public void testSelectedStartEndRangeAscending() {
+        if (!multipleMode) return;
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        assertTrue("start index must be selected" + start, getSelectionModel().isSelected(start));
+        assertFalse("end index must not be selected" + end, getSelectionModel().isSelected(end));
+    }
+    
+    @Test
+    public void testSelectedStartEndRangeDescending() {
+        if (!multipleMode) return;
+        int start = 5;
+        int end = 2;
+        getSelectionModel().selectRange(start, end);
+        assertTrue("start index must be selected" + start, getSelectionModel().isSelected(start));
+        assertFalse("end index must not be selected" + end, getSelectionModel().isSelected(end));
     }
     
     @Test

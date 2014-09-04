@@ -4,12 +4,17 @@
  */
 package de.swingempire.fx.control.selection;
 
+import de.swingempire.fx.control.selection.MultipleSelectionModelBase.ShiftParams;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.util.Callback;
 
 /**
+ * Subclass of ListViewBitSetSelectionModel (copy! because it's private) that 
+ * implements AnchoredSelectionModel.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class AnchoredListViewSelectionModel<T> extends
@@ -35,6 +40,7 @@ public class AnchoredListViewSelectionModel<T> extends
         return anchorIndex.getReadOnlyProperty();
     }
 
+//-------------------- overrides of selectionModel base methods    
     @Override
     public void clearAndSelect(int row) {
         super.clearAndSelect(row);
@@ -58,7 +64,36 @@ public class AnchoredListViewSelectionModel<T> extends
             clearAnchor();
         }
     }
+    
+    @Override
+    public void clearSelection() {
+        super.clearSelection();
+        clearAnchor();
+    }
 
+//------------------ TODO (?) overrides of selectionModel navigational methods   
+    
+    
+//------------------ TODO overrides of MultipleSelectionModel base methods
+    
+    @Override
+    public void selectIndices(int row, int... rows) {
+        boolean adjustAnchor = getSelectionMode() == SelectionMode.SINGLE || isEmpty();
+        super.selectIndices(row, rows);
+        if (adjustAnchor) {
+            setAnchorIndex(row);
+        }
+    }
+    
+    @Override
+    public void selectRange(int start, int end) {
+        super.selectRange(start, end);
+    }
+    
+    
+
+//------------------ TODO overrides of MultipleSelectionModel navigational methods
+    
     /**
      * @param index
      * @return
@@ -75,6 +110,18 @@ public class AnchoredListViewSelectionModel<T> extends
         setAnchorIndex(-1);
     }
     
+    /**
+     * Overridden to update Anchor
+     */
+    @Override
+    protected void shiftSelection(int position, int shift,
+            Callback<ShiftParams, Void> callback) {
+        int oldAnchor = getAnchorIndex();
+        super.shiftSelection(position, shift, callback);
+        if (position <= oldAnchor)
+            setAnchorIndex(oldAnchor + shift);
+    }
+
     
 
 }

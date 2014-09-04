@@ -501,8 +501,20 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
 //            sm.selectPrevious();
 //        }
 
-// CHANGED JW: simply select previous        
-//        sm.selectPrevious();
+// CHANGED JW: 
+        int oldFocus = fm.getFocusedIndex();
+        if (sm.isSelected(oldFocus)) {
+            int previousFocus = oldFocus - 1;
+            if (sm.isSelected(previousFocus)) {
+                sm.clearSelection(oldFocus);
+                fm.focus(previousFocus);
+            } else {
+                sm.selectPrevious();
+            }
+        } else {
+            // TODO: unselected focus - select range between anchor and new focus
+            // inclusively
+        }
         onSelectPreviousRow.run();
     }
 
@@ -534,6 +546,21 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
 //            sm.selectNext();
 //        }
         
+        // CHANGED JW: plain select next
+        int oldFocus = fm.getFocusedIndex();
+        
+        if (sm.isSelected(oldFocus)) { // expand or collapse
+            int nextFocus = oldFocus + 1;
+            if (sm.isSelected(nextFocus)) {
+               sm.clearSelection(oldFocus);
+               fm.focus(nextFocus);
+            } else {
+               sm.selectNext();
+            }   
+            
+        } else {
+            // TODO unselected focus, need to select all between anchor and next
+        }
         onSelectNextRow.run();
     }
     

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.swingempire.fx.control.selection.MultipleSelectionModelBase.ShiftParams;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener;
@@ -15,6 +16,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.ListView;
+import javafx.util.Callback;
 
 /**
  * Plain copy of core, for playing with extensions.
@@ -251,6 +253,8 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
      * Public selection API                                                *
      *                                                                     *
      **********************************************************************/
+
+
 
     /** {@inheritDoc} */
     @Override protected void focus(int row) {

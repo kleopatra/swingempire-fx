@@ -37,8 +37,8 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
      * Overridden for commenting, only.
      */
     @Override
-    public void testAnchorMovedOnInsertItemAbove() {
-        super.testAnchorMovedOnInsertItemAbove();
+    public void testAnchorOnInsertItemAbove() {
+        super.testAnchorOnInsertItemAbove();
     }
 
     /**
@@ -49,8 +49,8 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
      * Overridden for commenting, only.
      */
     @Override
-    public void testAnchorMovedOnRemoveItemAbove() {
-        super.testAnchorMovedOnRemoveItemAbove();
+    public void testAnchorOnRemoveItemAbove() {
+        super.testAnchorOnRemoveItemAbove();
     }
 
     /**
@@ -78,22 +78,16 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
     protected MultipleSelectionModel getSelectionModel() {
         return getView().getSelectionModel();
     }
-
-    
     
     @Override
     protected FocusModel getFocusModel() {
         return getView().getFocusModel();
     }
 
-
-     
     @Override
     protected int getAnchorIndex(int index) {
         return ((AnchoredSelectionModel) getSelectionModel()).getAnchorIndex();
     }
-
-
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

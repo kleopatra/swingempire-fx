@@ -25,7 +25,7 @@ import fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
- * Testing SingleSelection api.
+ * Testing SelectionModel api.
  * 
  * Reported: https://javafx-jira.kenai.com/browse/RT-38494
  * mismatch between spec and implementation
@@ -53,6 +53,61 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 
 //------------  test interplay of selection/focus/anchor 
 //------------ focus    
+    
+    /**
+     * https://javafx-jira.kenai.com/browse/RT-30931
+     * What's happening if the item at the focused/selected index is 
+     * removed?
+     * 
+     * The issue mentions 3 options
+     * 1. "shift down both", that is the next item is focused and selected
+     * 2. "shift down focus, unselect", that is selected item is cleared, focus one down
+     * 3. "clear all", that is selected and focus cleared
+     * 
+     * UX preferred 1, here we seem to have a shift up?
+     * The issue is still open.
+     */
+    @Test
+    public void testFocusOnRemoveItemAtSelectedFocused() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(index);
+        assertEquals("open 30931 - focus after remove focused", index, getFocusIndex(index));
+    }
+    @Test
+    public void testSelectedOnRemoveItemAtSelectedFocused() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(index);
+        assertEquals("open 30931 - selection after remove focused", index, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testAnchorOnRemoveItemAtSelectedFocused() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(index);
+        assertEquals("open 30931 - anchor after remove focused", 
+                index, getAnchorIndex(index));
+    }
+    
+    @Test
+    public void testFocusOnRemoveItemAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(1);
+        assertEquals("open 30931 - focus after remove above focused", index -1, getFocusIndex(index));
+    }
+    
+    @Test
+    public void testSelectedOnRemoveItemAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(1);
+        assertEquals("open 30931 - selected after remove above focused", index-1, getSelectionModel().getSelectedIndex());
+    }
+    
     
     @Test
     public void testFocusOnClearSelection() {
@@ -184,13 +239,50 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection(index);
         assertEquals("anchor must be cleared", 
                 -1, getAnchorIndex(-1));
-        
     }
+    
+    @Test
+    public void testAnchorClearSelection() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection();
+        assertEquals("anchor must be cleared", 
+                -1, getAnchorIndex(-1));
+    }
+    /**
+     * Anchor must not be moved after adding/removing items below.
+     */
+    @Test
+    public void testAnchorOnRemoveItemBelow() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        items.remove(index + 1);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
+    
+    /**
+     * Anchor must not be moved after adding/removing items below.
+     */
+    @Test
+    public void testAnchorOnInsertItemBelow() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        items.add(index + 1, "6-item");
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("anchor must be same as selected index", 
+                selected, getAnchorIndex(selected));
+    }
+    
     /**
      * Anchor must be move after adding/removing items above.
      */
     @Test
-    public void testAnchorMovedOnInsertItemAbove() {
+    public void testAnchorOnInsertItemAbove() {
         StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
@@ -204,7 +296,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Anchor must be move after adding/removing items above.
      */
     @Test
-    public void testAnchorMovedOnRemoveItemAbove() {
+    public void testAnchorOnRemoveItemAbove() {
         StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);

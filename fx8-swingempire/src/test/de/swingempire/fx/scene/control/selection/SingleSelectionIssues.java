@@ -21,13 +21,11 @@ import fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
- * Super class for testing single selection behaviour of MultipleSelectionModel 
+ * Super class for testing SelectionModel api of MultipleSelectionModel 
  * in both modes.
  * 
  * Also contains (for now) mode-dependent anchor behaviour tests, probably
  * should be moved.
- * 
- *  
  * 
  * @author Jeanette Winzenburg, Berlin
  */

@@ -40,8 +40,8 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
      * Overridden for commenting, only.
      */
     @Override
-    public void testAnchorMovedOnInsertItemAbove() {
-        super.testAnchorMovedOnInsertItemAbove();
+    public void testAnchorOnInsertItemAbove() {
+        super.testAnchorOnInsertItemAbove();
     }
 
     /**
@@ -52,8 +52,8 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
      * Overridden for commenting, only.
      */
     @Override
-    public void testAnchorMovedOnRemoveItemAbove() {
-        super.testAnchorMovedOnRemoveItemAbove();
+    public void testAnchorOnRemoveItemAbove() {
+        super.testAnchorOnRemoveItemAbove();
     }
 
     /**

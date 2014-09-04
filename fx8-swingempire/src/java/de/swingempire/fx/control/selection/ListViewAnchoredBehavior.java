@@ -7,6 +7,9 @@ package de.swingempire.fx.control.selection;
 import javafx.scene.control.ListView;
 
 /**
+ * NOTE: List/CellBehaviour fiddles with Anchor on mousePressed!!
+ * Need to adjust as well...
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ListViewAnchoredBehavior<T> extends ListViewBehavior<T> {

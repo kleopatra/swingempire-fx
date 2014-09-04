@@ -7,6 +7,7 @@ package de.swingempire.fx.control;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.control.selection.ListViewAnchored;
 import fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -28,11 +29,12 @@ public class ListFocusedCell extends Application {
     private final ObservableList<Locale> data =
             FXCollections.observableArrayList(Locale.getAvailableLocales());
    
+//    private final ListView<Locale> list = new ListViewAnchored<>();
     private final ListView<Locale> list = new ListView<>();
     
     @Override
     public void start(Stage stage) {
-        stage.setTitle("List Focus/Anchor Bug");
+        stage.setTitle(list.getClass().getSimpleName() + " Focus/Anchor Bug");
         // add a listener to see loosing the column
         list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
             LOG.info("focused old/new " + oldValue + "\n  " + newValue);
@@ -52,6 +54,16 @@ public class ListFocusedCell extends Application {
             if (e.getCode() == KeyCode.F1) {
                 int before = FXUtils.getAnchorIndex(list);
                 data.add(0, new Locale("dummy"));
+                LOG.info("anchor before/after insert: " + before + "/" + FXUtils.getAnchorIndex(list));
+            }
+        });
+        
+        // https://javafx-jira.kenai.com/browse/RT-30931
+        // remove selected item - the issue is still open
+        list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F6) {
+                int before = FXUtils.getAnchorIndex(list);
+                data.remove(list.getSelectionModel().getSelectedIndex());
                 LOG.info("anchor before/after insert: " + before + "/" + FXUtils.getAnchorIndex(list));
             }
         });
