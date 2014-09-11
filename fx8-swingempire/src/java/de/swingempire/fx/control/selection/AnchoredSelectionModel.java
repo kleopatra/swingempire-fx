@@ -35,6 +35,15 @@ public interface AnchoredSelectionModel {
     ReadOnlyIntegerProperty anchorIndexProperty();
     
     /**
+     * Makes the current focused index the anchor.
+     * 
+     * Experimental: trying to get away with minimal api - all use-cases I have seen
+     * so far require anchoring the current focus, allowing arbitrary indices to
+     * become the anchor seems not needed. Can re-visit.
+     */
+    void anchor();
+    
+    /**
      * Updates anchor depending on selection state and selectionMode.
      * In singleSelectionMode, sets the anchor to the selected index. In 
      * mulitpleSelectionMode, the update depends on whether or not the selection
@@ -57,7 +66,19 @@ public interface AnchoredSelectionModel {
     /**
      * Keeps the anchor unchanged.
      * 
-     * PENDING JW: what if index == anchor? 
+     * PENDING JW: what if index == anchor? Try: "Keeps the anchor unchanged"
+     * Not so easy: then we have inconsistent behaviour between focus and anchor
+     * 
+     * clearAt calls clearSelection if the index is the only selected index, which
+     * in turn clears the focus. Anchor should behave the same. Then
+     * client code can treat that very last clearing just the same way, with
+     * respect to both anchor and focus. Maybe the question is if
+     * clearing the last selected _should_ clear anchor/focus? If not, we would
+     * have inconsistent state of an empty selection: if it were reached via
+     * clearSelection(), anchor and focus are cleared. If reached (via multiple)
+     * clearAt(int), anchor/focus would not be cleared ... 
+     * 
+     * 
      * @param index
      * @see javafx.scene.control.SelectionModel#clearSelection(index)
      */

@@ -7,21 +7,24 @@ package de.swingempire.fx.control;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import de.swingempire.fx.control.selection.ListViewAnchored;
-import fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.control.selection.ListViewAnchored;
+import fx.util.FXUtils;
 
 /**
  */
@@ -35,13 +38,45 @@ public class ListFocusedCell extends Application {
     @Override
     public void start(Stage stage) {
         stage.setTitle(list.getClass().getSimpleName() + " Focus/Anchor Bug");
+        ListView<Locale> list = this.list;
+        ListView<Locale> anchored = new ListViewAnchored<Locale>();
+        configureList(list);
+        configureList(anchored);
+        
+        
+        Button remove = new Button("Remove");
+        remove.setOnAction(ev -> {
+            data.remove(0);
+        });
+        Button add = new Button("Add");
+        add.setOnAction(ev -> {
+            data.add(0, new Locale("dummy", "OO"));
+        });
+        Button clear = new Button("Clear Selection");
+        clear.setOnAction(ev -> {
+            list.getSelectionModel().clearSelection();
+            anchored.getSelectionModel().clearSelection();
+        });
+        
+        Pane buttonPane = new FlowPane(clear, add, remove);
+        Pane listPane = new VBox(new Label(list.getClass().getSimpleName()), list);
+        Pane anchoredPane = new VBox(new Label(anchored.getClass().getSimpleName()), anchored);
+        Pane box = new HBox(listPane, anchoredPane);
+        BorderPane root = new BorderPane(box);
+        root.setTop(buttonPane);
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    protected void configureList(ListView<Locale> list) {
         // add a listener to see loosing the column
         list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("focused old/new " + oldValue + "\n  " + newValue);
+            LOG.info("focused old/new " + oldValue + " / " + newValue);
         });
         
         list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
-            LOG.info("selected old/new " + oldValue + "\n  " + newValue);
+            LOG.info("selected old/new " + oldValue + " / " + newValue);
         });
         // prevent selection on focusGained
 //        list.getProperties().put("selectOnFocusGain", Boolean.FALSE);
@@ -94,22 +129,6 @@ public class ListFocusedCell extends Application {
                 LOG.info("anchor after range: " + list.getProperties().get("anchor"));
             }
         });
-        
-        
-        Button button = new Button("Add");
-        button.setOnAction(ev -> {
-            data.add(0, new Locale("dummy"));
-        });
-        Button clear = new Button("Clear Selection");
-        clear.setOnAction(ev -> {
-            list.getSelectionModel().clearSelection();;
-        });
-        BorderPane root = new BorderPane(list);
-        root.setLeft(button);
-        root.setTop(clear);
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
     }
 
     public static void main(String[] args) {

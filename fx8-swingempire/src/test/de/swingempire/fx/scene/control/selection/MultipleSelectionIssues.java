@@ -21,10 +21,10 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import fx.util.StageLoader;
-
-import static junit.framework.TestCase.*;
 
 /**
  * Tests behaviour of MultipleSelection api.
@@ -159,6 +159,278 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals(start, getAnchorIndex());
     }
     
+    /**
+     * focus == anchor == 0
+     */
+    @Test
+    public void testAlsoSelectNextSameAtFirst() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        getSelectionModel().select(0);
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus + 1;
+        getSelectionModel().selectRange(anchor, newFocus + 1);
+        assertEquals(newFocus - anchor + 1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(newFocus, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testAnchorOnClearSelectionAt() {
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        // initial
+        getSelectionModel().select(0);
+        // something else
+        getSelectionModel().clearAndSelect(index);
+        // clear at
+        getSelectionModel().clearSelection(index);
+        assertEquals("anchor must be unchanged on clearAt", index, getAnchorIndex());
+    }
+    /**
+     * focus == anchor == 0
+     * PENDING JW: who's responsible for range checks?
+     */
+    @Test
+    public void testAlsoSelectPreviousSameAtFirst() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        getSelectionModel().select(0);
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus - 1;
+        getSelectionModel().selectRange(anchor, newFocus - 1);
+        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(oldFocus, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * How to define the range at corner case: 
+     * anchor == 1, selectRange up to include index 0
+     */
+    @Test
+    public void testSelectRangeUpFromOne() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        getSelectionModel().select(1);
+        getSelectionModel().selectRange(1, -1);
+        assertEquals("anchor unchanged", 1, getAnchorIndex());
+        assertEquals("focus on 0", 0, getFocusIndex());
+    }
+    
+    /**
+     * How to define the range at corner case: 
+     * anchor == 1, selectRange up to include index 0
+     */
+    @Test
+    public void testSelectRangeDownFromSecondLast() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int last = items.size() - 1;
+        getSelectionModel().select(last - 1);
+        int anchor = last - 1;
+        int oldFocus = anchor;
+        int newFocus = oldFocus + 1;
+        getSelectionModel().selectRange(anchor, newFocus + 1);
+        assertEquals("anchor unchanged", anchor, getAnchorIndex());
+        assertEquals("focus on last", newFocus, getFocusIndex());
+    }
+    
+    /**
+     * How to define the range at corner case: 
+     * anchor == last, selectRange down -> nothing changed
+     */
+    @Test
+    public void testSelectRangeDownFromLast() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        int anchor = last;
+        int oldFocus = anchor;
+        int newFocus = oldFocus + 1;
+        getSelectionModel().selectRange(anchor, newFocus + 1);
+        assertEquals("anchor unchanged", anchor, getAnchorIndex());
+        assertEquals("focus unchanged", oldFocus, getFocusIndex());
+    }
+
+    /**
+     * Descending == anchor > focus
+     * Next == newFocus = focus + 1
+     */
+    @Test
+    public void testAlsoSelectNextDescending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        prepareAlsoSelectDescending();
+        
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus + 1;
+        getSelectionModel().clearSelection();
+        // not included boundary is new - 1 for descending
+        getSelectionModel().selectRange(anchor, newFocus - 1);
+        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
+        assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
+                getSelectionModel().getSelectedIndices().size());
+        
+    }
+    
+    /**
+     * Descending == anchor > focus
+     * Previous == newFocus = focus - 1
+     */
+    @Test
+    public void testAlsoSelectPreviousDescending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        prepareAlsoSelectDescending();
+        
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus - 1;
+        getSelectionModel().clearSelection();
+        // not included boundary is new - 1 for descending
+        getSelectionModel().selectRange(anchor, newFocus - 1);
+        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
+        assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
+                getSelectionModel().getSelectedIndices().size());
+    }
+    
+    
+    /**
+     * Prepare model state for alsoSelectPrevious
+     * 
+     * select 6 .. 4
+     * anchor = 6
+     * move focus back twice, unselected -> focus == 2
+     * 
+     * anchor > focus
+     */
+    protected void prepareAlsoSelectDescending() {
+        // initial state
+        getSelectionModel().select(0);
+        // select 6
+        getSelectionModel().clearAndSelect(6);
+        // extend selection up twice
+        getSelectionModel().selectPrevious();
+        getSelectionModel().selectPrevious();
+        //move focus
+        getFocusModel().focusPrevious();
+        getFocusModel().focusPrevious();
+        
+        assertEquals(6, getAnchorIndex());
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getFocusIndex());
+        
+    }
+
+    /**
+     * Simulate alsoSelectNext to dig down a bug: selectRange doesn't select
+     * to new focus
+     * 
+     * Here: continous range selected via selectNext, then focus moved some rows below,
+     * then select range to next after focus
+     * 
+     * Ascending == anchor < focus
+     * Next == newFocus = focus + 1
+     */
+    @Test
+    public void testAlsoSelectNextAscending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        prepareAlsoSelectAscending();
+        
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus + 1;
+        getSelectionModel().clearSelection();
+        // not included boundary is new + 1 for ascending
+        getSelectionModel().selectRange(anchor, newFocus + 1);
+        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
+        assertEquals("size must be old selection till focus", newFocus - anchor + 1, 
+                getSelectionModel().getSelectedIndices().size());
+    }
+    
+    /**
+     * Simulate alsoSelectNext to dig down a bug: selectRange doesn't select
+     * to new focus
+     * 
+     * Here: continous range selected via selectNext, then focus moved some rows below,
+     * then select range to previous before focus
+     * 
+     * Ascending == anchor < focus
+     * Previous == newFocus = focus - 1
+     */
+    @Test
+    public void testAlsoSelectPreviousAscending() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        prepareAlsoSelectAscending();
+        
+        int anchor = getAnchorIndex();
+        int oldFocus = getFocusIndex();
+        int newFocus = oldFocus - 1;
+        getSelectionModel().clearSelection();
+        // not included boundary is new + 1 for ascending
+        getSelectionModel().selectRange(anchor, newFocus + 1);
+        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
+        assertEquals("size must be old selection till focus", newFocus - anchor +1 , 
+                getSelectionModel().getSelectedIndices().size());
+    }
+
+    /**
+     * Prepare models to simulate problem in alsoSelectNext/Previous
+     * index 1 to 3 selected, inclusive
+     * anchor == 1
+     * focus = 5 unselected
+     * 
+     * anchor < focus
+     */
+    protected void prepareAlsoSelectAscending() {
+        // prepare: initial select 0
+        getSelectionModel().select(0);
+        // move selection to next
+        getSelectionModel().clearAndSelect(1);
+        // extend
+        getSelectionModel().selectNext();
+        getSelectionModel().selectNext();
+        // move focus
+        getFocusModel().focusNext();
+        getFocusModel().focusNext();
+        assertEquals(1, getAnchorIndex());
+        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(5, getFocusIndex());
+    }
+    
+    
+    /**
+     * Test: extend selection - move focus - extend selection
+     */
+    @Test
+    public void testFocusOnRangeAscendingMoveFocusSelectRange() {
+        if (!multipleMode) return;
+        StageLoader loader = new StageLoader(getView());
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int last = end - 1;
+        assertEquals("sanity anchor", start, getAnchorIndex());
+        getFocusModel().focusNext();
+        
+        assertEquals("sanity ..", end, getFocusIndex());
+//        assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
+    }
+    
     @Test
     public void testFocusOnClearSelectionAtFocusRangeAscending() {
         if (!multipleMode) return;
@@ -169,6 +441,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearSelection(last);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
+        assertEquals("selectedIndex must be unchanged on clearAt", last, getSelectionModel().getSelectedIndex());
     }
     
     @Test

@@ -12,6 +12,7 @@ package de.swingempire.fx.control.selection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -446,7 +447,10 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
         MultipleSelectionModel<T> sm = getControl().getSelectionModel();
         if (sm == null) return;
         
+        int focusFromSelection = sm.getSelectedIndex();
+        int focus = fm.getFocusedIndex();
         fm.focusNext();
+        
 // CHANGED JW        
 //        if (! isShortcutDown || getAnchor() == -1) {
 //            setAnchor(fm.getFocusedIndex());
@@ -471,12 +475,47 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
         fm.focus(newFocusIndex);
     }
 
+    /**
+     * Expand/collapse selection (if focus isSelected) or select range 
+     * between anchor and focus. (if focus is not selected)
+     */
     private void alsoSelectPreviousRow() {
         FocusModel<T> fm = getControl().getFocusModel();
         if (fm == null) return;
         
         MultipleSelectionModel<T> sm = getControl().getSelectionModel();
         if (sm == null) return;
+        // REPLACED JW: 
+        AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
+        int oldFocus = fm.getFocusedIndex();
+        int newFocus = oldFocus -1;
+        // anyway, range selection should handle all use cases
+        // was a boundary issue: 
+        // for prev, a true ascending decides about boundary
+        // for next, ascending includes equality
+        boolean ascending = am.getAnchorIndex() < oldFocus;
+        int boundary = ascending ? newFocus + 1 : newFocus - 1;
+        int anchor = am.getAnchorIndex();
+        // triggers notification on too many change indices 
+        // here we need a clearAndSelectRange on the model
+        // which could optimimize
+        sm.clearSelection();
+        sm.selectRange(anchor, boundary);
+        
+        // PENDING JW: collapse was not correct
+//        if (sm.isSelected(oldFocus)) { // expand or collapse selection
+//            if (sm.isSelected(newFocus)) {
+//                sm.clearSelection(oldFocus); // collapse
+//                fm.focus(newFocus);
+//            } else {
+//                sm.selectPrevious();
+//            }
+//        } else {
+//        int anchor = am.getAnchorIndex();
+//        sm.clearSelection();
+        // select range between anchor and new focus inclusive
+//        sm.selectRange(anchor, boundary);
+//        }
 // CHANGED JW   commented all old     
 //        if (isShiftDown && getAnchor() != -1) {
 //            int newRow = fm.getFocusedIndex() - 1;
@@ -501,20 +540,6 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
 //            sm.selectPrevious();
 //        }
 
-// CHANGED JW: 
-        int oldFocus = fm.getFocusedIndex();
-        if (sm.isSelected(oldFocus)) {
-            int previousFocus = oldFocus - 1;
-            if (sm.isSelected(previousFocus)) {
-                sm.clearSelection(oldFocus);
-                fm.focus(previousFocus);
-            } else {
-                sm.selectPrevious();
-            }
-        } else {
-            // TODO: unselected focus - select range between anchor and new focus
-            // inclusively
-        }
         onSelectPreviousRow.run();
     }
 
@@ -524,6 +549,29 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
         
         MultipleSelectionModel<T> sm = getControl().getSelectionModel();
         if (sm == null) return;
+        // REPLACED JW see code comment in alsoFocusPrevious
+        AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
+        int oldFocus = fm.getFocusedIndex();
+        int newFocus = oldFocus + 1;
+        boolean ascending = am.getAnchorIndex() <= oldFocus;
+        int boundary = ascending ? newFocus + 1 : newFocus - 1;
+        int anchor = am.getAnchorIndex();
+        sm.clearSelection();
+        sm.selectRange(anchor, boundary);
+        
+//        if (sm.isSelected(oldFocus)) { // expand or collapse
+//            if (sm.isSelected(newFocus)) {
+//                sm.clearSelection(oldFocus); // collapse
+//                fm.focus(newFocus);
+//            } else {
+//                sm.selectNext();
+//            }   
+//            
+//        } else {
+//        int anchor = am.getAnchorIndex();
+//        sm.clearSelection();
+//        sm.selectRange(anchor, boundary);
+//        }
  // CHANGED JW comment all old       
 //        if (isShiftDown && getAnchor() != -1) {
 //            int newRow = fm.getFocusedIndex() + 1;
@@ -546,21 +594,6 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
 //            sm.selectNext();
 //        }
         
-        // CHANGED JW: plain select next
-        int oldFocus = fm.getFocusedIndex();
-        
-        if (sm.isSelected(oldFocus)) { // expand or collapse
-            int nextFocus = oldFocus + 1;
-            if (sm.isSelected(nextFocus)) {
-               sm.clearSelection(oldFocus);
-               fm.focus(nextFocus);
-            } else {
-               sm.selectNext();
-            }   
-            
-        } else {
-            // TODO unselected focus, need to select all between anchor and next
-        }
         onSelectNextRow.run();
     }
     
@@ -784,14 +817,19 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
         if (fm == null) return;
 
         int focusedIndex = fm.getFocusedIndex();
-        
+//        
+//        
+//        LOG.info("anchor/focus before toggle" + 
+//                ((AnchoredSelectionModel) sm).getAnchorIndex()+ "/"+fm.getFocusedIndex());
         if (sm.isSelected(focusedIndex)) {
             sm.clearSelection(focusedIndex);
             fm.focus(focusedIndex);
         } else {
             sm.select(focusedIndex);
         }
-        
+//        LOG.info("anchor/focus after toggle" + 
+//          ((AnchoredSelectionModel) sm).getAnchorIndex()+ "/"+fm.getFocusedIndex());
+        ((AnchoredSelectionModel) sm).anchor();
         // CHANGED JW: commented old
 //      setAnchor(focusedIndex);
     }
@@ -922,4 +960,7 @@ public class ListViewBehavior<T> extends BehaviorBase<ListView<T>> {
         }
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(ListViewBehavior.class
+            .getName());
 }

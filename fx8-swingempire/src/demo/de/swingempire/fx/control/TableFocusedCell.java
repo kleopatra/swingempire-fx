@@ -8,18 +8,25 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  * Reported: https://javafx-jira.kenai.com/browse/RT-38326
@@ -68,6 +75,32 @@ public class TableFocusedCell extends Application {
         // for issue ?? : not able to start editing with f2
 //        table.setEditable(true);
 //        country.setCellFactory(TextFieldTableCell.forTableColumn());
+        
+        // quick check for http://stackoverflow.com/q/25740177/203657
+        // right click doesn't always select before showing context menu
+        // can't reproduce
+//        data.remove(8, data.size() -1);
+//        table.setRowFactory(new Callback<TableView<Locale>, TableRow<Locale>>() {
+//            @Override
+//            public TableRow<Locale> call(TableView<Locale> tableView) {
+//                final TableRow<Locale> row = new TableRow<>();
+//                final ContextMenu contextMenu = new ContextMenu();
+//                final MenuItem mnuItemAnalyze = new MenuItem("Analyze");
+//                mnuItemAnalyze.setOnAction(new EventHandler<ActionEvent>() {
+//                    @Override
+//                    public void handle(ActionEvent event) {
+//                        //logic for menu item
+//                        LOG.info("Menu: ");
+//                    }
+//                });
+//                contextMenu.getItems().add(mnuItemAnalyze);
+//                // Set context menu on row, but use a binding to make it only show for non-empty rows:  
+//                row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
+//                return row;
+//            }
+//        });
+
+
         
         table.setItems(data);
         table.getColumns().addAll(language, country);

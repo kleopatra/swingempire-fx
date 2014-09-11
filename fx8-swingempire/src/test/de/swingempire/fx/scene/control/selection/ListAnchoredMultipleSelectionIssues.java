@@ -12,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -26,6 +27,17 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListAnchoredMultipleSelectionIssues extends MultipleSelectionIssues<ListView, MultipleSelectionModel> {
 
+    /**
+     * AnchoredSelectionModel allows to anchor the focus. Raw testing.
+     */
+    @Test
+    public void testAnchor() {
+        int focus = 2;
+        getFocusModel().focus(focus);
+        getAnchoredSelectionModel().anchor();
+        assertEquals(focus, getAnchorIndex());
+    }
+    
     public ListAnchoredMultipleSelectionIssues(boolean multiple) {
         super(multiple);
     }
@@ -48,6 +60,7 @@ public class ListAnchoredMultipleSelectionIssues extends MultipleSelectionIssues
         return getView().getSelectionModel();
     }
     
+    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(ListAnchoredMultipleSelectionIssues.class
         .getName());
@@ -57,9 +70,12 @@ public class ListAnchoredMultipleSelectionIssues extends MultipleSelectionIssues
         return getView().getFocusModel();
     }
     
+    protected AnchoredSelectionModel getAnchoredSelectionModel() {
+        return (AnchoredSelectionModel) getSelectionModel();
+    }
     @Override
     protected int getAnchorIndex() {
-        return ((AnchoredSelectionModel) getSelectionModel()).getAnchorIndex();
+        return getAnchoredSelectionModel().getAnchorIndex();
     }
 
 

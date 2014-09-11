@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.control.selection;
 
-import de.swingempire.fx.control.selection.MultipleSelectionModelBase.ShiftParams;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.scene.control.ListView;
@@ -40,7 +39,13 @@ public class AnchoredListViewSelectionModel<T> extends
         return anchorIndex.getReadOnlyProperty();
     }
 
-//-------------------- overrides of selectionModel base methods    
+    @Override
+    public void anchor() {
+        int focus = getFocusedIndex();
+        setAnchorIndex(focus);
+    }
+
+    //-------------------- overrides of selectionModel base methods    
     @Override
     public void clearAndSelect(int row) {
         super.clearAndSelect(row);
@@ -56,15 +61,21 @@ public class AnchoredListViewSelectionModel<T> extends
         }
     }
 
+    /**
+     * Note: "Keeps the anchor unchanged" - not so easy: super calls clearSelection
+     * on clearAt last selected index. Could re-set the anchor or maybe add a flag
+     * (dooooh... ) and not clear in clearSelection?
+     */
     @Override
     public void clearSelection(int index) {
         boolean anchorCleared = isAnchor(index);
         super.clearSelection(index);
         if (isEmpty() || anchorCleared) {
-            clearAnchor();
+//            clearAnchor();
         }
     }
     
+    boolean calledFromClearAt = false;
     @Override
     public void clearSelection() {
         super.clearSelection();
@@ -121,7 +132,5 @@ public class AnchoredListViewSelectionModel<T> extends
         if (position <= oldAnchor)
             setAnchorIndex(oldAnchor + shift);
     }
-
-    
 
 }
