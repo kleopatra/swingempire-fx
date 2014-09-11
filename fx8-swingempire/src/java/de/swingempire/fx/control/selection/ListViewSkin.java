@@ -47,7 +47,7 @@ import com.sun.javafx.scene.control.skin.resources.ControlResources;
  * - hack access to flow's scrollBars
  * - added constructor which takes behaviour
  */
-public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewBehavior<T>, ListCell<T>> {
+public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
 
  //--------------- hacking access   
     protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
@@ -96,7 +96,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewB
      * @param listView
      */
     public ListViewSkin(final ListView<T> listView) {
-        this(listView, new ListViewBehavior<T>(listView));
+        this(listView, new ListViewABehavior<T>(listView));
 
     }
     
@@ -106,7 +106,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewB
      * @param listViewBehavior
      */
     public ListViewSkin(ListView<T> listView,
-            ListViewBehavior<T> listViewBehavior) {
+            ListViewABehavior<T> listViewBehavior) {
         super(listView, listViewBehavior);
         updateListViewItems();
         

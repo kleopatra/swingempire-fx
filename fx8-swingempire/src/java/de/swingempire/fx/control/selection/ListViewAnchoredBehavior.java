@@ -10,9 +10,12 @@ import javafx.scene.control.ListView;
  * NOTE: List/CellBehaviour fiddles with Anchor on mousePressed!!
  * Need to adjust as well...
  * 
+ * No longer used: trying to extend core ListViewBehaviour didn't work (too much
+ * privacy) - so c&p'd and changed the copy.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ListViewAnchoredBehavior<T> extends ListViewBehavior<T> {
+public class ListViewAnchoredBehavior<T> extends ListViewABehavior<T> {
 
     /**
      * @param control

@@ -9,6 +9,9 @@ import javafx.scene.control.ListView;
 /**
  * Playing with anchoredselectionModel.
  * 
+ * Installs a ListViewABehaviour that relies on anchor handling by the
+ * selectionModel.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ListViewAnchoredSkin<T> extends ListViewSkin<T> {
@@ -17,7 +20,7 @@ public class ListViewAnchoredSkin<T> extends ListViewSkin<T> {
      * @param listView
      */
     public ListViewAnchoredSkin(ListView<T> listView) {
-        super(listView, new ListViewAnchoredBehavior<>(listView));
+        super(listView, new ListViewABehavior<>(listView));
     }
 
     
