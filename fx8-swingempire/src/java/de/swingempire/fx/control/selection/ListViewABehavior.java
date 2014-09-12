@@ -37,6 +37,7 @@ import com.sun.javafx.PlatformUtil;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.behavior.KeyBinding;
 import com.sun.javafx.scene.control.behavior.ListCellBehavior;
+import com.sun.javafx.scene.control.behavior.ListViewBehavior;
 import com.sun.javafx.scene.control.behavior.OrientedKeyBinding;
 import com.sun.javafx.scene.control.behavior.TwoLevelFocusListBehavior;
 import com.sun.javafx.scene.control.skin.Utils;
@@ -54,6 +55,7 @@ import static javafx.scene.input.KeyCode.*;
  * NOTE: List/CellBehaviour fiddles with Anchor on mousePressed!!
  * Need to adjust as well...
  * 
+ * 
  * Changes:
  * - extracted listener install in overridable method installListener to
  *   allow subclasses to do their own, but doing nothing here
@@ -69,7 +71,13 @@ import static javafx.scene.input.KeyCode.*;
  *   and not supported in win explorer)
  *   the difference between ctrl-shift-navigation and shift-navigation is
  *   (according to ux) that only the latter unselects all outside the range 
- * - discontinous keybinding only defined for vertical?     
+ * - discontinous keybinding only defined for vertical?    
+ * 
+ * Refactoring:
+ * - extracted methods getFocusModel, getSelectionModel
+ * - extracted isNavigable
+ * - extracted calls to Runnable/Callable hooks (centralized null checks)
+ *  
  */
 public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
 
@@ -268,6 +276,9 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         if (Utils.isTwoLevelFocus()) {
             tlFocus = new TwoLevelFocusListBehavior(control); // needs to be last.
         }
+        
+        ListCellBehavior c;
+        ListViewBehavior lb;
     }
 
     /**
@@ -278,36 +289,14 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * @param control
      */
     protected void installListeners(ListView<T> control) {
-//        control.itemsProperty().addListener(weakItemsListener);
-//        if (control.getItems() != null) {
-//            control.getItems().addListener(weakItemsListListener);
-//        }
-//        
-//        // Fix for RT-16565
-//        getControl().selectionModelProperty().addListener(weakSelectionModelListener);
-//        if (control.getSelectionModel() != null) {
-//            control.getSelectionModel().getSelectedIndices().addListener(weakSelectedIndicesListener);
-//        }
-//
     }
     
     @Override public void dispose() {
-        ListCellBehavior.removeAnchor(getControl());
+//        ListCellBehavior.removeAnchor(getControl());
         if (tlFocus != null) tlFocus.dispose();
         super.dispose();
     }
 
-//    private void setAnchor(int anchor) {
-//        ListCellBehavior.setAnchor(getControl(), anchor < 0 ? null : anchor);
-//    }
-//    
-//    private int getAnchor() {
-//        return ListCellBehavior.getAnchor(getControl(), getControl().getFocusModel().getFocusedIndex());
-//    }
-//    
-//    private boolean hasAnchor() {
-//        return ListCellBehavior.hasAnchor(getControl());
-//    }
 
     @Override public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
@@ -326,99 +315,98 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         return getControl().getItems() == null ? 0 : getControl().getItems().size();
     }
 
+    private boolean hasSelectionModel() {
+        return getSelectionModel() != null;
+    }
+    
+    private boolean hasFocusModel() {
+        return getFocusModel() != null;
+    }
+    
+    // PENDING JW: translated German "navigierbar" in http://www.dict.cc/englisch-deutsch/navigable.html
+    // leo doesn't know it
+    private boolean isNavigable() {
+        return hasSelectionModel() && hasFocusModel();
+    }
+
+    protected MultipleSelectionModel<T> getSelectionModel() {
+        return getControl().getSelectionModel();
+    }
+
+    protected FocusModel<T> getFocusModel() {
+        return getControl().getFocusModel();
+    }
+
+    protected int callIt(Callback<Boolean, Integer> callback, boolean param) {
+        return callback != null ? callback.call(param) : - 1;
+    }
+
+    protected void runIt(Runnable r) {
+        if (r != null) r.run();
+    }
+
+    // PENDING JW: missing null check in core
+    // doesn't show because the binding is ineffective on a German keyboard
     private void clearSelection() {
-        getControl().getSelectionModel().clearSelection();
+        if (hasSelectionModel())
+            getSelectionModel().clearSelection();
     }
 
+    // PENDING JW: core calls hook before checking for model
+    // do same here
     private void scrollPageUp() {
-        int newSelectedIndex = -1;
-        if (onScrollPageUp != null) {
-            newSelectedIndex = onScrollPageUp.call(false);
-        }
-        if (newSelectedIndex == -1) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        sm.clearAndSelect(newSelectedIndex);
+        int newSelectedIndex = callIt(onScrollPageUp, false);
+        if (newSelectedIndex == -1 || !hasSelectionModel()) return;
+        getSelectionModel().clearAndSelect(newSelectedIndex);
     }
 
+    // PENDING JW: core calls hook before checking for model
+    // do same here
     private void scrollPageDown() {
-        int newSelectedIndex = -1;
-        if (onScrollPageDown != null) {
-            newSelectedIndex = onScrollPageDown.call(false);
-        }
-        if (newSelectedIndex == -1) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        sm.clearAndSelect(newSelectedIndex);
+        int newSelectedIndex = callIt(onScrollPageDown, false);
+        if (newSelectedIndex == -1 || !hasSelectionModel()) return;
+        getSelectionModel().clearAndSelect(newSelectedIndex);
     }
     
     private void focusFirstRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        fm.focus(0);
-        
-        if (onMoveToFirstCell != null) onMoveToFirstCell.run();
+        if (!hasFocusModel()) return;
+        // PENDING JW: use focusFirst
+        getFocusModel().focus(0);
+
+        runIt(onMoveToFirstCell);
     }
-    
+
     private void focusLastRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        fm.focus(getRowCount() - 1);
-        
-        if (onMoveToLastCell != null) onMoveToLastCell.run();
+        if (!hasFocusModel()) return;
+        // PENDING JW: use focusLast
+        getFocusModel().focus(getRowCount() - 1);
+        runIt(onMoveToLastCell);
     }
 
     private void focusPreviousRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        fm.focusPrevious();
-// CHANGED JW        
-//        if (! isShortcutDown || getAnchor() == -1) {
-//            setAnchor(fm.getFocusedIndex());
-//        }
-//        
-        if (onFocusPreviousRow != null) onFocusPreviousRow.run();
+        if (!isNavigable()) return;
+        getFocusModel().focusPrevious();
+        runIt(onFocusPreviousRow);
     }
 
     private void focusNextRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        int focusFromSelection = sm.getSelectedIndex();
-        int focus = fm.getFocusedIndex();
-        fm.focusNext();
-        
-// CHANGED JW        
-//        if (! isShortcutDown || getAnchor() == -1) {
-//            setAnchor(fm.getFocusedIndex());
-//        }
-//        
-        if (onFocusNextRow != null) onFocusNextRow.run();
+        if (!isNavigable()) return;
+        getFocusModel().focusNext();
+        runIt(onFocusNextRow);
     }
     
+    // PENDING JW: logic differs from scrollPageUp
+    // here we handle a -1 from hook, in scroll we dont
     private void focusPageUp() {
-        int newFocusIndex = onScrollPageUp.call(true);
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        fm.focus(newFocusIndex);
+        int newFocusIndex = callIt(onScrollPageUp, true); //.call(true);
+        if (!hasFocusModel()) return;
+        getFocusModel().focus(newFocusIndex);
     }
     
     private void focusPageDown() {
-        int newFocusIndex = onScrollPageDown.call(true);
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        fm.focus(newFocusIndex);
+        int newFocusIndex = callIt(onScrollPageDown, true); //.call(true);
+        if (!hasFocusModel()) return;
+        getFocusModel().focus(newFocusIndex);
     }
 
     /**
@@ -426,245 +414,95 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * between anchor and focus. (if focus is not selected)
      */
     private void alsoSelectPreviousRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW: 
+        if (!isNavigable()) return;
+        // PENDING JW: cleanup duplication
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int oldFocus = fm.getFocusedIndex();
-        int newFocus = oldFocus -1;
-        // anyway, range selection should handle all use cases
-        // was a boundary issue: 
-        // for prev, a true ascending decides about boundary
-        // for next, ascending includes equality
-//        boolean ascending = am.getAnchorIndex() < oldFocus;
-        // PENDING JW: check against newFocus?
-        // for symmetry? as in selectAllPageUP
+        int newFocus = getFocusModel().getFocusedIndex() -1;
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
         // triggers notification on too many change indices 
         // here we need a clearAndSelectRange on the model
         // which could optimimize
         sm.clearSelection();
-        sm.selectRange(anchor, boundary);
+        sm.selectRange(am.getAnchorIndex(), boundary);
         
-        // PENDING JW: collapse was not correct
-//        if (sm.isSelected(oldFocus)) { // expand or collapse selection
-//            if (sm.isSelected(newFocus)) {
-//                sm.clearSelection(oldFocus); // collapse
-//                fm.focus(newFocus);
-//            } else {
-//                sm.selectPrevious();
-//            }
-//        } else {
-//        int anchor = am.getAnchorIndex();
-//        sm.clearSelection();
-        // select range between anchor and new focus inclusive
-//        sm.selectRange(anchor, boundary);
-//        }
-// CHANGED JW   commented all old     
-//        if (isShiftDown && getAnchor() != -1) {
-//            int newRow = fm.getFocusedIndex() - 1;
-//            if (newRow < 0) return;
-//
-//            int anchor = getAnchor();
-//            
-//            if (! hasAnchor()) {
-//                setAnchor(fm.getFocusedIndex());
-//            }
-//
-//            if (sm.getSelectedIndices().size() > 1) {
-//                clearSelectionOutsideRange(anchor, newRow);
-//            }
-//
-//            if (anchor > newRow) {
-//                sm.selectRange(anchor, newRow - 1);
-//            } else {
-//                sm.selectRange(anchor, newRow + 1);
-//            }
-//        } else {
-//            sm.selectPrevious();
-//        }
-
-        onSelectPreviousRow.run();
+        runIt(onSelectPreviousRow); //.run();
     }
 
     private void alsoSelectNextRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW see code comment in alsoFocusPrevious
+        if (!isNavigable()) return;
+        // PENDING JW: cleanup duplication
+        int newFocus = getFocusModel().getFocusedIndex() + 1;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int oldFocus = fm.getFocusedIndex();
-        int newFocus = oldFocus + 1;
-        // PENDING JW: check against newFocus?
-        // was ascending = am.getAnchorIndex() <= oldFocus
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
         sm.clearSelection();
-        sm.selectRange(anchor, boundary);
+        sm.selectRange(am.getAnchorIndex(), boundary);
         
-//        if (sm.isSelected(oldFocus)) { // expand or collapse
-//            if (sm.isSelected(newFocus)) {
-//                sm.clearSelection(oldFocus); // collapse
-//                fm.focus(newFocus);
-//            } else {
-//                sm.selectNext();
-//            }   
-//            
-//        } else {
-//        int anchor = am.getAnchorIndex();
-//        sm.clearSelection();
-//        sm.selectRange(anchor, boundary);
-//        }
- // CHANGED JW comment all old       
-//        if (isShiftDown && getAnchor() != -1) {
-//            int newRow = fm.getFocusedIndex() + 1;
-//            int anchor = getAnchor();
-//            
-//            if (! hasAnchor()) {
-//                setAnchor(fm.getFocusedIndex());
-//            } 
-//
-//            if (sm.getSelectedIndices().size() > 1) {
-//                clearSelectionOutsideRange(anchor, newRow);
-//            }
-//
-//            if (anchor > newRow) {
-//                sm.selectRange(anchor, newRow - 1);
-//            } else {
-//                sm.selectRange(anchor, newRow + 1);
-//            }
-//        } else {
-//            sm.selectNext();
-//        }
-        
-        onSelectNextRow.run();
+        runIt(onSelectNextRow); //.run();
     }
     
-    private void clearSelectionOutsideRange(int start, int end) {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        int min = Math.min(start, end);
-        int max = Math.max(start, end);
-        
-        List<Integer> indices = new ArrayList<>(sm.getSelectedIndices());
-        
-        selectionChanging = true;
-        for (int i = 0; i < indices.size(); i++) {
-            int index = indices.get(i);
-            if (index < min || index >= max) {
-                sm.clearSelection(index);
-            }
-        }
-        selectionChanging = false;
-    }
-
     private void selectPreviousRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
-        int focusIndex = fm.getFocusedIndex();
+        if (!isNavigable()) return;
+        int focusIndex = getFocusModel().getFocusedIndex();
+        // PENDING JW: selectionModel is doc'ed to ignore off-range index
+        // so don't need to check here?
         if (focusIndex <= 0) {
             return;
         }
-// CHANGED JW: commented old
-//        setAnchor(focusIndex - 1);
-        getControl().getSelectionModel().clearAndSelect(focusIndex - 1);
-        onSelectPreviousRow.run();
+        getSelectionModel().clearAndSelect(focusIndex - 1);
+        runIt(onSelectPreviousRow); //.run();
     }
 
     private void selectNextRow() {
-        ListView<T> listView = getControl();
-        FocusModel<T> fm = listView.getFocusModel();
-        if (fm == null) return;
-        
-        int focusIndex = fm.getFocusedIndex();
+        if (!isNavigable()) return;
+        int focusIndex = getFocusModel().getFocusedIndex();
+        // PENDING JW: selectionModel is doc'ed to ignore off-range index
+        // so don't need to check here?
         if (focusIndex == getRowCount() - 1) {
             return;
         }
-        
-        MultipleSelectionModel<T> sm = listView.getSelectionModel();
-        if (sm == null) return;
-        
-     // CHANGED JW: commented old
-//        setAnchor(focusIndex + 1);
-        sm.clearAndSelect(focusIndex + 1);
-        if (onSelectNextRow != null) onSelectNextRow.run();
+        getSelectionModel().clearAndSelect(focusIndex + 1);
+        runIt(onSelectNextRow); //.run();
     }
 
     private void selectFirstRow() {
+        if (!hasSelectionModel()) return;
         // PENDING JW: why check for size here but not in selectLastRow?
         if (getRowCount() > 0) {
-            getControl().getSelectionModel().clearAndSelect(0);
-            if (onMoveToFirstCell != null) onMoveToFirstCell.run();
+            // PENDING JW: use selectFirst (with clearSelection before)
+            // or enhance api
+            getSelectionModel().clearAndSelect(0);
+            runIt(onMoveToFirstCell);
         }
     }
 
     private void selectLastRow() {
-        getControl().getSelectionModel().clearAndSelect(getRowCount() - 1);
-        if (onMoveToLastCell != null) onMoveToLastCell.run();
+        if (!hasSelectionModel()) return;
+        getSelectionModel().clearAndSelect(getRowCount() - 1);
+        runIt(onMoveToLastCell); //.run();
     }
     
     /**
      * re-implement: same logic as alsoSelectNext/Previous
      * except that the boundary is returned by onScrollPageUp
+     * 
+     * NOTE JW: the fix for RT-34407 mentioned in the old method 
+     * is the adjust for ascending or not
      */
     private void selectAllPageUp() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW: 
+        if (!isNavigable()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-//        int oldFocus = fm.getFocusedIndex();
-        int newFocus = onScrollPageUp.call(false);
-        // anyway, range selection should handle all use cases
-        // was a boundary issue: 
-        // for prev, a true ascending decides about boundary
-        // for next, ascending includes equality
+        // PENDING JW: return if -1, similar to scrollPageUp?
+        int newFocus = callIt(onScrollPageUp, false); //.call(false);
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
         int anchor = am.getAnchorIndex();
         sm.clearSelection();
         sm.selectRange(anchor, boundary);
-        
-    }
-    private void selectAllPageUpOld() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
-        int leadIndex = fm.getFocusedIndex();
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            leadIndex = getAnchor() == -1 ? leadIndex : getAnchor();
-//            setAnchor(leadIndex);
-//        }
-        
-        int leadSelectedIndex = onScrollPageUp.call(false);
-
-        // fix for RT-34407
-        int adjust = leadIndex < leadSelectedIndex ? 1 : -1;
-
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        selectionChanging = true;
-        if (sm.getSelectionMode() == SelectionMode.SINGLE) {
-            sm.select(leadSelectedIndex);
-        } else {
-            sm.clearSelection();
-            sm.selectRange(leadIndex, leadSelectedIndex + adjust);
-        }
-        selectionChanging = false;
     }
     
     /**
@@ -672,111 +510,40 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * except that the boundary is returned by onScrollPageUp
      */
     private void selectAllPageDown() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW: 
+        if (!isNavigable()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-//        int oldFocus = fm.getFocusedIndex();
-        int newFocus = onScrollPageDown.call(false);
+        // PENDING JW: return if -1, similar to scrollPageDown?
+        int newFocus = callIt(onScrollPageDown, false); //.call(false);
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
         sm.clearSelection();
-        sm.selectRange(anchor, boundary);
+        sm.selectRange(am.getAnchorIndex(), boundary);
     }
 
-    private void selectAllPageDownOld() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        int leadIndex = fm.getFocusedIndex();
-     // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            leadIndex = getAnchor() == -1 ? leadIndex : getAnchor();
-//            setAnchor(leadIndex);
-//        }
-        
-        int leadSelectedIndex = onScrollPageDown.call(false);
 
-        // fix for RT-34407
-        int adjust = leadIndex < leadSelectedIndex ? 1 : -1;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-
-        selectionChanging = true;
-        if (sm.getSelectionMode() == SelectionMode.SINGLE) {
-            sm.select(leadSelectedIndex);
-        } else {
-            sm.clearSelection();
-            sm.selectRange(leadIndex, leadSelectedIndex + adjust);
-        }
-        selectionChanging = false;
-    }
-
-    /** PENDING JW: this implementation doesn't comply to ux
-     * shift-home/end is spec'ed to select all between anchor and first/last
-     * this here selects all between focus and first/last
-     * also: looks like wrong way round: range(0, something) when it should be
-     * (something, 0) - anchor must be unchanged (but behaviour ok)
-     * 
-     * needed to adjust, re-written (see xxOld for original)
+    /** 
      */ 
     private void selectAllToFirstRow() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
+        if (!hasSelectionModel()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         
         int anchor = ((AnchoredSelectionModel) sm).getAnchorIndex();
         sm.clearSelection();
         // range from anchor to 0: as the second boundary is non-inclusive ...
         sm.selectRange(anchor, -1);
-        if (onMoveToFirstCell != null) onMoveToFirstCell.run();
-    }
-    
-    private void selectAllToLastRow() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        int anchor = ((AnchoredSelectionModel) sm).getAnchorIndex();
-        sm.clearSelection();
-        // range from anchor to last: as the second boundary is non-inclusive ...
-        sm.selectRange(anchor, getRowCount());
-        if (onMoveToLastCell != null) onMoveToLastCell.run();
-        
-    }
-    
-    private void selectAllToFirstRowOld() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW: don't need care about anchor, handled by model
-        // TBD JW: not the standard behvaiour in win
-        int leadIndex = sm.getSelectedIndex();
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            leadIndex = getAnchor() == -1 ? sm.getSelectedIndex() : getAnchor();
-//        }
-
+        runIt(onMoveToFirstCell);
+        /*  Just for reference, commented the issue
         sm.clearSelection();
         // JW: incorrect usage - the last of range will be the focus
         // so fix for RT-18413 would be to switch arguments
         sm.selectRange(0, leadIndex + 1);
-        
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            setAnchor(leadIndex);
-//        }
-        
-        // RT-18413: Focus must go to first row
-        getControl().getFocusModel().focus(0);
-
-        if (onMoveToFirstCell != null) onMoveToFirstCell.run();
+        // this is the fix which acutally is a hack
+        getFocusModel().focus(0);
+         */
     }
-
     /**
-     * misbehaviour:
+     * misbehaviour in core (ListView):
      * 
      * - press END to select last 
      * - press (several) UP to move selection (== anchor)
@@ -788,33 +555,21 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * actual: 
      *    all tems between lead and last (inclusive) are selected
      */
-    private void selectAllToLastRowOld() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-
-        int leadIndex = sm.getSelectedIndex();
+    private void selectAllToLastRow() {
+        if (!hasSelectionModel()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         
-        // REPLACED JW: don't need care about anchor, handled by model
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            leadIndex = hasAnchor() ? sm.getSelectedIndex() : getAnchor();
-//        }
-        
+        int anchor = ((AnchoredSelectionModel) sm).getAnchorIndex();
         sm.clearSelection();
-        sm.selectRange(leadIndex, getRowCount());
+        // range from anchor to last: as the second boundary is non-inclusive ...
+        sm.selectRange(anchor, getRowCount());
+        runIt(onMoveToLastCell); //.run();
         
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            setAnchor(leadIndex);
-//        }
-
-        if (onMoveToLastCell != null) onMoveToLastCell.run();
     }
-
+    
     private void selectAll() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        sm.selectAll();
+        if (!hasSelectionModel()) return;
+        getSelectionModel().selectAll();
     }
     
     /**
@@ -836,35 +591,21 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * @param setAnchorToFocusIndex if true, anchors the focusedIndex
      */
     private void selectAllToFocus(boolean setAnchorToFocusIndex) {
+        if (!isNavigable()) return;
         // Fix for RT-31241
-        final ListView<T> listView = getControl();
-        if (listView.getEditingIndex() >= 0) return;
+        if (getControl().getEditingIndex() >= 0) return;
 
-        MultipleSelectionModel<T> sm = listView.getSelectionModel();
-        if (sm == null) return;
-
-        FocusModel<T> fm = listView.getFocusModel();
-        if (fm == null) return;
-        // REPLACED JW: 
+        MultipleSelectionModel<T> sm = getSelectionModel();
+        // PENDING JW: cleanup duplication
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int newFocus = fm.getFocusedIndex();
+        int newFocus = getFocusModel().getFocusedIndex();
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
         sm.clearSelection();
-        sm.selectRange(anchor, boundary);
+        sm.selectRange(am.getAnchorIndex(), boundary);
 
         if (setAnchorToFocusIndex) am.anchor();
         
-        // CHANGED JW: commented old
-//        int focusIndex = fm.getFocusedIndex();
-//        int anchor = getAnchor();
-//        
-//        sm.clearSelection();
-//        int startPos = anchor;
-//        int endPos = anchor > focusIndex ? focusIndex - 1 : focusIndex + 1;
-//        sm.selectRange(startPos, endPos);
-//        setAnchor(setAnchorToFocusIndex ? focusIndex : anchor);
     }
     
     private void cancelEdit() {
@@ -872,8 +613,9 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     }
 
     private void activate() {
-        int focusedIndex = getControl().getFocusModel().getFocusedIndex();
-        getControl().getSelectionModel().select(focusedIndex);
+        int focusedIndex = getFocusModel().getFocusedIndex();
+        getSelectionModel().select(focusedIndex);
+        // PENDING JW: really need anchor on editing index?
         // CHANGED JW: commented old
 //        setAnchor(focusedIndex);
 
@@ -884,90 +626,35 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     }
     
     private void toggleFocusOwnerSelection() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
+        if (!isNavigable()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
+        FocusModel<T> fm = getFocusModel();
 
         int focusedIndex = fm.getFocusedIndex();
-//        
-//        
-//        LOG.info("anchor/focus before toggle" + 
-//                ((AnchoredSelectionModel) sm).getAnchorIndex()+ "/"+fm.getFocusedIndex());
         if (sm.isSelected(focusedIndex)) {
             sm.clearSelection(focusedIndex);
             fm.focus(focusedIndex);
         } else {
             sm.select(focusedIndex);
         }
-//        LOG.info("anchor/focus after toggle" + 
-//          ((AnchoredSelectionModel) sm).getAnchorIndex()+ "/"+fm.getFocusedIndex());
         ((AnchoredSelectionModel) sm).anchor();
-        // CHANGED JW: commented old
-//      setAnchor(focusedIndex);
     }
     
     /**************************************************************************
      * Discontinuous Selection                         
-     *PENDING JW: not yet updated to anchoredModel                       *
+     * PENDING JW: not all yet updated to anchoredModel                       *
      *************************************************************************/
     
     
     private void discontinuousSelectPreviousRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW: 
+        if (!isNavigable()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int oldFocus = fm.getFocusedIndex();
-        int newFocus = oldFocus -1;
-        // anyway, range selection should handle all use cases
-        // was a boundary issue: 
-        // for prev, a true ascending decides about boundary
-        // for next, ascending includes equality
-//        boolean ascending = am.getAnchorIndex() < oldFocus;
-        // PENDING JW: check against newFocus?
-        // for symmetry? as in selectAllPageUP
+        int newFocus = getFocusModel().getFocusedIndex() -1;
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
-        // triggers notification on too many change indices 
-        // here we need a clearAndSelectRange on the model
-        // which could optimimize
-//        sm.clearSelection();
-        sm.selectRange(anchor, boundary);
-        
-
-    }
-    private void discontinuousSelectPreviousRowOld() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-
-        if (sm.getSelectionMode() != SelectionMode.MULTIPLE) {
-            selectPreviousRow();
-            return;
-        }
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        int focusIndex = fm.getFocusedIndex();
-        final int newFocusIndex = focusIndex - 1;
-        if (newFocusIndex < 0) return;
-
-        int startIndex = focusIndex;
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            startIndex = getAnchor() == -1 ? focusIndex : getAnchor();
-//        }
-
-        sm.selectRange(newFocusIndex, startIndex + 1);
-        fm.focus(newFocusIndex);
-
-        if (onFocusPreviousRow != null) onFocusPreviousRow.run();
+        sm.selectRange(am.getAnchorIndex(), boundary);
+        runIt(onFocusPreviousRow);
     }
     
     /**
@@ -978,102 +665,82 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * selection
      */
     private void discontinuousSelectNextRow() {
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        // REPLACED JW see code comment in alsoFocusPrevious
+        if (!isNavigable()) return;
+        MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int oldFocus = fm.getFocusedIndex();
-        int newFocus = oldFocus + 1;
-        // PENDING JW: check against newFocus?
-        // was ascending = am.getAnchorIndex() <= oldFocus
+        int newFocus = getFocusModel().getFocusedIndex() + 1;
         boolean ascending = am.getAnchorIndex() < newFocus;
         int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        int anchor = am.getAnchorIndex();
-//        sm.clearSelection();
-        sm.selectRange(anchor, boundary);
-
+        sm.selectRange(am.getAnchorIndex(), boundary);
+        runIt(onFocusNextRow);
     }
     
-    private void discontinuousSelectNextRowOld() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-
-        if (sm.getSelectionMode() != SelectionMode.MULTIPLE) {
-            selectNextRow();
-            return;
-        }
-        LOG.info("sanity ?");
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
-        int focusIndex = fm.getFocusedIndex();
-        final int newFocusIndex = focusIndex + 1;
-        if (newFocusIndex >= getRowCount()) return;
-
-        int startIndex = focusIndex;
-        // CHANGED JW: commented old
-//        if (isShiftDown) {
-//            startIndex = getAnchor() == -1 ? focusIndex : getAnchor();
-//        }
-//
-        sm.selectRange(startIndex, newFocusIndex + 1);
-        fm.focus(newFocusIndex);
-
-        if (onFocusNextRow != null) onFocusNextRow.run();
-    }
-    
+    // PENDING JW: didn't really touch the methods below
+    // shouldn't it be very similar to selectPageUp (except for not clearing)?
     private void discontinuousSelectPageUp() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
-        int leadIndex = fm.getFocusedIndex();
-        int leadSelectedIndex = onScrollPageUp.call(false);
-        sm.selectRange(leadIndex, leadSelectedIndex - 1);
+        if (!isNavigable()) return;
+        // PENDING JW: why no back-out if callback returns -1?
+        int leadSelectedIndex = callIt(onScrollPageUp, false); //.call(false);
+        // PENDING JW: shouldn't we go from anchor (instead of focus)
+        int leadIndex = getFocusModel().getFocusedIndex();
+        getSelectionModel().selectRange(leadIndex, leadSelectedIndex - 1);
     }
     
     private void discontinuousSelectPageDown() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-        
-        int leadIndex = fm.getFocusedIndex();
-        int leadSelectedIndex = onScrollPageDown.call(false);
-        sm.selectRange(leadIndex, leadSelectedIndex + 1);
+        if (!isNavigable()) return;
+        // PENDING JW: why no back-out if callback returns -1?
+        int leadSelectedIndex = callIt(onScrollPageDown, false); //.call(false);
+        // PENDING JW: shouldn't we go from anchor (instead of focus)
+        int leadIndex = getFocusModel().getFocusedIndex();
+        getSelectionModel().selectRange(leadIndex, leadSelectedIndex + 1);
     }
     
     private void discontinuousSelectAllToFirstRow() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-        if (sm == null) return;
-        
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
+        if (!isNavigable()) return;
+        FocusModel<T> fm = getFocusModel();
         int index = fm.getFocusedIndex();
-        sm.selectRange(0, index);
+        // PENDING JW: wrong way round again? new focus should be on 0
+        getSelectionModel().selectRange(0, index);
+        // if range is done correctly, we don't need to explicitly focus!
         fm.focus(0);
 
-        if (onMoveToFirstCell != null) onMoveToFirstCell.run();
+        runIt(onMoveToFirstCell);
     }
     
+    /**
+     * PENDING JW: probably same error as in selectAllToLast - extend from anchor, not
+     * focus?
+     */
     private void discontinuousSelectAllToLastRow() {
-        MultipleSelectionModel<T> sm = getControl().getSelectionModel();
+        if (!isNavigable()) return;
+        int index = getFocusModel().getFocusedIndex() + 1;
+        getSelectionModel().selectRange(index, getRowCount());
+
+        runIt(onMoveToLastCell);
+    }
+
+    /**
+     * Unused - keeping in case we want to be less aggressive than clearSelection
+     * @param start
+     * @param end
+     */
+    private void clearSelectionOutsideRange(int start, int end) {
+        MultipleSelectionModel<T> sm = getSelectionModel();
         if (sm == null) return;
         
-        FocusModel<T> fm = getControl().getFocusModel();
-        if (fm == null) return;
-
-        int index = fm.getFocusedIndex() + 1;
-        sm.selectRange(index, getRowCount());
-
-        if (onMoveToLastCell != null) onMoveToLastCell.run();
+        int min = Math.min(start, end);
+        int max = Math.max(start, end);
+        
+        List<Integer> indices = new ArrayList<>(sm.getSelectedIndices());
+        
+        selectionChanging = true;
+        for (int i = 0; i < indices.size(); i++) {
+            int index = indices.get(i);
+            if (index < min || index >= max) {
+                sm.clearSelection(index);
+            }
+        }
+        selectionChanging = false;
     }
 
     private static class ListViewKeyBinding extends OrientedKeyBinding {
@@ -1095,76 +762,5 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     private static final Logger LOG = Logger.getLogger(ListViewABehavior.class
             .getName());
 
-// CHANGED JW: listeners no longer needed, moved commented code out of the was    
-//  
-//  private final ListChangeListener<Integer> selectedIndicesListener = c -> {
-//      while (c.next()) {
-//          MultipleSelectionModel<T> sm = getControl().getSelectionModel();
-//
-//          // there are no selected items, so lets clear out the anchor
-////CHANGED JW            
-////          if (! selectionChanging) {
-////              if (sm.isEmpty()) {
-////                  setAnchor(-1);
-////              } else if (! sm.isSelected(getAnchor())) {
-////                  setAnchor(-1);
-////              }
-////          }
-////
-////          int addedSize = c.getAddedSize();
-////          if (addedSize > 0 && ! hasAnchor()) {
-////              List<? extends Integer> addedSubList = c.getAddedSubList();
-////              int index = addedSubList.get(addedSize - 1);
-////              setAnchor(index);
-////          }
-//      }
-//  };
-//  
-//  private final ListChangeListener<T> itemsListListener = c -> {
-//      while (c.next()) {
-////CHANGED JW            
-////          if (c.wasAdded() && c.getFrom() <= getAnchor()) {
-////              setAnchor(getAnchor() + c.getAddedSize());
-////          } else if (c.wasRemoved() && c.getFrom() <= getAnchor()) {
-////              setAnchor(getAnchor() - c.getRemovedSize());
-////          }
-//      }
-//  };
-//  
-//  private final ChangeListener<ObservableList<T>> itemsListener = new ChangeListener<ObservableList<T>>() {
-//      @Override
-//      public void changed(
-//              ObservableValue<? extends ObservableList<T>> observable,
-//              ObservableList<T> oldValue, ObservableList<T> newValue) {
-//          if (oldValue != null) {
-//               oldValue.removeListener(weakItemsListListener);
-//           } if (newValue != null) {
-//               newValue.addListener(weakItemsListListener);
-//           }
-//      }
-//  };
-//  
-//  private final ChangeListener<MultipleSelectionModel<T>> selectionModelListener = new ChangeListener<MultipleSelectionModel<T>>() {
-//      @Override public void changed(
-//                  ObservableValue<? extends MultipleSelectionModel<T>> observable, 
-//                  MultipleSelectionModel<T> oldValue, 
-//                  MultipleSelectionModel<T> newValue) {
-//          if (oldValue != null) {
-//              oldValue.getSelectedIndices().removeListener(weakSelectedIndicesListener);
-//          }
-//          if (newValue != null) {
-//              newValue.getSelectedIndices().addListener(weakSelectedIndicesListener);
-//          }
-//      }
-//  };
-//  
-//  private final WeakChangeListener<ObservableList<T>> weakItemsListener = 
-//          new WeakChangeListener<ObservableList<T>>(itemsListener);
-//  private final WeakListChangeListener<Integer> weakSelectedIndicesListener = 
-//          new WeakListChangeListener<Integer>(selectedIndicesListener);
-//  private final WeakListChangeListener<T> weakItemsListListener = 
-//          new WeakListChangeListener<>(itemsListListener);
-//  private final WeakChangeListener<MultipleSelectionModel<T>> weakSelectionModelListener = 
-//          new WeakChangeListener<MultipleSelectionModel<T>>(selectionModelListener);
 
 }
