@@ -311,21 +311,21 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         }
     }
     
-    private int getRowCount() {
+    protected int getRowCount() {
         return getControl().getItems() == null ? 0 : getControl().getItems().size();
     }
 
-    private boolean hasSelectionModel() {
+    protected boolean hasSelectionModel() {
         return getSelectionModel() != null;
     }
     
-    private boolean hasFocusModel() {
+    protected boolean hasFocusModel() {
         return getFocusModel() != null;
     }
     
     // PENDING JW: translated German "navigierbar" in http://www.dict.cc/englisch-deutsch/navigable.html
     // leo doesn't know it
-    private boolean isNavigable() {
+    protected boolean isNavigable() {
         return hasSelectionModel() && hasFocusModel();
     }
 
@@ -396,7 +396,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     }
     
     // PENDING JW: logic differs from scrollPageUp
-    // here we handle a -1 from hook, in scroll we dont
+    // here we don't handle a -1 from hook, in scroll we do?
     private void focusPageUp() {
         int newFocusIndex = callIt(onScrollPageUp, true); //.call(true);
         if (!hasFocusModel()) return;
@@ -416,22 +416,25 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     private void alsoSelectPreviousRow() {
         if (!isNavigable()) return;
         int newFocus = getFocusModel().getFocusedIndex() -1;
-        selectTo(newFocus);
+        selectTo(newFocus, true);
         
         runIt(onSelectPreviousRow); //.run();
     }
 
     /**
      * Selects range between anchor and newFocus, inclusive. Anchor is
-     * unchanged, focus on newFocus, all selections external to the 
-     * range are cleared.
+     * unchanged, focus on newFocus.  Selections external to the 
+     * range are cleared, if clearOutside is true.
      * 
-     * Note: implemented to simply call clearSelection - might need to 
+     * PENDING JW: implemented to simply call clearSelection - might need to 
      * use clearOutside or enhanced api on model (clearAndSelectRange)
-     * to keep notifications l
-     * @param newFocus
+     * to keep notifications low
+     * 
+     * @param newFocus the new index to
+     * @param clearOutside flag to control selections outside of the range -
+     *   if true, they are cleared, otherwise kept as are
      */
-    protected void selectTo(int newFocus) {
+    protected void selectTo(int newFocus, boolean clearOutside) {
         MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
         // NOTE JW: DON't inline! We clear the selection thus removing the anchor
@@ -441,14 +444,16 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         // triggers notification on too many change indices 
         // here we need a clearAndSelectRange on the model
         // which could optimimize
-        sm.clearSelection();
+        if (clearOutside) {
+            sm.clearSelection();
+        }
         sm.selectRange(anchor, boundary);
     }
 
     private void alsoSelectNextRow() {
         if (!isNavigable()) return;
         int newFocus = getFocusModel().getFocusedIndex() + 1;
-        selectTo(newFocus);
+        selectTo(newFocus, true);
         runIt(onSelectNextRow); //.run();
     }
     
@@ -504,7 +509,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         if (!isNavigable()) return;
         // PENDING JW: return if -1, similar to scrollPageUp?
         int newFocus = callIt(onScrollPageUp, false); //.call(false);
-        selectTo(newFocus);
+        selectTo(newFocus, true);
     }
     
     /**
@@ -515,7 +520,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         if (!isNavigable()) return;
         // PENDING JW: return if -1, similar to scrollPageDown?
         int newFocus = callIt(onScrollPageDown, false); //.call(false);
-        selectTo(newFocus);
+        selectTo(newFocus, true);
     }
 
 
@@ -530,13 +535,14 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         // range from anchor to 0: as the second boundary is non-inclusive ...
         sm.selectRange(anchor, -1);
         runIt(onMoveToFirstCell);
-        /*  Just for reference, commented the issue
-        sm.clearSelection();
-        // JW: incorrect usage - the last of range will be the focus
-        // so fix for RT-18413 would be to switch arguments
-        sm.selectRange(0, leadIndex + 1);
-        // this is the fix which acutally is a hack
-        getFocusModel().focus(0);
+        /*  
+            Just for reference, commented the issue
+            sm.clearSelection();
+            // JW: incorrect usage - the last of range will be the focus
+            // so fix for RT-18413 would be to switch arguments
+            sm.selectRange(0, leadIndex + 1);
+            // this is the fix which acutally is a hack
+            getFocusModel().focus(0);
          */
     }
     /**
@@ -592,7 +598,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         // Fix for RT-31241
         if (getControl().getEditingIndex() >= 0) return;
         int newFocus = getFocusModel().getFocusedIndex();
-        selectTo(newFocus);
+        selectTo(newFocus, true);
         AnchoredSelectionModel am = (AnchoredSelectionModel) getSelectionModel();
         if (setAnchorToFocusIndex) am.anchor();
         
@@ -639,12 +645,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     private void discontinuousSelectPreviousRow() {
         if (!isNavigable()) return;
         int newFocus = getFocusModel().getFocusedIndex() -1;
-        MultipleSelectionModel<T> sm = getSelectionModel();
-        AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        int anchorIndex = am.getAnchorIndex();
-        boolean ascending = anchorIndex < newFocus;
-        int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        sm.selectRange(anchorIndex, boundary);
+        selectTo(newFocus, false);
         runIt(onFocusPreviousRow);
     }
     
@@ -657,13 +658,8 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      */
     private void discontinuousSelectNextRow() {
         if (!isNavigable()) return;
-        MultipleSelectionModel<T> sm = getSelectionModel();
-        AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
         int newFocus = getFocusModel().getFocusedIndex() + 1;
-        int anchor = am.getAnchorIndex();
-        boolean ascending = anchor < newFocus;
-        int boundary = ascending ? newFocus + 1 : newFocus - 1;
-        sm.selectRange(anchor, boundary);
+        selectTo(newFocus, false);
         runIt(onFocusNextRow);
     }
     
