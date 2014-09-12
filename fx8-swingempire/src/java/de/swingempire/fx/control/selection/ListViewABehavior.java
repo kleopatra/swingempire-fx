@@ -14,12 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.beans.value.WeakChangeListener;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.WeakListChangeListener;
 import javafx.event.EventType;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
@@ -27,7 +21,6 @@ import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -45,18 +38,20 @@ import com.sun.javafx.scene.control.skin.Utils;
 import static javafx.scene.input.KeyCode.*;
 
 /**
+ * 
  * Copy from 8u20 and changed to rely on selectionModel to cope with anchor. 
  * The driving force is to 
- * replace anchor handling here by anchor handling in selectionModel.
+ * replace anchor handling here by anchor handling in selectionModel. See
+ * https://javafx-jira.kenai.com/browse/RT-38509
  * 
  * Note: at first tried to extend core ListViewBehaviour but didn't work (too much
  * privacy) - so c&p'd and changed the copy.
  * 
  * NOTE: List/CellBehaviour fiddles with Anchor on mousePressed!!
- * Need to adjust as well...
+ * Need to adjust as well? But then, we dont care as we are not listening. 
  * 
  * 
- * Changes:
+ * Changes (incomplete probably):
  * - extracted listener install in overridable method installListener to
  *   allow subclasses to do their own, but doing nothing here
  * - commented all methods xxAnchor 
@@ -67,17 +62,15 @@ import static javafx.scene.input.KeyCode.*;
  * - alsoSelectNext/Previous now always clears the selection and selects
  *   a range: consequence are more notifications than before
  *   see code comment in alsoSelectPrevious
- * - discontinous modes not implemented (but then, not working in core as well,
- *   and not supported in win explorer)
+ * - discontinous modes not yet fully implemented (but then, code looks fishy in core)
  *   the difference between ctrl-shift-navigation and shift-navigation is
  *   (according to ux) that only the latter unselects all outside the range 
- * - discontinous keybinding only defined for vertical?    
  * 
  * Refactoring:
  * - extracted methods getFocusModel, getSelectionModel
  * - extracted isNavigable
  * - extracted calls to Runnable/Callable hooks (centralized null checks)
- *  
+ * - extracted the actual extend into <code>selectTo(newIndex, clear)</code> 
  */
 public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
 
@@ -233,6 +226,8 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         // RT-12751: we want to keep an eye on the user holding down the shift key, 
         // so that we know when they enter/leave multiple selection mode. This
         // changes what happens when certain key combinations are pressed.
+        // PENDING JW: no longer used - didn't see a difference with/-out
+        // 
         isShiftDown = e.getEventType() == KeyEvent.KEY_PRESSED && e.isShiftDown();
         isShortcutDown = e.getEventType() == KeyEvent.KEY_PRESSED && e.isShortcutDown();
 
@@ -264,6 +259,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     public void setOnMoveToFirstCell(Runnable r) { onMoveToFirstCell = r; }
     public void setOnMoveToLastCell(Runnable r) { onMoveToLastCell = r; }
     
+    // no longer used, we are not listening to selection changes
     private boolean selectionChanging = false;
     
     private TwoLevelFocusListBehavior tlFocus;
@@ -298,6 +294,10 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     }
 
 
+    /**
+     * PENDING JW: removed the anchor handling here, should all be done by the model now.
+     * untested so far.
+     */
     @Override public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
 // CHANGED JW: commented anchor setting        
@@ -309,40 +309,6 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         if (! getControl().isFocused() && getControl().isFocusTraversable()) {
             getControl().requestFocus();
         }
-    }
-    
-    protected int getRowCount() {
-        return getControl().getItems() == null ? 0 : getControl().getItems().size();
-    }
-
-    protected boolean hasSelectionModel() {
-        return getSelectionModel() != null;
-    }
-    
-    protected boolean hasFocusModel() {
-        return getFocusModel() != null;
-    }
-    
-    // PENDING JW: translated German "navigierbar" in http://www.dict.cc/englisch-deutsch/navigable.html
-    // leo doesn't know it
-    protected boolean isNavigable() {
-        return hasSelectionModel() && hasFocusModel();
-    }
-
-    protected MultipleSelectionModel<T> getSelectionModel() {
-        return getControl().getSelectionModel();
-    }
-
-    protected FocusModel<T> getFocusModel() {
-        return getControl().getFocusModel();
-    }
-
-    protected int callIt(Callback<Boolean, Integer> callback, boolean param) {
-        return callback != null ? callback.call(param) : - 1;
-    }
-
-    protected void runIt(Runnable r) {
-        if (r != null) r.run();
     }
 
     // PENDING JW: missing null check in core
@@ -372,7 +338,6 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         if (!hasFocusModel()) return;
         // PENDING JW: use focusFirst
         getFocusModel().focus(0);
-
         runIt(onMoveToFirstCell);
     }
 
@@ -384,12 +349,16 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     }
 
     private void focusPreviousRow() {
+        // PENDING JW: why navigable here but not in focusLast/First?
+        // copied from core
         if (!isNavigable()) return;
         getFocusModel().focusPrevious();
         runIt(onFocusPreviousRow);
     }
 
     private void focusNextRow() {
+        // PENDING JW: why navigable here but not in focusLast/First?
+        // copied from core
         if (!isNavigable()) return;
         getFocusModel().focusNext();
         runIt(onFocusNextRow);
@@ -437,10 +406,9 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     protected void selectTo(int newFocus, boolean clearOutside) {
         MultipleSelectionModel<T> sm = getSelectionModel();
         AnchoredSelectionModel am = (AnchoredSelectionModel) sm;
-        // NOTE JW: DON't inline! We clear the selection thus removing the anchor
+        // NOTE JW: DON't inline! We may clear the selection thus removing the anchor
         int anchor = am.getAnchorIndex();
-        boolean ascending = anchor < newFocus;
-        int boundary = ascending ? newFocus + 1 : newFocus - 1;
+        int boundary = anchor < newFocus ? newFocus + 1 : newFocus - 1;
         // triggers notification on too many change indices 
         // here we need a clearAndSelectRange on the model
         // which could optimimize
@@ -706,6 +674,75 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
 
         runIt(onMoveToLastCell);
     }
+
+  //--------------- Utility methods    
+    protected int getRowCount() {
+        return getControl().getItems() == null ? 0 : getControl().getItems().size();
+    }
+
+    /**
+     * Returns true if the control has a SelectionModel != null, false otherwise.
+     * @return
+     */
+    protected boolean hasSelectionModel() {
+        return getSelectionModel() != null;
+    }
+    
+    /**
+     * Returns true if the control has a FocusModel != null, false otherwise.
+     * @return
+     */
+    protected boolean hasFocusModel() {
+        return getFocusModel() != null;
+    }
+    
+    /**
+     * Returns true if the control has both a selection- and a focusModel, false
+     * otherwise.
+     * PENDING JW: translated German "navigierbar" in http://www.dict.cc/englisch-deutsch/navigable.html
+     * leo doesn't know it
+     * @return
+     */
+    protected boolean isNavigable() {
+        return hasSelectionModel() && hasFocusModel();
+    }
+
+    /**
+     * Convenience wrapper to access the control's selectionModel
+     * @return
+     */
+    protected MultipleSelectionModel<T> getSelectionModel() {
+        return getControl().getSelectionModel();
+    }
+
+    /**
+     * Convenience wrapper to access the control's focusModel.
+     * @return
+     */
+    protected FocusModel<T> getFocusModel() {
+        return getControl().getFocusModel();
+    }
+
+    /**
+     * Calls the callback and returns the value, if != null. Returns -1 otherwise.
+     *  
+     * @param callback the callback to call, may be null.
+     * @param param the parameter to pass into the callable
+     * 
+     * @return the return value of the callable if != null, -1 otherwise
+     */
+    protected int callIt(Callback<Boolean, Integer> callback, boolean param) {
+        return callback != null ? callback.call(param) : - 1;
+    }
+
+    /**
+     * Runs the given runnable if it is != null. Does nothing otherwise.
+     * @param r the runnable to run, may be null.
+     */
+    protected void runIt(Runnable r) {
+        if (r != null) r.run();
+    }
+
 
     /**
      * Unused - keeping in case we want to be less aggressive than clearSelection

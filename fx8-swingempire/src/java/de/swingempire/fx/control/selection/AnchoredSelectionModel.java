@@ -7,18 +7,44 @@ package de.swingempire.fx.control.selection;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 
 /**
+ * Prototype for SelectionModel which handles anchor.
+ * see https://javafx-jira.kenai.com/browse/RT-38509
+ * 
  * Technical interface (think of it as an extension of MultipleSelectionModel
- * which we can't do as its a class) 
+ * which we can't do as its a class and the concrete implementations subclass that) 
  * to support the notion of anchor in MultipleSelectionModel. Methods with
  * the same signature must comply to their contract plus update the anchor
  * as appropriate. We doc here only the anchor update.
  * 
- * 
  * Has-a read-only anchorProperty. 
  * All selection methods must define how they handle the anchor property.
  * 
+ * The anchor is internally updated on:
+ * - transition from empty to not-empty selection, the anchor is set to the
+ *   first selected index
+ * - transition from not-empty to empty selection, the anchor is cleared
+ *    
+ * Client code can synch the anchor to the focusedIndex via <code>anchor()</code>
+ * 
+ * Prototype, the meat
+ * - AnchoredListSelectionModel: c&p'd ListViewBitSelectionModel with additional 
+ *   anchor support 
+ * - ListViewABehavior: a c&p'ed and adapted ListViewBehaviour (8u20) that relies on
+ *   the services of the anchor handling model
+ *   
+ * Technicalities:  
+ * - ListViewAnchoredSkin: a ListViewSkin with ListViewABehavior, nothing else changed 
+ * - ListViewAnchored: a ListView with ListViewAnchoredSkin and using AnchoredListSelectionModel
+ *   nothing else changed
+ * - MultipleSelectionModelBase: c&p'ed to widen access to shiftSelection, nothing else
+ *   change     
+ * 
+ * Example/Test code
+ * - ListFocusedCell has core and anchored ListView side-by-side to compare behavior
+ * - ListAnchoredSingle/MultipleSelectionIssues tests model api
  * 
  * @author Jeanette Winzenburg, Berlin
+ * 
  */
 public interface AnchoredSelectionModel {
 
@@ -29,13 +55,13 @@ public interface AnchoredSelectionModel {
     int getAnchorIndex();
     
     /**
-     * 
+     * Returns the anchor property.
      * @return
      */
     ReadOnlyIntegerProperty anchorIndexProperty();
     
     /**
-     * Makes the current focused index the anchor.
+     * Makes the current focused index (lead, selectedIndex) the anchor.
      * 
      * Experimental: trying to get away with minimal api - all use-cases I have seen
      * so far require anchoring the current focus, allowing arbitrary indices to
@@ -64,12 +90,15 @@ public interface AnchoredSelectionModel {
     void clearAndSelect(int index);
     
     /**
-     * Keeps the anchor unchanged.
+     * Keeps the anchor unchanged if the selection is not empty after clearing
+     * the index. Clears the anchor if the selection is empty after clearing the
+     * index.
      * 
      * PENDING JW: what if index == anchor? Try: "Keeps the anchor unchanged"
      * Not so easy: then we have inconsistent behaviour between focus and anchor
      * 
-     * clearAt calls clearSelection if the index is the only selected index, which
+     * <code>super.clearSelection(index)</code> calls 
+     * <code>clearSelection()</code> if the index is the only selected index, which
      * in turn clears the focus. Anchor should behave the same. Then
      * client code can treat that very last clearing just the same way, with
      * respect to both anchor and focus. Maybe the question is if
@@ -77,7 +106,6 @@ public interface AnchoredSelectionModel {
      * have inconsistent state of an empty selection: if it were reached via
      * clearSelection(), anchor and focus are cleared. If reached (via multiple)
      * clearAt(int), anchor/focus would not be cleared ... 
-     * 
      * 
      * @param index
      * @see javafx.scene.control.SelectionModel#clearSelection(index)
