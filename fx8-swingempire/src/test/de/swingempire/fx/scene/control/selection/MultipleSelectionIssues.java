@@ -23,6 +23,7 @@ import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import fx.util.StageLoader;
 
@@ -46,7 +47,43 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     protected V view;
     protected boolean multipleMode;
 
+
+    /**
+     * Trying to dig into unexpected failure of alsoSelect.
+     * Plain model testing: here use selectPrevious
+     */
+    @Test
+    public void testAnchorAlsoSelectPreviousSingleMode() {
+        if (multipleMode) return;
+        // general case: anchor kept in behavior for core
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().selectPrevious();
+        assertEquals("anchor must be updated to previous in single mode", 
+                index - 1, getAnchorIndex());
+        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+    }
     
+    /**
+     * Trying to dig into unexpected failure of alsoSelect.
+     * Plain model testing: here use selectRange
+     */
+    @Test
+    public void testAnchorAlsoSelectPreviousByRangeSingleMode() {
+        if (multipleMode) return;
+        // general case: anchor kept in behavior for core
+        StageLoader loader = new StageLoader(getView());
+        int index = 2;
+        getSelectionModel().select(index);
+        int newFocus = getFocusIndex() - 1;
+        getSelectionModel().selectRange(index, newFocus -1);
+        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+        assertEquals("anchor must be updated to previous in single mode", 
+                newFocus, getAnchorIndex());
+    }
+    
+
     /**
      * Test how the anchor behaves when clearing individual selected items.
      * 
@@ -104,6 +141,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     
     /**
      * Here we select the range by repeated selectNext, anchor updating as expected.
+     * 
+     * Test what happens if selection at anchor is cleared. 
      */
     @Test
     public void testAnchorOnClearSelectionOfAnchorInRangeWithNext() {
@@ -117,7 +156,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         getSelectionModel().clearSelection(first);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
-        assertEquals("expected behavior when clearing anchor?", first, getAnchorIndex());
+        assertEquals("anchor must be unchanged on clearing its selection", first, getAnchorIndex());
     }
     
     /**
@@ -186,7 +225,12 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearAndSelect(index);
         // clear at
         getSelectionModel().clearSelection(index);
-        assertEquals("anchor must be unchanged on clearAt", index, getAnchorIndex());
+        assertEquals("anchor must be same as focus", getFocusIndex(), getAnchorIndex());
+        assertEquals("anchor must be cleared", -1, getAnchorIndex());
+        // wrong assumption: contract changed to make behaviour consistent between
+        // anchor and focus: if nothing else selected after clearAt, anchor is
+        // cleared just the same as focus
+//        assertEquals("anchor must be unchanged on clearAt", index, getAnchorIndex());
     }
     /**
      * focus == anchor == 0

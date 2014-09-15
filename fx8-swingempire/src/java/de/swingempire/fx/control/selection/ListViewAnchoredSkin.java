@@ -23,5 +23,4 @@ public class ListViewAnchoredSkin<T> extends ListViewSkin<T> {
         super(listView, new ListViewABehavior<>(listView));
     }
 
-    
 }

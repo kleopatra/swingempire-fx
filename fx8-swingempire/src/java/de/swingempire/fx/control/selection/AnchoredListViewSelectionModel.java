@@ -75,7 +75,6 @@ public class AnchoredListViewSelectionModel<T> extends
         }
     }
     
-    boolean calledFromClearAt = false;
     @Override
     public void clearSelection() {
         super.clearSelection();
@@ -89,9 +88,14 @@ public class AnchoredListViewSelectionModel<T> extends
     
     @Override
     public void selectIndices(int row, int... rows) {
+        boolean wasEmpty = isEmpty();
         boolean adjustAnchor = getSelectionMode() == SelectionMode.SINGLE || isEmpty();
         super.selectIndices(row, rows);
-        if (adjustAnchor) {
+        if (getSelectionMode() == SelectionMode.SINGLE) {
+            // in singleSelectionMode move anchor to focus
+            anchor();
+        } else if (wasEmpty) { // multipleSelection and wasEmpty
+            // transition from empty to not empty, anchor first selected
             setAnchorIndex(row);
         }
     }

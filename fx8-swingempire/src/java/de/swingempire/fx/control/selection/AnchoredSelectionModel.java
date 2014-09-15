@@ -21,7 +21,7 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
  * 
  * The anchor is internally updated on:
  * - transition from empty to not-empty selection, the anchor is set to the
- *   first selected index
+ *   first (temporal sense, not sequential) index that gets selected
  * - transition from not-empty to empty selection, the anchor is cleared
  *    
  * Client code can synch the anchor to the focusedIndex via <code>anchor()</code>
@@ -85,6 +85,7 @@ public interface AnchoredSelectionModel {
     /**
      * Updates the anchor to the selected index.
      * @param index
+     * 
      * @see javafx.scene.control.SelectionModel#clearAndSelect(index)
      */
     void clearAndSelect(int index);
@@ -94,12 +95,9 @@ public interface AnchoredSelectionModel {
      * the index. Clears the anchor if the selection is empty after clearing the
      * index.
      * 
-     * PENDING JW: what if index == anchor? Try: "Keeps the anchor unchanged"
-     * Not so easy: then we have inconsistent behaviour between focus and anchor
-     * 
-     * <code>super.clearSelection(index)</code> calls 
-     * <code>clearSelection()</code> if the index is the only selected index, which
-     * in turn clears the focus. Anchor should behave the same. Then
+     * <b>NOTE</b>: the above holds even if index == anchor? Keeping the anchor unchanged is
+     * consistent with how focus behaves when the selection of the focused index is cleared.
+     * Then
      * client code can treat that very last clearing just the same way, with
      * respect to both anchor and focus. Maybe the question is if
      * clearing the last selected _should_ clear anchor/focus? If not, we would
@@ -107,13 +105,23 @@ public interface AnchoredSelectionModel {
      * clearSelection(), anchor and focus are cleared. If reached (via multiple)
      * clearAt(int), anchor/focus would not be cleared ... 
      * 
+     * <b>Implementation note</b>: <code>MultipleSelectionModelBase 
+     * clearSelection(index)</code> calls 
+     * <code>clearSelection()</code> if the index is the only selected index, which
+     * in turn clears the focus. It's not specified though, implementations of 
+     * AnchchoredSelectionModel should take care that the anchor is cleared as
+     * well (or not, if focus isn't).
+     * 
+     * 
      * @param index
+     * 
      * @see javafx.scene.control.SelectionModel#clearSelection(index)
      */
     void clearSelection(int index);
     
     /**
      * Clears anchor.
+     * 
      * @see javafx.scene.control.SelectionModel#clearSelection()
      */
     void clearSelection();
@@ -140,6 +148,7 @@ public interface AnchoredSelectionModel {
      * 
      * @param start the start of the range, inclusive
      * @param end the end of the range, exclusive
+     * 
      * @see javafx.scene.control.MultipleSelectionModel#selectRange(int, int)
      */
     void selectRange(int start, int end);

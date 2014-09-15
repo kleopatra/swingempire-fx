@@ -2,7 +2,7 @@
  * Created on 04.09.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.control.selection;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;

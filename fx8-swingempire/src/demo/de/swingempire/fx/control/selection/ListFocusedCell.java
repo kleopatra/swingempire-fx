@@ -2,7 +2,7 @@
  * Created on 14.07.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.control.selection;
 
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -57,8 +57,23 @@ public class ListFocusedCell extends Application {
             list.getSelectionModel().clearSelection();
             anchored.getSelectionModel().clearSelection();
         });
+        Button clearAt = new Button("ClearAt SelectedIndex");
+        clearAt.setOnAction( ev -> {
+            int coreSelected = list.getSelectionModel().getSelectedIndex();
+            list.getSelectionModel().clearSelection(coreSelected);
+            
+            int anchorSelected = anchored.getSelectionModel().getSelectedIndex();
+            anchored.getSelectionModel().clearSelection(anchorSelected);
+        });
+        Button toggleMode = new Button("ToggleSelectionMode");
+        toggleMode.setOnAction(ev -> {
+            SelectionMode old = list.getSelectionModel().getSelectionMode();
+            SelectionMode newMode = old == SelectionMode.SINGLE ? SelectionMode.MULTIPLE : SelectionMode.SINGLE;
+            list.getSelectionModel().setSelectionMode(newMode);
+            anchored.getSelectionModel().setSelectionMode(newMode);
+        });
         
-        Pane buttonPane = new FlowPane(clear, add, remove);
+        Pane buttonPane = new FlowPane(clear, clearAt, toggleMode, add, remove);
         Pane listPane = new VBox(new Label(list.getClass().getSimpleName()), list);
         Pane anchoredPane = new VBox(new Label(anchored.getClass().getSimpleName()), anchored);
         Pane box = new HBox(listPane, anchoredPane);
