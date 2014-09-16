@@ -15,9 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import de.swingempire.fx.control.selection.AnchoredSelectionModel;
-import de.swingempire.fx.control.selection.ListViewAnchored;
-
 import static org.junit.Assert.*;
 
 /**

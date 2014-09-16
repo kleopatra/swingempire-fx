@@ -2,7 +2,7 @@
  * Created on 03.09.2014
  *
  */
-package de.swingempire.fx.control.selection;
+package de.swingempire.fx.scene.control.selection;
 
 /*
  * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.

@@ -2,7 +2,7 @@
  * Created on 14.07.2014
  *
  */
-package de.swingempire.fx.control.selection;
+package de.swingempire.fx.scene.control.selection;
 
 import java.util.Locale;
 import java.util.logging.Logger;

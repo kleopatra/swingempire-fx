@@ -2,13 +2,13 @@
  * Created on 03.09.2014
  *
  */
-package de.swingempire.fx.control.selection;
+package de.swingempire.fx.scene.control.selection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.swingempire.fx.control.selection.MultipleSelectionModelBase.ShiftParams;
+import de.swingempire.fx.scene.control.selection.MultipleSelectionModelBase.ShiftParams;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener;

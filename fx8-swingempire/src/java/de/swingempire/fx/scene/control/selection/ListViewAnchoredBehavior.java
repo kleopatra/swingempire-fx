@@ -2,7 +2,7 @@
  * Created on 03.09.2014
  *
  */
-package de.swingempire.fx.control.selection;
+package de.swingempire.fx.scene.control.selection;
 
 import javafx.scene.control.ListView;
 

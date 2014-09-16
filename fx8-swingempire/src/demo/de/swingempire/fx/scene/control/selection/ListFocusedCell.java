@@ -2,7 +2,7 @@
  * Created on 14.07.2014
  *
  */
-package de.swingempire.fx.control.selection;
+package de.swingempire.fx.scene.control.selection;
 
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -23,7 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.control.selection.ListViewAnchored;
+import de.swingempire.fx.scene.control.selection.ListViewAnchored;
 import fx.util.FXUtils;
 
 /**
