@@ -46,6 +46,7 @@ import com.sun.javafx.scene.control.skin.resources.ControlResources;
  * Changes: 
  * - hack access to flow's scrollBars
  * - added constructor which takes behaviour
+ * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
  */
 public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
 

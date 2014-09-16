@@ -559,7 +559,10 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * actual in win 7: all lines between old anchor and new focus selected
      * seems like there is no difference between shift-space and ctrl-shift-space
      * 
-     * @param setAnchorToFocusIndex if true, anchors the focusedIndex
+     * 
+     * 
+     * @param setAnchorToFocusIndex controls behaviour of anchor in multiple selection mode:
+     *   if true anchors the focusedIndex, if false leaves the anchor unchanged.
      */
     private void selectAllToFocus(boolean setAnchorToFocusIndex) {
         if (!isNavigable()) return;
@@ -569,7 +572,6 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         selectTo(newFocus, true);
         AnchoredSelectionModel am = (AnchoredSelectionModel) getSelectionModel();
         if (setAnchorToFocusIndex) am.anchor();
-        
     }
     
     private void cancelEdit() {

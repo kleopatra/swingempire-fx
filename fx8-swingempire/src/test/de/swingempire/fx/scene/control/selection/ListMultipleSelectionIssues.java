@@ -7,21 +7,21 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
-import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
-import static org.junit.Assert.assertEquals;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public class ListMultipleSelectionIssues extends MultipleSelectionIssues<ListView, MultipleSelectionModel> {
+public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
     public ListMultipleSelectionIssues(boolean multiple) {
         super(multiple);
@@ -40,18 +40,9 @@ public class ListMultipleSelectionIssues extends MultipleSelectionIssues<ListVie
         return table;
     }
 
-    @Override
-    protected  MultipleSelectionModel getSelectionModel() {
-        return getView().getSelectionModel();
-    }
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(ListMultipleSelectionIssues.class
         .getName());
-
-    @Override
-    protected FocusModel getFocusModel() {
-        return getView().getFocusModel();
-    }
 
 }
