@@ -86,13 +86,13 @@ public class ListFocusedCell extends Application {
 
     protected void configureList(ListView<Locale> list) {
         // add a listener to see loosing the column
-        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("focused old/new " + oldValue + " / " + newValue);
-        });
-        
-        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
-            LOG.info("selected old/new " + oldValue + " / " + newValue);
-        });
+//        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
+//            LOG.info("focused old/new " + oldValue + " / " + newValue);
+//        });
+//        
+//        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
+//            LOG.info("selected old/new " + oldValue + " / " + newValue);
+//        });
         // prevent selection on focusGained
 //        list.getProperties().put("selectOnFocusGain", Boolean.FALSE);
         list.setItems(data);

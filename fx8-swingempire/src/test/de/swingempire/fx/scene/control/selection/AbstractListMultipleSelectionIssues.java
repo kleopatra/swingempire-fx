@@ -18,17 +18,16 @@ import org.junit.runners.Parameterized;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
-import static org.junit.Assert.*;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
  * This adds bowel-testing of ListViewBehavior (instead of life behavior testing
  * with f.i. JemmyFx) - might break with any update version!
+ * 
+ * NOTE: some core behavior methods are not semantically separated, that is they depend 
+ * on a low-level key state flag. No key, no flag here, so they will fail ...  
  *  
  * @author Jeanette Winzenburg, Berlin
  */
