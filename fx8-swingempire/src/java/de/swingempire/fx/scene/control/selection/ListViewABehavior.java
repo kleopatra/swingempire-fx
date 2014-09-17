@@ -65,6 +65,7 @@ import static javafx.scene.input.KeyCode.*;
  * - discontinous modes not yet fully implemented (but then, code looks fishy in core)
  *   the difference between ctrl-shift-navigation and shift-navigation is
  *   (according to ux) that only the latter unselects all outside the range 
+ * - test corner cases (empty items, anchor/focus at first last)  
  * 
  * Refactoring:
  * - extracted methods getFocusModel, getSelectionModel
@@ -264,10 +265,14 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     
     private TwoLevelFocusListBehavior tlFocus;
 
+    /**
+     * Changed against core: no listeners to selectionModel nor items of ListView.
+     * 
+     * @param control
+     */
     public ListViewABehavior(ListView<T> control) {
         super(control, LIST_VIEW_BINDINGS);
         
-        installListeners(control);
         // Only add this if we're on an embedded platform that supports 5-button navigation
         if (Utils.isTwoLevelFocus()) {
             tlFocus = new TwoLevelFocusListBehavior(control); // needs to be last.
@@ -277,19 +282,13 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         ListViewBehavior lb;
     }
 
-    /**
-     * Allow subclasses to install their own listeners.
-     * Implemented to do nothing: the original has listeners for items/selectedIndices
-     * for the sole issue of keeping the anchor in sync. That's handled by the model now,
-     * so we don't need them.
-     * @param control
-     */
-    protected void installListeners(ListView<T> control) {
-    }
-    
-    @Override public void dispose() {
-//        ListCellBehavior.removeAnchor(getControl());
-        if (tlFocus != null) tlFocus.dispose();
+    @Override
+    public void dispose() {
+        // PENDING JW: keep this as cleanup (static anchoring still used in
+        // mouse event handler of CellBehavior
+        ListCellBehavior.removeAnchor(getControl());
+        if (tlFocus != null)
+            tlFocus.dispose();
         super.dispose();
     }
 
@@ -364,7 +363,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         runIt(onFocusNextRow);
     }
     
-    // PENDING JW: logic differs from scrollPageUp
+    // PENDING JW: logic differs from scrollPageUp/Down
     // here we don't handle a -1 from hook, in scroll we do?
     private void focusPageUp() {
         int newFocusIndex = callIt(onScrollPageUp, true); //.call(true);
@@ -372,6 +371,8 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         getFocusModel().focus(newFocusIndex);
     }
     
+    // PENDING JW: logic differs from scrollPageUp/Down
+    // here we don't handle a -1 from hook, in scroll we do?
     private void focusPageDown() {
         int newFocusIndex = callIt(onScrollPageDown, true); //.call(true);
         if (!hasFocusModel()) return;
@@ -496,12 +497,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      */ 
     private void selectAllToFirstRow() {
         if (!hasSelectionModel()) return;
-        MultipleSelectionModel<T> sm = getSelectionModel();
-        
-        int anchor = ((AnchoredSelectionModel) sm).getAnchorIndex();
-        sm.clearSelection();
-        // range from anchor to 0: as the second boundary is non-inclusive ...
-        sm.selectRange(anchor, -1);
+        selectTo(0, true);
         runIt(onMoveToFirstCell);
         /*  
             Just for reference, commented the issue
@@ -513,6 +509,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
             getFocusModel().focus(0);
          */
     }
+    
     /**
      * misbehaviour in core (ListView):
      * 
@@ -528,12 +525,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      */
     private void selectAllToLastRow() {
         if (!hasSelectionModel()) return;
-        MultipleSelectionModel<T> sm = getSelectionModel();
-        
-        int anchor = ((AnchoredSelectionModel) sm).getAnchorIndex();
-        sm.clearSelection();
-        // range from anchor to last: as the second boundary is non-inclusive ...
-        sm.selectRange(anchor, getRowCount());
+        selectTo(getRowCount() - 1, true);
         runIt(onMoveToLastCell); //.run();
         
     }
