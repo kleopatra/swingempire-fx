@@ -460,14 +460,32 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(index +1, getSelectionModel().getSelectedIndex());
     }
     
-// ---------------- sugar methods on empty selection
+//---------- navigational methods on empty selection
     
+    /**
+     * Intuitively expected behaviour in most implementations, but doc violation
+     */
     @Test
-    public void testSelectNextEmpty() {
+    public void testSelectNextOnEmpty() {
+        getSelectionModel().clearSelection();
         getSelectionModel().selectNext();
-        assertEquals("frist index must be selected", 0, getSelectionModel().getSelectedIndex());
-        assertEquals("first index must be focused", 0, getFocusIndex(0));
+        assertEquals("intuitve: next on empty is first", 0, 
+                getSelectionModel().getSelectedIndex());
+        fail("doc clash: _will only succeed if there is currently a lead/focused index_");
     }
+    
+    /**
+     * Intuitively expected behaviour in most implementations, but doc violation
+     */
+    @Test
+    public void testSelectPreviousOnEmpty() {
+        getSelectionModel().clearSelection();
+        getSelectionModel().selectPrevious();
+        assertEquals("intuitve: previous on empty is last", items.size() - 1, 
+                getSelectionModel().getSelectedIndex());
+        fail("doc clash: _will only succeed if there is currently a lead/focused index_");
+    }
+    
 //---------------------------- passing tests    
     
     @Test
@@ -560,6 +578,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 
     @Test
     public void testInitialAnchor() {
+        StageLoader loader = new StageLoader(getView());
         assertEquals(-1, getAnchorIndex(-1));
     }
     

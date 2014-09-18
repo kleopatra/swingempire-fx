@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -36,6 +37,11 @@ import static org.junit.Assert.*;
 public abstract class AbstractListMultipleSelectionIssues<V extends ListView> 
     extends MultipleSelectionIssues<V, MultipleSelectionModel>{
 
+    /**
+     * Hack for core ListViewBehavior incomplete separation of 
+     * low- vs. semantic level. Doesn't make a difference, though?.
+     */
+    protected boolean needsKey;
     /**
      * The stageLoader used to force skin creation. It's an artefact of fx
      * instantiation process, not meant to be really used.
@@ -83,8 +89,8 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         invokeBehavior(method);
         assertEquals(method + " selected index must be moved", focus, getSelectionModel().getSelectedIndex());
         assertEquals(method + " focus must same as selected index", focus, getFocusIndex());
-        assertEquals(method + " anchor must be same as focus", focus, getAnchorIndex());
         assertEquals(method + " selection size must be one", 1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(method + " anchor must be same as focus", focus, getAnchorIndex());
     }
 
     @Test
@@ -123,16 +129,17 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
             int focus, int size) throws Exception{
         initSkin();
         getSelectionModel().select(index);
+        invokeKey("isShiftDown");
         invokeBehavior(method);
         assertEquals(method + " selected index must be moved", focus, getSelectionModel().getSelectedIndex());
         assertEquals(method + " focus must be moved", focus, getFocusIndex());
         if (multipleMode) {
-            assertEquals(method + " anchor must be unchanged in multiple mode", index, getAnchorIndex());
             assertEquals(method + " selection size must be changed in multiple mode", size, getSelectionModel().getSelectedIndices().size());
+            assertEquals(method + " anchor must be unchanged in multiple mode", index, getAnchorIndex());
         } else {
+            assertEquals(method + " selection size must be 1 in single mode", 1, getSelectionModel().getSelectedIndices().size());
             assertEquals(method + " anchor must be updated to focus in single mode", 
                     focus, getAnchorIndex());
-            assertEquals(method + " selection size must be 1 in single mode", 1, getSelectionModel().getSelectedIndices().size());
         }
     }
 
@@ -253,6 +260,16 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         method.invoke(behavior, param);
     }
 
+    protected void invokeKey(String name) throws Exception {
+        if (!needsKey) return;
+        BehaviorSkinBase skin = (BehaviorSkinBase) getView().getSkin();
+        BehaviorBase behavior = skin.getBehavior();
+        Class<? extends BehaviorBase> behaviorClass = behavior.getClass();
+        Field field = behaviorClass.getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(behavior, true);
+    }
+    
     @Override
     protected MultipleSelectionModel getSelectionModel() {
         return getView().getSelectionModel();

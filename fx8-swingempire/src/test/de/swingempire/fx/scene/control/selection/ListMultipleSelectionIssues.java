@@ -41,6 +41,13 @@ public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIs
     }
 
     
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+//        needsKey = true;
+    }
+
+
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(ListMultipleSelectionIssues.class
         .getName());

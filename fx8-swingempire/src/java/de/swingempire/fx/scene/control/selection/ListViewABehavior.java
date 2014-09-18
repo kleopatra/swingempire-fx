@@ -394,13 +394,22 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     /**
      * Selects range between anchor and newFocus, inclusive. Anchor is
      * unchanged, focus on newFocus.  Selections external to the 
-     * range are cleared, if clearOutside is true.
+     * range are cleared, if clearOutside is true.<p>
      * 
      * PENDING JW: implemented to simply call clearSelection - might need to 
      * use clearOutside or enhanced api on model (clearAndSelectRange)
-     * to keep notifications low
+     * to keep notifications low. On the other hand, most core methods
+     * (exceptions: alsoSelectNext/PrevRow, and single mode)
+     * also simply call clearSelection before selecting the range. 
+     * A side-effect of clearSelection is that the later rangeSelection
+     * will update anchor/focus automatically: if we would call clearSelectionOutside
+     * of this class manually, we would have to take care of them ourselves. 
+     * Or let an enhanced selectionModel api do it.
      * 
-     * @param newFocus the new index to
+     * <p>
+     * PENDING JW: check effect of newFocus < 0 or >= itemCount 
+     * 
+     * @param newFocus the end of range to select to, inclusive
      * @param clearOutside flag to control selections outside of the range -
      *   if true, they are cleared, otherwise kept as are
      */

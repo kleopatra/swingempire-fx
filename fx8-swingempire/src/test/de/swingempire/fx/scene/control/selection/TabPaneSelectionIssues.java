@@ -21,6 +21,9 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 
 /**
+ * Testing TabPaneSelectionModel: incomplete, needs additional testing because it
+ * should enforce exactly one selected tab at any time.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -28,6 +31,20 @@ import static org.junit.Assert.*;
 public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelectionModel> {
 
     
+    /**
+     *  Overridden to do nothing and ignore: always one tab selected
+     */
+    @Override @Ignore
+    public void testSelectNextOnEmpty() {
+    }
+
+    /**
+     *  Overridden to do nothing and ignore: always one tab selected
+     */
+    @Override @Ignore
+    public void testSelectPreviousOnEmpty() {
+    }
+
     /**
      * Overridden for TabSelection specifics: initially first tab selected
      */
@@ -61,7 +78,7 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
     }
 
     /**
-     * Overridden to ignore (sorting not expected)
+     * Overridden to ignore (sorting not supported)
      */
     @Override @Ignore
     public void testSelectedIndexAfterSort() {
