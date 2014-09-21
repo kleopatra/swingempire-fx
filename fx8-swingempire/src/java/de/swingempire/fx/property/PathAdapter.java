@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.property;
 
-import java.util.List;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectPropertyBase;
@@ -54,14 +53,21 @@ import javafx.util.Callback;
  * a Property, just convenient to use the internal bind handling. How to
  * do it cleanly?
  * 
+ * PENDING JW: bidi-bind if the child is a property
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
+public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
 
     private T defaultValue;
     private Property<S> root;
     private Callback<S, ObservableValue<T>> childFactory;
     private ChangeListener<? super S> rootListener;
+    
+    private boolean checkedWritable;
+    private boolean writable;
+    // we can check for writable child only once root's value had been != null
+//    private boolean writableChild;
     
     /**
      * Instantiates a path with null root and the given factory for
@@ -71,7 +77,7 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
      * @param factory the factory for accesing the child property, must not
      *    be null
      */
-    public ObservablePathAdapter(Callback<S, ObservableValue<T>> factory) {
+    public PathAdapter(Callback<S, ObservableValue<T>> factory) {
         this(null, factory);
     }
     
@@ -81,11 +87,11 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
      *    be null
      * @param defaultValue value to set if root is null
      */
-    public ObservablePathAdapter(Callback<S, ObservableValue<T>> factory, T defaultValue) {
+    public PathAdapter(Callback<S, ObservableValue<T>> factory, T defaultValue) {
         this(null, factory, defaultValue);
     }
     
-    public ObservablePathAdapter(Property<S> root, Callback<S, ObservableValue<T>> factory) {
+    public PathAdapter(Property<S> root, Callback<S, ObservableValue<T>> factory) {
         this(root, factory, null);
     }
     
@@ -97,7 +103,7 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
      *    be null
      * @param defaultValue value to set if root is null
      */
-    public ObservablePathAdapter(Property<S> root, Callback<S, ObservableValue<T>> factory, T defaultValue) {
+    public PathAdapter(Property<S> root, Callback<S, ObservableValue<T>> factory, T defaultValue) {
         this.childFactory = Objects.requireNonNull(factory);
         setDefaultValue(defaultValue);
         setRoot(root);
@@ -122,10 +128,37 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
         installRoot();
     }
     /**
+     * Here getRoot is != null. We call this method from 
+     * installRoot, uninstallRoot and from the listener when root's
+     * value has changed. Current getRoot.getValue can be either old or new,
+     * so _don't_ access it directly!
+     * 
+     * uninstallRoot: oldValue == root.getValue, newValue == null
+     * installRoot: oldValue == null, newValue == root.getValue
+     * listener: oldValue == root.getValue before change, newValue = root.getValue
+     * 
      * @param oldValue
      * @param newValue
      */
     private void updateChild(S oldValue, S newValue) {
+        if (newValue == null && !checkedWritable) {
+            if (oldValue != null) throw new IllegalStateException("shouldn't be here: "
+                    + "not yet checked for writable, oldValue expected to be null but was: " + oldValue
+                    );
+            return; 
+        }
+        if (!checkedWritable) {
+            writable = checkWritableChild(newValue);
+        }
+        
+        if (writable) {
+            updateWritableChild(oldValue, newValue);
+        } else {
+            updateObservableChild(oldValue, newValue);
+        }
+    }
+
+    protected void updateObservableChild(S oldValue, S newValue) {
         unbind();
         if (newValue == null) {
             set(defaultValue);
@@ -133,6 +166,35 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
         }
         ObservableValue<T> observable = childFactory.call(newValue);
         bind(observable);
+    }
+
+    protected void updateWritableChild(S oldValue, S newValue) {
+        if (oldValue != null) {
+            ObservableValue<T> oldChild = childFactory.call(oldValue);
+            unbindBidirectional((Property<T>) oldChild);
+        }
+        if (newValue == null) {
+            set(defaultValue);
+            return;
+        }
+        ObservableValue<T> observable = childFactory.call(newValue);
+        bindBidirectional((Property<T>) observable);
+    }
+
+    /**
+     * This is called exactly once in the lifetime of this instance: we
+     * check if the child is a writable property the first time root's
+     * value is != null.
+     * 
+     * @param newValue
+     * @return
+     */
+    private boolean checkWritableChild(S newValue) {
+        if (checkedWritable) throw new IllegalStateException("must not call check more than once");
+        Objects.requireNonNull(newValue, "root's value must not be null");
+        checkedWritable = true;
+        ObservableValue<T> observable = childFactory.call(newValue);
+        return observable instanceof Property;
     }
 
     /**
@@ -143,7 +205,7 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
         getRoot().addListener(getRootListener());
         updateChild(null, getRoot().getValue());
     }
-
+    
 
     /**
      * Returns the listener to root. Lazily created.
@@ -164,7 +226,13 @@ public class ObservablePathAdapter<S, T> extends ObjectPropertyBase<T> {
     private void uninstallRoot() {
         if (getRoot() == null) return;
         getRoot().removeListener(getRootListener());
-        unbind();
+        updateChild(getRoot().getValue(), null);
+//        if (writableChild) {
+//            Property<T> observable = (Property<T>) getChildObservable();
+//            unbindBidirectional(observable);
+//        } else {
+//            unbind();
+//        }
     }
 
 

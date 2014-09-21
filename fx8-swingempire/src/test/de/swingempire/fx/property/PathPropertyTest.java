@@ -4,8 +4,9 @@
  */
 package de.swingempire.fx.property;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.value.ObservableObjectValue;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,11 +21,10 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.junit.JavaFXThreadingRule;
 
 import static org.junit.Assert.*;
-
-import de.swingempire.fx.junit.JavaFXThreadingRule;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -41,6 +41,38 @@ public class PathPropertyTest {
     protected ObservableList<String> items;
     protected ListView<String> view;
     
+    private final ObservableList<Person> persons =
+            FXCollections.observableArrayList(
+                    new Person("Jacob", "Smith", "jacob.smith@example.com"),
+                    new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
+                    new Person("Ethan", "Williams", "ethan.williams@example.com"),
+                    new Person("Emma", "Jones", "emma.jones@example.com"),
+                    new Person("Michael", "Brown", "michael.brown@example.com"));
+
+    /**
+     * Test whether it's possible to use the path in a bidi binding, provided
+     * the child property is a read/write property
+     */
+    @Test
+    public void testPathBidi() {
+        Person person = persons.get(0);
+        ObjectProperty<Person> root = new SimpleObjectProperty<>(person);
+        Callback<Person, ObservableValue<String>> factory = p -> p.emailProperty();
+        PathAdapter<Person, String> path = new PathAdapter<Person, String>(root, factory);
+        assertEquals(root.get().getEmail(), path.get());
+        String email = "dummy";
+        root.get().setEmail(email);
+        assertEquals(email, path.get());
+        path.set("other");
+    }
+
+    @Test
+    public void testPathNullRootValue() {
+        ObjectProperty<Person> root = new SimpleObjectProperty<>();
+        assertEquals("sanity", null, root.get());
+        Callback<Person, ObservableValue<String>> factory = p -> p.emailProperty();
+        PathAdapter<Person, String> path = new PathAdapter<>(root, factory);
+    }
     @Test
     public void testRootValueChangeToNull() {
         Property<MultipleSelectionModel<String>> root = view.selectionModelProperty();
@@ -48,7 +80,7 @@ public class PathPropertyTest {
         Callback<MultipleSelectionModel<String>, ObservableValue<String>> factory = model -> {
             return model.selectedItemProperty();
         };
-        ObservablePathAdapter<MultipleSelectionModel<String>, String> path = new ObservablePathAdapter<>(root, factory);
+        PathAdapter<MultipleSelectionModel<String>, String> path = new PathAdapter<>(root, factory);
         view.setSelectionModel(null);
         assertEquals(null, path.get());
     }
@@ -60,7 +92,7 @@ public class PathPropertyTest {
         Callback<MultipleSelectionModel<String>, ObservableValue<String>> factory = model -> {
             return model.selectedItemProperty();
         };
-        ObservablePathAdapter<MultipleSelectionModel<String>, String> path = new ObservablePathAdapter<>(root, factory);
+        PathAdapter<MultipleSelectionModel<String>, String> path = new PathAdapter<>(root, factory);
         root.getValue().select(items.get(3));
         assertEquals(root, path.getRoot());
         assertEquals(root.getValue().getSelectedItem(), path.get());
@@ -73,7 +105,7 @@ public class PathPropertyTest {
         Callback<MultipleSelectionModel<String>, ObservableValue<String>> factory = model -> {
             return model.selectedItemProperty();
         };
-        ObservablePathAdapter<MultipleSelectionModel<String>, String> path = new ObservablePathAdapter<>(root, factory);
+        PathAdapter<MultipleSelectionModel<String>, String> path = new PathAdapter<>(root, factory);
         assertEquals(root, path.getRoot());
         assertEquals(root.getValue().getSelectedItem(), path.get());
     }
@@ -84,7 +116,7 @@ public class PathPropertyTest {
         Callback<MultipleSelectionModel<String>, ObservableValue<String>> factory = model -> {
             return model.selectedItemProperty();
         };
-        ObservablePathAdapter<MultipleSelectionModel<String>, String> path = new ObservablePathAdapter<>(root, factory);
+        PathAdapter<MultipleSelectionModel<String>, String> path = new PathAdapter<>(root, factory);
         assertEquals(root, path.getRoot());
         assertEquals(root.getValue().getSelectedItem(), path.get());
     }
