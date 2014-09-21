@@ -2,7 +2,7 @@
  * Created on 29.01.2014
  *
  */
-package fx.util;
+package de.swingempire.fx.util;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

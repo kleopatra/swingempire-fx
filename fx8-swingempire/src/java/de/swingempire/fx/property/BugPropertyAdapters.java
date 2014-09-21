@@ -22,6 +22,8 @@ import com.sun.javafx.binding.BidirectionalBinding;
  * Typed wrappers for ObjectProperty<TYPE>. Temporary workaround for 
  * https://javafx-jira.kenai.com/browse/RT-37523, will be fixed in 8u20.
  * 
+ * Confirmed: fixed as of 8u20.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class BugPropertyAdapters {

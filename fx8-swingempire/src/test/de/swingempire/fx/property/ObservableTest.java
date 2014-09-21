@@ -14,6 +14,8 @@ import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -35,6 +37,45 @@ import static org.junit.Assert.*;
 public class ObservableTest {
 
     @Test
+    public void testDynamicBooleanBinding() {
+        DynamicBooleanBinding binding = new DynamicBooleanBinding() {
+
+            @Override
+            protected boolean computeValue() {
+                return false;
+            }
+            
+        };
+        assertNotNull(binding.marker);
+        binding.get();
+        assertTrue(binding.isValid());
+        BooleanProperty p = new SimpleBooleanProperty(true);
+        binding.addDependencies(p);
+        assertFalse(binding.isValid());
+    }
+
+    /**
+     * Bug: the observable in notifications must be the instance the 
+     * listener was added to.
+     */
+    @Test
+    public void testReadOnlyWrapperInvalidation() {
+        ReadOnlyObjectWrapper<String> wrapper = new ReadOnlyObjectWrapper<>();
+        wrapper.addListener(o -> {
+            assertSame(wrapper, o);
+        });
+        wrapper.setValue("dummy");
+    }
+    
+    @Test
+    public void testReadOnlyWrapperChange() {
+        ReadOnlyObjectWrapper<String> wrapper = new ReadOnlyObjectWrapper<>();
+        wrapper.addListener((o, oldValue, newValue) -> {
+            assertSame(wrapper, o);
+        });
+        wrapper.setValue("dummy");
+    }
+    @Test
     public void testNumberTyping() {
         int initial = 10;
         IntegerProperty base = new SimpleIntegerProperty(initial);
@@ -42,6 +83,9 @@ public class ObservableTest {
         assertEquals(Integer.class, base.getValue().getClass());
     }
     
+    /**
+     * Fixed as of 8u20
+     */
     @Test
     public void testBooleanCore() {
         Boolean initial = true;

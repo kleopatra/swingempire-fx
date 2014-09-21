@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,8 +24,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.selection.ListViewAnchored;
-import fx.util.FXUtils;
 
 /**
  */
@@ -33,12 +32,12 @@ public class ListFocusedCell extends Application {
             FXCollections.observableArrayList(Locale.getAvailableLocales());
    
 //    private final ListView<Locale> list = new ListViewAnchored<>();
-    private final ListView<Locale> list = new ListView<>();
+//    private final ListView<Locale> list = new ListView<>();
     
     @Override
     public void start(Stage stage) {
-        stage.setTitle(list.getClass().getSimpleName() + " Focus/Anchor Bug");
-        ListView<Locale> list = this.list;
+        stage.setTitle("Focus/Anchor Bug " + System.getProperty("java.version"));
+        ListView<Locale> list = new ListView<Locale>();
         ListView<Locale> anchored = new ListViewAnchored<Locale>();
         configureList(list);
         configureList(anchored);

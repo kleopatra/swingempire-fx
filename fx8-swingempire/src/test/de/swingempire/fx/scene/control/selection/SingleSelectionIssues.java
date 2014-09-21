@@ -15,9 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
-
-import fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**

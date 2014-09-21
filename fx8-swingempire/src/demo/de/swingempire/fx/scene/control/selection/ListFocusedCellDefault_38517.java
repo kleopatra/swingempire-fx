@@ -7,7 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import fx.util.FXUtils;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

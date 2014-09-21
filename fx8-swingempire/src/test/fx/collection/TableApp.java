@@ -5,7 +5,7 @@
 package fx.collection;
 
 import de.swingempire.fx.demobean.Person;
-import fx.util.FXUtils;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;

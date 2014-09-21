@@ -2,7 +2,7 @@
  * Created on 02.09.2014
  *
  */
-package fx.util;
+package de.swingempire.fx.util;
 
 import javafx.scene.Group;
 import javafx.scene.Node;

@@ -87,9 +87,9 @@ public class JavaFXThreadingRule implements TestRule {
                     latch.countDown();
                 }
             });
-            System.out.println("javafx initialising...");
+//            System.out.println("javafx initialising...");
             latch.await();
-            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
+//            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
         }
     }
 }

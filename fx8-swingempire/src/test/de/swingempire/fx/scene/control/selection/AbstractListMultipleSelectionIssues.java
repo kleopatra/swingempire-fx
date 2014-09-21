@@ -19,8 +19,7 @@ import org.junit.runners.Parameterized;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
-import fx.util.StageLoader;
-
+import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**

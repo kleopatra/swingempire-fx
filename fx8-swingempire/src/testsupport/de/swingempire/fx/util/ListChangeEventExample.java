@@ -1,4 +1,4 @@
-package fx.util;
+package de.swingempire.fx.util;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;

@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.time.temporal.WeekFields;
 import java.util.logging.Logger;
 
 import javafx.collections.ListChangeListener.Change;
@@ -18,8 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import fx.util.FXUtils;
-
+import de.swingempire.fx.util.FXUtils;
 import static org.junit.Assert.*;
 
 /**

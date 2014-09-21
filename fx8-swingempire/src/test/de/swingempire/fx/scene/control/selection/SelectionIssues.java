@@ -20,8 +20,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import fx.util.StageLoader;
-
+import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
@@ -114,7 +113,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection();
-        assertEquals("focus must be cleared clearSelection", -1, getFocusIndex(index));
+        assertEquals("focus must be cleared clearSelection", -1, getFocusIndex(-1));
         
     }
     @Test
