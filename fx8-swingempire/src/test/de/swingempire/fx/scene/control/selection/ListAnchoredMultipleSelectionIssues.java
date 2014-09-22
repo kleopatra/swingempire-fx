@@ -65,5 +65,10 @@ public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSel
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(ListAnchoredMultipleSelectionIssues.class
             .getName());
+
+    @Override
+    protected ListView createEmptyView() {
+        return new ListViewAnchored<>();
+    }
     
 }

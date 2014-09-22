@@ -84,6 +84,9 @@ public class ObservableTest {
     }
     
     /**
+     * Bug - wrapper changes the source value.
+     * https://javafx-jira.kenai.com/browse/RT-37523
+     * 
      * Fixed as of 8u20
      */
     @Test

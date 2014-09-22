@@ -10,6 +10,7 @@ import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.util.Callback;
 
 /**
@@ -49,12 +50,13 @@ import javafx.util.Callback;
  *    model -> model.selectedItemProperty());
  * path.addListener(ov -> doStuff());    
  * 
- * PENDING JW: here the child is-a ObservableValue only - so it's not really
- * a Property, just convenient to use the internal bind handling. How to
- * do it cleanly?
+ * This is writable (or not) if the child property is writable (or not). 
  * 
- * PENDING JW: bidi-bind if the child is a property
+ * PENDING JW: use weak listener to root?
  * 
+ * @param <S> the type of value of the root property
+ *        <T> the type of the value of the child property
+ *        
  * @author Jeanette Winzenburg, Berlin
  */
 public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
@@ -63,11 +65,19 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
     private Property<S> root;
     private Callback<S, ObservableValue<T>> childFactory;
     private ChangeListener<? super S> rootListener;
-    
+    private WeakChangeListener<? super S> weakRootListener;
+
+    /**
+     * 
+     */
     private boolean checkedWritable;
+    /**
+     * A flag inidcating whether or not this property is writable. 
+     * Only valid after checkedWritable is true. Reason for is that
+     * we can only check the type after we got a not-null root value 
+     * once. Assuming that the type is always the same.
+     */
     private boolean writable;
-    // we can check for writable child only once root's value had been != null
-//    private boolean writableChild;
     
     /**
      * Instantiates a path with null root and the given factory for
@@ -216,8 +226,9 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
             rootListener = (p, oldValue, newValue) -> { 
                 updateChild(oldValue, newValue);
             };
+            weakRootListener = new WeakChangeListener<>(rootListener);
         }
-        return rootListener;
+        return weakRootListener;
     }
 
     /**
@@ -227,12 +238,6 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
         if (getRoot() == null) return;
         getRoot().removeListener(getRootListener());
         updateChild(getRoot().getValue(), null);
-//        if (writableChild) {
-//            Property<T> observable = (Property<T>) getChildObservable();
-//            unbindBidirectional(observable);
-//        } else {
-//            unbind();
-//        }
     }
 
 

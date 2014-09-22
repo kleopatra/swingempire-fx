@@ -7,7 +7,12 @@ package de.swingempire.fx.scene.control.selection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.RandomAccess;
+import java.util.logging.Logger;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
@@ -20,6 +25,7 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -269,6 +275,27 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         field.set(behavior, true);
     }
     
+    
+//------------ regression testing
+    
+    @Test
+    public void testRT15793() {
+        ListView<String> view = createEmptyView();
+        int notified = 0;
+        view.itemsProperty().addListener(o -> {LOG.info("notified");});
+        view.itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
+        ObservableList<String> emptyList = FXCollections.observableArrayList();
+        assertEquals(null, view.getItems());
+        view.setItems(emptyList);
+        emptyList.add("something");
+        view.getSelectionModel().select(0);
+        assertEquals(0, view.getSelectionModel().getSelectedIndex());
+        emptyList.remove(0);
+        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+    }
+    
+    protected abstract ListView createEmptyView();
+    
     @Override
     protected MultipleSelectionModel getSelectionModel() {
         return getView().getSelectionModel();
@@ -286,4 +313,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         super(multiple);
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(AbstractListMultipleSelectionIssues.class.getName());
 }

@@ -52,4 +52,10 @@ public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIs
     private static final Logger LOG = Logger.getLogger(ListMultipleSelectionIssues.class
         .getName());
 
+
+    @Override
+    protected ListView createEmptyView() {
+        return new ListView();
+    }
+
 }
