@@ -11,7 +11,14 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Skin;
 
 /**
- * Fix for RT-38724: update value on change of selectionModel.
+ * Quick fix for RT-38724: update value on change of selectionModel.
+ * 
+ * Has two parts:
+ * <ul>
+ * <li> install a ChangeListener on selectionModelProperty and let it update the value 
+ * <li> install a custom skin that (reflectively) calls updateSelection in addition
+ *   to super calling updateSelectionModel
+ * </ul>
  * 
  * @author Jeanette Winzenburg, Berlin
  */
