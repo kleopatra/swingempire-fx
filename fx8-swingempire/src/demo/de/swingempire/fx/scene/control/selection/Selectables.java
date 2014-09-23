@@ -15,6 +15,7 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.rt38724.ChoiceBoxRT38724;
 import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.SimpleChoiceSelectionModel;
 
 /**
@@ -30,8 +31,8 @@ public class Selectables extends Application {
      * @return
      */
     private Parent getContent() {
-        ChoiceBox<String> box = new ChoiceBox<>(items);
-        
+//        ChoiceBox<String> box = new ChoiceBox<>(items);
+        ChoiceBoxRT38724<String> box = new ChoiceBoxRT38724<>(items);
         Button setModel = new Button("Set SelectionModel");
         setModel.setOnAction(e -> {
             SimpleChoiceSelectionModel model = new SimpleChoiceSelectionModel(box);

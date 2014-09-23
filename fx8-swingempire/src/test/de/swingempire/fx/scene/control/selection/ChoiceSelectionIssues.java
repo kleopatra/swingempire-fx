@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import de.swingempire.fx.scene.control.rt38724.ChoiceBoxRT38724;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -68,8 +69,39 @@ public class ChoiceSelectionIssues extends SelectionIssues<ChoiceBox, SingleSele
         ObservableList<String> items = FXCollections.observableArrayList(
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
-
+        
         ChoiceBox box = new ChoiceBox(items);
+        SingleSelectionModel model = new SingleSelectionModel() {
+            @Override
+            protected Object getModelItem(int index) {
+                if (index < 0 || index >= getItemCount()) return null;
+                return box.getItems().get(index);
+            }
+            
+            @Override
+            protected int getItemCount() {
+                return box.getItems() != null ? box.getItems().size() : 0;
+            }
+            
+        };
+        // just to be on the safe side in case the skin/behaviour is
+        // responsible for the update
+        // doesn't make a difference, though
+        StageLoader loader = new StageLoader(box);
+        int index = 2;
+        model.select(index);
+        assertEquals("sanity: model is selecting index and item", items.get(index), 
+                model.getSelectedItem());
+        box.setSelectionModel(model);
+        assertEquals("box value must be same as selected item", items.get(index), box.getValue());
+    }
+    
+    public void testSetSelectionModelUpdatesValueStandaloneFix() {
+        ObservableList<String> items = FXCollections.observableArrayList(
+                "9-item", "8-item", "7-item", "6-item", 
+                "5-item", "4-item", "3-item", "2-item", "1-item");
+
+        ChoiceBoxRT38724<String> box = new ChoiceBoxRT38724<>(items);
         SingleSelectionModel model = new SingleSelectionModel() {
             @Override
             protected Object getModelItem(int index) {
