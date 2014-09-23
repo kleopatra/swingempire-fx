@@ -20,6 +20,21 @@ import javafx.util.Callback;
 
 /**
  * Plain copy of core, for playing with extensions.
+ * 
+ * Except: 
+ * - widened access to updateItemsObserver (hacking around 15973)
+ * 
+ * PENDING JW: Note that this evades the hack (some called it fix ;-) of RT-15973
+ * because it is not a core ListViewBitSetSelectionModel. Tried some hacking
+ * around, but wasn't successful, so reverted that part again.
+ * 
+ * The base reason for RT-15973 is that ChangeListeners are notified only if
+ * the !areEquals(oldValue, newValue). In particular, 
+ * Collection-valued properties don't fire on
+ * setting a new collection with the same content as the old collection. 
+ * Listeners that have a ListChangeListener to the value can't re-wired
+ * that listener to the new collection, thus listening to the old ... 
+ * 
  */ 
 public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<T> {
 
@@ -102,7 +117,8 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
     private WeakChangeListener<ObservableList<T>> weakItemsObserver = 
             new WeakChangeListener<ObservableList<T>>(itemsObserver);
     
-    private void updateItemsObserver(ObservableList<T> oldList, ObservableList<T> newList) {
+    // CHANGED JW: widened access for hacking around RT_15793
+    protected void updateItemsObserver(ObservableList<T> oldList, ObservableList<T> newList) {
         // update listeners
         if (oldList != null) {
             oldList.removeListener(weakItemsContentObserver);

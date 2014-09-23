@@ -113,7 +113,7 @@ public class ListFocusedCell extends Application {
             if (e.getCode() == KeyCode.F6) {
                 int before = FXUtils.getAnchorIndex(list);
                 data.remove(list.getSelectionModel().getSelectedIndex());
-                LOG.info("anchor before/after insert: " + before + "/" + FXUtils.getAnchorIndex(list));
+                LOG.info("anchor before/after remove: " + before + "/" + FXUtils.getAnchorIndex(list));
             }
         });
         

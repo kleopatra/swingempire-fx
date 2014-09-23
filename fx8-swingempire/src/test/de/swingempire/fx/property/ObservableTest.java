@@ -12,21 +12,26 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ListProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import de.swingempire.fx.util.ChangeReport;
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -36,6 +41,122 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
+//----------------- tests related to RT-38770: changeListeners not notified 
+//----------------- https://javafx-jira.kenai.com/browse/RT-38770    
+    /**
+     * Test notification of changeListeners on setting a list that equals the old
+     * value but is a different instance.
+     * 
+     * Passes without bidi-binding.
+     */
+    @Test
+    public void testListPropertyNotificationSingleListener() {
+        ObservableList<String> initialValue = createObservableList(false);
+        ListProperty<String> property = new SimpleListProperty<>(initialValue);
+        ChangeReport report = new ChangeReport(property);
+        ObservableList<String> otherValue = createObservableList(false);
+        assertTrue("sanity: FXCollections returns a new instance", otherValue != initialValue);
+        property.set(otherValue);
+        assertEquals(1, report.getEventCount());
+        assertSame(initialValue, report.getLastOldValue());
+        assertSame(otherValue, report.getLastNewValue());
+    }
+    
+    /**
+     * Bug: ListPropertyBase fails to notify change listeners if multiple
+     * listeners registered
+     */
+    @Test
+    public void testListPropertyNotificationMultipleListener() {
+        ObservableList<String> initialValue = createObservableList(false);
+        ListProperty<String> property = new SimpleListProperty<>(initialValue);
+        ChangeReport report = new ChangeReport(property);
+        ChangeReport otherListener = new ChangeReport(property);
+        ObservableList<String> otherValue = createObservableList(false);
+        assertTrue("sanity: FXCollections returns a new instance", otherValue != initialValue);
+        property.set(otherValue);
+        assertEquals(1, report.getEventCount());
+        assertSame(initialValue, report.getLastOldValue());
+        assertSame(otherValue, report.getLastNewValue());
+    }
+    
+    /**
+     * Asserts bidi binding between source/target ListPropery
+     * (too much for a decent test, but then ..)
+     * - value of target is synched to source
+     * - ChangeListener on target is notified on binding
+     * 
+     * @param withData
+     */
+    protected void assertListPropertyBidiBinding(boolean withData) {
+        ObservableList<String> initialValue = createObservableList(withData);
+        ListProperty<String> target = new SimpleListProperty<>(initialValue);
+        ObservableList<String> sourceValue = createObservableList(withData);
+        ListProperty<String> source = new SimpleListProperty<>(sourceValue);
+        ChangeReport targetReport = new ChangeReport(target);
+
+        target.bindBidirectional(source);
+        
+        assertSame("bidi binding updates", target.get(), source.get());
+        assertSame("property is target of bidi", sourceValue, target.get());
+        assertSame("other is unchanged", sourceValue, source.get());
+        // this passes: listeners on target are notified installing the bidibinding
+        assertEquals("change listener on property must be notified", 1, targetReport.getEventCount());
+        
+        targetReport.clear();
+        ChangeReport sourceReport = new ChangeReport(source);
+        ObservableList<String> thirdValue = createObservableList(withData);
+        source.set(thirdValue);
+        assertSame("source value taken", thirdValue, source.get());
+        // was meant as sanity testing .. but the bidibinding prevents
+        // the notification that is just fine if unbound ... see test above
+        // assertEquals("sanity: source listener notified", 1, sourceReport.getEventCount());
+        assertSame("property must be updated to new value of other", thirdValue, target.get());
+        // this fails: listeners on target are not notified after updating the source of the bidibinding 
+        assertEquals("change listener on property must be notified", 1, targetReport.getEventCount());
+    }
+
+    @Test
+    public void testListPropertyBidiBindingNotificationListEmpty() {
+        assertListPropertyBidiBinding(false);
+    }
+    
+    @Test
+    public void testListPropertyBidiBindingNotificationListWithData() {
+        assertListPropertyBidiBinding(true);
+    }
+    
+    static final String[] DATA = {"just", "some", "content"}; 
+    protected ObservableList<String> createObservableList(boolean withData) {
+        return withData ? FXCollections.observableArrayList(DATA) : FXCollections.observableArrayList();
+    }
+    
+    /**
+     * Sanity: double-check notifications on Object properties
+     */
+    @Test
+    public void testPropertyBidiBindingNotification() {
+        String initialValue = "initial";
+        ObjectProperty<String> property = new SimpleObjectProperty<>(initialValue);
+        String otherValue = "other";
+        ObjectProperty<String> otherProperty = new SimpleObjectProperty<>(otherValue);
+        ChangeReport report = new ChangeReport(property);
+        property.bindBidirectional(otherProperty);
+        
+        assertSame("bidi binding updates", property.get(), otherProperty.get());
+        assertSame("property is target of bidi", otherValue, property.get());
+        assertSame("other is unchanged", otherValue, otherProperty.get());
+        assertEquals(1, report.getEventCount());
+        
+        report.clear();
+        String thirdValue = "something else";
+        otherProperty.set(thirdValue);
+        assertSame("property must be updated to new value of other", thirdValue, property.get());
+        assertEquals(1, report.getEventCount());
+    }
+    
+//-------------------- end test related to https://javafx-jira.kenai.com/browse/RT-38770
+    
     @Test
     public void testDynamicBooleanBinding() {
         DynamicBooleanBinding binding = new DynamicBooleanBinding() {

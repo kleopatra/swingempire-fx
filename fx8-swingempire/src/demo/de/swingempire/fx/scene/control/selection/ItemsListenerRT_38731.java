@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -62,7 +63,9 @@ public class ItemsListenerRT_38731 extends Application {
     public void start(Stage primaryStage) throws Exception {
        Pane ap = new VBox();
        // empty list
-       ChoiceBox choice = new ChoiceBox();
+//       ChoiceBox choice = new ChoiceBox();
+       // same with comboBox
+       ComboBox choice = new ComboBox();
        Button choiceAdd = new Button("set empty items and add choice");
        choiceAdd.setOnAction(ev -> {
            ObservableList cl = FXCollections.observableArrayList();
@@ -89,6 +92,7 @@ public class ItemsListenerRT_38731 extends Application {
            
        });
        ap.getChildren().addAll(choice, choiceAdd, choiceSetOnly, choiceSetNotEmpty);
+       
        Scene scene = new Scene(ap);
         primaryStage.setScene(scene);
         primaryStage.show();

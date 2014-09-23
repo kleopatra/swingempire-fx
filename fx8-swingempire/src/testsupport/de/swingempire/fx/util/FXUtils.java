@@ -16,10 +16,12 @@ import javafx.scene.control.ListView;
 
 import com.sun.javafx.tk.Toolkit;
 
+import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
+
 /**
  * Collection of static utility methods (mostly for debugging)
  * 
- * threading code copied from jfxtras
+ * unused threading code copied from jfxtras
  * https://github.com/JFXtras/jfxtras/blob/8.0/jfxtras-test-support/src/main/java/jfxtras/test/TestUtil.java
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -31,6 +33,9 @@ public class FXUtils {
     }
 
     public static int getAnchorIndex(ListView<?> view) {
+        if (view.getSelectionModel() instanceof AnchoredSelectionModel) {
+            return ((AnchoredSelectionModel) view.getSelectionModel()).getAnchorIndex();
+        }
         Object anchor = view.getProperties().get(ANCHOR_KEY);
         return anchor != null ? (int) anchor : -1;
     }

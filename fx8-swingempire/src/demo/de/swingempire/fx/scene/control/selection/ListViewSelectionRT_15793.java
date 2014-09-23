@@ -51,43 +51,31 @@ public class ListViewSelectionRT_15793 extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
        Pane ap = new VBox();
-       // empty list
-       ChoiceBox choice = new ChoiceBox();
-       Button choiceAdd = new Button("set empty items and add choice");
-       choiceAdd.setOnAction(ev -> {
-           ObservableList cl = FXCollections.observableArrayList();
-           choice.setItems(cl);
-           cl.add("choiceToto");}
-       );
-       
-       String[] data = {"one", "two"};
-       Button choiceSetOnly = new Button("set not empty items");
-       choiceSetOnly.setOnAction(ev -> {
-           ObservableList cl = FXCollections.observableArrayList(data);
-           choice.setItems(cl);
-       });
-       Button choiceSetNotEmpty = new Button("set not empty items and add");
-       choiceSetNotEmpty.setOnAction(ev -> {
-           ObservableList cl = FXCollections.observableArrayList(data);
-           choice.setItems(cl);
-           cl.add("another");
-           
-       });
-       ap.getChildren().addAll(choice, choiceAdd, choiceSetOnly, choiceSetNotEmpty);
-       // this is working because choiceBox installs an InvalidationListener
-//       cl.add("toto");
-       
-       
        final ListView lv = new ListViewAnchored<>();
        // invalidationListener fires (as it doesn't check any value by definition)
-       lv.itemsProperty().addListener(o -> LOG.info("got invalidation!"));
+//       lv.itemsProperty().addListener(o -> LOG.info("got invalidation!"));
        // changeListener doesn't fires because it checks for equality of old/new value
-       lv.itemsProperty().addListener((o, old, value) -> LOG.info("got change!"));
+//       lv.itemsProperty().addListener((o, old, value) -> LOG.info("got change!"));
        final ObservableList lst = FXCollections.observableArrayList();
        lv.setItems(lst);
        lst.add("toto");
             
        ap.getChildren().addAll(lv);
+//--------------- added to test hack-around for custom selectionModel
+       String[] data = {"one", "two"};
+       Button setList = new Button("set list");
+       setList.setOnAction(e -> {
+           lv.setItems(FXCollections.observableArrayList(data));
+       });
+       Button setListAndAdd = new Button("set list and add");
+       setListAndAdd.setOnAction(e -> {
+           ObservableList<String> cl = FXCollections.observableArrayList(data);
+           lv.setItems(cl);
+           cl.add("added");
+       });
+       ap.getChildren().addAll(setList, setListAndAdd);
+//--------------- end of added       
+       
        Scene scene = new Scene(ap);
        System.out.println("THE SELECTED INDEX " + lv.getSelectionModel().getSelectedIndex());
        Button b = new Button("remove selected in list");
@@ -96,7 +84,7 @@ public class ListViewSelectionRT_15793 extends Application {
             @Override
             public void handle(ActionEvent event) {
                 if(lv.getSelectionModel().getSelectedIndex() != -1)
-                    lst.remove(lv.getSelectionModel().getSelectedIndex());
+                    lv.getItems().remove(lv.getSelectionModel().getSelectedIndex());
                 
                 System.out.println("THE SELECTED INDEX, should be -1 but is " + lv.getSelectionModel().getSelectedIndex());
 
