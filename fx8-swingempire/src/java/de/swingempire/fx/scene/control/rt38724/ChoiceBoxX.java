@@ -54,7 +54,7 @@ import de.swingempire.fx.property.PathAdapter;
  * - removed item-related selection updates from choicebox (rely on model)
  * - removed changeListener on value (which duplicated - just incorrectly - sync that's
  *   already done in valueProperty
- * - TODO similar for skin
+ * - changed along similar lines in skin (see api doc of ChoiceBoxXSkin)
  * 
  * Particular pitfalls in core
  * 
@@ -130,19 +130,6 @@ public class ChoiceBoxX<T> extends Control {
         setItems(items);
         setSelectionModel(new ChoiceBoxSelectionModel<T>(this));
         
-        // listen to the value property, if the value is
-        // set to something that exists in the items list, update the
-        // selection model to indicate that this is the selected item
-        // PENDING JW: looks fishy - duplication? valueProperty selects item in invalidated
-//        valueProperty().addListener((ov, t, t1) -> {
-//            if (getItems() == null) return;
-//            // PENDING JW: why not selectItem here? It's the selectionModel's
-//            // job to deal with it
-//            int index = getItems().indexOf(t1);
-//            if (index > -1) {
-//                getSelectionModel().select(index);
-//            }
-//        });
     }
 
     /***************************************************************************
@@ -304,37 +291,11 @@ public class ChoiceBoxX<T> extends Control {
              * so far as to actually watch for all changes to the items list,
              * rechecking each time.
              */
-
-//-------------- listening to itemsListProperty
             
             final ListChangeListener<T> itemsContentObserver = c -> {
                 updateSelectionStateOnItemsContentChanged(c);
             };
             choiceBox.itemsListProperty().addListener(itemsContentObserver);
-
-//-------------- end listening to itemsListProperty            
-            
-//------------ listening to items/content old-style            
-//            // watching for changes to the items list content
-//            final ListChangeListener<T> itemsContentObserver = c -> {
-//                updateSelectionStateOnItemsContentChanged(c);
-//            };
-//            if (this.choiceBox.getItems() != null) {
-//                this.choiceBox.getItems().addListener(itemsContentObserver);
-//            }
-//
-//            // watching for changes to the items list
-//            ChangeListener<ObservableList<T>> itemsObserver = (valueModel, oldList, newList) -> {
-//                if (oldList != null) {
-//                    oldList.removeListener(itemsContentObserver);
-//                }
-//                if (newList != null) {
-//                    newList.addListener(itemsContentObserver);
-//                }
-//                updateSelectionStateOnItemsPropertyChanged();
-//            };
-//            choiceBox.itemsProperty().addListener(itemsObserver);
-//---------------- end listening for items/content old style            
             
         }
 
@@ -348,7 +309,8 @@ public class ChoiceBoxX<T> extends Control {
             }
             
 //-------------- original block makes testRemoveItemSelectedItemUncontained fail 
-// ------------- with expected null, actual oldSelected            
+// ------------- with expected null, actual oldSelected          
+// @KEEP to not forget the unexpected tweak in the listChange looping code           
 //            else {
 //                // taken from box's contentListener
 //                int newIndex = choiceBox.getItems().indexOf(getSelectedItem());
@@ -375,20 +337,6 @@ public class ChoiceBoxX<T> extends Control {
 //            }
 //----------------- end block            
             
-//----------------- alternative block makes test fail with expected -1, actual 2            
-//            else if (!isEmpty()) { // have a selected index might be different
-//                int newIndex = choiceBox.getItems().indexOf(getSelectedItem());
-//                if (newIndex != -1) {
-//                    setSelectedIndex(newIndex);
-//                }
-//                
-//            } else if (getSelectedIndex() == -1 && getSelectedItem() != null) {
-//                int newIndex = choiceBox.getItems().indexOf(getSelectedItem());
-//                if (newIndex != -1) {
-//                    setSelectedIndex(newIndex);
-//                }
-//            }
-//-------------- end alternative block            
 
         }
 
@@ -409,34 +357,12 @@ public class ChoiceBoxX<T> extends Control {
             }
             return false;
         }
-
-//        protected void updateSelectionStateOnItemsPropertyChanged() {
-//            // setSelectedIndex(-1);
-//            // CHANGED JW: clear selection on empty items RT-29433
-//            if (isEmptyItems() || !isExternalSelectedItem()) {
-//                clearSelection();
-//            } else { // items not empty, had uncontained selectedItem (implies
-//                     // != null, doesn't hurt, though)
-//                int newIndex = choiceBox.getItems().indexOf(getSelectedItem());
-//                setSelectedIndex(newIndex);
-////                if (newIndex != -1) {
-////                }
-//            }
-//        }
-        
-        /**
-         * @return a boolean indicating whether the selectedItem is considered
-         *   part of the list
-         */
-        protected boolean isExternalSelectedItem() {
-            return getSelectedItem() != null && getSelectedIndex() == - 1;
-        }
-
+       
         /**
          * @return
          */
         protected boolean isEmptyItems() {
-            return getItemCount() == 0; //choiceBox.getItems() == null || choiceBox.getItems().isEmpty();
+            return getItemCount() == 0; 
         }
 
         // API Implementation

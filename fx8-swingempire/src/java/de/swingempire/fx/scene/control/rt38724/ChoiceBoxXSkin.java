@@ -147,28 +147,12 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         });
         // This is used as a way of accessing the context menu within the ChoiceBox.
         popup.setId("choice-box-popup-menu");
-//        popup.getItems().clear();
-//        popup.getItems().addAll(popupItems);
-//        popup.setManaged(false);
-//        popup.visibleProperty().addListener(new InvalidationListener() {
-//            @Override public void invalidated(ObservableValue valueModel) {
-//                if (popup.isVisible() {
-////                    RadioMenuItem selected = (RadioMenuItem) toggleGroup.getSelectedToggle();
-////                    if (selected != null) selected.requestFocus();
-//                } else {
-//                    getBehavior().close();
-//                }
-//            }
-//        });
         getChildren().setAll(label, openButton);
 
         updatePopupItems();
 
         updateSelectionModel();
         updateSelection();
-//        if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
-//            label.setText(""); // clear label text when selectedIndex is -1
-//        }
     }
 
     private void updateChoiceBoxItems() {
@@ -203,15 +187,6 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             updateSelectionModel();
             // CHANGED JW: RT-38724
             updateSelection();
-//        } else if ("SELECTION_CHANGED".equals(p)) {
-//            updateSelection();
-//            if (getSkinnable().getSelectionModel() != null) {
-//                int index = getSkinnable().getSelectionModel().getSelectedIndex();
-//                if (index != -1) {
-//                    MenuItem item = popup.getItems().get(index);
-//                    if (item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
-//                }
-//            }
         } else if ("SHOWING".equals(p)) {
             if (getSkinnable().isShowing()) {
                 MenuItem item = null;
@@ -256,7 +231,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             // if it appears to be needed, somehting is wrong elsewhere
             updateChoiceBoxItems();
             updatePopupItems();
-            // PENDING JW: need to update label
+            // CHANGED JW: need to update label
             updateLabel();
         }
     }
@@ -344,24 +319,14 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         // unspecified behaviour of isEmpty, see https://javafx-jira.kenai.com/browse/RT-38494
         if (selectionModel == null) { // || selectionModel.isEmpty()) {
             toggleGroup.selectToggle(null);
-            // PENDING JW: we should show choiceBox' value
-//            label.setText("");
         } else {
             int selectedIndex = selectionModel.getSelectedIndex();
-            if (selectedIndex == -1 || selectedIndex > popup.getItems().size()) {
-//                label.setText(getDisplayString(selectionModel.getSelectedItem()));
-//                return;
-            } else {
-                if (selectedIndex < popup.getItems().size()) {
-                    MenuItem selectedItem = popup.getItems().get(selectedIndex);
-                    if (selectedItem instanceof RadioMenuItem) {
-                        ((RadioMenuItem) selectedItem).setSelected(true);
-                        toggleGroup.selectToggle(null);
-                    }
-                    // update the label
-//                    label.setText(popup.getItems().get(selectedIndex).getText());
+            if (selectedIndex >=0 && selectedIndex < popup.getItems().size()) {
+                MenuItem selectedItem = popup.getItems().get(selectedIndex);
+                if (selectedItem instanceof RadioMenuItem) {
+                    ((RadioMenuItem) selectedItem).setSelected(true);
+                    toggleGroup.selectToggle(null);
                 }
-                
             }
         }
         updateLabel();
@@ -378,8 +343,6 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         // open button width/height
         double obw = openButton.prefWidth(-1);
 
-        // PENDING JW: not even used
-        ChoiceBoxX<T> control = getSkinnable();
         label.resizeRelocate(x, y, w, h);
         openButton.resize(obw, openButton.prefHeight(-1));
         positionInArea(openButton, (x+w) - obw,
