@@ -10,6 +10,8 @@ package de.swingempire.fx.scene.control.rt38724;
  *
  */
 
+import java.util.logging.Logger;
+
 import javafx.beans.InvalidationListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -44,6 +46,16 @@ import com.sun.javafx.scene.control.skin.ContextMenuContent;
  * Changes:
  * 
  * - reflective access to ContextMenuContent.getYMenuOffset
+ * - fix https://javafx-jira.kenai.com/browse/RT-38826
+ * - extracted method to get displayString and use it whereever the label's text is set
+ * - changed hard-coded emptying of label to use converter (allows custom values for null)
+ * - changed logic/implementation of selectionChanged to not always clear for 
+ *   selectedIndex == -1
+ * - changed hard-coded reaction to SELECTION_CHANGED to delegate to selectionChanged method  
+ * - TODO: should **not** listen to selectedIndex: doesn't get change if uncontained selected
+ *   item is changed
+ * - TODO: listen to selectedItem (or to value)
+ * - fixed: converter change didn't update label text
  * 
  * ChoiceBoxSkin - default implementation
  */
@@ -152,9 +164,9 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 
         updateSelectionModel();
         updateSelection();
-        if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
-            label.setText(""); // clear label text when selectedIndex is -1
-        }
+//        if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
+//            label.setText(""); // clear label text when selectedIndex is -1
+//        }
     }
 
     private void updateChoiceBoxItems() {
@@ -180,19 +192,24 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             updatePopupItems();
             updateSelectionModel();
             updateSelection();
-            if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
-                label.setText(""); // clear label text when selectedIndex is -1
-            }
+//            if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
+//                // PENDING JW: uncontained items are explicitly allowed
+//                // you **MUST** show them!
+//                label.setText(""); // clear label text when selectedIndex is -1
+//            }
         } else if (("SELECTION_MODEL").equals(p)) {
             updateSelectionModel();
+            // CHANGED JW: RT-38724
+            updateSelection();
         } else if ("SELECTION_CHANGED".equals(p)) {
-            if (getSkinnable().getSelectionModel() != null) {
-                int index = getSkinnable().getSelectionModel().getSelectedIndex();
-                if (index != -1) {
-                    MenuItem item = popup.getItems().get(index);
-                    if (item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
-                }
-            }
+            updateSelection();
+//            if (getSkinnable().getSelectionModel() != null) {
+//                int index = getSkinnable().getSelectionModel().getSelectedIndex();
+//                if (index != -1) {
+//                    MenuItem item = popup.getItems().get(index);
+//                    if (item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
+//                }
+//            }
         } else if ("SHOWING".equals(p)) {
             if (getSkinnable().isShowing()) {
                 MenuItem item = null;
@@ -233,8 +250,12 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
                 popup.hide();
             }
         } else if ("CONVERTER".equals(p)) {
+            // PENDING JW: no need to update the items ... 
+            // if it appears to be needed, somehting is wrong elsewhere
             updateChoiceBoxItems();
             updatePopupItems();
+            // PENDING JW: need to update label
+            updateLabel();
         }
     }
 
@@ -257,8 +278,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         } else if (o instanceof SeparatorMenuItem) {
             popupItem = (SeparatorMenuItem) o;
         } else {
-            StringConverter<T> c = getSkinnable().getConverter();
-            String displayString = (c == null) ? ((o == null) ? "" : o.toString()) :  c.toString(o);
+            String displayString = getDisplayString(o);
             final RadioMenuItem item = new RadioMenuItem(displayString);
             item.setId("choice-box-menu-item");
             item.setToggleGroup(toggleGroup);
@@ -272,6 +292,17 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         }
         popupItem.setMnemonicParsing(false);   // ChoiceBox doesn't do Mnemonics
         popup.getItems().add(i, popupItem);
+    }
+    /**
+     * Extracted as fix for RT-38826: label must show uncontained value
+     * This method is used whereever we need to display the item, namely
+     * when creating the menuItem and updating the label.
+     * 
+     */
+    protected String getDisplayString(final T o) {
+        StringConverter<T> c = getSkinnable().getConverter();
+        String displayString = (c == null) ? ((o == null) ? "" : o.toString()) :  c.toString(o);
+        return displayString;
     }
 
     private void updatePopupItems() {
@@ -299,28 +330,44 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         updateSelection();
     };
 
+    /**
+     * PENDING JW: change logic such that we can extract a method that
+     * updates the displayValue
+     */
     private void updateSelection() {
-        if (selectionModel == null || selectionModel.isEmpty()) {
+        // PENDING JW: this is where label is reset to empty always for selectedIndex < 0
+        // unspecified behaviour of isEmpty, see https://javafx-jira.kenai.com/browse/RT-38494
+        if (selectionModel == null) { // || selectionModel.isEmpty()) {
             toggleGroup.selectToggle(null);
-            label.setText("");
+            // PENDING JW: we should show choiceBox' value
+//            label.setText("");
         } else {
             int selectedIndex = selectionModel.getSelectedIndex();
             if (selectedIndex == -1 || selectedIndex > popup.getItems().size()) {
-                label.setText(""); // clear label text
-                return;
-            }
-            if (selectedIndex < popup.getItems().size()) {
-                MenuItem selectedItem = popup.getItems().get(selectedIndex);
-                if (selectedItem instanceof RadioMenuItem) {
-                    ((RadioMenuItem) selectedItem).setSelected(true);
-                    toggleGroup.selectToggle(null);
+//                label.setText(getDisplayString(selectionModel.getSelectedItem()));
+//                return;
+            } else {
+                if (selectedIndex < popup.getItems().size()) {
+                    MenuItem selectedItem = popup.getItems().get(selectedIndex);
+                    if (selectedItem instanceof RadioMenuItem) {
+                        ((RadioMenuItem) selectedItem).setSelected(true);
+                        toggleGroup.selectToggle(null);
+                    }
+                    // update the label
+//                    label.setText(popup.getItems().get(selectedIndex).getText());
                 }
-                // update the label
-                label.setText(popup.getItems().get(selectedIndex).getText());
+                
             }
         }
+        updateLabel();
     }
 
+    /**
+     * Updates Label to show choiceBox' value
+     */
+    protected void updateLabel() {
+        label.setText(getDisplayString(getSkinnable().getValue()));
+    }
     @Override protected void layoutChildren(final double x, final double y,
             final double w, final double h) {
         // open button width/height
@@ -374,4 +421,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     @Override protected double computeMaxWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
         return getSkinnable().prefWidth(height);
     }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(ChoiceBoxXSkin.class
+            .getName());
 }

@@ -13,6 +13,7 @@ import javafx.scene.control.FocusModel;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SkinBase;
+import javafx.util.StringConverter;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -52,9 +53,11 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testValueUpdatesSelection() {
+        StageLoader loader = new StageLoader(getView());
         Object value = items.get(3);
         getChoiceView().setValue(value);
         assertEquals(value, getSelectionModel().getSelectedItem());
+        assertEquals(value, getLabel().getText());
     }
     
     /**
@@ -70,12 +73,15 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testRemoveSelectedItemIfSelectedItemContained() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
         Object item = items.get(index);
         items.remove(index);
         assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
         assertEquals(null, getSelectionModel().getSelectedItem());
+        assertEquals("", getLabel().getText());
     }
     
     /**
@@ -85,10 +91,12 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testRemoveSelectedItemIfSelectedItemUncontained() {
+        StageLoader loader = new StageLoader(getView());
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         items.clear();
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("choicebox must show value", uncontained, getLabel().getText());
     }
     /**
      * Implementation of itemsProperty in choiceBox vs. itemsChangeListener in 
@@ -104,12 +112,14 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetItemsIfSelectedItemContained() {
+        StageLoader loader = new StageLoader(getView());
         int index = items.size() - 5;
         getSelectionModel().select(index);
         ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
         getChoiceView().setItems(subList);
         assertEquals("selectedItem cleared if contained before setting", 
                 null, getSelectionModel().getSelectedItem());
+        assertEquals("", getLabel().getText());
     }
     
     /**
@@ -120,12 +130,14 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetItemsIfSelectedItemUncontained() {
+        StageLoader loader = new StageLoader(getView());
         int index = items.size() - 5;
         getSelectionModel().select("uncontained");
         Object selectedItem = getSelectionModel().getSelectedItem();
         ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
         getChoiceView().setItems(subList);
         assertEquals("selectedItem unchanged if not in new list", selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals("choicebox must show value", selectedItem, getLabel().getText());
     }
     
     /**
@@ -133,11 +145,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetEmptyItemsResetsSelectedItemUncontained() {
+        StageLoader loader = new StageLoader(getView());
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         getChoiceView().setItems(FXCollections.emptyObservableList());
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
         assertEquals(uncontained, getChoiceView().getValue());
+        assertEquals("label must show value", uncontained, getLabel().getText());
     }
     
     /**
@@ -150,11 +164,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testClearItemsNotResetsSelectedItemUncontained() {
+        StageLoader loader = new StageLoader(getView());
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         getChoiceView().getItems().clear();
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
         assertEquals(uncontained, getChoiceView().getValue());
+        assertEquals("label must show value", uncontained, getLabel().getText());
     }
     
     
@@ -163,11 +179,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetEmptyItemsResetsSelection() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
         getChoiceView().setItems(FXCollections.emptyObservableList());
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
+        assertEquals("", getLabel().getText());
     }
     
     /**
@@ -184,11 +202,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testClearItemsResetsSelectionBySelectItem() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(items.get(index));
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
+        assertEquals("", getLabel().getText());
     }
     
     /**
@@ -205,11 +225,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testClearItemsResetsSelection() {
+        StageLoader loader = new StageLoader(getView());
         int index = 2;
         getSelectionModel().select(index);
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
+        assertEquals("", getLabel().getText());
     }
     
     /**
@@ -234,16 +256,131 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
         assertEquals(getSelectionModel().getSelectedItem(), getChoiceView().getValue());
+        assertEquals("text of label must be set", getChoiceView().getValue(), getLabel().getText());
     }
+    
+    
+    /**
+     * Test that empty value is shown with converter.
+     * Here we set the converter after creating skin.
+     */
+    @Test
+    public void testValueIsShownUsingConverterAfterSkin() {
+        StringConverter converter = getConverter();
+        StageLoader loader = new StageLoader(getView());
+        getSelectionModel().select(items.get(3));
+        getChoiceView().setConverter(converter);
+        assertEquals(converter.toString(items.get(3)), getLabel().getText());
+    }
+    
+    /**
+     * Test that empty value is shown with converter.
+     * Here we set the converter after creating skin.
+     */
+    @Test
+    public void testEmptyValueIsShownUsingConverterAfterSkin() {
+        StringConverter converter = getConverter();
+        StageLoader loader = new StageLoader(getView());
+        getChoiceView().setConverter(converter);
+        assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
+        assertEquals(converter.toString(null), getLabel().getText());
+    }
+    
+    /**
+     * Test that empty value is shown with converter.
+     * Here we set the converter before creating skin.
+     */
+    @Test
+    public void testEmptyValueIsShownUsingConverter() {
+        StringConverter converter = getConverter();
+        getChoiceView().setConverter(converter);
+        StageLoader loader = new StageLoader(getView());
+        assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
+        assertEquals(converter.toString(null), getLabel().getText());
+    }
+    
+    @Test
+    public void testValueShownWithoutSelectionModel() {
+        StageLoader loader = new StageLoader(getView());
+        getChoiceView().setSelectionModel(null);
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals(uncontained, getChoiceView().getValue());
+    }
+    /**
+     * Returns a converter that:
+     * - converts null/empty to a fixed value
+     * - converts objects by toString + x
+     * @return
+     */
+    protected StringConverter getConverter() {
+        StringConverter converter = new StringConverter() {
 
+            @Override
+            public String toString(Object object) {
+                return object != null ? object.toString() + "X" : "None";
+            }
+
+            @Override
+            public Object fromString(String string) {
+                throw new UnsupportedOperationException("converter is unidirectional");
+            }};
+        return converter;
+        
+    }
     /**
      * Issue: uncontained selectedItem allowed but not shown in choicebox
      * Beware: bowel testing of skin!
+     * Here we select uncontained after creating skin
      */
     @Test
-    public void testUncontainedSelectedItemShown() {
+    public void testUncontainedSelectedItemShownInitialEmptySelection() {
         StageLoader loader = new StageLoader(getView());
-        Object uncontained = "here we go with something";
+        String uncontained = "here we go with something";
+        getSelectionModel().select(uncontained);
+        Label label = getLabel();
+        assertEquals("choice must show uncontained item", uncontained, label.getText());
+    }
+    
+    /**
+     * Issue: uncontained selectedItem allowed but not shown in choicebox
+     * Beware: bowel testing of skin!
+     * Here we select a contained item then select uncontained, both after creating skin
+     */
+    @Test
+    public void testUncontainedSelectedItemShownInitialNotEmptySelection() {
+        StageLoader loader = new StageLoader(getView());
+        getSelectionModel().select(items.get(3));
+        String uncontained = "here we go with something";
+        getSelectionModel().select(uncontained);
+        Label label = getLabel();
+        assertEquals("choice must show uncontained item", uncontained, label.getText());
+    }
+    
+    /**
+     * Issue: uncontained selectedItem allowed but not shown in choicebox
+     * Beware: bowel testing of skin!
+     * Here we select the uncontained before creating the skin
+     */
+    @Test
+    public void testUncontainedSelectedItemShownInitialUncontainedSelection() {
+        String uncontained = "here we go with something";
+        getSelectionModel().select(uncontained);
+        StageLoader loader = new StageLoader(getView());
+        Label label = getLabel();
+        assertEquals("choice must show uncontained item", uncontained, label.getText());
+    }
+    
+    /**
+     * Issue: uncontained selectedItem allowed but not shown in choicebox
+     * Beware: bowel testing of skin!
+     * Here we select a contained item before creating skin
+     */
+    @Test
+    public void testUncontainedSelectedItemShownInitialContainedSelection() {
+        String uncontained = "here we go with something";
+        getSelectionModel().select(items.get(3));
+        StageLoader loader = new StageLoader(getView());
         getSelectionModel().select(uncontained);
         Label label = getLabel();
         assertEquals("choice must show uncontained item", uncontained, label.getText());
@@ -340,10 +477,11 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * Note that it's the responsibility of the test method itself (not the setup)
      * to init if needed.
      */
-    protected StageLoader loader;
+//    protected StageLoader loader;
 
     
     /**
+     * RT-38724
      * ChoiceBox.setSelectionModel must update box' value
      * To test we set a model which has a selection - doesn't update choiceBox value.
      * Here we test the skinless box
@@ -356,10 +494,12 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("sanity: model is selecting index and item", items.get(index), 
                 model.getSelectedItem());
         getChoiceView().setSelectionModel(model);
-        assertEquals("box value must be same as selected item", items.get(index), getChoiceView().getValue());
+        assertEquals("box value must be same as selected item", items.get(index), 
+                getChoiceView().getValue());
     }
 
     /**
+     * RT-38724
      * ChoiceBox.setSelectionModel must update box' value
      * To test we set a model which has a selection - doesn't update choiceBox value.
      * Here we force the skin, just in case
@@ -373,7 +513,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("sanity: model is selecting index and item", items.get(index), 
                 model.getSelectedItem());
         getChoiceView().setSelectionModel(model);
-        assertEquals("box value must be same as selected item", items.get(index), getChoiceView().getValue());
+        assertEquals("box value must be same as selected item", items.get(index), 
+                getChoiceView().getValue());
+        assertEquals("label must be updated", items.get(index), getLabel().getText());
     }
 
     /**
@@ -459,6 +601,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     public static interface ChoiceInterface<T> {
      
         SingleSelectionModel<T> getSelectionModel();
+
+        void setConverter(StringConverter<T> converter);
 
         void setSelectionModel(SingleSelectionModel<T> model);
         
