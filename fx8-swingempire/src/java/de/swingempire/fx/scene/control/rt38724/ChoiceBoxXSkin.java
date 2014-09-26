@@ -52,10 +52,12 @@ import com.sun.javafx.scene.control.skin.ContextMenuContent;
  * - changed logic/implementation of selectionChanged to not always clear for 
  *   selectedIndex == -1
  * - changed hard-coded reaction to SELECTION_CHANGED to delegate to selectionChanged method  
- * - TODO: should **not** listen to selectedIndex: doesn't get change if uncontained selected
+ * - Note: should **not** listen to selectedIndex: doesn't get change if uncontained selected
  *   item is changed
- * - TODO: listen to selectedItem (or to value)
+ * - changed wiring to listen to selectedItem (or to value)
  * - fixed: converter change didn't update label text
+ * - removed indirect listening to selectedItemProperty via registerChangeListener (will break
+ *   anyway on change of selectionModel)
  * 
  * ChoiceBoxSkin - default implementation
  */
@@ -68,7 +70,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         registerChangeListener(control.selectionModelProperty(), "SELECTION_MODEL");
         registerChangeListener(control.showingProperty(), "SHOWING");
         registerChangeListener(control.itemsProperty(), "ITEMS");
-        registerChangeListener(control.getSelectionModel().selectedItemProperty(), "SELECTION_CHANGED");
+//        registerChangeListener(control.getSelectionModel().selectedItemProperty(), "SELECTION_CHANGED");
         registerChangeListener(control.converterProperty(), "CONVERTER");
     }
 
@@ -201,8 +203,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             updateSelectionModel();
             // CHANGED JW: RT-38724
             updateSelection();
-        } else if ("SELECTION_CHANGED".equals(p)) {
-            updateSelection();
+//        } else if ("SELECTION_CHANGED".equals(p)) {
+//            updateSelection();
 //            if (getSkinnable().getSelectionModel() != null) {
 //                int index = getSkinnable().getSelectionModel().getSelectedIndex();
 //                if (index != -1) {
@@ -316,13 +318,16 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         }
     }
 
+    /**
+     * Changed implementation to listen for selectedItemProperty (vs. selectedIndexProperty)
+     */
     private void updateSelectionModel() {
         if (selectionModel != null) {
-            selectionModel.selectedIndexProperty().removeListener(selectionChangeListener);
+            selectionModel.selectedItemProperty().removeListener(selectionChangeListener);
         }
         this.selectionModel = getSkinnable().getSelectionModel();
         if (selectionModel != null) {
-            selectionModel.selectedIndexProperty().addListener(selectionChangeListener);
+            selectionModel.selectedItemProperty().addListener(selectionChangeListener);
         }
     }
 
@@ -335,7 +340,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * updates the displayValue
      */
     private void updateSelection() {
-        // PENDING JW: this is where label is reset to empty always for selectedIndex < 0
+        // PENDING JW: this is where label was reset to empty always for selectedIndex < 0
         // unspecified behaviour of isEmpty, see https://javafx-jira.kenai.com/browse/RT-38494
         if (selectionModel == null) { // || selectionModel.isEmpty()) {
             toggleGroup.selectToggle(null);
