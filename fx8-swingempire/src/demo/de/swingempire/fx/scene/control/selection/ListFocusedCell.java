@@ -26,14 +26,22 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * Also
+ * Issue: keyboard navigation disabled after removing first selected item
+ * https://javafx-jira.kenai.com/browse/RT-38785
+ * Reported against 
+ * To reproduce:
+ * - click to select and focus first item
+ * - press F6 to remove selected first item
+ * - notice that the new first (formerly second) item is selected but not focused
+ * - press DOWN
+ * - expected: selection moved to second row 
+ * - actual: nothing happens
  */
 public class ListFocusedCell extends Application {
     private final ObservableList<Locale> data =
             FXCollections.observableArrayList(Locale.getAvailableLocales());
    
-//    private final ListView<Locale> list = new ListViewAnchored<>();
-//    private final ListView<Locale> list = new ListView<>();
-    
     @Override
     public void start(Stage stage) {
         stage.setTitle("Focus/Anchor Bug " + System.getProperty("java.version"));
@@ -85,13 +93,20 @@ public class ListFocusedCell extends Application {
 
     protected void configureList(ListView<Locale> list) {
         // add a listener to see loosing the column
-//        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
-//            LOG.info("focused old/new " + oldValue + " / " + newValue);
-//        });
-//        
-//        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
-//            LOG.info("selected old/new " + oldValue + " / " + newValue);
-//        });
+        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
+            LOG.info("focused index old/new " + oldValue + " / " + newValue);
+        });
+        
+        list.getFocusModel().focusedItemProperty().addListener((p, oldValue, newValue)-> {
+            LOG.info("focused item old/new " + oldValue + " / " + newValue);
+        });
+        
+        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
+            LOG.info("selected index old/new " + oldValue + " / " + newValue);
+        });
+        list.getSelectionModel().selectedItemProperty().addListener((p, oldValue, newValue) -> {
+            LOG.info("selected item old/new " + oldValue + " / " + newValue);
+        });
         // prevent selection on focusGained
 //        list.getProperties().put("selectOnFocusGain", Boolean.FALSE);
         list.setItems(data);
@@ -111,6 +126,8 @@ public class ListFocusedCell extends Application {
         // remove selected item - the issue is still open
         list.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F6) {
+//                * Issue: keyboard navigation disabled after removing first selected item
+//                * https://javafx-jira.kenai.com/browse/RT-38785
                 int before = FXUtils.getAnchorIndex(list);
                 data.remove(list.getSelectionModel().getSelectedIndex());
                 LOG.info("anchor before/after remove: " + before + "/" + FXUtils.getAnchorIndex(list));

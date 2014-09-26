@@ -25,6 +25,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.ListChangeReport;
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -41,6 +43,76 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
+//--------------------    
+    /**
+     * Confused: listProperty fires changeEvent if items in underlying list
+     * removed?
+     * 
+     * Here we have an additional bidi-binding
+     */
+    @Test
+    public void testListPropertyBidiBindingChangeNotificationOnSetList() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>();
+        ListProperty<String> listProperty = new SimpleListProperty<>();
+        property.bindBidirectional(listProperty);
+        ChangeReport report = new ChangeReport(listProperty);
+        property.set(list);
+        assertEquals("listProperty must fire changeEvent on setting list", 1, report.getEventCount());
+        report.clear();
+        list.remove(0);
+        assertEquals("listProperty must not fire changeEvent on removing item", 0, report.getEventCount());
+    }
+
+    
+    @Test
+    public void testListPropertyChangeNotificationOnRemoveItem() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> listProperty = new SimpleListProperty<>(list);
+        ChangeReport report = new ChangeReport(listProperty);
+        list.remove(0);
+        assertSame("sanity: value didn't change", list, listProperty.get());
+        assertEquals("listProperty must not fire changeEvent on removing item", 0, report.getEventCount());
+    }
+    
+    @Test
+    public void testListPropertyListChangeNotificationOnRemoveItem() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> listProperty = new SimpleListProperty<>(list);
+        ListChangeReport report = new ListChangeReport(listProperty);
+        list.remove(0);
+        assertSame("sanity: value didn't change", list, listProperty.get());
+        assertEquals("listProperty must fire listChangeEvent on removing item", 1, report.getEventCount());
+    }
+    
+    
+    @Test
+    public void testListPropertyListChangeNotificationOnSetList() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> listProperty = new SimpleListProperty<>();
+        ListChangeReport report = new ListChangeReport(listProperty);
+        listProperty.set(list);
+        assertSame("sanity: value didn't change", list, listProperty.get());
+        assertEquals("listProperty must fire changeEvent on setList", 1, report.getEventCount());
+        Change<String> change = report.getLastListChange();
+        assertSame("source of listChange must be list property", listProperty, report.getLastListValue());
+    }
+    
+    
+    /**
+     * Sanity: plain ObjectProperty<ObservableList>.
+     */
+    @Test
+    public void testPlainPropertyChangeNotificationOnRemoveItem() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
+        ChangeReport report = new ChangeReport(property);
+        list.remove(0);
+        assertSame(list, property.get());
+        assertEquals("plain property must not fire changeEvent on removing item", 0, report.getEventCount());
+    }
+    
+    
 //----------------- tests related to RT-38770: changeListeners not notified 
 //----------------- https://javafx-jira.kenai.com/browse/RT-38770    
     /**
@@ -126,7 +198,9 @@ public class ObservableTest {
         assertListPropertyBidiBinding(true);
     }
     
-    static final String[] DATA = {"just", "some", "content"}; 
+    static final String[] DATA = {
+            "9-item", "8-item", "7-item", "6-item", 
+            "5-item", "4-item", "3-item", "2-item", "1-item"}; 
     protected ObservableList<String> createObservableList(boolean withData) {
         return withData ? FXCollections.observableArrayList(DATA) : FXCollections.observableArrayList();
     }
@@ -192,6 +266,7 @@ public class ObservableTest {
     public void testReadOnlyWrapperChange() {
         ReadOnlyObjectWrapper<String> wrapper = new ReadOnlyObjectWrapper<>();
         wrapper.addListener((o, oldValue, newValue) -> {
+            assertEquals(o.getValue(), newValue);
             assertSame(wrapper, o);
         });
         wrapper.setValue("dummy");

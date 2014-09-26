@@ -19,6 +19,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
@@ -78,7 +80,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(index);
-        assertEquals("open 30931 - selection after remove focused", index, getSelectionModel().getSelectedIndex());
+        assertEquals("open 30931 - selection after remove focused", 
+                index, getSelectionModel().getSelectedIndex());
     }
     
     @Test
@@ -96,7 +99,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(1);
-        assertEquals("open 30931 - focus after remove above focused", index -1, getFocusIndex(index));
+        int expected = index -1;
+        assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
     }
     
     @Test
@@ -104,10 +108,31 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(1);
-        assertEquals("open 30931 - selected after remove above focused", index-1, getSelectionModel().getSelectedIndex());
+        int expected = index - 1;
+        assertEquals("open 30931 - selected after remove above focused", expected, getSelectionModel().getSelectedIndex());
     }
     
+    @Test
+    public void testSelectedOnInsertItemAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.add(0, "6-item");
+        int expected = index +1;
+        assertEquals("selection moved by one after inserting item", 
+                expected, getSelectionModel().getSelectedIndex());
+    }
     
+    @Test
+    public void testFocusOnInsertItemAbove() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.add(0, "6-item");
+        int expected = index +1;
+        assertEquals("selection moved by one after inserting item", 
+                expected, getFocusIndex(expected));
+    }
+    
+   
     @Test
     public void testFocusOnClearSelection() {
         int index = 2;
@@ -324,7 +349,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         Object item = "uncontained";
         getSelectionModel().select(item);
         assertEquals("sanity: the item is selected", item, getSelectionModel().getSelectedItem());
-        assertFalse("selection must not be empty", getSelectionModel().isEmpty());
+        assertFalse("probably DOC ERROR: selection must not be empty", 
+                getSelectionModel().isEmpty());
     }
     
     /**
@@ -355,11 +381,12 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         Object item = "uncontained";
         getSelectionModel().select(item);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItem must be model item at selectedIndex", 
-                items.get(index), getSelectionModel().getSelectedItem());
-        // this is what passes, but is inconsistent with the doc of getSelectedItem
-        assertEquals("uncontained item must be selected item", item, getSelectionModel().getSelectedItem());
+        if (getSelectionModel().getSelectedIndex() >= 0) {
+            assertEquals("selectedItem must be model item at selectedIndex", 
+                    items.get(index), getSelectionModel().getSelectedItem());
+        } else {
+            assertEquals("uncontained item must be selected item", item, getSelectionModel().getSelectedItem());
+        }
     }
     
     /**
@@ -487,24 +514,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
 //---------------------------- passing tests    
     
-    @Test
-    public void testSelectionAfterInsertAbove() {
-        int index = 2;
-        getSelectionModel().select(index);
-        items.add(0, "6-item");
-        assertEquals("selection moved by one after inserting item", 
-                index +1, getSelectionModel().getSelectedIndex());
-    }
-    
-    @Test
-    public void testSelectionAfterRemoveAbove() {
-        int index = 2;
-        getSelectionModel().select(index);
-        items.remove(0);
-        assertEquals("selection moved by one after inserting item", 
-                index -1, getSelectionModel().getSelectedIndex());
-        
-    }
     /**
      * Incorrect selection behaviour after sorting the model
      * 

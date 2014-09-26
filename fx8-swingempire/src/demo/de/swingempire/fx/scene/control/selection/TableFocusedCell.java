@@ -71,35 +71,6 @@ public class TableFocusedCell extends Application {
         TableColumn<Locale, String> country = new TableColumn<>("Country");
         country.setCellValueFactory(new PropertyValueFactory<>("country"));
         
-        // quick addition to make table editable in second column
-        // for issue ?? : not able to start editing with f2
-//        table.setEditable(true);
-//        country.setCellFactory(TextFieldTableCell.forTableColumn());
-        
-        // quick check for http://stackoverflow.com/q/25740177/203657
-        // right click doesn't always select before showing context menu
-        // can't reproduce
-//        data.remove(8, data.size() -1);
-//        table.setRowFactory(new Callback<TableView<Locale>, TableRow<Locale>>() {
-//            @Override
-//            public TableRow<Locale> call(TableView<Locale> tableView) {
-//                final TableRow<Locale> row = new TableRow<>();
-//                final ContextMenu contextMenu = new ContextMenu();
-//                final MenuItem mnuItemAnalyze = new MenuItem("Analyze");
-//                mnuItemAnalyze.setOnAction(new EventHandler<ActionEvent>() {
-//                    @Override
-//                    public void handle(ActionEvent event) {
-//                        //logic for menu item
-//                        LOG.info("Menu: ");
-//                    }
-//                });
-//                contextMenu.getItems().add(mnuItemAnalyze);
-//                // Set context menu on row, but use a binding to make it only show for non-empty rows:  
-//                row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
-//                return row;
-//            }
-//        });
-
 
         
         table.setItems(data);
@@ -113,7 +84,17 @@ public class TableFocusedCell extends Application {
                 data.add(0, new Locale("dummy"));
             }
         });
-        
+
+        table.addEventFilter(KeyEvent.KEY_PRESSED, e-> {
+//          * Issue: keyboard navigation disabled after removing first selected item
+//          * https://javafx-jira.kenai.com/browse/RT-38785
+            if (e.getCode() == KeyCode.F6) {
+                int selected = table.getSelectionModel().getSelectedIndex();
+                if (selected >= 0) {
+                    data.remove(selected);
+                }
+            }
+        });
         // extend selection after programmatically select?
         table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F3) {
@@ -146,6 +127,34 @@ public class TableFocusedCell extends Application {
         stage.show();
     }
 
+    // quick check for http://stackoverflow.com/q/25740177/203657
+    // right click doesn't always select before showing context menu
+    // can't reproduce
+    private void contextMenuCheck() {
+        
+//        data.remove(8, data.size() -1);
+//        table.setRowFactory(new Callback<TableView<Locale>, TableRow<Locale>>() {
+//            @Override
+//            public TableRow<Locale> call(TableView<Locale> tableView) {
+//                final TableRow<Locale> row = new TableRow<>();
+//                final ContextMenu contextMenu = new ContextMenu();
+//                final MenuItem mnuItemAnalyze = new MenuItem("Analyze");
+//                mnuItemAnalyze.setOnAction(new EventHandler<ActionEvent>() {
+//                    @Override
+//                    public void handle(ActionEvent event) {
+//                        //logic for menu item
+//                        LOG.info("Menu: ");
+//                    }
+//                });
+//                contextMenu.getItems().add(mnuItemAnalyze);
+//                // Set context menu on row, but use a binding to make it only show for non-empty rows:  
+//                row.contextMenuProperty().bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
+//                return row;
+//            }
+//        });
+
+
+    }
     public static void main(String[] args) {
         launch(args);
     }
