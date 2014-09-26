@@ -103,7 +103,12 @@ public class ChoiceSetItem extends Application {
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
         });
-        HBox buttons = new HBox(setItem, setSelectedItemUncontained, setValue);
+        Button setNullSelectionModel = new Button("set null selectionModel and set value");
+        setNullSelectionModel.setOnAction(e -> {
+            box.setSelectionModel(null);
+            box.setValue(items.get(2));
+        });
+        HBox buttons = new HBox(setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
         
         BorderPane pane = new BorderPane(box);
         pane.setBottom(buttons);

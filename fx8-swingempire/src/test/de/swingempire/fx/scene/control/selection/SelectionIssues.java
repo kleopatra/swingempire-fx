@@ -590,6 +590,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(-1, getAnchorIndex(-1));
     }
     
+    @Test
+    public void testCopeWithNullSelectionModel() {
+        setSelectionModel(null);
+    }
+    
     @Before
     public void setUp() throws Exception {
         // JW: need more items for multipleSelection
@@ -603,6 +608,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     protected abstract T getSelectionModel();
 
+    protected abstract void setSelectionModel(T model);
+    
     protected V getView() {
         return view;
     }

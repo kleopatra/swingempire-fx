@@ -392,6 +392,29 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("box value must be same as selected item", items.get(index), getChoiceView().getValue());
     }
 
+//------------------- Null selectionModel
+    
+    /**
+     * Logs exception stacktrace that doesn't show up as error (actually not at all)
+     * in test log - why not? Thread issue? 
+     */
+    @Test @Ignore
+    public void testNullSelectionModelOnSetValue() {
+        setSelectionModel(null);
+        getChoiceView().setValue(items.get(3));
+        assertEquals(items.get(3), getChoiceView().getValue());
+    }
+    
+    @Test @Ignore
+    public void testNullSelectionModelPreviouslySelectedOnSetValue() {
+        getSelectionModel().select(2);
+        setSelectionModel(null);
+        assertEquals(null, getChoiceView().getValue());
+        getChoiceView().setValue(items.get(3));
+        assertEquals(items.get(3), getChoiceView().getValue());
+    }
+    
+    
 // ------------------ infrastructure
     
     
@@ -420,6 +443,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     protected FocusModel getFocusModel() {
         return null;
     }
+
+    
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getChoiceView().setSelectionModel(model);
+    }
+
 
     /**
      * Simply a tagging interface with methods needed for comparative testing

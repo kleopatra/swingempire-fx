@@ -14,6 +14,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBuilder;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.TableViewBuilder;
 
 import org.junit.runner.RunWith;
@@ -76,4 +77,11 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TableSingleSelectionIssues.class.getName());
+
+
+
+    @Override
+    protected void setSelectionModel(MultipleSelectionModel model) {
+        getView().setSelectionModel((TableViewSelectionModel) model);
+    }
 }

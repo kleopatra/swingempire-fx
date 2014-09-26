@@ -91,4 +91,9 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
     private static final Logger LOG = Logger
             .getLogger(ListAnchoredSingleSelectionIssues.class.getName());
 
+    @Override
+    protected void setSelectionModel(MultipleSelectionModel model) {
+        getView().setSelectionModel(model);
+    }
+
 }

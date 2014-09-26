@@ -40,6 +40,12 @@ public class ComboBoxSelectionIssues extends SelectionIssues<ComboBox, SingleSel
     protected int getAnchorIndex(int index) {
         return index;
     }
+
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        // TODO Auto-generated method stub
+        getView().setSelectionModel(model);
+    }
     
     
 }

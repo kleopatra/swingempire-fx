@@ -4,22 +4,17 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import java.time.temporal.WeekFields;
 import java.util.logging.Logger;
 
-import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import de.swingempire.fx.util.FXUtils;
 import static org.junit.Assert.*;
 
 /**
@@ -81,15 +76,16 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
     protected MultipleSelectionModel getSelectionModel() {
         return getView().getSelectionModel();
     }
-
-    
     
     @Override
     protected FocusModel getFocusModel() {
         return getView().getFocusModel();
     }
 
-
+    @Override
+    protected void setSelectionModel(MultipleSelectionModel model) {
+        getView().setSelectionModel(model);
+    }
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

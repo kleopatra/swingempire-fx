@@ -114,4 +114,9 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
     protected FocusModel getFocusModel() {
         return null;
     }
+
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getView().setSelectionModel(model);
+    }
 }
