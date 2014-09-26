@@ -26,6 +26,7 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
@@ -33,6 +34,8 @@ import javafx.util.StringConverter;
 
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 import com.sun.javafx.scene.control.skin.ContextMenuContent;
+
+import de.swingempire.fx.property.PathAdapter;
 
 
 /**
@@ -58,6 +61,8 @@ import com.sun.javafx.scene.control.skin.ContextMenuContent;
  * - fixed: converter change didn't update label text
  * - removed indirect listening to selectedItemProperty via registerChangeListener (will break
  *   anyway on change of selectionModel)
+ * - replaced manual selection/Model/itemListener by pathAdapter
+ * - TODO: replace manual items/content/Listener by listening to itemsListProperty
  * 
  * ChoiceBoxSkin - default implementation
  */
@@ -67,9 +72,9 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         super(control, new ChoiceBoxXBehavior<T>(control));
         initialize();
         control.requestLayout();
-        registerChangeListener(control.selectionModelProperty(), "SELECTION_MODEL");
+//        registerChangeListener(control.selectionModelProperty(), "SELECTION_MODEL");
         registerChangeListener(control.showingProperty(), "SHOWING");
-        registerChangeListener(control.itemsProperty(), "ITEMS");
+//        registerChangeListener(control.itemsProperty(), "ITEMS");
 //        registerChangeListener(control.getSelectionModel().selectedItemProperty(), "SELECTION_CHANGED");
         registerChangeListener(control.converterProperty(), "CONVERTER");
     }
@@ -93,33 +98,45 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 
     private final ListChangeListener<T> choiceBoxItemsListener = new ListChangeListener<T>() {
         @Override public void onChanged(Change<? extends T> c) {
-            while (c.next()) {
-                if (c.getRemovedSize() > 0 || c.wasPermutated()) {
-                    toggleGroup.getToggles().clear();
-                    popup.getItems().clear();
-                    int i = 0;
-                    for (T obj : c.getList()) {
-                        addPopupItem(obj, i);
-                        i++;
-                    }
-                } else {
-                    for (int i = c.getFrom(); i < c.getTo(); i++) {
-                        final T obj = c.getList().get(i);
-                        addPopupItem(obj, i);
-                    }
-                }
-            }
+            // brute force fix for RT-38394:
+            // update popupItems from scratch on every change
+            updatePopupItems();
+//            while (c.next()) {
+//                if (c.getRemovedSize() > 0 || c.wasPermutated()) {
+//                    toggleGroup.getToggles().clear();
+//                    popup.getItems().clear();
+//                    int i = 0;
+//                    for (T obj : c.getList()) {
+//                        addPopupItem(obj, i);
+//                        i++;
+//                    }
+//                } else {
+//                    for (int i = c.getFrom(); i < c.getTo(); i++) {
+//                        final T obj = c.getList().get(i);
+//                        addPopupItem(obj, i);
+//                    }
+//                }
+//            }
             updateSelection();
             getSkinnable().requestLayout(); // RT-18052 resize of choicebox should happen immediately.
         }
     };
     
-    private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
-            new WeakListChangeListener<T>(choiceBoxItemsListener);
+//    private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
+//            new WeakListChangeListener<T>(choiceBoxItemsListener);
+
+    private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
 
     private void initialize() {
         updateChoiceBoxItems();
-
+        
+        selectedItemPath = new PathAdapter<>(getSkinnable().selectionModelProperty(), p -> p.selectedItemProperty());
+        selectedItemPath.addListener((p, old, value) -> {
+            updateSelection();
+        } );
+        
+        getSkinnable().itemsListProperty().addListener(choiceBoxItemsListener);
+       
         label = new Label();
         label.setMnemonicParsing(false);  // ChoiceBox doesn't do Mnemonics
 
@@ -156,13 +173,13 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     }
 
     private void updateChoiceBoxItems() {
-        if (choiceBoxItems != null) {
-            choiceBoxItems.removeListener(weakChoiceBoxItemsListener);
-        }
+//        if (getChoiceBoxItems() != null) {
+//            getChoiceBoxItems().removeListener(weakChoiceBoxItemsListener);
+//        }
         choiceBoxItems = getSkinnable().getItems();
-        if (choiceBoxItems != null) {
-            choiceBoxItems.addListener(weakChoiceBoxItemsListener);
-        }
+//        if (getChoiceBoxItems() != null) {
+//            getChoiceBoxItems().addListener(weakChoiceBoxItemsListener);
+//        }
     }
     
     // Test only purpose    
@@ -195,7 +212,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
                 if (sm == null) return;
 
                 long currentSelectedIndex = sm.getSelectedIndex();
-                int itemInControlCount = choiceBoxItems.size();
+                int itemInControlCount = getChoiceBoxItems().size();
                 boolean hasSelection = currentSelectedIndex >= 0 && currentSelectedIndex < itemInControlCount;
                 if (hasSelection) {
                     item = popup.getItems().get((int) currentSelectedIndex);
@@ -234,6 +251,10 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             // CHANGED JW: need to update label
             updateLabel();
         }
+    }
+
+    protected ObservableList<T> getChoiceBoxItems() {
+        return getSkinnable().getItems();
     }
 
     /**
@@ -287,8 +308,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         popup.getItems().clear();
         toggleGroup.selectToggle(null);
 
-        for (int i = 0; i < choiceBoxItems.size(); i++) {
-            T o = choiceBoxItems.get(i);
+        for (int i = 0; i < getChoiceBoxItems().size(); i++) {
+            T o = getChoiceBoxItems().get(i);
             addPopupItem(o, i);
         }
     }
@@ -297,18 +318,18 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * Changed implementation to listen for selectedItemProperty (vs. selectedIndexProperty)
      */
     private void updateSelectionModel() {
-        if (selectionModel != null) {
-            selectionModel.selectedItemProperty().removeListener(selectionChangeListener);
-        }
+//        if (selectionModel != null) {
+//            selectionModel.selectedItemProperty().removeListener(selectionChangeListener);
+//        }
         this.selectionModel = getSkinnable().getSelectionModel();
-        if (selectionModel != null) {
-            selectionModel.selectedItemProperty().addListener(selectionChangeListener);
-        }
+//        if (selectionModel != null) {
+//            selectionModel.selectedItemProperty().addListener(selectionChangeListener);
+//        }
     }
 
-    private InvalidationListener selectionChangeListener = observable -> {
-        updateSelection();
-    };
+//    private InvalidationListener selectionChangeListener = observable -> {
+//        updateSelection();
+//    };
 
     /**
      * PENDING JW: change logic such that we can extract a method that

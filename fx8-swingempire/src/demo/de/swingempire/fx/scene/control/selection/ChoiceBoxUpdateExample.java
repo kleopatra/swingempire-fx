@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -29,7 +30,8 @@ public class ChoiceBoxUpdateExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        ChoiceBox<Item> choiceBox = new ChoiceBox<>();
+//        ChoiceBox<Item> choiceBox = new ChoiceBox<>();
+        ChoiceBoxX<Item> choiceBox = new ChoiceBoxX<>();
         ObservableList<Item> items = FXCollections
                 .observableArrayList(item -> new Observable[] { item
                         .nameProperty() }); // the extractor
@@ -65,8 +67,10 @@ public class ChoiceBoxUpdateExample extends Application {
         changeSelectedField.disableProperty().bind(
                 Bindings.isNull(choiceBox.getSelectionModel()
                         .selectedItemProperty()));
-        changeSelectedField.setOnAction(event -> choiceBox.getSelectionModel()
-                .getSelectedItem().setName(changeSelectedField.getText()));
+        changeSelectedField.setOnAction(event -> {
+            choiceBox.getSelectionModel()
+                .getSelectedItem().setName(changeSelectedField.getText());
+            });
 
         BorderPane root = new BorderPane();
         root.setTop(choiceBox);

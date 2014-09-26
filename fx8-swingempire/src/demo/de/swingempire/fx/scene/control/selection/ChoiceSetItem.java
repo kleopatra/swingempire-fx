@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -73,6 +74,7 @@ public class ChoiceSetItem extends Application {
      */
     private Parent getContent() {
         ChoiceBox<String> box = new ChoiceBox<>(items);
+//        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
         // uncontained value never shown
 //        box.setValue("initial uncontained");
         box.setValue(items.get(0));

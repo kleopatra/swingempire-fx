@@ -4,10 +4,12 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.Label;
@@ -34,6 +36,61 @@ import static org.junit.Assert.*;
 public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
     extends SelectionIssues<V, SingleSelectionModel>{
 
+// --------- internals testing: popup/Menu/items
+    
+    @Test
+    public void testPopupItemsOnRemoveItem() {
+        StageLoader loader = new StageLoader(getView());
+        ContextMenu popup = getPopup();
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+        items.remove(0);
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+    }
+    
+    @Test
+    public void testPopupItemsOnAddItem() {
+        StageLoader loader = new StageLoader(getView());
+        ContextMenu popup = getPopup();
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+        items.add(0, "added");
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+    }
+    
+    @Test
+    public void testPopupItemsOnSetItem() {
+        StageLoader loader = new StageLoader(getView());
+        ContextMenu popup = getPopup();
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+        items.set(0, items.get(0) + "changed");
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+    }
+    
+    @Test
+    public void testPopupItemsOnSetItemAtSelected() {
+        StageLoader loader = new StageLoader(getView());
+        ContextMenu popup = getPopup();
+        getSelectionModel().select(0);
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+        items.set(0, items.get(0) + "changed");
+        assertEquals("size same as items", items.size(), popup.getItems().size());
+    }
+    
+    /**
+     * @return the context menu controlled by skin
+     */
+    protected ContextMenu getPopup() {
+        Object skin = getView().getSkin();
+        Class clazz = skin.getClass();
+        try {
+            Field field = clazz.getDeclaredField("popup");
+            field.setAccessible(true);
+            return (ContextMenu) field.get(skin);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
 //------------------- Tests around replacing internals
     
     /**
