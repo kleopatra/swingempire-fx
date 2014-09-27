@@ -19,8 +19,8 @@ import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxRT38724;
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceInterface;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;

@@ -2,7 +2,7 @@
  * Created on 23.09.2014
  *
  */
-package de.swingempire.fx.scene.control.rt38724;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -2,12 +2,12 @@
  * Created on 24.09.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -24,7 +24,7 @@ import javafx.stage.Stage;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-38394
- * Choicebox misbehaving on changing elements in items
+ * Choicebox misbehaving on updating elements in items
  */
 public class ChoiceBoxUpdateExample extends Application {
 

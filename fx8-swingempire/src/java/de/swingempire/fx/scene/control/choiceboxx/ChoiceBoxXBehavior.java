@@ -2,7 +2,7 @@
  * Created on 24.09.2014
  *
  */
-package de.swingempire.fx.scene.control.rt38724;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 /*
  * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.

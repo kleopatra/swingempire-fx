@@ -2,7 +2,7 @@
  * Created on 24.09.2014
  *
  */
-package de.swingempire.fx.scene.control.rt38724;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 /*
  * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
@@ -79,8 +79,6 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         registerChangeListener(control.converterProperty(), "CONVERTER");
     }
 
-    private ObservableList<T> choiceBoxItems;
-
     private ContextMenu popup;
 
     // The region that shows the "arrow" box portion
@@ -128,7 +126,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
 
     private void initialize() {
-        updateChoiceBoxItems();
+//        updateChoiceBoxItems();
         
         selectedItemPath = new PathAdapter<>(getSkinnable().selectionModelProperty(), p -> p.selectedItemProperty());
         selectedItemPath.addListener((p, old, value) -> {
@@ -172,15 +170,19 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         updateSelection();
     }
 
-    private void updateChoiceBoxItems() {
+    /**
+     * PENDING JW: 
+     * NO-OP - remove
+     */
+//    private void updateChoiceBoxItems() {
 //        if (getChoiceBoxItems() != null) {
 //            getChoiceBoxItems().removeListener(weakChoiceBoxItemsListener);
 //        }
-        choiceBoxItems = getSkinnable().getItems();
+//        choiceBoxItems = getSkinnable().getItems();
 //        if (getChoiceBoxItems() != null) {
 //            getChoiceBoxItems().addListener(weakChoiceBoxItemsListener);
 //        }
-    }
+//    }
     
     // Test only purpose    
     String getChoiceBoxSelectedText() {
@@ -191,7 +193,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
         if ("ITEMS".equals(p)) {
-            updateChoiceBoxItems();
+            // PENDING JW: unused - remove 
+//            updateChoiceBoxItems();
             updatePopupItems();
             updateSelectionModel();
             updateSelection();
@@ -201,6 +204,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 //                label.setText(""); // clear label text when selectedIndex is -1
 //            }
         } else if (("SELECTION_MODEL").equals(p)) {
+            // PENDING JW: unused - remove
             updateSelectionModel();
             // CHANGED JW: RT-38724
             updateSelection();
@@ -246,7 +250,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         } else if ("CONVERTER".equals(p)) {
             // PENDING JW: no need to update the items ... 
             // if it appears to be needed, somehting is wrong elsewhere
-            updateChoiceBoxItems();
+//            updateChoiceBoxItems();
             updatePopupItems();
             // CHANGED JW: need to update label
             updateLabel();

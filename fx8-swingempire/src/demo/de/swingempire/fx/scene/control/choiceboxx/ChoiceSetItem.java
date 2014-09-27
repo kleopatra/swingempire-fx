@@ -2,11 +2,11 @@
  * Created on 31.08.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

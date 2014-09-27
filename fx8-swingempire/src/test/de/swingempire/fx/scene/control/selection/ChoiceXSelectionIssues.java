@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import static org.junit.Assert.*;
 
 /**

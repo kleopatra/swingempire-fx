@@ -48,6 +48,13 @@ public class ObservableTest {
      * Confused: listProperty fires changeEvent if items in underlying list
      * removed?
      * 
+     * Notes:
+     * - seems to be intentional: ListExpressionHelper notifies changeListeners
+     *   with oldValue = currentValue = newValue
+     * - might be covered by doc if "value changed" is interpreted as !oldValue.equals(newValue)
+     * - listeners need to be aware of the fact
+     * - ObjectProperty.set test against identity, so no notification explosion in bidi-binding    
+     * 
      * Here we have an additional bidi-binding
      */
     @Test
@@ -83,6 +90,7 @@ public class ObservableTest {
         list.remove(0);
         assertSame("sanity: value didn't change", list, listProperty.get());
         assertEquals("listProperty must fire listChangeEvent on removing item", 1, report.getEventCount());
+        LOG.info("" + report.getLastListChange()); 
     }
     
     

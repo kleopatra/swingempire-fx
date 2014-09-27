@@ -2,7 +2,7 @@
  * Created on 31.08.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.choiceboxx;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -15,7 +15,8 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.rt38724.ChoiceBoxRT38724;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
+import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues;
 import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.SimpleChoiceSelectionModel;
 
 /**
