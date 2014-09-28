@@ -6,7 +6,12 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import javafx.beans.Observable;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ContextMenu;
@@ -16,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SkinBase;
 import javafx.util.StringConverter;
+import junit.extensions.TestSetup;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -23,6 +29,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.sun.javafx.application.PlatformImpl;
+
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxUpdateExample.Item;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -37,10 +46,32 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     extends SelectionIssues<V, SingleSelectionModel>{
 
 // --------- internals testing: popup/Menu/items
-    
+
+    /**
+     * https://javafx-jira.kenai.com/browse/RT-38394
+     * <p>
+     * Choicebox misbehaving on updating elements in items
+     * 
+     * Note: for now, this is fixed in ChoiceBoxXSkin by brute force!
+     */
+    @Test
+    public void testPopupItemsOnUpdateItem() {
+        initSkin();
+        ObservableList<Item> items = FXCollections
+                .observableArrayList(item -> new Observable[] { item
+                        .nameProperty() }); // the extractor
+        items.addAll(IntStream.rangeClosed(1, 10)
+                .mapToObj(i -> new Item("Item " + i))
+                .collect(Collectors.toList()));
+        getChoiceView().setItems(items);
+        getSelectionModel().select(0);
+        items.get(0).setName("newName");
+        assertEquals(items.size(), getPopup().getItems().size());
+    }
+
     @Test
     public void testPopupItemsOnRemoveItem() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
         items.remove(0);
@@ -49,7 +80,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnAddItem() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
         items.add(0, "added");
@@ -58,7 +89,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnSetItem() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
         items.set(0, items.get(0) + "changed");
@@ -67,7 +98,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnSetItemAtSelected() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         ContextMenu popup = getPopup();
         getSelectionModel().select(0);
         assertEquals("size same as items", items.size(), popup.getItems().size());
@@ -91,6 +122,35 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         }
         return null;
     }
+    
+    /**
+     * Simple bean to test update notification
+     */
+    public static class Item {
+        public final StringProperty name = new SimpleStringProperty();
+
+        public StringProperty nameProperty() {
+            return name;
+        }
+
+        public final String getName() {
+            return nameProperty().get();
+        }
+
+        public final void setName(String name) {
+            nameProperty().set(name);
+        }
+
+        public Item(String name) {
+            setName(name);
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+    }
+
 //------------------- Tests around replacing internals
     
     /**
@@ -110,7 +170,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testValueUpdatesSelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         Object value = items.get(3);
         getChoiceView().setValue(value);
         assertEquals(value, getSelectionModel().getSelectedItem());
@@ -121,23 +181,27 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * Here we test the selectedIndex and selectedItem - logic seems inconsistent
      * for contained items
      * 
-     * - on clear, selectedItem is nulled
-     * - on remove, it is kept
-     * 
+     * <li> on clear, selectedItem is nulled (expected)
+     * <li> on remove, it is kept (bug)
+     * <p>
+     * On remove, the internal selectedItem is intended to be removed (see code comment
+     * in itemsContentListener, the while block) - but implementation of 
+     * SingleSelectionModel.clearSelection prevents the clear of an uncontained
+     * selectedItem (which it is after removal).
      *
      * @see #testClearItemsResetsSelection()
      * @See #testSelectedOnRemoveItemAtSelectedFocused()
      */
     @Test
     public void testRemoveSelectedItemIfSelectedItemContained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         Object item = items.get(index);
         items.remove(index);
         assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
         assertEquals(null, getSelectionModel().getSelectedItem());
+        assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
         assertEquals("", getLabel().getText());
     }
     
@@ -148,7 +212,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testRemoveSelectedItemIfSelectedItemUncontained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         items.clear();
@@ -169,7 +233,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetItemsIfSelectedItemContained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = items.size() - 5;
         getSelectionModel().select(index);
         ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
@@ -187,7 +251,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetItemsIfSelectedItemUncontained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = items.size() - 5;
         getSelectionModel().select("uncontained");
         Object selectedItem = getSelectionModel().getSelectedItem();
@@ -202,7 +266,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetEmptyItemsResetsSelectedItemUncontained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         getChoiceView().setItems(FXCollections.emptyObservableList());
@@ -212,16 +276,20 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
     
     /**
-     * Regression testing: https://javafx-jira.kenai.com/browse/RT-29433
+     * Regression testing: https://javafx-jira.kenai.com/browse/RT-29433 .
      * 
      * Here we test the effect of clearing the selection.
      * 
-     * Logic somehwat inconsistent with removing? Or are we again on 
+     * PENDING JW: Logic somehwat inconsistent with removing? Or are we again on 
      * contained vs uncontained selectedItem?
+     * 
+     * Conclusion to Pending above
+     * - it's not unconsistent in intention, just appears to by not showing the uncontained
+     * 
      */
     @Test
     public void testClearItemsNotResetsSelectedItemUncontained() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         String uncontained = "uncontained";
         getSelectionModel().select(uncontained);
         getChoiceView().getItems().clear();
@@ -236,7 +304,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetEmptyItemsResetsSelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getChoiceView().setItems(FXCollections.emptyObservableList());
@@ -259,7 +327,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testClearItemsResetsSelectionBySelectItem() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(items.get(index));
         getChoiceView().getItems().clear();
@@ -273,16 +341,12 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * 
      * Here we test the effect of clearing the selection.
      * 
-     * Logic somehwat inconsistent with removing? Or are we again on 
-     * contained vs uncontained selectedItem? Here the selectedItem
-     * is contained in the selection ...
+     * @see #testRemoveSelectedItemIfSelectedItemContained()
      * 
-     * hmm .. or does it make a difference how it is selected 
-     * indirectly via select(index) or directly via select(item)?
      */
     @Test
     public void testClearItemsResetsSelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getChoiceView().getItems().clear();
@@ -292,28 +356,21 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
     
     /**
-     * Arguable:
-     * - selectedIndex is cleared on modifying the selectedItem
-     * - selectedItem is old selectedItem
-     * - value is oldValue (aka: synched to selectedItem) but not showing
      * 
-     * Same behavior as selecting an uncontained item in the model
-     * Note: api doc of ChoiceBox explicitly allows programmatic (vs. user
-     * induced) selection of uncontained elements!
+     * Here we test the synch of selectedItem/value, irrespective
+     * wheter or not the actual value is correct.
      * 
-     * So here we test the synch of selectedItem/value - ignore the
-     * other tests for now, should be driven by model!
+     * @see #testSetItemAtSelectedIndexEffectOnSelectedIndex()
      */
     @Test
     public void testSetItemAtSelectedIndexEffectSynchValueSelectedItem() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         Object selected = getSelectionModel().getSelectedItem();
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
         assertEquals(getSelectionModel().getSelectedItem(), getChoiceView().getValue());
-        assertEquals("text of label must be set", getChoiceView().getValue(), getLabel().getText());
     }
     
     
@@ -324,7 +381,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     @Test
     public void testValueIsShownUsingConverterAfterSkin() {
         StringConverter converter = getConverter();
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(items.get(3));
         getChoiceView().setConverter(converter);
         assertEquals(converter.toString(items.get(3)), getLabel().getText());
@@ -337,7 +394,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     @Test
     public void testEmptyValueIsShownUsingConverterAfterSkin() {
         StringConverter converter = getConverter();
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getChoiceView().setConverter(converter);
         assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
         assertEquals(converter.toString(null), getLabel().getText());
@@ -351,14 +408,14 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     public void testEmptyValueIsShownUsingConverter() {
         StringConverter converter = getConverter();
         getChoiceView().setConverter(converter);
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
         assertEquals(converter.toString(null), getLabel().getText());
     }
     
     @Test
     public void testValueShownWithoutSelectionModel() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getChoiceView().setSelectionModel(null);
         Object uncontained = "uncontained";
         getChoiceView().setValue(uncontained);
@@ -392,7 +449,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testUncontainedSelectedItemShownInitialEmptySelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
         Label label = getLabel();
@@ -406,7 +463,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testUncontainedSelectedItemShownInitialNotEmptySelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(items.get(3));
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
@@ -423,7 +480,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     public void testUncontainedSelectedItemShownInitialUncontainedSelection() {
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         Label label = getLabel();
         assertEquals("choice must show uncontained item", uncontained, label.getText());
     }
@@ -437,7 +494,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     public void testUncontainedSelectedItemShownInitialContainedSelection() {
         String uncontained = "here we go with something";
         getSelectionModel().select(items.get(3));
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(uncontained);
         Label label = getLabel();
         assertEquals("choice must show uncontained item", uncontained, label.getText());
@@ -454,61 +511,66 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
     /**
      * Arguable:
-     * - selectedIndex is cleared on modifying the selectedItem
-     * - selectedItem is old selectedItem
-     * - value is oldValue (aka: synched to selectedItem) but not showing
+     * <li> selectedIndex is cleared on modifying the selectedItem
+     * <li> selectedItem is old selectedItem
+     * <li> value is oldValue (aka: synched to selectedItem) but not showing
+     * <p>
+     * the latter two are bugs as per rejection of RT-19820, but not
+     * seen due to RT-38826
+     *  <p>
      * 
-     * Same behavior as selecting an uncontained item in the model
      * Note: api doc of ChoiceBox explicitly allows programmatic (vs. user
      * induced) selection of uncontained elements!
-     * 
-     */
-    @Test @Ignore
-    public void testSetItemAtSelectedIndexEffectOnSelectedIndex() {
-        StageLoader loader = new StageLoader(getView());
-        int index = 2;
-        getSelectionModel().select(index);
-        Object selected = getSelectionModel().getSelectedItem();
-        Object modified = selected + "dummy";
-        getChoiceView().getItems().set(index, modified);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
-    }
-    
-    /**
-     * Arguable:
-     * - selectedIndex is cleared on modifying the selectedItem
-     * - selectedItem is old selectedItem
-     * - value is oldValue (aka: synched to selectedItem) but not showing
-     */
-    @Test @Ignore
-    public void testSetItemAtSelectedIndexEffectOnValue() {
-        StageLoader loader = new StageLoader(getView());
-        int index = 2;
-        getSelectionModel().select(index);
-        Object selected = getSelectionModel().getSelectedItem();
-        Object modified = selected + "dummy";
-        getChoiceView().getItems().set(index, modified);
-        assertEquals("selectedItem must be updated", modified, getChoiceView().getValue());
-    }
-    
-    /**
-     * Arguable:
-     * - selectedIndex is cleared on modifying the selectedItem
-     * - selectedItem is old selectedItem
-     * - value is oldValue (aka: synched to selectedItem) but not showing
-     * 
+     * <p>
+     * Conclusion: (see issues-2014) behaviour is different for internal vs
+     * external selectedItem 
+     * <p>
+     * Changed expectation here and in related test on modifying a internal selectedItem: 
+     * selected index and selectedItem must be cleared
+     * <p>
      * skin or not doesn't make a difference!
+     * <p>
      * 
+     * @see #testUncontainedSelectedItemShownInitialNotEmptySelection()
      */
-    @Test @Ignore
-    public void testSetItemAtSelectedIndexEffectOnSelectedItem() {
-        StageLoader loader = new StageLoader(getView());
+    @Test
+    public void testSetItemAtSelectedIndexEffectOnSelectedIndex() {
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         Object selected = getSelectionModel().getSelectedItem();
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
-        assertEquals("selectedItem must be updated", modified, getSelectionModel().getSelectedItem());
+        assertEquals("selected index must be cleared", -1, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * @see #testSetItemAtSelectedIndexEffectOnSelectedIndex()
+     */
+    @Test
+    public void testSetItemAtSelectedIndexEffectOnValue() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        Object modified = selected + "dummy";
+        getChoiceView().getItems().set(index, modified);
+        assertEquals("selectedItem must cleared", null, getChoiceView().getValue());
+    }
+    
+    /**
+     * @see #testSetItemAtSelectedIndexEffectOnSelectedIndex()
+     * 
+     */
+    @Test
+    public void testSetItemAtSelectedIndexEffectOnSelectedItem() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        Object modified = selected + "dummy";
+        getChoiceView().getItems().set(index, modified);
+        assertEquals("selectedItem must cleared", null, getSelectionModel().getSelectedItem());
     }
     
     /**
@@ -534,8 +596,14 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * Note that it's the responsibility of the test method itself (not the setup)
      * to init if needed.
      */
-//    protected StageLoader loader;
+    protected StageLoader loader;
 
+    protected void initSkin() {
+        loader = new StageLoader(getView());
+        // doesn't make a difference: still spurious RejectedExecutionException ..
+        // triggered by task PaintRenderJob
+//        PlatformImpl.runAndWait(() -> loader = new StageLoader(getView()));
+    }
     
     /**
      * RT-38724
@@ -563,7 +631,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetSelectionModelWithSelectionWithSkin() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         SingleSelectionModel model = createSimpleSelectionModel();
         int index = 2;
         model.select(index);
@@ -583,7 +651,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testSetSelectionModelSelectAfterSetting() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         SingleSelectionModel model = createSimpleSelectionModel();
         int index = 2;
         getChoiceView().setSelectionModel(model);

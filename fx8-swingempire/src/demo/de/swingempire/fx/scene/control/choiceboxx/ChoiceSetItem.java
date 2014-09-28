@@ -79,7 +79,7 @@ public class ChoiceSetItem extends Application {
 //        box.setValue("initial uncontained");
         box.setValue(items.get(0));
 //        ChoiceBoxRT38724<String> box = new ChoiceBoxRT38724<>(items);
-        Button setItem = new Button("Update item at selection");
+        Button setItem = new Button("Set item at selection");
         setItem.setOnAction(e -> {
             SingleSelectionModel model = box.getSelectionModel();
             int oldSelected = model.getSelectedIndex();

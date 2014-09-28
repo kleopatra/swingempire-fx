@@ -6,14 +6,12 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -34,6 +32,7 @@ import javafx.stage.Stage;
  * initially unselected, select by clicking into drop-down: set uncontained value/selectedItem 
  *   -> old selection shown in choicebox, old selection marker in popup (bug) 
  *  
+ * reported: https://javafx-jira.kenai.com/browse/RT-38826
  * 
  * @author Jeanette Winzenburg, Berlin
  */

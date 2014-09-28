@@ -31,6 +31,11 @@ import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
  * - after clicking add, the width shrinks 
  * - open dropdown (without selecting anything)
  * - click add again (or reset): the width expands shortly, then shrinks again
+ * 
+ * Newer issue: https://javafx-jira.kenai.com/browse/RT-20472
+ * didn't test that - but its still open, Jonathan evaluated to 
+ * calling choiceBox.autoresize in reaction to isShowing property
+ * was hack around 9071.
  */
 public class ChoiceBoxResizingRT17697 extends Application {
 

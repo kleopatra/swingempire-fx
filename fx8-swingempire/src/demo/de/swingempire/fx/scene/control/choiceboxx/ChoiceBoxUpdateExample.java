@@ -39,7 +39,7 @@ public class ChoiceBoxUpdateExample extends Application {
                 .mapToObj(i -> new Item("Item " + i))
                 .collect(Collectors.toList()));
         choiceBox.setItems(items);
-
+        choiceBox.getSelectionModel().select(0);
         // To help debugging...
         items.addListener((Change<? extends Item> change) -> {
             while (change.next()) {
