@@ -26,8 +26,9 @@ import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXC
 
 /**
  * Type-safe separator.
+ * http://stackoverflow.com/q/25914924/203657
  * 
- * Supported by ChoiceBoxX but not nice.
+ * Supported by ChoiceBoxX but not much nicer as the answer at SO.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -43,9 +44,9 @@ public class ChoiceBoxSeparator extends Application {
                     new Separator(),
                     new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
                     new Person("Ethan", "Williams", "ethan.williams@example.com"),
-                    // extended support isn't much better, requires dummy extension
+                    // first try of extended support isn't much better, requires dummy extension
                     // and support in selectionModel (easy) and skin (re-write needed)
-                    new SeparatorPerson(),
+//                    new SeparatorPerson(),
                     new Person("Emma", "Jones", "emma.jones@example.com"),
                     new Person("Michael", "Brown", "michael.brown@example.com"));
     /**
@@ -78,6 +79,7 @@ public class ChoiceBoxSeparator extends Application {
         
         ChoiceXControl box = new ChoiceXControl(persons);
         box.setConverter(converter);
+        box.addSeparator(3);
         Parent buttons = createButtonPane(box);
         
         BorderPane xChoice = new BorderPane(box);
@@ -88,7 +90,7 @@ public class ChoiceBoxSeparator extends Application {
     }
 
     
-    private static class SeparatorPerson extends Person implements SeparatorItem {
+    private static class SeparatorPerson extends Person implements SeparatorMarker {
 
         /**
          * @param fName

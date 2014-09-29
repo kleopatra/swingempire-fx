@@ -9,6 +9,7 @@ import java.util.Objects;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 
@@ -16,10 +17,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
-import de.swingempire.fx.scene.control.choiceboxx.SeparatorItem;
+import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
+
 import static org.junit.Assert.*;
 
 /**
@@ -33,10 +33,38 @@ public class ChoiceXSelectionIssues extends
 //----------- test enhanced ChoiceBoxSelectionModel
     
     @Test
-    public void testExternalSelectedItemEnabled() {
-        
+    public void testSeparatorsList() {
+        getView().addSeparator(2);
+        assertEquals(1, getView().separatorsListProperty().getValue().size());
     }
     
+    @Test
+    public void testSeparatorsInListInPopup() {
+        int index = 2;
+        getView().addSeparator(index);
+        initSkin();
+        MenuItem separator = getPopup().getItems().get(index + 1);
+        assertTrue("menuitem must be separator but was: " + separator, 
+                separator instanceof SeparatorMenuItem);
+    }
+    
+    @Test
+    public void testSeparatorsInListInPopupSeparatorUpdated() {
+        int index = 2;
+        initSkin();
+        getView().addSeparator(index);
+        MenuItem separator = getPopup().getItems().get(index + 1);
+        assertTrue("menuitem must be separator but was: " + separator, 
+                separator instanceof SeparatorMenuItem);
+    }
+    
+    @Test
+    public void testMenuItemsProperty() {
+        initSkin();
+        int index = 2;
+        MenuItem item = getPopup().getItems().get(index);
+        assertEquals(index, item.getProperties().get("data-index"));
+    }
     @Test
     public void testSeparatorTypeSafe() {
         ObservableList<Item> items = FXCollections.observableArrayList(
@@ -67,7 +95,7 @@ public class ChoiceXSelectionIssues extends
                 menuItem instanceof SeparatorMenuItem);
     }
     
-    public static class DummyItem extends Item implements SeparatorItem {
+    public static class DummyItem extends Item implements SeparatorMarker {
 
         /**
          * @param name

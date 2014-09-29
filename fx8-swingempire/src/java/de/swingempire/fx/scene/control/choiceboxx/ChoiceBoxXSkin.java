@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
+import javafx.collections.WeakListChangeListener;
 import javafx.geometry.HPos;
 import javafx.geometry.Side;
 import javafx.geometry.VPos;
@@ -93,6 +95,14 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 
     private Label label;
 
+    private final ListChangeListener<Integer> separatorsListListener = c -> {
+        updatePopupItems();
+        updateSelection();
+        getSkinnable().requestLayout();
+    };
+    
+    private final ListChangeListener<Integer> weakSeparatorsListListener = new WeakListChangeListener<>(separatorsListListener);
+    
     private final ListChangeListener<T> choiceBoxItemsListener = new ListChangeListener<T>() {
         @Override public void onChanged(Change<? extends T> c) {
             // brute force fix for RT-38394:
@@ -114,13 +124,15 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 //                    }
 //                }
 //            }
+            // PENDING JW really needed? building up popupItems from scratch should take 
+            // care of selection?
             updateSelection();
             getSkinnable().requestLayout(); // RT-18052 resize of choicebox should happen immediately.
         }
     };
     
-//    private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
-//            new WeakListChangeListener<T>(choiceBoxItemsListener);
+    private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
+            new WeakListChangeListener<T>(choiceBoxItemsListener);
 
     private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
 
@@ -132,7 +144,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             updateSelection();
         } );
         
-        getSkinnable().itemsListProperty().addListener(choiceBoxItemsListener);
+        getSkinnable().itemsListProperty().addListener(weakChoiceBoxItemsListener);
+        getSkinnable().separatorsListProperty().addListener(weakSeparatorsListListener);
        
         label = new Label();
         label.setMnemonicParsing(false);  // ChoiceBox doesn't do Mnemonics
@@ -220,7 +233,9 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
                 int itemInControlCount = getChoiceBoxItems().size();
                 boolean hasSelection = currentSelectedIndex >= 0 && currentSelectedIndex < itemInControlCount;
                 if (hasSelection) {
-                    item = popup.getItems().get((int) currentSelectedIndex);
+                    // CHANGED JW: use findItem
+                    item = getMenuItemFor((int) currentSelectedIndex);
+//                    item = popup.getItems().get((int) currentSelectedIndex);
                     if (item != null && item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
                 } else {
                     if (itemInControlCount > 0) item = popup.getItems().get(0);
@@ -236,6 +251,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
                 double y = 0;
 
                 if (popup.getSkin() != null) {
+                    // PENDING JW: need to adjust for separator!
                     ContextMenuContent cmContent = (ContextMenuContent)popup.getSkin().getNode();
                     if (cmContent != null && currentSelectedIndex != -1) {
                         // PENDING JW: implement the invoke, returns 0 for now
@@ -273,10 +289,24 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         double offset = 0;
         return offset;
     }
+    
+    /**
+     * Changed to enhance separator support.
+     * Supports SeparatorMarker (discouraged) and separatorList.
+     * 
+     * The latter implies that the index-in-items may be != index-in-menuItems.
+     * Implemented by:
+     * - set a property "data-index" in the menuItem with value = index-in-items
+     * - simple add of menuItems
+     * - insert separatorItem if necessary
+     * 
+     * @param o the item in choiceBox' items to map an menuitem to
+     * @param i the position of the choiceBox item in its list
+     */
     private void addPopupItem(final T o, int i) {
         MenuItem popupItem = null;
         // CHANGED JW: added check for separatorItem
-        if (o instanceof Separator || o instanceof SeparatorItem) {
+        if (o instanceof Separator || o instanceof SeparatorMarker) {
             // We translate the Separator into a SeparatorMenuItem...
             popupItem = new SeparatorMenuItem();
         } else if (o instanceof SeparatorMenuItem) {
@@ -285,18 +315,37 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             String displayString = getDisplayString(o);
             final RadioMenuItem item = new RadioMenuItem(displayString);
             item.setId("choice-box-menu-item");
+            item.getProperties().put("data-index", i);
             item.setToggleGroup(toggleGroup);
             item.setOnAction(e -> {
                 if (selectionModel == null) return;
+                // blows on duplicates anyway
                 int index = getSkinnable().getItems().indexOf(o);
+                if (index != (Integer) item.getProperties().get("data-index")) {
+                    throw new IllegalStateException("index mismatch: items/popup " 
+                            + index + "/" + item.getProperties().get("data-index"));
+                }
                 selectionModel.select(index);
                 item.setSelected(true);
             });
             popupItem = item;
         }
         popupItem.setMnemonicParsing(false);   // ChoiceBox doesn't do Mnemonics
-        popup.getItems().add(i, popupItem);
+        // CHANGED JW: replaced by simple add
+//        popup.getItems().add(i, popupItem);
+        popup.getItems().add(popupItem);
+        addSeparator(i);
     }
+    /**
+     * Inserts a separator if the separatorList contains an item with
+     * value index
+     * @param index
+     */
+    private void addSeparator(int index) {
+        if (!getSkinnable().separatorsListProperty().contains(index)) return;
+        popup.getItems().add(new SeparatorMenuItem());
+    }
+
     /**
      * Extracted as fix for RT-38826: label must show uncontained value
      * This method is used whereever we need to display the item, namely
@@ -348,15 +397,41 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             toggleGroup.selectToggle(null);
         } else {
             int selectedIndex = selectionModel.getSelectedIndex();
-            if (selectedIndex >=0 && selectedIndex < popup.getItems().size()) {
-                MenuItem selectedItem = popup.getItems().get(selectedIndex);
-                if (selectedItem instanceof RadioMenuItem) {
-                    ((RadioMenuItem) selectedItem).setSelected(true);
-                    toggleGroup.selectToggle(null);
-                }
+            RadioMenuItem selectedMenuItem = getMenuItemFor(selectedIndex);
+            if (selectedMenuItem != null) {
+                selectedMenuItem.setSelected(true);
+                toggleGroup.selectToggle(null);
             }
+//            if (selectedIndex >=0 && selectedIndex < popup.getItems().size()) {
+//                MenuItem selectedItem = popup.getItems().get(selectedIndex);
+//                if (selectedItem instanceof RadioMenuItem) {
+//                    ((RadioMenuItem) selectedItem).setSelected(true);
+//                    // PENDING JW: why null the toggleGroup?
+//                    toggleGroup.selectToggle(null);
+//                }
+//            }
         }
         updateLabel();
+    }
+
+    /**
+     * @param selectedIndex
+     * @return
+     */
+    private RadioMenuItem getMenuItemFor(int dataIndex) {
+        if (dataIndex < 0) return null;
+        int loopIndex = dataIndex;
+        while (loopIndex < popup.getItems().size()) {
+            MenuItem item = popup.getItems().get(loopIndex);
+            
+            ObservableMap<Object, Object> properties = item.getProperties();
+            Object object = properties.get("data-index");
+            if ((object instanceof Integer) && dataIndex == (Integer) object) {
+                return item instanceof RadioMenuItem ? (RadioMenuItem)item : null;
+            }
+            loopIndex++;
+        }
+        return null;
     }
 
     /**
@@ -394,6 +469,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         double popupWidth = popup.prefWidth(-1);
         if (popupWidth <= 0) { // first time: when the popup has not shown yet
             if (popup.getItems().size() > 0){
+                // PENDING JW: blows if first is separator
                 popupWidth = (new Text(((MenuItem)popup.getItems().get(0)).getText())).prefWidth(-1);
             }
         }

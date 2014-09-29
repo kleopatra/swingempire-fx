@@ -15,8 +15,13 @@ package de.swingempire.fx.scene.control.choiceboxx;
  *   that implements it
  * <li> isn't applicable for primitive types, in particular String  
  * 
+ * <p>
+ * 
+ * PENDING JW:
+ * let choiceBox support a list of separators independent of the actual data
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
-public interface SeparatorItem {
+public interface SeparatorMarker {
 
 }

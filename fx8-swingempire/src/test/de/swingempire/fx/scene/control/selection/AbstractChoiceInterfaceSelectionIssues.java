@@ -75,6 +75,34 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
     
     @Test
+    public void testSeparatorSelectPrevious() {
+        int index = 2;
+        items.set(index, new Separator());
+        getSelectionModel().select(index + 1);
+        getSelectionModel().selectPrevious();
+        assertEquals("selecting next must move over separator",
+                index - 1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSeparatorSelectFirst() {
+        int index = 0;
+        items.set(index, new Separator());
+        getSelectionModel().selectFirst();
+        assertEquals("selecting first must move over separator",
+                index + 1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSeparatorSelectLast() {
+        int index = items.size() - 1;
+        items.set(index, new Separator());
+        getSelectionModel().selectLast();
+        assertEquals("selecting first must move over separator",
+                index - 1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
     public void testSeparatorInPopup() {
         initSkin();
         int index = 2;

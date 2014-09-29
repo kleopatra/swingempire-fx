@@ -203,6 +203,26 @@ public class ChoiceBoxX<T> extends Control {
     private ListProperty<T> itemsList = new SimpleListProperty<>(this, "itemsList");
     public final ListProperty<T> itemsListProperty() {return itemsList;}; 
     
+    private ListProperty<Integer> separatorsList = new SimpleListProperty<>(this, "separatorsList", FXCollections.observableArrayList());
+    /**
+     * Allows to add positions for separators. It's client responsibility 
+     * to keep this list in synch when itemsList is modified. 
+     * @return
+     */
+    public final ListProperty<Integer> separatorsListProperty() { return separatorsList; }
+    /**
+     * Adds a separator index to the list. The separator is inserted 
+     * after the item with the same index.
+     * 
+     * @param separator
+     */
+    public final void addSeparator(int separator) {
+        if (separatorsList.getValue() == null) {
+            separatorsList.setValue(FXCollections.observableArrayList());
+        }
+        separatorsList.getValue().add(separator);
+    };
+    
     /**
      * Allows a way to specify how to represent objects in the items list. When
      * a StringConverter is set, the object toString method is not called and 
@@ -397,18 +417,11 @@ public class ChoiceBoxX<T> extends Control {
          * in a ChoiceBox and select the next valid menuitem.
          * 
          * PENDING JW: 
-         * <li> remove navigation here, violates contract of method
+         * <li> Done: remove navigation here, violates contract of method
          *   instead, simply do nothing if not selectable
          * <li> shouldn't change box' state (here it is hiding)
          */
         @Override public void select(int index) {
-            // this does not sound right, we should let the superclass handle it.
-//            final T value = getModelItem(index);
-//            if (value instanceof Separator) {
-//                select(++index);
-//            } else {
-//                super.select(index);
-//            }
             if (isSelectable(index)) {
                 super.select(index);
             }
@@ -418,15 +431,17 @@ public class ChoiceBoxX<T> extends Control {
             }
         }
         
-//---------- PENDING JW code to cleanup separator handling - backed out
-//           test hangs, some crude error somewhere        
+//---------- PENDING JW code to cleanup separator handling 
         /**
          * Overridden to step over separators.
          */
         @Override
         public void selectPrevious() {
-            // TODO Auto-generated method stub
             super.selectPrevious();
+            int prev = findPreviousSelectableIndex(getCurrentIndex());
+            if (prev != - 1) {
+                select(prev);
+            }
         }
 
         /**
@@ -434,18 +449,58 @@ public class ChoiceBoxX<T> extends Control {
          */
         @Override
         public void selectNext() {
-            int next = findNextSelectableIndex();
+            int next = findNextSelectableIndex(getCurrentIndex());
             if (next != -1) {
                 select(next);
             }
         }
 
+        
+        @Override
+        public void selectFirst() {
+            int next = findNextSelectableIndex(-1);
+            if (next != -1) {
+                select(next);
+            }
+        }
+
+        @Override
+        public void selectLast() {
+            int last = findPreviousSelectableIndex(getItemCount());
+            if (last != -1) {
+                select(last);
+            }
+        }
+
+        /**
+         * Formalizes the notion of current: next/prev are implemented
+         * against this. Here we return the selectedIndex. Subclasses
+         * may implement to something else, f.i. focusIndex.
+         * 
+         * @return
+         */
+        protected int getCurrentIndex() {
+            return getSelectedIndex();
+        }
         /**
          * 
          * @return
          */
-        protected int findNextSelectableIndex() {
-            int current = getSelectedIndex() + 1;
+        protected int findPreviousSelectableIndex(int startIndex) {
+            int current = startIndex - 1;
+            while (current >= 0) {
+                if(isSelectable(current)) return current;
+                current--;
+            }
+            return -1;
+        }
+        
+        /**
+         * 
+         * @return
+         */
+        protected int findNextSelectableIndex(int startIndex) {
+            int current = startIndex + 1;
             while (current < getItemCount()) {
                 if(isSelectable(current)) return current;
                 current++;
@@ -459,7 +514,7 @@ public class ChoiceBoxX<T> extends Control {
          * @return
          */
         protected boolean isSeparator(T item) {
-            return item instanceof Separator || item instanceof SeparatorItem;
+            return item instanceof Separator || item instanceof SeparatorMarker;
         }
         
         protected boolean isSelectable(int index) {
@@ -482,6 +537,9 @@ public class ChoiceBoxX<T> extends Control {
 
         /**
          * Checks and returns whether item is an external selectedItem
+         * 
+         * PENDING JW: re-visit null/empty logic
+         * 
          * @param item
          * @return
          */
