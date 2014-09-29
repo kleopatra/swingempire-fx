@@ -202,7 +202,8 @@ public class ChoiceBoxX<T> extends Control {
     private ListProperty<T> itemsList = new SimpleListProperty<>(this, "itemsList");
     public final ListProperty<T> itemsListProperty() {return itemsList;}; 
     
-    private ListProperty<Integer> separatorsList = new SimpleListProperty<>(this, "separatorsList", FXCollections.observableArrayList());
+    private ListProperty<Integer> separatorsList = new SimpleListProperty<>(this, "separatorsList", 
+            FXCollections.observableArrayList());
     /**
      * Allows to add positions for separators. It's client responsibility 
      * to keep this list in synch when itemsList is modified. 
