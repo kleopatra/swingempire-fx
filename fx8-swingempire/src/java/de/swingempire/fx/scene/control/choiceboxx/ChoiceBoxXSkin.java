@@ -60,7 +60,8 @@ import de.swingempire.fx.property.PathAdapter;
  * - removed indirect listening to selectedItemProperty via registerChangeListener (will break
  *   anyway on change of selectionModel)
  * - replaced manual selection/Model/itemListener by pathAdapter
- * - TODO: replace manual items/content/Listener by listening to itemsListProperty
+ * - replaced manual items/content/Listener by listening to itemsListProperty
+ * - added support for separatorItem
  * 
  * ChoiceBoxSkin - default implementation
  */
@@ -191,21 +192,23 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
         if ("ITEMS".equals(p)) {
+            throw new IllegalStateException("shouldn't get here");
             // PENDING JW: unused - remove 
 //            updateChoiceBoxItems();
-            updatePopupItems();
-            updateSelectionModel();
-            updateSelection();
+//            updatePopupItems();
+//            updateSelectionModel();
+//            updateSelection();
 //            if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
 //                // PENDING JW: uncontained items are explicitly allowed
 //                // you **MUST** show them!
 //                label.setText(""); // clear label text when selectedIndex is -1
 //            }
         } else if (("SELECTION_MODEL").equals(p)) {
-            // PENDING JW: unused - remove
-            updateSelectionModel();
-            // CHANGED JW: RT-38724
-            updateSelection();
+            throw new IllegalStateException("shouldn't get here");
+//            // PENDING JW: unused - remove
+//            updateSelectionModel();
+//            // CHANGED JW: RT-38724
+//            updateSelection();
         } else if ("SHOWING".equals(p)) {
             if (getSkinnable().isShowing()) {
                 MenuItem item = null;
@@ -272,7 +275,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     }
     private void addPopupItem(final T o, int i) {
         MenuItem popupItem = null;
-        if (o instanceof Separator) {
+        // CHANGED JW: added check for separatorItem
+        if (o instanceof Separator || o instanceof SeparatorItem) {
             // We translate the Separator into a SeparatorMenuItem...
             popupItem = new SeparatorMenuItem();
         } else if (o instanceof SeparatorMenuItem) {

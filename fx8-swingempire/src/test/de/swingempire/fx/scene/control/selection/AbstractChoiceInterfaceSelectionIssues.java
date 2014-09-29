@@ -18,10 +18,12 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SkinBase;
 import javafx.util.StringConverter;
-import junit.extensions.TestSetup;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -29,9 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.sun.javafx.application.PlatformImpl;
-
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxUpdateExample.Item;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -45,6 +44,48 @@ import static org.junit.Assert.*;
 public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
     extends SelectionIssues<V, SingleSelectionModel>{
 
+//---------- test unselectable (Separator)
+    
+    
+    @Test
+    public void testSeparatorNotSelectedItem() {
+        getSelectionModel().select(new Separator());
+        assertEquals("selecting index with unselectable item must not change selected index",
+                -1, getSelectionModel().getSelectedIndex());
+        assertEquals(null, getSelectionModel().getSelectedItem());
+    }
+    
+    @Test
+    public void testSeparatorNotSelected() {
+        int index = 2;
+        items.set(index, new Separator());
+        getSelectionModel().select(index);
+        assertEquals("selecting index with unselectable item must not change selected index",
+                -1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSeparatorSelectNext() {
+        int index = 2;
+        items.set(index, new Separator());
+        getSelectionModel().select(index - 1);
+        getSelectionModel().selectNext();
+        assertEquals("selecting next must move over separator",
+                index + 1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSeparatorInPopup() {
+        initSkin();
+        int index = 2;
+        items.set(index, new Separator());
+        MenuItem menuItem = getPopup().getItems().get(index);
+        assertTrue("expected separatorMenuItem but was " + menuItem.getClass(),
+                menuItem instanceof SeparatorMenuItem);
+    }
+
+    
+    
 // --------- internals testing: popup/Menu/items
 
     /**

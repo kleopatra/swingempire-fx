@@ -50,7 +50,9 @@ import de.swingempire.fx.property.PathAdapter;
  * - replaced manual wiring of selectedItemListener by PathAdapter
  * - added itemsListProperty 
  * - replaced all internal access to itemsProperty by itemsListProperty
- * - enhanced ChoiceSelectionModel to take over all items updates related to items
+ * - enhanced ChoiceBoxSelectionModel to take over all item updates related to items
+ * - enhanced ChoiceBoxSelectionModel to support SeparatorItem to allow type-safe lists
+ *  (requires support in skin) 
  * - removed item-related selection updates from choicebox (rely on model)
  * - removed changeListener on value (which duplicated - just incorrectly - sync that's
  *   already done in valueProperty
@@ -273,8 +275,12 @@ public class ChoiceBoxX<T> extends Control {
     private static final PseudoClass SHOWING_PSEUDOCLASS_STATE =
             PseudoClass.getPseudoClass("showing");
 
-    // package for testing
-    static class ChoiceBoxSelectionModel<T> extends SingleSelectionModel<T> {
+    /**
+     * Widened scope to allow easy customization.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class ChoiceBoxSelectionModel<T> extends SingleSelectionModel<T> {
         private final ChoiceBoxX<T> choiceBox;
 
         public ChoiceBoxSelectionModel(final ChoiceBoxX<T> cb) {
@@ -299,6 +305,11 @@ public class ChoiceBoxX<T> extends Control {
             
         }
 
+        /**
+         * Method called from listChangelistener to items.
+         * 
+         * @param c
+         */
         protected void updateSelectionStateOnItemsContentChanged(Change<? extends T> c) {
             if (isEmptyItems() || wasRemoved(c, getSelectedItem())) {
                 clearSelection();
@@ -386,30 +397,83 @@ public class ChoiceBoxX<T> extends Control {
          * in a ChoiceBox and select the next valid menuitem.
          * 
          * PENDING JW: 
-         * <li> remove navigation here, outside contract of method
-         * simply do nothing if not selectable
+         * <li> remove navigation here, violates contract of method
+         *   instead, simply do nothing if not selectable
          * <li> shouldn't change box' state (here it is hiding)
          */
         @Override public void select(int index) {
             // this does not sound right, we should let the superclass handle it.
-            final T value = getModelItem(index);
-            if (value instanceof Separator) {
-                select(++index);
-            } else {
+//            final T value = getModelItem(index);
+//            if (value instanceof Separator) {
+//                select(++index);
+//            } else {
+//                super.select(index);
+//            }
+            if (isSelectable(index)) {
                 super.select(index);
             }
-            
+            // not the task of the model, let choice handle it
             if (choiceBox.isShowing()) {
                 choiceBox.hide();
             }
         }
+        
+//---------- PENDING JW code to cleanup separator handling - backed out
+//           test hangs, some crude error somewhere        
+        /**
+         * Overridden to step over separators.
+         */
+        @Override
+        public void selectPrevious() {
+            // TODO Auto-generated method stub
+            super.selectPrevious();
+        }
 
         /**
-         * Overridden to clear selectedIndex if selectedItem not contained 
+         * Overridden to move over Separators.
+         */
+        @Override
+        public void selectNext() {
+            int next = findNextSelectableIndex();
+            if (next != -1) {
+                select(next);
+            }
+        }
+
+        /**
+         * 
+         * @return
+         */
+        protected int findNextSelectableIndex() {
+            int current = getSelectedIndex() + 1;
+            while (current < getItemCount()) {
+                if(isSelectable(current)) return current;
+                current++;
+            }
+            return -1;
+        }
+
+        /**
+         * 
+         * @param item
+         * @return
+         */
+        protected boolean isSeparator(T item) {
+            return item instanceof Separator || item instanceof SeparatorItem;
+        }
+        
+        protected boolean isSelectable(int index) {
+           final T value = getModelItem(index);
+           return !isSeparator(value);
+        }
+        /**
+         * Overridden to clear selectedIndex if selectedItem not contained and
+         * do nothing if the given item is a separator.
          * in items.
          */
         @Override
         public void select(T obj) {
+            if (isSeparator(obj)) return;
             super.select(obj);
             if (isExternalSelectedItem(obj)) {
                 setSelectedIndex(-1);
@@ -421,7 +485,7 @@ public class ChoiceBoxX<T> extends Control {
          * @param item
          * @return
          */
-        private boolean isExternalSelectedItem(T item) {
+        protected boolean isExternalSelectedItem(T item) {
             if (item == null) return false;
             if (getItemCount() == 0) {
                 return true;

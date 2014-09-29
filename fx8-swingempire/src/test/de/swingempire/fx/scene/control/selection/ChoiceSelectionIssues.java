@@ -147,7 +147,7 @@ public class ChoiceSelectionIssues
     }
     
     
-    private static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceInterface<T> {
+    public static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceInterface<T> {
 
         public ChoiceCoreControl() {
             super();

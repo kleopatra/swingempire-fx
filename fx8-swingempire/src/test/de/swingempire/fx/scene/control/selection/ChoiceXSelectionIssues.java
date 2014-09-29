@@ -6,14 +6,20 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.SeparatorItem;
 import static org.junit.Assert.*;
 
 /**
@@ -24,6 +30,56 @@ import static org.junit.Assert.*;
 public class ChoiceXSelectionIssues extends 
     AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX> {
 
+//----------- test enhanced ChoiceBoxSelectionModel
+    
+    @Test
+    public void testExternalSelectedItemEnabled() {
+        
+    }
+    
+    @Test
+    public void testSeparatorTypeSafe() {
+        ObservableList<Item> items = FXCollections.observableArrayList(
+                new Item("one"), new Item("two"), new Item("threee"), new Item("four"));
+        int index = 2;
+        // can't due to type restriction
+        // items.set(index, new Separator());
+        items.set(index, new DummyItem());
+        getChoiceView().setItems(items);
+        getSelectionModel().select(index - 1);
+        getSelectionModel().selectNext();
+        assertEquals("selecting next must move over separator",
+                index + 1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testSeparatorTypeSafeMenuItem() {
+        initSkin();
+        ObservableList<Item> items = FXCollections.observableArrayList(
+                new Item("one"), new Item("two"), new Item("threee"), new Item("four"));
+        int index = 2;
+        // can't due to type restriction
+        // items.set(index, new Separator());
+        items.set(index, new DummyItem());
+        getChoiceView().setItems(items);
+        MenuItem menuItem = getPopup().getItems().get(index);
+        assertTrue("expected separatorMenuItem but was " + menuItem.getClass(),
+                menuItem instanceof SeparatorMenuItem);
+    }
+    
+    public static class DummyItem extends Item implements SeparatorItem {
+
+        /**
+         * @param name
+         */
+        public DummyItem() {
+            super("separator");
+        }
+        
+    }
+    
+
+// ------------
     @Test
     public void testItemsList() {
         assertSame(getView().itemsProperty().get(), getView().itemsListProperty().get());
@@ -72,7 +128,7 @@ public class ChoiceXSelectionIssues extends
         
     }
     
-    private static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceInterface<T> {
+    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceInterface<T> {
 
         public ChoiceXControl() {
             super();
