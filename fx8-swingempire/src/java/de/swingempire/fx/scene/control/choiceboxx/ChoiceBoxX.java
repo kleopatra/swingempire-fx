@@ -51,8 +51,7 @@ import de.swingempire.fx.property.PathAdapter;
  * - added itemsListProperty 
  * - replaced all internal access to itemsProperty by itemsListProperty
  * - enhanced ChoiceBoxSelectionModel to take over all item updates related to items
- * - enhanced ChoiceBoxSelectionModel to support SeparatorItem to allow type-safe lists
- *  (requires support in skin) 
+ * - added support of separators without adding them to the data 
  * - removed item-related selection updates from choicebox (rely on model)
  * - removed changeListener on value (which duplicated - just incorrectly - sync that's
  *   already done in valueProperty
@@ -222,6 +221,11 @@ public class ChoiceBoxX<T> extends Control {
         }
         separatorsList.getValue().add(separator);
     };
+    
+    public final void clearSeparators() {
+        if (separatorsList.getValue() == null) return;
+        separatorsList.getValue().clear();
+    }
     
     /**
      * Allows a way to specify how to represent objects in the items list. When
