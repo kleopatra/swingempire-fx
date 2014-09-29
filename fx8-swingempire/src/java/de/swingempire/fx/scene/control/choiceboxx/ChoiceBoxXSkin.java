@@ -13,6 +13,7 @@ package de.swingempire.fx.scene.control.choiceboxx;
 import java.util.logging.Logger;
 
 import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.collections.WeakListChangeListener;
@@ -64,21 +65,11 @@ import de.swingempire.fx.property.PathAdapter;
  * - replaced manual selection/Model/itemListener by pathAdapter
  * - replaced manual items/content/Listener by listening to itemsListProperty
  * - added support for separatorItem
+ * - added support for separatorsList (allows type-safety)
  * 
  * ChoiceBoxSkin - default implementation
  */
 public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBoxXBehavior<T>> {
-
-    public ChoiceBoxXSkin(ChoiceBoxX<T> control) {
-        super(control, new ChoiceBoxXBehavior<T>(control));
-        initialize();
-        control.requestLayout();
-//        registerChangeListener(control.selectionModelProperty(), "SELECTION_MODEL");
-        registerChangeListener(control.showingProperty(), "SHOWING");
-//        registerChangeListener(control.itemsProperty(), "ITEMS");
-//        registerChangeListener(control.getSelectionModel().selectedItemProperty(), "SELECTION_CHANGED");
-        registerChangeListener(control.converterProperty(), "CONVERTER");
-    }
 
     private ContextMenu popup;
 
@@ -95,50 +86,40 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 
     private Label label;
 
-    private final ListChangeListener<Integer> separatorsListListener = c -> {
-        updatePopupItems();
-        updateSelection();
-        getSkinnable().requestLayout();
-    };
-    
-    private final ListChangeListener<Integer> weakSeparatorsListListener = new WeakListChangeListener<>(separatorsListListener);
-    
-    private final ListChangeListener<T> choiceBoxItemsListener = new ListChangeListener<T>() {
-        @Override public void onChanged(Change<? extends T> c) {
-            // brute force fix for RT-38394:
-            // update popupItems from scratch on every change
-            updatePopupItems();
-//            while (c.next()) {
-//                if (c.getRemovedSize() > 0 || c.wasPermutated()) {
-//                    toggleGroup.getToggles().clear();
-//                    popup.getItems().clear();
-//                    int i = 0;
-//                    for (T obj : c.getList()) {
-//                        addPopupItem(obj, i);
-//                        i++;
-//                    }
-//                } else {
-//                    for (int i = c.getFrom(); i < c.getTo(); i++) {
-//                        final T obj = c.getList().get(i);
-//                        addPopupItem(obj, i);
-//                    }
-//                }
-//            }
-            // PENDING JW really needed? building up popupItems from scratch should take 
-            // care of selection?
-            updateSelection();
-            getSkinnable().requestLayout(); // RT-18052 resize of choicebox should happen immediately.
-        }
+    /**
+     * The listener registered to choiceBox.itemsList
+     */
+    private final ListChangeListener<T> choiceBoxItemsListener = c -> {
+            updateItems(c);
     };
     
     private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
             new WeakListChangeListener<T>(choiceBoxItemsListener);
 
+    /**
+     * The listener registered to choiceBox.separatorsList
+     */
+    private final ListChangeListener<Integer> separatorsListListener = c -> {
+        updateSeparators(c);
+    };
+
+    private final ListChangeListener<Integer> weakSeparatorsListListener = 
+            new WeakListChangeListener<>(separatorsListListener);
+
+    /**
+     * the path that is bound to selectionModel.selectedItemProperty
+     */
     private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
 
+    public ChoiceBoxXSkin(ChoiceBoxX<T> control) {
+        super(control, new ChoiceBoxXBehavior<T>(control));
+        initialize();
+        control.requestLayout();
+        registerChangeListener(control.showingProperty(), "SHOWING");
+        registerChangeListener(control.converterProperty(), "CONVERTER");
+    }
+
     private void initialize() {
-//        updateChoiceBoxItems();
-        
         selectedItemPath = new PathAdapter<>(getSkinnable().selectionModelProperty(), p -> p.selectedItemProperty());
         selectedItemPath.addListener((p, old, value) -> {
             updateSelection();
@@ -176,53 +157,13 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         popup.setId("choice-box-popup-menu");
         getChildren().setAll(label, openButton);
 
-        updatePopupItems();
-
-        updateSelectionModel();
-        updateSelection();
-    }
-
-    /**
-     * PENDING JW: 
-     * NO-OP - remove
-     */
-//    private void updateChoiceBoxItems() {
-//        if (getChoiceBoxItems() != null) {
-//            getChoiceBoxItems().removeListener(weakChoiceBoxItemsListener);
-//        }
-//        choiceBoxItems = getSkinnable().getItems();
-//        if (getChoiceBoxItems() != null) {
-//            getChoiceBoxItems().addListener(weakChoiceBoxItemsListener);
-//        }
-//    }
-    
-    // Test only purpose    
-    String getChoiceBoxSelectedText() {
-        return label.getText();
+        updateAll(false);
     }
 
     @SuppressWarnings("rawtypes")
     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
-        if ("ITEMS".equals(p)) {
-            throw new IllegalStateException("shouldn't get here");
-            // PENDING JW: unused - remove 
-//            updateChoiceBoxItems();
-//            updatePopupItems();
-//            updateSelectionModel();
-//            updateSelection();
-//            if(selectionModel != null && selectionModel.getSelectedIndex() == -1) {
-//                // PENDING JW: uncontained items are explicitly allowed
-//                // you **MUST** show them!
-//                label.setText(""); // clear label text when selectedIndex is -1
-//            }
-        } else if (("SELECTION_MODEL").equals(p)) {
-            throw new IllegalStateException("shouldn't get here");
-//            // PENDING JW: unused - remove
-//            updateSelectionModel();
-//            // CHANGED JW: RT-38724
-//            updateSelection();
-        } else if ("SHOWING".equals(p)) {
+        if ("SHOWING".equals(p)) {
             if (getSkinnable().isShowing()) {
                 MenuItem item = null;
 
@@ -318,14 +259,14 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
             item.getProperties().put("data-index", i);
             item.setToggleGroup(toggleGroup);
             item.setOnAction(e -> {
-                if (selectionModel == null) return;
+                if (getSelectionModel() == null) return;
                 // blows on duplicates anyway
                 int index = getSkinnable().getItems().indexOf(o);
                 if (index != (Integer) item.getProperties().get("data-index")) {
                     throw new IllegalStateException("index mismatch: items/popup " 
                             + index + "/" + item.getProperties().get("data-index"));
                 }
-                selectionModel.select(index);
+                getSelectionModel().select(index);
                 item.setSelected(true);
             });
             popupItem = item;
@@ -335,6 +276,10 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
 //        popup.getItems().add(i, popupItem);
         popup.getItems().add(popupItem);
         addSeparator(i);
+    }
+
+    protected SelectionModel<T> getSelectionModel() {
+        return getSkinnable().getSelectionModel();
     }
     /**
      * Inserts a separator if the separatorList contains an item with
@@ -358,6 +303,21 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         return displayString;
     }
 
+    protected void updateSeparators(Change<? extends Integer> c) {
+        updateAll(true);
+    }
+
+    protected void updateItems(Change<? extends T> c) {
+        updateAll(true);
+    }
+
+    protected void updateAll(boolean layout) {
+        updatePopupItems();
+        updateSelection();
+        if (layout)
+            getSkinnable().requestLayout();
+    }
+
     private void updatePopupItems() {
         toggleGroup.getToggles().clear();
         popup.getItems().clear();
@@ -370,46 +330,21 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     }
 
     /**
-     * Changed implementation to listen for selectedItemProperty (vs. selectedIndexProperty)
-     */
-    private void updateSelectionModel() {
-//        if (selectionModel != null) {
-//            selectionModel.selectedItemProperty().removeListener(selectionChangeListener);
-//        }
-        this.selectionModel = getSkinnable().getSelectionModel();
-//        if (selectionModel != null) {
-//            selectionModel.selectedItemProperty().addListener(selectionChangeListener);
-//        }
-    }
-
-//    private InvalidationListener selectionChangeListener = observable -> {
-//        updateSelection();
-//    };
-
-    /**
      * PENDING JW: change logic such that we can extract a method that
      * updates the displayValue
      */
     private void updateSelection() {
         // PENDING JW: this is where label was reset to empty always for selectedIndex < 0
         // unspecified behaviour of isEmpty, see https://javafx-jira.kenai.com/browse/RT-38494
-        if (selectionModel == null) { // || selectionModel.isEmpty()) {
+        if (getSelectionModel() == null) { // || selectionModel.isEmpty()) {
             toggleGroup.selectToggle(null);
         } else {
-            int selectedIndex = selectionModel.getSelectedIndex();
+            int selectedIndex = getSelectionModel().getSelectedIndex();
             RadioMenuItem selectedMenuItem = getMenuItemFor(selectedIndex);
             if (selectedMenuItem != null) {
                 selectedMenuItem.setSelected(true);
                 toggleGroup.selectToggle(null);
             }
-//            if (selectedIndex >=0 && selectedIndex < popup.getItems().size()) {
-//                MenuItem selectedItem = popup.getItems().get(selectedIndex);
-//                if (selectedItem instanceof RadioMenuItem) {
-//                    ((RadioMenuItem) selectedItem).setSelected(true);
-//                    // PENDING JW: why null the toggleGroup?
-//                    toggleGroup.selectToggle(null);
-//                }
-//            }
         }
         updateLabel();
     }
@@ -493,6 +428,12 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         return getSkinnable().prefWidth(height);
     }
     
+        
+    // Test only purpose
+    String getChoiceBoxSelectedText() {
+        return label.getText();
+    }
+
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(ChoiceBoxXSkin.class
             .getName());

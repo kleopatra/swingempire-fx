@@ -61,7 +61,7 @@ public class ChoiceBoxSeparator extends Application {
                 if (object instanceof Person) {
                     return ((Person) object).getEmail();
                 }
-                return "";
+                return object != null ? object.toString() : "";
             }
 
             @Override
