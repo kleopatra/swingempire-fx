@@ -324,7 +324,7 @@ public class ChoiceBoxX<T> extends Control {
              */
             
             final ListChangeListener<T> itemsContentObserver = c -> {
-                updateSelectionStateOnItemsContentChanged(c);
+                itemsChanged(c);
             };
             choiceBox.itemsListProperty().addListener(itemsContentObserver);
             
@@ -335,7 +335,7 @@ public class ChoiceBoxX<T> extends Control {
          * 
          * @param c
          */
-        protected void updateSelectionStateOnItemsContentChanged(Change<? extends T> c) {
+        protected void itemsChanged(Change<? extends T> c) {
             if (isEmptyItems() || wasRemoved(c, getSelectedItem())) {
                 clearSelection();
             } else { // selected item either still in list or wasn't before the change

@@ -6,9 +6,9 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,6 +18,7 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionModel;
 
 /**
  * ----- Issue: Behaviour of items.setItem(selectedIndex, newItem)
@@ -73,15 +74,16 @@ public class ChoiceSetItem extends Application {
      * @return
      */
     private Parent getContent() {
-        ChoiceBox<String> box = new ChoiceBox<>(items);
-//        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
+//        ChoiceBox<String> box = new ChoiceBox<>(items);
+        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
+        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
 //        box.setValue("initial uncontained");
         box.setValue(items.get(0));
-//        ChoiceBoxRT38724<String> box = new ChoiceBoxRT38724<>(items);
         Button setItem = new Button("Set item at selection");
         setItem.setOnAction(e -> {
             SingleSelectionModel model = box.getSelectionModel();
+            if (model == null) return;
             int oldSelected = model.getSelectedIndex();
             if (oldSelected == -1) return;
             String newItem = box.getItems().get(oldSelected) + "xx";
@@ -94,6 +96,7 @@ public class ChoiceSetItem extends Application {
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
+            if (model == null) return;
             model.select("myDummySelectedItem");
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
@@ -102,6 +105,7 @@ public class ChoiceSetItem extends Application {
         setValue.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
             box.setValue("myDummyValue");
+            if (model != null)
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
         });
@@ -117,6 +121,39 @@ public class ChoiceSetItem extends Application {
         return pane;
     }
 
+
+    /**
+     * A SelectionModel that updates the selectedItem if it is contained in
+     * the data list and was replaced/updated.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class MySelectionModel<T> extends ChoiceBoxSelectionModel<T> {
+
+        public MySelectionModel(ChoiceBoxX<T> cb) {
+            super(cb);
+        }
+
+        @Override
+        protected void itemsChanged(Change<? extends T> c) {
+            // selection is in list
+            if (getSelectedIndex() != -1) {
+                while (c.next()) {
+                    if (c.wasReplaced() || c.wasUpdated()) {
+                        if (getSelectedIndex() >= c.getFrom()
+                                && getSelectedIndex() < c.getTo()) {
+                            setSelectedItem(getModelItem(getSelectedIndex()));
+                            return;
+                        }
+                    }
+                }
+            }
+            // super expects a clean change
+            c.reset();
+            super.itemsChanged(c);
+        }
+
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());

@@ -9,7 +9,7 @@ import java.util.Objects;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.Separator;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 
@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceSetItem.MySelectionModel;
 import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
 
 import static org.junit.Assert.*;
@@ -30,6 +31,37 @@ import static org.junit.Assert.*;
 public class ChoiceXSelectionIssues extends 
     AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX> {
 
+    
+//------------ test custom selectionModel
+    
+    @Test
+    public void testCustomModelKeepOnSetItemAtSelectedIndex() {
+        getView().setSelectionModel(new MySelectionModel(getView()));
+        int index = 0;
+        String item = "newValue";
+        // select index
+        getSelectionModel().select(index);
+        // replace item
+        getView().getItems().set(index, item);
+        assertEquals("selectedIndex must be same", index, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be newItem ", item, getSelectionModel().getSelectedItem());
+        assertEquals("value must be new Item", item, getView().getValue());
+    }
+    @Test
+    public void testCustomModelKeepOnSetItemAtSelectedIndexPopupUpdated() {
+        getView().setSelectionModel(new MySelectionModel(getView()));
+        initSkin();
+        int index = 0;
+        String item = "newValue";
+        // select index
+        getSelectionModel().select(index);
+        // replace item
+        getView().getItems().set(index, item);
+        // safe, no sparators
+        RadioMenuItem radio = (RadioMenuItem) getPopup().getItems().get(index);
+        assertEquals("sanity", item, radio.getText());
+        assertEquals("menu must be selected", true, radio.isSelected());
+    }
 //----------- test enhanced ChoiceBoxSelectionModel
     
     @Test

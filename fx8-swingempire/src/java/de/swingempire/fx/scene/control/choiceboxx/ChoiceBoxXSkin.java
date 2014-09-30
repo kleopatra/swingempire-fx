@@ -90,7 +90,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * The listener registered to choiceBox.itemsList
      */
     private final ListChangeListener<T> choiceBoxItemsListener = c -> {
-            updateItems(c);
+            itemsChanged(c);
     };
     
     private final WeakListChangeListener<T> weakChoiceBoxItemsListener =
@@ -100,7 +100,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * The listener registered to choiceBox.separatorsList
      */
     private final ListChangeListener<Integer> separatorsListListener = c -> {
-        updateSeparators(c);
+        separatorsChanged(c);
     };
 
     private final ListChangeListener<Integer> weakSeparatorsListListener = 
@@ -122,7 +122,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     private void initialize() {
         selectedItemPath = new PathAdapter<>(getSkinnable().selectionModelProperty(), p -> p.selectedItemProperty());
         selectedItemPath.addListener((p, old, value) -> {
-            updateSelection();
+            selectedItemChanged();
         } );
         
         getSkinnable().itemsListProperty().addListener(weakChoiceBoxItemsListener);
@@ -303,17 +303,17 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         return displayString;
     }
 
-    protected void updateSeparators(Change<? extends Integer> c) {
+    protected void separatorsChanged(Change<? extends Integer> c) {
         updateAll(true);
     }
 
-    protected void updateItems(Change<? extends T> c) {
+    protected void itemsChanged(Change<? extends T> c) {
         updateAll(true);
     }
 
     protected void updateAll(boolean layout) {
         updatePopupItems();
-        updateSelection();
+        selectedItemChanged();
         if (layout)
             getSkinnable().requestLayout();
     }
@@ -333,17 +333,22 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * PENDING JW: change logic such that we can extract a method that
      * updates the displayValue
      */
-    private void updateSelection() {
+    private void selectedItemChanged() {
         // PENDING JW: this is where label was reset to empty always for selectedIndex < 0
         // unspecified behaviour of isEmpty, see https://javafx-jira.kenai.com/browse/RT-38494
-        if (getSelectionModel() == null) { // || selectionModel.isEmpty()) {
+        // here we assume that empty == (selectedIndex == -1), selectedItem
+        // might still be != null (aka: external to the list
+        if (getSelectionModel() == null || getSelectionModel().isEmpty()) {
             toggleGroup.selectToggle(null);
         } else {
             int selectedIndex = getSelectionModel().getSelectedIndex();
             RadioMenuItem selectedMenuItem = getMenuItemFor(selectedIndex);
             if (selectedMenuItem != null) {
                 selectedMenuItem.setSelected(true);
-                toggleGroup.selectToggle(null);
+                // PENDING JW: copied from core, but looks fishy
+                // why would we want toclear the toggleGroup?
+                // its internal wiring will (should) do the right-thing
+//                toggleGroup.selectToggle(null);
             }
         }
         updateLabel();
@@ -353,7 +358,7 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
      * @param selectedIndex
      * @return
      */
-    private RadioMenuItem getMenuItemFor(int dataIndex) {
+    protected RadioMenuItem getMenuItemFor(int dataIndex) {
         if (dataIndex < 0) return null;
         int loopIndex = dataIndex;
         while (loopIndex < popup.getItems().size()) {

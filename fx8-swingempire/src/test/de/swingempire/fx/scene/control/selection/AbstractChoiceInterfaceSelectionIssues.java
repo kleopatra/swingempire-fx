@@ -19,6 +19,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -175,6 +177,21 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("size same as items", items.size(), popup.getItems().size());
     }
     
+    /**
+     * selecting 
+     */
+    @Test
+    public void testPopupSelectedOnSelectUncontainedItem() {
+        initSkin();
+        ContextMenu popup = getPopup();
+        int index = 0;
+        getSelectionModel().select(index);
+        RadioMenuItem radio = (RadioMenuItem) getPopup().getItems().get(index);
+        assertEquals("sanity: radio must be selected", true, radio.isSelected());
+        getSelectionModel().select("uncontained");
+        assertEquals("popup must be unselected", false, radio.isSelected());
+        
+    }
     /**
      * @return the context menu controlled by skin
      */
