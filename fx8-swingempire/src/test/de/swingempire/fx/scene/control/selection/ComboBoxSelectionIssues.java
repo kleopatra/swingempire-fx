@@ -5,7 +5,6 @@
 package de.swingempire.fx.scene.control.selection;
 
 import javafx.collections.ObservableList;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.SingleSelectionModel;

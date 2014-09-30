@@ -159,6 +159,11 @@ public class ChoiceXSelectionIssues extends
     protected ChoiceInterface getChoiceView() {
         return (ChoiceInterface) getView();
     }
+    
+    @Override
+    protected boolean supportsSeparators() {
+        return true;
+    }
 
     /**
      * Very simplistic model, just for testing setSelectionModel. Can't 
@@ -200,4 +205,10 @@ public class ChoiceXSelectionIssues extends
         
         
     }
+
+    @Override
+    protected boolean hasPopup() {
+        return true;
+    }
+
 }

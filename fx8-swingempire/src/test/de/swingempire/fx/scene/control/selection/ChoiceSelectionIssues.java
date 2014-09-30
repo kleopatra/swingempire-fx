@@ -160,4 +160,15 @@ public class ChoiceSelectionIssues
         
     }
 
+
+    @Override
+    protected boolean supportsSeparators() {
+        return true;
+    }
+
+    @Override
+    protected boolean hasPopup() {
+        return true;
+    }
+
 }

@@ -28,16 +28,23 @@ import javafx.util.StringConverter;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import de.swingempire.fx.util.StageLoader;
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 
+import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
  * Extracted common ancestor for ChoiceBox/ChoiceBoxX testing.
+ * 
+ * PENDING JW: tried to use conditionalIgnore - doesn't seem to 
+ * work with extended test cases. Deferred to future.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -46,11 +53,23 @@ import static org.junit.Assert.*;
 public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
     extends SelectionIssues<V, SingleSelectionModel>{
 
+//    @Rule
+//    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+//    public class NoSeparatorSupport implements IgnoreCondition {
+//
+//        @Override
+//        public boolean isSatisfied() {
+//            return !supportsSeparators();
+//        }
+//        
+//    }
+//
+    
 //---------- test unselectable (Separator)
-    
-    
     @Test
+//    @ConditionalIgnore(condition = NoSeparatorSupport.class)
     public void testSeparatorNotSelectedItem() {
+        if (!supportsSeparators()) return;
         getSelectionModel().select(new Separator());
         assertEquals("selecting index with unselectable item must not change selected index",
                 -1, getSelectionModel().getSelectedIndex());
@@ -59,6 +78,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorNotSelected() {
+        if (!supportsSeparators()) return;
         int index = 2;
         items.set(index, new Separator());
         getSelectionModel().select(index);
@@ -68,6 +88,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorSelectNext() {
+        if (!supportsSeparators()) return;
+        
         int index = 2;
         items.set(index, new Separator());
         getSelectionModel().select(index - 1);
@@ -78,6 +100,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorSelectPrevious() {
+        if (!supportsSeparators()) return;
         int index = 2;
         items.set(index, new Separator());
         getSelectionModel().select(index + 1);
@@ -88,6 +111,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorSelectFirst() {
+        if (!supportsSeparators()) return;
         int index = 0;
         items.set(index, new Separator());
         getSelectionModel().selectFirst();
@@ -97,6 +121,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorSelectLast() {
+        if (!supportsSeparators()) return;
         int index = items.size() - 1;
         items.set(index, new Separator());
         getSelectionModel().selectLast();
@@ -106,6 +131,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testSeparatorInPopup() {
+        if (!supportsSeparators()) return;
+        if (!hasPopup()) return;
         initSkin();
         int index = 2;
         items.set(index, new Separator());
@@ -127,6 +154,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testPopupItemsOnUpdateItem() {
+        if (!hasPopup()) return;
         initSkin();
         ObservableList<Item> items = FXCollections
                 .observableArrayList(item -> new Observable[] { item
@@ -142,6 +170,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
     @Test
     public void testPopupItemsOnRemoveItem() {
+        if (!hasPopup()) return;
         initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
@@ -151,6 +180,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnAddItem() {
+        if (!hasPopup()) return;
         initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
@@ -160,6 +190,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnSetItem() {
+        if (!hasPopup()) return;
         initSkin();
         ContextMenu popup = getPopup();
         assertEquals("size same as items", items.size(), popup.getItems().size());
@@ -169,6 +200,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
     @Test
     public void testPopupItemsOnSetItemAtSelected() {
+        if (!hasPopup()) return;
         initSkin();
         ContextMenu popup = getPopup();
         getSelectionModel().select(0);
@@ -182,6 +214,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      */
     @Test
     public void testPopupSelectedOnSelectUncontainedItem() {
+        if (!hasPopup()) return;
         initSkin();
         ContextMenu popup = getPopup();
         int index = 0;
@@ -192,23 +225,6 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("popup must be unselected", false, radio.isSelected());
         
     }
-    /**
-     * @return the context menu controlled by skin
-     */
-    protected ContextMenu getPopup() {
-        Object skin = getView().getSkin();
-        Class clazz = skin.getClass();
-        try {
-            Field field = clazz.getDeclaredField("popup");
-            field.setAccessible(true);
-            return (ContextMenu) field.get(skin);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
     /**
      * Simple bean to test update notification
      */
@@ -260,9 +276,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         Object value = items.get(3);
         getChoiceView().setValue(value);
         assertEquals(value, getSelectionModel().getSelectedItem());
-        assertEquals(value, getLabel().getText());
+        assertEquals(value, getDisplayText());
     }
-    
+
     /**
      * Here we test the selectedIndex and selectedItem - logic seems inconsistent
      * for contained items
@@ -288,7 +304,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals(-1, getSelectionModel().getSelectedIndex());
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
-        assertEquals("", getLabel().getText());
+        assertEquals("", getDisplayText());
     }
     
     /**
@@ -303,7 +319,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getSelectionModel().select(uncontained);
         items.clear();
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("choicebox must show value", uncontained, getLabel().getText());
+        assertEquals("choicebox must show value", uncontained, getDisplayText());
     }
     /**
      * Implementation of itemsProperty in choiceBox vs. itemsChangeListener in 
@@ -326,7 +342,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setItems(subList);
         assertEquals("selectedItem cleared if contained before setting", 
                 null, getSelectionModel().getSelectedItem());
-        assertEquals("", getLabel().getText());
+        assertEquals("", getDisplayText());
     }
     
     /**
@@ -344,7 +360,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
         getChoiceView().setItems(subList);
         assertEquals("selectedItem unchanged if not in new list", selectedItem, getSelectionModel().getSelectedItem());
-        assertEquals("choicebox must show value", selectedItem, getLabel().getText());
+        assertEquals("choicebox must show value", selectedItem, getDisplayText());
     }
     
     /**
@@ -358,7 +374,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setItems(FXCollections.emptyObservableList());
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
         assertEquals(uncontained, getChoiceView().getValue());
-        assertEquals("label must show value", uncontained, getLabel().getText());
+        assertEquals("label must show value", uncontained, getDisplayText());
     }
     
     /**
@@ -381,7 +397,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().getItems().clear();
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
         assertEquals(uncontained, getChoiceView().getValue());
-        assertEquals("label must show value", uncontained, getLabel().getText());
+        assertEquals("label must show value", uncontained, getDisplayText());
     }
     
     
@@ -396,7 +412,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setItems(FXCollections.emptyObservableList());
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getLabel().getText());
+        assertEquals("", getDisplayText());
     }
     
     /**
@@ -419,7 +435,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getLabel().getText());
+        assertEquals("", getDisplayText());
     }
     
     /**
@@ -438,7 +454,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getLabel().getText());
+        assertEquals("", getDisplayText());
     }
     
     /**
@@ -470,7 +486,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         initSkin();
         getSelectionModel().select(items.get(3));
         getChoiceView().setConverter(converter);
-        assertEquals(converter.toString(items.get(3)), getLabel().getText());
+        assertEquals(converter.toString(items.get(3)), getDisplayText());
     }
     
     /**
@@ -483,7 +499,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         initSkin();
         getChoiceView().setConverter(converter);
         assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
-        assertEquals(converter.toString(null), getLabel().getText());
+        assertEquals(converter.toString(null), getDisplayText());
     }
     
     /**
@@ -496,7 +512,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setConverter(converter);
         initSkin();
         assertEquals("sanity: guarantee null value", null, getSelectionModel().getSelectedItem());
-        assertEquals(converter.toString(null), getLabel().getText());
+        assertEquals(converter.toString(null), getDisplayText());
     }
     
     @Test
@@ -538,8 +554,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         initSkin();
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
-        Label label = getLabel();
-        assertEquals("choice must show uncontained item", uncontained, label.getText());
+        assertEquals("choice must show uncontained item", uncontained, getDisplayText());
     }
     
     /**
@@ -553,8 +568,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getSelectionModel().select(items.get(3));
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
-        Label label = getLabel();
-        assertEquals("choice must show uncontained item", uncontained, label.getText());
+        assertEquals("choice must show uncontained item", uncontained, getDisplayText());
     }
     
     /**
@@ -567,8 +581,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         String uncontained = "here we go with something";
         getSelectionModel().select(uncontained);
         initSkin();
-        Label label = getLabel();
-        assertEquals("choice must show uncontained item", uncontained, label.getText());
+        assertEquals("choice must show uncontained item", uncontained, getDisplayText());
     }
     
     /**
@@ -582,17 +595,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getSelectionModel().select(items.get(3));
         initSkin();
         getSelectionModel().select(uncontained);
-        Label label = getLabel();
-        assertEquals("choice must show uncontained item", uncontained, label.getText());
-    }
-
-    /**
-     * Beware: relying on implementation detail - label is first of skin's children.
-     * @return the label that's showing the choicbox text
-     */
-    protected Label getLabel() {
-        SkinBase skin = (SkinBase) getView().getSkin();
-        return (Label) skin.getChildren().get(0);
+        assertEquals("choice must show uncontained item", uncontained, getDisplayText());
     }
 
     /**
@@ -726,7 +729,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setSelectionModel(model);
         assertEquals("box value must be same as selected item", items.get(index), 
                 getChoiceView().getValue());
-        assertEquals("label must be updated", items.get(index), getLabel().getText());
+        assertEquals("label must be updated", items.get(index), getDisplayText());
     }
 
     /**
@@ -783,6 +786,46 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertSame("sanity: view and choiceView are the same", getView(), getChoiceView());
     }
 
+    /**
+     * PENDING JW: here we expect look for a label, that's specific to choiceBox.
+     * ComboBox test must override to implement differently.
+     * Refactor test hierarchy to abstract away the dependency.
+     * @return
+     */
+    protected String getDisplayText() {
+        SkinBase skin = (SkinBase) getView().getSkin();
+        Label label = (Label) skin.getChildren().get(0);
+        return label.getText();
+    }
+
+    /**
+     * PENDING JW: refactor test hierarchy
+     * @return the context menu controlled by skin
+     */
+    protected ContextMenu getPopup() {
+        Object skin = getView().getSkin();
+        Class clazz = skin.getClass();
+        try {
+            Field field = clazz.getDeclaredField("popup");
+            field.setAccessible(true);
+            return (ContextMenu) field.get(skin);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+          
+    /**
+     * PENDING JW: refactor test hierarchy
+     */
+    protected abstract boolean supportsSeparators();
+
+    /**
+     * PENDING JW: refactor test hierarchy
+     */
+    protected abstract boolean hasPopup();
     protected abstract ChoiceInterface getChoiceView();
 
     protected abstract SingleSelectionModel createSimpleSelectionModel();

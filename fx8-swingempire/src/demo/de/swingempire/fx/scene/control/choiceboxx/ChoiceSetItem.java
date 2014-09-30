@@ -74,8 +74,11 @@ public class ChoiceSetItem extends Application {
      * @return
      */
     private Parent getContent() {
+        // core choiceBox
 //        ChoiceBox<String> box = new ChoiceBox<>(items);
+        // extended choiceBox
         ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
+        // can control behaviour details by custom model in extended
         box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
 //        box.setValue("initial uncontained");
