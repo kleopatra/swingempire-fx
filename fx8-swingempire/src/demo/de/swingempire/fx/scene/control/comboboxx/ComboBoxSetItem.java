@@ -1,8 +1,13 @@
 /*
+ * Created on 01.10.2014
+ *
+ */
+package de.swingempire.fx.scene.control.comboboxx;
+
+/*
  * Created on 31.08.2014
  *
  */
-package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
@@ -13,12 +18,13 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionModel;
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
 
 /**
  * ----- Issue: Behaviour of items.setItem(selectedIndex, newItem)
@@ -64,27 +70,30 @@ import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionM
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ChoiceSetItem extends Application {
+public class ComboBoxSetItem extends Application {
 
     ObservableList<String> items = FXCollections.observableArrayList(
             "9-item", "8-item", "7-item", "6-item", 
             "5-item", "4-item", "3-item", "2-item", "1-item");
+    private String title;
 
-    String title;
-    
     /**
      * @return
      */
     private Parent getContent() {
+        String initialValue = items.get(0);
+        ListView listView = new ListView(items);
+        listView.getSelectionModel().select(initialValue);
         // core choiceBox
-        ChoiceBox<String> box = new ChoiceBox<>(items);
+        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
-//        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
-//        // can control behaviour details by custom model in extended
+//        ComboBoxX<String> box = new ComboBoxX<>(items);
+        // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
 //        box.setValue("initial uncontained");
-        box.setValue(items.get(0));
+
+        box.setValue(initialValue);
         Button setItem = new Button("Set item at selection");
         setItem.setOnAction(e -> {
             SingleSelectionModel model = box.getSelectionModel();
@@ -93,7 +102,7 @@ public class ChoiceSetItem extends Application {
             if (oldSelected == -1) return;
             String newItem = box.getItems().get(oldSelected) + "xx";
             box.getItems().set(oldSelected, newItem);
-            LOG.info("selected/item/value" + model.getSelectedIndex() 
+            LOG.info("selected/item/value " + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
             
         });
@@ -121,9 +130,11 @@ public class ChoiceSetItem extends Application {
         });
         HBox buttons = new HBox(setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
         
-        BorderPane pane = new BorderPane(box);
+        
+        BorderPane pane = new BorderPane(listView);
+        pane.setTop(box);
         pane.setBottom(buttons);
-        title = box.getClass().getName();
+        title =box.getClass().getName();
         return pane;
     }
 
@@ -134,9 +145,9 @@ public class ChoiceSetItem extends Application {
      * 
      * @author Jeanette Winzenburg, Berlin
      */
-    public static class MySelectionModel<T> extends ChoiceBoxSelectionModel<T> {
+    public static class MySelectionModel<T> extends ComboBoxSelectionModel<T> {
 
-        public MySelectionModel(ChoiceBoxX<T> cb) {
+        public MySelectionModel(ComboBoxX<T> cb) {
             super(cb);
         }
 
@@ -174,6 +185,6 @@ public class ChoiceSetItem extends Application {
     }
     
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ChoiceSetItem.class
+    private static final Logger LOG = Logger.getLogger(ComboBoxSetItem.class
             .getName());
 }

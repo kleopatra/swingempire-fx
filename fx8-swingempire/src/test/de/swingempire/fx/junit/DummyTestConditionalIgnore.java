@@ -35,11 +35,15 @@ public class DummyTestConditionalIgnore {
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     protected int passing;
     protected int failing;
-    public class NoSeparatorSupport implements IgnoreCondition {
+    public /*static*/ class NoSeparatorSupport implements IgnoreCondition {
 
+//        private DummyTestConditionalIgnore target;
+//        public NoSeparatorSupport(DummyTestConditionalIgnore target) {
+//            this.target = target;
+//        }
         @Override
         public boolean isSatisfied() {
-            return !supportsSeparators();
+            return /*!target.*/supportsSeparators();
         }
         
     }

@@ -15,9 +15,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.util.StageLoader;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 
 /**
  * Super class for testing SelectionModel api of MultipleSelectionModel 
@@ -48,7 +48,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
     @Test
     public void testSelectionFirstWithUnselectedFocus() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getFocusModel().focusNext();
@@ -71,7 +71,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
      */
     @Test
     public void testAnchorPrevious() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().selectPrevious();
@@ -96,7 +96,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
      */
     @Test
     public void testAnchorNext() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().selectNext();

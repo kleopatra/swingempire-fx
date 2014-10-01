@@ -558,7 +558,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             }
             this.comboBox = cb;
             
-            // PENDING JW: looks fishy ..
+            // PENDING JW: looks fishy - listening to itself?
             selectedIndexProperty().addListener(valueModel -> {
                 // we used to lazily retrieve the selected item, but now we just
                 // do it when the selection changes.

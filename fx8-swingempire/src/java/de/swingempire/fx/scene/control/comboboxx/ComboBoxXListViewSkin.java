@@ -8,25 +8,6 @@ package de.swingempire.fx.scene.control.comboboxx;
  * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 
 
@@ -65,6 +46,15 @@ import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javafx.scene.traversal.ParentTraversalEngine;
 import com.sun.javafx.scene.traversal.TraversalContext;
 
+/**
+ * C&P from core and cleaned.
+ * 
+ * Changed:
+ * - use stringconverter for null if prompt is empty
+ * 
+ * 
+ * @author Jeanette Winzenburg, Berlin
+ */
 public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     
     // By default we measure the width of all cells in the ListView. If this
@@ -558,12 +548,38 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         } else {
             // run item through StringConverter if it isn't null
             StringConverter<T> c = comboBox.getConverter();
-            String s = item == null ? comboBox.getPromptText() : (c == null ? item.toString() : c.toString(item));
+            String s;
+            if (item == null) {
+                // CHANGED JW: use converter if promptText is empty
+                if (!isEmptyPrompt()) {
+                    s = comboBox.getPromptText();
+                } else if (c != null) {
+                    s = c.toString(item);
+                } else {
+                    s = "";
+                }
+            } else {
+                if (c == null) {
+                    s = item.toString();
+                } else {
+                    s = c.toString(item);
+                }
+            }
+            
+//            String s = item == null ? comboBox.getPromptText() : 
+//                (c == null ? item.toString() : c.toString(item));
             cell.setText(s);
             cell.setGraphic(null);
             return s == null || s.isEmpty();
         }
     }
+
+
+
+    protected boolean isEmptyPrompt() {
+        return comboBox.getPromptText() == null || comboBox.getPromptText().isEmpty();
+    }
+    
     
     private void setTextFromTextFieldIntoComboBoxValue() {
         if (! comboBox.isEditable()) return;

@@ -210,5 +210,9 @@ public class ChoiceXSelectionIssues extends
     protected boolean hasPopup() {
         return true;
     }
+    @Override
+    protected boolean isClearSelectionOnSetItem() {
+        return true;
+    }
 
 }

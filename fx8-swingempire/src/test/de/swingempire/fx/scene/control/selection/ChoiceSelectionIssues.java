@@ -171,4 +171,9 @@ public class ChoiceSelectionIssues
         return true;
     }
 
+    @Override
+    protected boolean isClearSelectionOnSetItem() {
+        return true;
+    }
+
 }

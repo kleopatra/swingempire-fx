@@ -19,10 +19,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -86,12 +85,28 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     @Test
     public void testAnchorOnRemoveItemAtSelectedFocused() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         items.remove(index);
         assertEquals("open 30931 - anchor after remove focused", 
                 index, getAnchorIndex(index));
+    }
+    
+    /**
+     * Testing effect of items modification.
+     * 
+     * Here: setItem(getSelectedIndex(), newItem); 
+     */
+    @Test
+    public void testSelectedOnSetItemAtSelectedFocused() {
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = items.get(index);
+        Object modified = selected + "xx";
+        items.set(index, modified);
+        assertEquals(index, getSelectionModel().getSelectedIndex());
+        assertEquals(modified, getSelectionModel().getSelectedItem());
     }
     
     @Test
@@ -217,7 +232,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     @Test
     public void testAnchorOnFocusNextWithoutSelection() {
         if (getFocusModel() == null) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getFocusModel().focusNext();
@@ -234,7 +249,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testAnchor() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         assertEquals("anchor must be same as selected index", index, 
@@ -246,7 +261,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testAnchorClearAndSelect() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearAndSelect(index + 1);
@@ -257,7 +272,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     @Test
     public void testAnchorClearSelectionAt() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection(index);
@@ -267,7 +282,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     @Test
     public void testAnchorClearSelection() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection();
@@ -279,7 +294,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testAnchorOnRemoveItemBelow() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         items.remove(index + 1);
@@ -293,7 +308,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testAnchorOnInsertItemBelow() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         items.add(index + 1, "6-item");
@@ -301,13 +316,13 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
-    
+
     /**
      * Anchor must be move after adding/removing items above.
      */
     @Test
     public void testAnchorOnInsertItemAbove() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         items.add(0, "6-item");
@@ -321,7 +336,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testAnchorOnRemoveItemAbove() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         items.remove(0);
@@ -586,7 +601,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 
     @Test
     public void testInitialAnchor() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         assertEquals(-1, getAnchorIndex(-1));
     }
     
@@ -594,7 +609,22 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testCopeWithNullSelectionModel() {
         setSelectionModel(null);
     }
-    
+
+    /**
+     * The stageLoader used to force skin creation. It's an artefact of fx
+     * instantiation process, not meant to be really used.
+     * Note that it's the responsibility of the test method itself (not the setup)
+     * to init if needed.
+     */
+    protected StageLoader loader;
+
+    protected void initSkin() {
+        loader = new StageLoader(getView());
+        // doesn't make a difference: still spurious RejectedExecutionException ..
+        // triggered by task PaintRenderJob
+//        PlatformImpl.runAndWait(() -> loader = new StageLoader(getView()));
+    }
+
     @Before
     public void setUp() throws Exception {
         // JW: need more items for multipleSelection

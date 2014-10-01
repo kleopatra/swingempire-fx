@@ -1,19 +1,23 @@
 package de.swingempire.fx.scene.control.comboboxx;
 
 
+import java.util.logging.Logger;
+
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
-import javafx.scene.SceneBuilder;
+import javafx.collections.ObservableList;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBuilder;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.RadioButtonBuilder;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.HBoxBuilder;
-import javafx.scene.layout.VBoxBuilder;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -23,11 +27,11 @@ import javafx.stage.Stage;
  * same: 
  * https://javafx-jira.kenai.com/browse/RT-24898
  * 
- * Crazy ...
+ * happens if newList.equals(oldList) and newList != oldList
  * 
- * @author Jeanette Winzenburg, Berlin
+ * 
  */
-public class ComboboxSelectionTest extends Application 
+public class ComboboxSelectionCopyRT_26079 extends Application 
     implements InvalidationListener
 {
   private Label state;
@@ -47,48 +51,42 @@ public class ComboboxSelectionTest extends Application
     tg = new ToggleGroup();
     tg.selectedToggleProperty().addListener(this);
     
-    RadioButton rb1 = RadioButtonBuilder.create()
-        .text("one")
-        .selected(true)
-        .toggleGroup(tg)
-        .build();
+    RadioButton rb1 = new RadioButton("one");
+    rb1.setSelected(true);
+    rb1.setToggleGroup(tg);
     
-    RadioButton rb2 = RadioButtonBuilder.create()
-        .text("two")
-        .toggleGroup(tg)
-        .build();
-    
-    cb = ComboBoxBuilder.<String>create()
-        .items(FXCollections.observableArrayList("E1", "E2", "E3"))
-        .editable(false)
-        .build();
+    RadioButton rb2 = new RadioButton("second");
+    rb2.setToggleGroup(tg);
+            
+   
+    // not using builder: combo value is empty
+    ObservableList<String> items = FXCollections.observableArrayList("E1", "E2", "E3");
+    cb = new ComboBox<String>();
+    cb.setItems(items);
+    cb.setEditable(false);
+
     cb.getSelectionModel().selectFirst();
     cb.disableProperty().bind(rb1.selectedProperty());
     cb.getSelectionModel().selectedItemProperty().addListener(this);
     cb.getSelectionModel().clearSelection();
     
-    primaryStage.setScene(
-      SceneBuilder.create()
-        .root(
-            VBoxBuilder.create()
-              .spacing(8)
-              .children(
-                state,
-                HBoxBuilder.create()
-                  .spacing(8)
-                  .children(rb1, rb2, cb)
-                  .build())
-              .build())
-        .build());
-    primaryStage.setMinWidth(300);
+    Button button = new Button("reset items to same");
+    button.setOnAction(e -> {
+        
+    });
+    HBox hbox = new HBox(rb1, rb2, cb, button);
+    Parent root = new VBox(state, hbox);
+    Scene scene = new Scene(root);
+    primaryStage.setScene(scene);
+    primaryStage.setMinWidth(600);
     primaryStage.show();
     updateState();
-    
+
     // Does not work: combobox shows selection but selectionModel.selectedItem is null
     cb.getSelectionModel().selectFirst();
+    // here we replace the cb's items with a list that is equal but not the same
     cb.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
     cb.getSelectionModel().clearSelection();
-
     // Works: view and selection model in sync
     //    cb.getSelectionModel().selectFirst();
     //    cb.getSelectionModel().clearSelection();
@@ -109,4 +107,8 @@ public class ComboboxSelectionTest extends Application
           ((RadioButton) tg.getSelectedToggle()).getText(),
           cb.getSelectionModel().getSelectedItem()));
   }
+  
+  @SuppressWarnings("unused")
+  private static final Logger LOG = Logger
+        .getLogger(ComboboxSelectionCopyRT_26079.class.getName());
 }

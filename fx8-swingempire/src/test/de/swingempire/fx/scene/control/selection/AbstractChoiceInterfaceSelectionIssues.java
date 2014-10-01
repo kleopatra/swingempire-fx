@@ -37,6 +37,8 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -64,6 +66,56 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 //        
 //    }
 //
+    
+//---------- test combo issues
+    
+    /**
+     * Similar list clears as expected.
+     * @see ComboboxSelectionCopyRT_26079
+     */
+    @Test
+    public void testSelectFirstMemorySimilarList() {
+        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().selectFirst();
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3", "E4"));
+        getSelectionModel().clearSelection();
+        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("value must be cleared", null, getChoiceView().getValue());
+//        assertEquals("", getDisplayText());
+    }
+    /**
+     * skin or not doesn't make a difference
+     * @see ComboboxSelectionCopyRT_26079
+     */
+    @Test
+    public void testSelectFirstMemoryEqualsListNoSkin() {
+        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().selectFirst();
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().clearSelection();
+        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("value must be cleared", null, getChoiceView().getValue());
+//        assertEquals("", getDisplayText());
+    }
+    
+    /**
+     * 
+     * @see ComboboxSelectionCopyRT_26079
+     */
+    @Test
+    public void testSelectFirstMemoryEqualsListWithSkin() {
+        initSkin();
+        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().selectFirst();
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().clearSelection();
+        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("value must be cleared", null, getChoiceView().getValue());
+//        assertEquals("", getDisplayText());
+    }
     
 //---------- test unselectable (Separator)
     @Test
@@ -304,7 +356,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals(-1, getSelectionModel().getSelectedIndex());
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
-        assertEquals("", getDisplayText());
+        assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
     /**
@@ -321,7 +373,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
         assertEquals("choicebox must show value", uncontained, getDisplayText());
     }
-    /**
+        
+        /**
      * Implementation of itemsProperty in choiceBox vs. itemsChangeListener in 
      * model are inconclusive:
      * - former clears selection except if uncontained selectedItem
@@ -342,7 +395,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setItems(subList);
         assertEquals("selectedItem cleared if contained before setting", 
                 null, getSelectionModel().getSelectedItem());
-        assertEquals("", getDisplayText());
+        assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
     /**
@@ -412,7 +465,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().setItems(FXCollections.emptyObservableList());
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getDisplayText());
+        assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
     /**
@@ -435,7 +488,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getDisplayText());
+        assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
     /**
@@ -454,9 +507,16 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         getChoiceView().getItems().clear();
         assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(null, getChoiceView().getValue());
-        assertEquals("", getDisplayText());
+        assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
+    /**
+     * @return
+     */
+    protected boolean isEmptyDisplayText() {
+        String text = getDisplayText();
+        return text == null || text.isEmpty();
+    }
     /**
      * 
      * Here we test the synch of selectedItem/value, irrespective
@@ -620,6 +680,10 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * skin or not doesn't make a difference!
      * <p>
      * 
+     * A valid alternative is to detect the replace/update in the model, keep 
+     * selectedIndex as is and update value/selectedItem to the new item.
+     * Updated expectaction to conditional.
+     * 
      * @see #testUncontainedSelectedItemShownInitialNotEmptySelection()
      */
     @Test
@@ -630,7 +694,13 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         Object selected = getSelectionModel().getSelectedItem();
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
-        assertEquals("selected index must be cleared", -1, getSelectionModel().getSelectedIndex());
+        int newIndex = getSelectionModel().getSelectedIndex();
+        if (isClearSelectionOnSetItem()) {
+            assertEquals("selected index must be cleared", -1, newIndex);
+        } else {
+            assertEquals("selected index must be unchanged", index, newIndex);
+        }
+        
     }
     
     /**
@@ -644,7 +714,11 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         Object selected = getSelectionModel().getSelectedItem();
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
-        assertEquals("selectedItem must cleared", null, getChoiceView().getValue());
+        if (isClearSelectionOnSetItem()) {
+            assertEquals("value must cleared", null, getChoiceView().getValue());
+        } else {
+            assertEquals("value must be modified item", modified, getChoiceView().getValue());
+        }
     }
     
     /**
@@ -659,7 +733,38 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         Object selected = getSelectionModel().getSelectedItem();
         Object modified = selected + "dummy";
         getChoiceView().getItems().set(index, modified);
-        assertEquals("selectedItem must cleared", null, getSelectionModel().getSelectedItem());
+        if (isClearSelectionOnSetItem()) {
+            assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        } else {
+            assertEquals("selectedItem must be modified item", modified, getSelectionModel().getSelectedItem());
+        }
+    }
+    
+    /**
+     * Overridden to with conditional assert, outcome depends on 
+     * isClearSelectionOnSetItem. 
+     * Also covered by more specified tests setItemAtSelectedXX
+     * which depend on whether or not the selection should be cleared.
+     * 
+     * @see #testSetItemAtSelectedIndexEffectOnSelectedIndex()
+     * @see #testSetItemAtSelectedIndexEffectOnSelectedItem()
+     * @see #testSetItemAtSelectedIndexEffectOnValue()
+     * @see #isClearSelectionOnSetItem()
+     */
+    @Override @Test 
+    public void testSelectedOnSetItemAtSelectedFocused() {
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = items.get(index);
+        Object modified = selected + "xx";
+        items.set(index, modified);
+        if (isClearSelectionOnSetItem()) {
+            assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+            assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        } else {
+            assertEquals("selectedIndex must be unchanged", index, getSelectionModel().getSelectedIndex());
+            assertEquals("selectedItem must be modified", modified, getSelectionModel().getSelectedItem());
+        }
     }
     
     /**
@@ -679,20 +784,6 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
 
     //-------------------    
-    /**
-     * The stageLoader used to force skin creation. It's an artefact of fx
-     * instantiation process, not meant to be really used.
-     * Note that it's the responsibility of the test method itself (not the setup)
-     * to init if needed.
-     */
-    protected StageLoader loader;
-
-    protected void initSkin() {
-        loader = new StageLoader(getView());
-        // doesn't make a difference: still spurious RejectedExecutionException ..
-        // triggered by task PaintRenderJob
-//        PlatformImpl.runAndWait(() -> loader = new StageLoader(getView()));
-    }
     
     /**
      * RT-38724
@@ -817,6 +908,15 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
 
           
+    /**
+     * Returns true if selection is cleared on setItem at selected index.
+     * 
+     * Depends on type of control: ChoiceBox is implemented to yes, ComboBox
+     * is implemented to false (though buggy!)
+     * 
+     * @return
+     */
+    protected abstract boolean isClearSelectionOnSetItem();
     /**
      * PENDING JW: refactor test hierarchy
      */

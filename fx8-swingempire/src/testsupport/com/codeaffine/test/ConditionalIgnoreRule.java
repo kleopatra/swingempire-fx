@@ -27,6 +27,15 @@ import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
+/**
+ * blog entry
+ * http://www.codeaffine.com/2013/11/18/a-junit-rule-to-conditionally-ignore-tests/
+ * code from:
+ * https://gist.github.com/rherrmann/7447571
+ * alternative (status/difference?)
+ * https://gist.github.com/yinzara/9980184
+ * 
+ */
 public class ConditionalIgnoreRule implements MethodRule {
 
   public interface IgnoreCondition {
