@@ -112,6 +112,7 @@ public class FXUtils {
     public static <T> void prettyPrint(Change<? extends T> change) {
         StringBuilder sb = new StringBuilder("\tChange event data:\n");
         int i = 0;
+        change.reset();
         while (change.next()) {
             sb.append("\n " + change);
             sb.append("\t\tcursor = ").append(i++).append("\n");

@@ -20,7 +20,6 @@ import org.junit.runners.JUnit4;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceSetItem.MySelectionModel;
 import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
-
 import static org.junit.Assert.*;
 
 /**
@@ -203,7 +202,15 @@ public class ChoiceXSelectionIssues extends
             super(items);
         }
         
-        
+        /**
+         * No-op: testing artefact
+         * PENDING JW: cleanup test hierarchy
+         */
+        @Override
+        public void setEditable(boolean editable) {
+            // do nothing
+        }
+
     }
 
     @Override

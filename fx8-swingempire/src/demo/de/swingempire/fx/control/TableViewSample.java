@@ -4,19 +4,21 @@
  */
 package de.swingempire.fx.control;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -47,6 +49,7 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * Example from tutorial. 
@@ -363,6 +366,10 @@ public class TableViewSample extends Application {
         final Label label = new Label("Address Book");
         label.setFont(new Font("Arial", 20));
         TableView<Person> table = createBaseTable(useExtended);
+        // button allows to hide all columns, then impossible to show them again
+        // http://stackoverflow.com/q/26141262/203657
+        table.setTableMenuButtonVisible(true);
+        
         setCellFactories(table, coreTextFieldCellFactory);
         final TextField addFirstName = new TextField();
         addFirstName.setPromptText("First Name");
@@ -440,6 +447,33 @@ public class TableViewSample extends Application {
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         table.getColumns().addAll(firstNameCol, lastNameCol, emailCol);
         table.setItems(data);
+        
+        ListProperty<TableColumn> columnsList = new SimpleListProperty(table.getColumns());
+        ListChangeListener<? super TableColumn> columnsListener = c -> {
+            LOG.info("got change from colunns");
+        };
+        columnsList.addListener(columnsListener);
+        
+        ListProperty<TableColumn> visibleColumns = new SimpleListProperty(table.getVisibleLeafColumns());
+        ListChangeListener<? super TableColumn> visibleColumnsListener = c -> {
+            while (c.next()) {
+                // very last remove
+                if (c.wasRemoved() && !c.wasReplaced()) {
+                    TableColumn column = c.getRemoved().get(0);
+                    // delay reverting visibility
+                    Platform.runLater(() -> {
+                        column.setVisible(true);
+                    });
+                }
+            }
+        };
+        table.getVisibleLeafColumns().addListener(visibleColumnsListener);
+//        visibleColumns.addListener(visibleColumnsListener);
+        visibleColumns.sizeProperty().addListener((p, old, value) -> {
+            if (value.intValue() == 1) {
+               TableColumn last = visibleColumns.get(0); 
+            }
+        });
         return table;
     }
 

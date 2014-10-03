@@ -156,6 +156,15 @@ public class ChoiceSelectionIssues
         public ChoiceCoreControl(ObservableList<T> items) {
             super(items);
         }
+
+        /**
+         * No-op: testing artefact
+         * PENDING JW: cleanup test hierarchy
+         */
+        @Override
+        public void setEditable(boolean editable) {
+            // do nothing
+        }
         
         
     }

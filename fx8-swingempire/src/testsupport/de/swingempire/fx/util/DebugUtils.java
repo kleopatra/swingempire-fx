@@ -14,8 +14,8 @@ import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -25,6 +25,13 @@ import javafx.scene.shape.Rectangle;
  */
 public class DebugUtils {
 
+    public static void printSelectionState(ComboBox<?> choice) {
+        LOG.info("index/selectedItem/value " + choice.getSelectionModel().getSelectedIndex()
+                + " / " + choice.getSelectionModel().getSelectedItem() 
+                + " / " + choice.getValue()
+                );
+    }
+    
     @FunctionalInterface
     public interface AddBounds {
         void addBounds(Parent parent, Node node);

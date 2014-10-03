@@ -8,25 +8,19 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 /**
  * Reported: https://javafx-jira.kenai.com/browse/RT-38326
@@ -70,12 +64,20 @@ public class TableFocusedCell extends Application {
         language.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));
         TableColumn<Locale, String> country = new TableColumn<>("Country");
         country.setCellValueFactory(new PropertyValueFactory<>("country"));
-        
+        //https://javafx-jira.kenai.com/browse/RT-38464   
+        // cannot start editing by keyboard
+        // partly fixed as of 8u40b7: works if clicked into any cell once
+        // not working by keyboard only
+        // or better: not intuitve - need to ctrl-left/right to 
+        // make column available after initial selection
+        table.setEditable(true);
+        country.setCellFactory(TextFieldTableCell.forTableColumn());
 
         
         table.setItems(data);
         table.getColumns().addAll(language, country);
-        
+
+
         // https://javafx-jira.kenai.com/browse/RT-38491
         // incorrect extend selection after inserting item
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

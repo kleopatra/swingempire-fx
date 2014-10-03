@@ -18,11 +18,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
+import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.IgnoreRT26078;
 import static org.junit.Assert.*;
-
 import static org.junit.Assert.*;
 
 /**
@@ -38,24 +39,69 @@ public class ComboSelectionIssues
      * Trying to reproduce RT_26079 with builder: 
      * blowing if set equal but not same list
      * 
-     * 
      */
     @Test
-    public void testSelectFirstMemoryWithBuilderSameList() {
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemoryWithBuilderEqualsList() {
         view = 
                 ComboBoxBuilder.<String>create()
                 .items(FXCollections.observableArrayList("E1", "E2", "E3"))
                 // no difference
 //                .editable(false)
                 .build();
-//        initSkin();
         view.getSelectionModel().selectFirst();
         view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
         view.getSelectionModel().clearSelection();
         assertEquals(-1, view.getSelectionModel().getSelectedIndex());
         assertEquals(null, view.getSelectionModel().getSelectedItem());
         assertEquals(null, view.getValue());
-        assertEquals("", getDisplayText());
+//        assertEquals("", getDisplayText());
+        
+    }
+    /**
+     * Trying to reproduce RT_26079 with builder: 
+     * fine if size of new list is different (here: longet)
+     * 
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemoryWithBuilderSimilarLongerList() {
+        view = 
+                ComboBoxBuilder.<String>create()
+                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
+                // no difference
+//                .editable(false)
+                .build();
+        view.getSelectionModel().selectFirst();
+        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5", "E6"));
+        view.getSelectionModel().clearSelection();
+        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+        assertEquals(null, view.getSelectionModel().getSelectedItem());
+        assertEquals(null, view.getValue());
+//        assertEquals("", getDisplayText());
+        
+    }
+    /**
+     * Trying to reproduce RT_26079 with builder: 
+     * blowing if set equal but not same list
+     * 
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemoryWithBuilderSimilarList() {
+        view = 
+                ComboBoxBuilder.<String>create()
+                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
+                // no difference
+//                .editable(false)
+                .build();
+        view.getSelectionModel().selectFirst();
+        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5"));
+        view.getSelectionModel().clearSelection();
+        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+        assertEquals(null, view.getSelectionModel().getSelectedItem());
+        assertEquals(null, view.getValue());
+//        assertEquals("", getDisplayText());
 
     }
     @Override

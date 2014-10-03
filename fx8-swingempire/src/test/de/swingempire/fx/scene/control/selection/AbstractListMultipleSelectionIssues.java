@@ -278,6 +278,11 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     
 //------------ regression testing
     
+    /**
+     * The main driving force here is to experiment with AnchoredSelectionModel
+     * we'll live with the regression here, since it will be solved correctly
+     * in core.
+     */
     @Test
     public void testRT15793() {
         ListView<String> view = createEmptyView();
@@ -285,7 +290,9 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         view.itemsProperty().addListener(o -> {LOG.info("notified");});
         view.itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
         ObservableList<String> emptyList = FXCollections.observableArrayList();
-        assertEquals(null, view.getItems());
+        // listView is instantiated with an empty list, so following assumption 
+        // is incorrect
+//        assertEquals(null, view.getItems());
         view.setItems(emptyList);
         emptyList.add("something");
         view.getSelectionModel().select(0);

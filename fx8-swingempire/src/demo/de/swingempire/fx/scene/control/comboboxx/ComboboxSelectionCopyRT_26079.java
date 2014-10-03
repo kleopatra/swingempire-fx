@@ -72,6 +72,11 @@ public class ComboboxSelectionCopyRT_26079 extends Application
     
     Button button = new Button("reset items to same");
     button.setOnAction(e -> {
+        // Does not work: combobox shows selection but selectionModel.selectedItem is null
+        cb.getSelectionModel().selectFirst();
+        // here we replace the cb's items with a list that is equal but not the same
+        cb.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        cb.getSelectionModel().clearSelection();
         
     });
     HBox hbox = new HBox(rb1, rb2, cb, button);
@@ -82,11 +87,6 @@ public class ComboboxSelectionCopyRT_26079 extends Application
     primaryStage.show();
     updateState();
 
-    // Does not work: combobox shows selection but selectionModel.selectedItem is null
-    cb.getSelectionModel().selectFirst();
-    // here we replace the cb's items with a list that is equal but not the same
-    cb.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
-    cb.getSelectionModel().clearSelection();
     // Works: view and selection model in sync
     //    cb.getSelectionModel().selectFirst();
     //    cb.getSelectionModel().clearSelection();

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javafx.beans.Observable;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -37,9 +38,8 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 
-import static org.junit.Assert.*;
-
-import de.swingempire.fx.util.StageLoader;
+import de.swingempire.fx.scene.control.comboboxx.ComboSelectionRT_19433;
+import de.swingempire.fx.scene.control.comboboxx.ComboboxSelectionCopyRT_26079;
 import static org.junit.Assert.*;
 
 /**
@@ -55,8 +55,23 @@ import static org.junit.Assert.*;
 public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
     extends SelectionIssues<V, SingleSelectionModel>{
 
-//    @Rule
-//    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    
+    /**
+     * Working with static class that doesn't require access to running
+     * test class
+     */
+    public static class IgnoreRT26078 implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    
+    // not working as we need to access the running test class
 //    public class NoSeparatorSupport implements IgnoreCondition {
 //
 //        @Override
@@ -69,53 +84,182 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     
 //---------- test combo issues
     
+    
+    
     /**
-     * Similar list clears as expected.
-     * @see ComboboxSelectionCopyRT_26079
+     * https://javafx-jira.kenai.com/browse/RT-19433
+     * SelectedIndex not updated when committin an edit
+     * 
+     * Example of broken class invariant:
+     * 
+     * if (selectedIndex >= 0) {
+     *    assertEquals(items.get(selectedIndex), selectedItem);
+     * }
+     * 
+     * @see ComboSelectionRT_19433
      */
     @Test
-    public void testSelectFirstMemorySimilarList() {
-        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
-        getSelectionModel().selectFirst();
-        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3", "E4"));
-        getSelectionModel().clearSelection();
-        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
-        assertEquals("value must be cleared", null, getChoiceView().getValue());
-//        assertEquals("", getDisplayText());
+    public void testSelectedIndexOnCommitEdit() {
+        // skin or not doesn't make a differnce
+//        initSkin();
+        // editable or not doesn't make a difference
+//        getChoiceView().setEditable(true);
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("value must be updated", uncontained, getChoiceView().getValue());
+        assertEquals("selectedItem must be updated", uncontained, getSelectionModel().getSelectedItem());
+        if (!items.contains(uncontained))
+            assertEquals("selectedIndex must be cleared for uncontained", -1, getSelectionModel().getSelectedIndex());
     }
+    
     /**
-     * skin or not doesn't make a difference
-     * @see ComboboxSelectionCopyRT_26079
+     * https://javafx-jira.kenai.com/browse/RT-32919
+     * setConverter must not clear selection
+     * 
+     * hmm .. can't reproduce here: was reported against
+     * 2.2, looks fixed in 8u20
      */
     @Test
-    public void testSelectFirstMemoryEqualsListNoSkin() {
-        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+    public void testConverterEffectOnSelection() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        getChoiceView().setConverter(getConverter());
+        assertEquals(index, getSelectionModel().getSelectedIndex());
+        assertEquals(selected, getSelectionModel().getSelectedItem());
+        assertEquals(selected, getChoiceView().getValue());
+    }
+    
+//------------ start tests around RT-26078    
+    /**
+     * In AnchoredSelectionModel testing, we decided to  
+     * live with the regression, since it will be solved eventually
+     * in core.
+     * 
+     * RT-26078 seems to be related - maybe incorrect evaluation? The 
+     * hack for 15793 is in place for comboBox, but doesn't seems
+     * to be effective - why not?
+     * 
+     * No, RT-26078 it's not related (at least not directly: the example
+     * uses setAll(....) which is special-case
+     * 
+     * @see ComboboxSelectionCopyRT_26079
+     * @see AbstractListMultipleSelectionIssues#testRT15793()
+     */
+    @Test
+    public void testSelectFirstRT_15793() {
+        int notified = 0;
+        getChoiceView().itemsProperty().addListener(o -> {LOG.info("notified");});
+        getChoiceView().itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
+        ObservableList<String> emptyList = FXCollections.observableArrayList();
+        // listView is instantiated with an empty list, so following assumption 
+        // is incorrect
+//        assertEquals(null, view.getItems());
+        getChoiceView().setItems(emptyList);
+        emptyList.add("something");
         getSelectionModel().selectFirst();
+        assertEquals(0, getSelectionModel().getSelectedIndex());
+        emptyList.remove(0);
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+
+    /**
+     * PENDING JW: give up for now, don't understand why
+     * behvaiour different with/out skin
+     * 
+     * @see ComboboxSelectionCopyRT_26079
+     */
+    @Test 
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemoryEqualsListWithSkin() {
+        // prepare needed - to reproduce same behaviour as with builder
+        // select before setting items
+        getSelectionModel().selectFirst();
+        // replace all items and clear selection before skin
         getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
         getSelectionModel().clearSelection();
+        assertEquals("sanity initial: selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity initial: selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("sanity initial: value must be cleared", null, getChoiceView().getValue());
+        // force skin
+        initSkin();
+        // re-select
+        getSelectionModel().selectFirst();
+        // re-set a list that's equal but not the same
+        // seems - not the issue here: the issue is special-casing setAll
+//        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        // clearing again
+        getSelectionModel().clearSelection();
         assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
         assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        // here we fail
         assertEquals("value must be cleared", null, getChoiceView().getValue());
 //        assertEquals("", getDisplayText());
     }
     
-    /**
-     * 
-     * @see ComboboxSelectionCopyRT_26079
-     */
     @Test
-    public void testSelectFirstMemoryEqualsListWithSkin() {
-        initSkin();
-        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemorySimilarListWithSkin() {
+        // prepare needed - to reproduce same behaviour as with builder
+        // select before setting items
         getSelectionModel().selectFirst();
+        // replace all items and clear selection before skin
         getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().clearSelection();
+        assertEquals("sanity initial: selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity initial: selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("sanity initial: value must be cleared", null, getChoiceView().getValue());
+        // force skin
+        initSkin();
+        // re-select
+        getSelectionModel().selectFirst();
+        // re-set a list that's equal but not the same
+        // seems - not the issue here: the issue is special-casing setAll
+//        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5"));
+        // clearing again
         getSelectionModel().clearSelection();
         assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
         assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        // here we fail
         assertEquals("value must be cleared", null, getChoiceView().getValue());
 //        assertEquals("", getDisplayText());
     }
+    
+    @Test
+    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    public void testSelectFirstMemorySimilarLongerListWithSkin() {
+        // prepare needed - to reproduce same behaviour as with builder
+        // select before setting items
+        getSelectionModel().selectFirst();
+        // replace all items and clear selection before skin
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getSelectionModel().clearSelection();
+        assertEquals("sanity initial: selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity initial: selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        assertEquals("sanity initial: value must be cleared", null, getChoiceView().getValue());
+        // force skin
+        initSkin();
+        // re-select
+        getSelectionModel().selectFirst();
+        // re-set a list that's equal but not the same
+        // seems - not the issue here: the issue is special-casing setAll
+//        getChoiceView().setItems(FXCollections.observableArrayList("E1", "E2", "E3"));
+        getChoiceView().getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3", "E5"));
+        // clearing again
+        getSelectionModel().clearSelection();
+        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be cleared", null, getSelectionModel().getSelectedItem());
+        // here we fail
+        assertEquals("value must be cleared", null, getChoiceView().getValue());
+//        assertEquals("", getDisplayText());
+    }
+//------------ end tests around RT-26078    
     
 //---------- test unselectable (Separator)
     @Test
@@ -956,6 +1100,11 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      
         SingleSelectionModel<T> getSelectionModel();
 
+        /**
+         * @return
+         */
+        ObjectProperty<ObservableList<T>> itemsProperty();
+
         void setConverter(StringConverter<T> converter);
 
         void setSelectionModel(SingleSelectionModel<T> model);
@@ -966,6 +1115,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         
         void setItems(ObservableList<T> items);
         ObservableList<T> getItems();
+        
+        void setEditable(boolean editable);
     }
     
     @SuppressWarnings("unused")
