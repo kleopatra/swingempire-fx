@@ -38,15 +38,14 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
     PathAdapter<SingleSelectionModel<T>, Integer> selectedIndexPath;
     
     public SingleMultipleSelectionModel(ControllerProvider<T> provider) {
-        this.controller = Objects.requireNonNull(controller, "controller must not be null");
         selectedItemPath = new PathAdapter<>(provider.selectionModelProperty(), 
-                p -> p.selectedItemProperty());
+                p -> p.selectedItemProperty(), null);
         selectedItemPath.addListener((o, old, value) -> {selectedItemChanged(value);
         });
         
         selectedIndexPath  = new PathAdapter<SingleSelectionModel<T>, Integer>(
                 provider.selectionModelProperty(), 
-                p -> p.selectedIndexProperty().asObject());
+                p -> p.selectedIndexProperty().asObject(), -1);
         selectedIndexPath.addListener((o, old, value) -> selectedIndexChanged(value));
         
     }
@@ -100,18 +99,21 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
 
     /**
      * IMplemented to select only the last in the list
+     * 
+     * PENDING: untested
      */
     @Override
     public void selectIndices(int index, int... indices) {
         int last = index;
         if (indices != null && indices.length > 0) {
-            for (int i = indices.length - 1; i >= 0; i--) {
-                int row = indices[i];
-                if (row >= 0 && row < getItemCount()) {
-                    last = row;
-                    break;
-                }
-            }
+            last = indices[indices.length - 1];
+//            for (int i = indices.length - 1; i >= 0; i--) {
+//                int row = indices[i];
+//                if (row >= 0 && row < getItemCount()) {
+//                    last = row;
+//                    break;
+//                }
+//            }
         }
         select(last);
     }

@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SingleSelectionModel;
 
@@ -18,6 +17,7 @@ import org.junit.runners.JUnit4;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
+import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -25,7 +25,7 @@ import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class ComboXSelectionIssues 
-    extends AbstractChoiceInterfaceSelectionIssues<ComboBoxX> {
+    extends AbstractChoiceInterfaceSelectionIssues<ComboBoxX, SingleSelectionModel> {
 
 
     
@@ -94,7 +94,7 @@ public class ComboXSelectionIssues
     }
     
     
-    public static class ComboXControl<T> extends ComboBoxX<T> implements ChoiceControl<T> {
+    public static class ComboXControl<T> extends ComboBoxX<T> implements ChoiceControl<T, SingleSelectionModel<T>> {
 
         public ComboXControl() {
             super();
@@ -112,6 +112,16 @@ public class ComboXSelectionIssues
     protected boolean isClearSelectionOnSetItem() {
         // TODO Auto-generated method stub
         return false;
+    }
+
+    @Override
+    protected SingleSelectionModel getSelectionModel() {
+        return getView().getSelectionModel();
+    }
+
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getView().setSelectionModel(model);
     }
 
 

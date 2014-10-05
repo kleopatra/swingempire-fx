@@ -18,11 +18,11 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
 
@@ -85,9 +85,9 @@ public class ComboBoxSetItem extends Application {
         ListView listView = new ListView(items);
         listView.getSelectionModel().select(initialValue);
         // core choiceBox
-        ComboBox<String> box = new ComboBox<>(items);
+//        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
-//        ComboBoxX<String> box = new ComboBoxX<>(items);
+        ComboBoxX<String> box = new ComboBoxX<>(items);
         // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
@@ -106,7 +106,17 @@ public class ComboBoxSetItem extends Application {
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
             
         });
-        
+        Button removeItem = new Button("Remove item at selection");
+        removeItem.setOnAction(e -> {
+            SingleSelectionModel model = box.getSelectionModel();
+            if (model == null) return;
+            int oldSelected = model.getSelectedIndex();
+            if (oldSelected == -1) return;
+            items.remove(oldSelected);
+            LOG.info("selected/item/value " + model.getSelectedIndex() 
+                    + "/" + model.getSelectedItem() + "/" + box.getValue());
+            
+        });
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
@@ -128,7 +138,7 @@ public class ComboBoxSetItem extends Application {
             box.setSelectionModel(null);
             box.setValue(items.get(2));
         });
-        HBox buttons = new HBox(setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
+        Pane buttons = new FlowPane(removeItem, setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
         
         
         BorderPane pane = new BorderPane(listView);

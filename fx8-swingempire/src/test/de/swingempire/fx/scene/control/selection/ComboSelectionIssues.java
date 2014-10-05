@@ -20,10 +20,7 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreRT26079;
-import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 
 /**
@@ -32,7 +29,7 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class ComboSelectionIssues 
-    extends AbstractChoiceInterfaceSelectionIssues<ComboBox> {
+    extends AbstractChoiceInterfaceSelectionIssues<ComboBox, SingleSelectionModel> {
 
     
     /**
@@ -169,7 +166,7 @@ public class ComboSelectionIssues
     }
     
     
-    public static class ComboCoreControl<T> extends ComboBox<T> implements ChoiceControl<T> {
+    public static class ComboCoreControl<T> extends ComboBox<T> implements ChoiceControl<T, SingleSelectionModel<T>> {
 
         public ComboCoreControl() {
             super();
@@ -187,6 +184,14 @@ public class ComboSelectionIssues
     protected boolean isClearSelectionOnSetItem() {
         // TODO Auto-generated method stub
         return false;
+    }
+    @Override
+    protected SingleSelectionModel getSelectionModel() {
+        return getView().getSelectionModel();
+    }
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getView().setSelectionModel(model);
     }
 
 

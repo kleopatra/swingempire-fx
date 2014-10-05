@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class ChoiceXSelectionIssues extends 
-    AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX> {
+    AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX, SingleSelectionModel> {
 
     
 //------------ test custom selectionModel
@@ -192,7 +192,7 @@ public class ChoiceXSelectionIssues extends
         
     }
     
-    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T> {
+    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T, SingleSelectionModel<T>> {
 
         public ChoiceXControl() {
             super();
@@ -220,6 +220,14 @@ public class ChoiceXSelectionIssues extends
     @Override
     protected boolean isClearSelectionOnSetItem() {
         return true;
+    }
+    @Override
+    protected SingleSelectionModel getSelectionModel() {
+        return getView().getSelectionModel();
+    }
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getView().setSelectionModel(model);
     }
 
 }

@@ -22,6 +22,7 @@ import javafx.scene.control.FocusModel;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
@@ -30,18 +31,17 @@ import javafx.util.StringConverter;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboSelectionRT_19433;
 import de.swingempire.fx.scene.control.comboboxx.ComboboxSelectionCopyRT_26079;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDynamicItems;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreExternalError;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
 import static org.junit.Assert.*;
 
 /**
@@ -54,8 +54,8 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
-public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
-    extends SelectionIssues<V, SingleSelectionModel>{
+public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, W extends SelectionModel> 
+    extends SelectionIssues<V, W>{
 
     
 //---------- test combo issues
@@ -956,13 +956,14 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * Here we test the skinless box
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
     public void testSetSelectionModelWithSelectionNoSkin() {
-        SingleSelectionModel model = createSimpleSelectionModel();
+        W model = createSimpleSelectionModel();
         int index = 2;
         model.select(index);
         assertEquals("sanity: model is selecting index and item", items.get(index), 
                 model.getSelectedItem());
-        getChoiceView().setSelectionModel(model);
+        /*getChoiceView().*/setSelectionModel(model);
         assertEquals("box value must be same as selected item", items.get(index), 
                 getChoiceView().getValue());
     }
@@ -973,15 +974,15 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * To test we set a model which has a selection - doesn't update choiceBox value.
      * Here we force the skin, just in case
      */
-    @Test
+    @Test 
     public void testSetSelectionModelWithSelectionWithSkin() {
         initSkin();
-        SingleSelectionModel model = createSimpleSelectionModel();
+        W model = createSimpleSelectionModel();
         int index = 2;
         model.select(index);
         assertEquals("sanity: model is selecting index and item", items.get(index), 
                 model.getSelectedItem());
-        getChoiceView().setSelectionModel(model);
+        setSelectionModel(model);
         assertEquals("box value must be same as selected item", items.get(index), 
                 getChoiceView().getValue());
         assertEquals("label must be updated", items.get(index), getDisplayText());
@@ -996,9 +997,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     @Test
     public void testSetSelectionModelSelectAfterSetting() {
         initSkin();
-        SingleSelectionModel model = createSimpleSelectionModel();
+        W model = createSimpleSelectionModel();
         int index = 2;
-        getChoiceView().setSelectionModel(model);
+        setSelectionModel(model);
         model.select(index);
         assertEquals("box value must be same as selected item", items.get(index), getChoiceView().getValue());
     }
@@ -1011,10 +1012,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * Ignoring for now to not pollute.
      */
     @Test 
-    @ConditionalIgnore (condition = IgnoreExternalError.class)
     public void testNullSelectionModelValueShown() {
         initSkin();
-        getChoiceView().setSelectionModel(null);
+        setSelectionModel(null);
         Object uncontained = "uncontained";
         getChoiceView().setValue(uncontained);
         assertEquals(uncontained, getChoiceView().getValue());
@@ -1057,14 +1057,11 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
     @Override
     protected V createView(ObservableList items) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    protected SingleSelectionModel getSelectionModel() {
-        return getChoiceView().getSelectionModel();
-    }
+    protected abstract W getSelectionModel();
 
     @Before
     @Override
@@ -1124,7 +1121,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     protected abstract boolean hasPopup();
     protected abstract ChoiceControl getChoiceView();
 
-    protected abstract SingleSelectionModel createSimpleSelectionModel();
+    protected abstract W createSimpleSelectionModel();
 
     @Override
     protected int getAnchorIndex(int index) {
@@ -1138,9 +1135,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
     
     @Override
-    protected void setSelectionModel(SingleSelectionModel model) {
-        getChoiceView().setSelectionModel(model);
-    }
+    protected abstract void setSelectionModel(W model);
 
 
     /**
@@ -1148,7 +1143,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * of ChoiceBoxX/ChoiceBox.
      * 
      */
-    public static interface ChoiceControl<T> {
+    public static interface ChoiceControl<T, W extends SelectionModel<T>> {
      
         ObjectProperty<ObservableList<T>> itemsProperty();
 
@@ -1160,9 +1155,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
 
         void setValue(T value);
 
-        SingleSelectionModel<T> getSelectionModel();
-
-        void setSelectionModel(SingleSelectionModel<T> model);
+//        W getSelectionModel();
+//
+//        void setSelectionModel(W model);
 
         void show();
 

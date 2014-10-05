@@ -5,25 +5,28 @@
 package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceSetItem.MySelectionModel;
 import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
 import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel;
 import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
-
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
 import static org.junit.Assert.*;
 
 /**
@@ -34,14 +37,16 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class SingleMultipleXSelectionIssues extends 
-    AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX> {
+    AbstractChoiceInterfaceSelectionIssues<ChoiceBoxX, SingleMultipleSelectionModel> {
 
     
 //------------ test custom selectionModel
     
-    @Test
+    
+    @Test 
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
     public void testCustomModelKeepOnSetItemAtSelectedIndex() {
-        getView().setSelectionModel(new MySelectionModel(getView()));
+//        setSelectionModel(new MySelectionModel(getView()));
         int index = 0;
         String item = "newValue";
         // select index
@@ -51,6 +56,26 @@ public class SingleMultipleXSelectionIssues extends
         assertEquals("selectedIndex must be same", index, getSelectionModel().getSelectedIndex());
         assertEquals("selectedItem must be newItem ", item, getSelectionModel().getSelectedItem());
         assertEquals("value must be new Item", item, getView().getValue());
+    }
+    
+    @Override @Test
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
+    public void testSetSelectionModelWithSelectionWithSkin() {
+        // TODO Auto-generated method stub
+        super.testSetSelectionModelWithSelectionWithSkin();
+    }
+
+    @Override @Test
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
+    public void testSetSelectionModelWithSelectionNoSkin() {
+        super.testSetSelectionModelWithSelectionNoSkin();
+    }
+    
+    @Override @Test
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
+    public void testSetSelectionModelSelectAfterSetting() {
+        // TODO Auto-generated method stub
+        super.testSetSelectionModelSelectAfterSetting();
     }
     @Test
     public void testCustomModelKeepOnSetItemAtSelectedIndexPopupUpdated() {
@@ -150,9 +175,10 @@ public class SingleMultipleXSelectionIssues extends
         assertSame(getView().itemsProperty().get(), getView().itemsListProperty().get());
     }
     
+    //PENDING JW: returns null - ignore all tests which set the model
     @Override
-    protected SimpleChoiceXSelectionModel createSimpleSelectionModel() {
-        return new SimpleChoiceXSelectionModel(getView());
+    protected SingleMultipleSelectionModel createSimpleSelectionModel() {
+        return null; //new SimpleChoiceXSelectionModel(getView());
     }
   
     @Override
@@ -172,12 +198,12 @@ public class SingleMultipleXSelectionIssues extends
 
     
     @Override
-    protected SingleSelectionModel getSelectionModel() {
-        // TODO Auto-generated method stub
-        return super.getSelectionModel();
+    protected SingleMultipleSelectionModel getSelectionModel() {
+        return adapter;
     }
     
-    MultipleSelectionModel adapter;
+    SingleMultipleSelectionModel adapter;
+    
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -213,7 +239,7 @@ public class SingleMultipleXSelectionIssues extends
         
     }
     
-    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T> {
+    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T, SingleMultipleSelectionModel<T>> {
 
         public ChoiceXControl() {
             super();
@@ -242,5 +268,11 @@ public class SingleMultipleXSelectionIssues extends
     protected boolean isClearSelectionOnSetItem() {
         return true;
     }
+    @Override
+    protected void setSelectionModel(SingleMultipleSelectionModel model) {
+    }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(SingleMultipleXSelectionIssues.class.getName());
 }

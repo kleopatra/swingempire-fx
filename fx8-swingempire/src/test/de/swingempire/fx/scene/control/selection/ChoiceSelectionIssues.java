@@ -9,20 +9,16 @@ import java.util.Objects;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -31,7 +27,7 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class ChoiceSelectionIssues 
-    extends AbstractChoiceInterfaceSelectionIssues<ChoiceBox> {
+    extends AbstractChoiceInterfaceSelectionIssues<ChoiceBox, SingleSelectionModel> {
 
     /**
      * Used in bug report
@@ -147,7 +143,7 @@ public class ChoiceSelectionIssues
     }
     
     
-    public static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceControl<T> {
+    public static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceControl<T, SingleSelectionModel<T>> {
 
         public ChoiceCoreControl() {
             super();
@@ -165,6 +161,7 @@ public class ChoiceSelectionIssues
         public void setEditable(boolean editable) {
             // do nothing
         }
+
         
         
     }
@@ -183,6 +180,16 @@ public class ChoiceSelectionIssues
     @Override
     protected boolean isClearSelectionOnSetItem() {
         return true;
+    }
+
+    @Override
+    protected SingleSelectionModel getSelectionModel() {
+        return getView().getSelectionModel();
+    }
+
+    @Override
+    protected void setSelectionModel(SingleSelectionModel model) {
+        getView().setSelectionModel(model);
     }
 
 }

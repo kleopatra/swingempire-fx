@@ -22,8 +22,6 @@ import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-//import javafx.scene.accessibility.Attribute;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -37,7 +35,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.behavior.ComboBoxListViewBehavior;
 import com.sun.javafx.scene.control.skin.ComboBoxPopupControl;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualContainerBase;
@@ -46,12 +43,20 @@ import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javafx.scene.traversal.ParentTraversalEngine;
 import com.sun.javafx.scene.traversal.TraversalContext;
 
+import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
+//import javafx.scene.accessibility.Attribute;
+
 /**
  * C&P from core and cleaned.
  * 
  * Changed:
  * - use stringconverter for null if prompt is empty
  * - encapsulate comboBoxItems (keep null substitution)
+ * - set ListView's selectionModel to SingleMultipleSelectionModel which is coupled
+ *   to combo's selectinModel
+ * - TODO: commented content of updateValue - needs to be solved cleanly
+ * - bind ListView's items to comboBox items
+ *     
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -200,7 +205,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
             }
         }));
         
-        registerChangeListener(comboBox.itemsProperty(), "ITEMS");
+//        registerChangeListener(comboBox.itemsProperty(), "ITEMS");
         registerChangeListener(comboBox.promptTextProperty(), "PROMPT_TEXT");
         registerChangeListener(comboBox.cellFactoryProperty(), "CELL_FACTORY");
         registerChangeListener(comboBox.visibleRowCountProperty(), "VISIBLE_ROW_COUNT");
@@ -233,8 +238,8 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         super.handleControlPropertyChanged(p);
         
         if ("ITEMS".equals(p)) {
-            updateComboBoxItems();
-            updateListViewItems();
+//            updateComboBoxItems();
+//            updateListViewItems();
         } else if ("PROMPT_TEXT".equals(p)) {
             updateDisplayNode();
         } else if ("CELL_FACTORY".equals(p)) {
@@ -310,24 +315,25 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     }
 
     /**
+     * PENDING JW: now bound to same items
      * alias to listViewItems to local comboBoxItems, that is 
      * listView.getItems == this.comboBoxItems (different from combo.getItems if null)
      * Listening to listViewItems, and the only place where listViewItems is used
      */
     public void updateListViewItems() {
-        if (listViewItems != null) {
-            listViewItems.removeListener(weakListViewItemsListener);
-        }
-
-        this.listViewItems = getComboBoxItems();
-        listView.setItems(listViewItems);
-
-        if (listViewItems != null) {
-            listViewItems.addListener(weakListViewItemsListener);
-        }
-        
-        itemCountDirty = true;
-        getSkinnable().requestLayout();
+//        if (listViewItems != null) {
+//            listViewItems.removeListener(weakListViewItemsListener);
+//        }
+//
+//        this.listViewItems = getComboBoxItems();
+//        listView.setItems(listViewItems);
+//
+//        if (listViewItems != null) {
+//            listViewItems.addListener(weakListViewItemsListener);
+//        }
+//        
+//        itemCountDirty = true;
+//        getSkinnable().requestLayout();
     }
     
     @Override public Node getPopupContent() {
@@ -432,44 +438,48 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         }
     }
 
+    /**
+     * PENDING JW: removed all for now - listView selectionModel is coupled
+     * to combo selectionModel, all should be automatic
+     */
     private void updateValue() {
-        T newValue = comboBox.getValue();
-        
-        SelectionModel<T> listViewSM = listView.getSelectionModel();
-        
-        if (newValue == null) {
-            listViewSM.clearSelection();
-        } else {
-            // RT-22386: We need to test to see if the value is in the comboBox
-            // items list. If it isn't, then we should clear the listview 
-            // selection
-            int indexOfNewValue = getIndexOfComboBoxValueInItemsList();
-            if (indexOfNewValue == -1) {
-                listSelectionLock = true;
-                listViewSM.clearSelection();
-                listSelectionLock = false;
-            } else {
-                int index = comboBox.getSelectionModel().getSelectedIndex();
-                if (index >= 0 && index < getComboBoxItems().size()) {
-                    T itemsObj = getComboBoxItems().get(index);
-                    if (itemsObj != null && itemsObj.equals(newValue)) {
-                        listViewSM.select(index);
-                    } else {
-                        listViewSM.select(newValue);
-                    }
-                } else {
-                    // just select the first instance of newValue in the list
-                    int listViewIndex = getComboBoxItems().indexOf(newValue);
-                    if (listViewIndex == -1) {
-                        // RT-21336 Show the ComboBox value even though it doesn't
-                        // exist in the ComboBox items list (part one of fix)
-                        updateDisplayNode();
-                    } else {
-                        listViewSM.select(listViewIndex);
-                    }
-                }
-            }
-        }
+//        T newValue = comboBox.getValue();
+//        
+//        SelectionModel<T> listViewSM = listView.getSelectionModel();
+//        
+//        if (newValue == null) {
+//            listViewSM.clearSelection();
+//        } else {
+//            // RT-22386: We need to test to see if the value is in the comboBox
+//            // items list. If it isn't, then we should clear the listview 
+//            // selection
+//            int indexOfNewValue = getIndexOfComboBoxValueInItemsList();
+//            if (indexOfNewValue == -1) {
+//                listSelectionLock = true;
+//                listViewSM.clearSelection();
+//                listSelectionLock = false;
+//            } else {
+//                int index = comboBox.getSelectionModel().getSelectedIndex();
+//                if (index >= 0 && index < getComboBoxItems().size()) {
+//                    T itemsObj = getComboBoxItems().get(index);
+//                    if (itemsObj != null && itemsObj.equals(newValue)) {
+//                        listViewSM.select(index);
+//                    } else {
+//                        listViewSM.select(newValue);
+//                    }
+//                } else {
+//                    // just select the first instance of newValue in the list
+//                    int listViewIndex = getComboBoxItems().indexOf(newValue);
+//                    if (listViewIndex == -1) {
+//                        // RT-21336 Show the ComboBox value even though it doesn't
+//                        // exist in the ComboBox items list (part one of fix)
+//                        updateDisplayNode();
+//                    } else {
+//                        listViewSM.select(listViewIndex);
+//                    }
+//                }
+//            }
+//        }
     }
     
     private String initialTextFieldValue = null;
@@ -658,6 +668,16 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         final ListView<T> _listView = new ListView<T>() {
 
             {
+                // PENDING JW: trying out adapter: doesn't help when set/remove item at selected?
+                ControllerProvider<T> provider = () -> comboBox.selectionModelProperty();
+                
+                SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(provider);
+                setSelectionModel(adapter);
+                
+                // CHANGED JW
+                // simply bind the items' properties
+                itemsProperty().bind(comboBox.itemsProperty());
+                
                 // disable selecting the first item on focus gain - this is
                 // not what is expected in the ComboBox control (unlike the
                 // ListView control, which does this).

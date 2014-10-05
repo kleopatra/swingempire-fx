@@ -72,6 +72,22 @@ public class SelectionIgnores {
         
     }
     
+    /**
+     * Ignore tests that require a custom selectionModel (doesn't make sense
+     * in adapters)
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class IgnoreSetSelectionModel implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+        
+    }
+    
     // KEEP to not forget: nested classes in tests are not working
     // in classes that extend the defining
     // not working as we need to access the running test class
