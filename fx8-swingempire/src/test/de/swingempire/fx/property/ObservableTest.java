@@ -43,8 +43,52 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
-//--------------------    
+//--------------------  
     /**
+     * Testing notification of setup in comboX/choiceX
+     * 
+     * sequence, direction, or where-to-set list doesn't make a difference ..
+     * but probably will once RT-35214 is fixed (bubbles up to public preview)
+     * not yet in 8u40b7
+     */
+    @Test
+    public void testObjectPropertyBoundToListProperty() {
+        ListProperty<String> listProperty = new SimpleListProperty<>();
+        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>();
+        objectProperty.bindBidirectional(listProperty);
+        ObservableList<String> list = createObservableList(true);
+        objectProperty.set(list);
+        ChangeReport listPropertyReport = new ChangeReport(listProperty);
+        ChangeReport objectPropertyReport = new ChangeReport(objectProperty);
+        listProperty.set(createObservableList(true));
+        assertEquals(1, listPropertyReport.getEventCount());
+        assertEquals(1, objectPropertyReport.getEventCount());
+    }
+    /**
+     * underlying issue with RT-15793: no notification on list that is equals
+     * but not the same.
+     */
+    @Test
+    public void testListProperty() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> property = new SimpleListProperty<>(list);
+        ChangeReport report = new ChangeReport(property);
+        property.set(createObservableList(true));
+        assertEquals("listProperty must fire on not-same list", 1, report.getEventCount());
+    }
+    
+    @Test
+    public void testListValuedObjectProperty() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
+        ChangeReport report = new ChangeReport(property);
+        property.set(createObservableList(true));
+        assertEquals("list-valued objectProperty must fire on not-same list", 1, report.getEventCount());
+    }
+    
+    /**
+     * Reported: https://javafx-jira.kenai.com/browse/RT-38828
+     * 
      * Confused: listProperty fires changeEvent if items in underlying list
      * removed?
      * 
@@ -123,6 +167,7 @@ public class ObservableTest {
     
 //----------------- tests related to RT-38770: changeListeners not notified 
 //----------------- https://javafx-jira.kenai.com/browse/RT-38770    
+    
     /**
      * Test notification of changeListeners on setting a list that equals the old
      * value but is a different instance.

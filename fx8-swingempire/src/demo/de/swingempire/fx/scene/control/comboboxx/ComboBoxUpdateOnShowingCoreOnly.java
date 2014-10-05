@@ -56,10 +56,13 @@ import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues.ComboXCon
  * - still cleared if resetting the list (which is functionally equivalent to setAll)
  * - choicebox clears always
  * 
+ * Here we use only core components (X blows in 8u40, too lazy to find the 
+ * reason)
+ * 
  * @author jfdenise
  * @see ComboboxSelectionRT_26079
  */
-public class ComboBoxUpdateOnShowingRT_20945 extends Application {
+public class ComboBoxUpdateOnShowingCoreOnly extends Application {
 
     /**
      * @param args the command line arguments
@@ -78,23 +81,18 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
 //        configureCombo(combo, "core combo");
         ComboCoreControl combo = new ComboCoreControl();
         configureChoice(combo, "core combo");
-        ComboXControl comboX = new ComboXControl();
-        configureChoice(comboX, "x combo");
         ChoiceCoreControl choice = new ChoiceCoreControl();
         configureChoice(choice, "core choice");
-        ChoiceXControl choiceX = new ChoiceXControl();
-        configureChoice(choiceX, "x choice");
         ComboBoxListViewSkin t;
         Button button = new Button("null selected");
         button.setOnAction(e -> {
             combo.getSelectionModel().select(null);
         });
-        Pane combos = new HBox(combo, comboX, choice, choiceX );
+        Pane combos = new HBox(combo, choice);
         Pane buttons = new HBox(button);
         
         Pane content = new VBox(combos, buttons);
-        primaryStage.setScene(new Scene(content));
-        primaryStage.setTitle(System.getProperty("java.version"));
+        primaryStage.setScene(new Scene(content, 300, 250));
         primaryStage.show();
     }
 
@@ -158,5 +156,5 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ComboBoxUpdateOnShowingRT_20945.class.getName());
+            .getLogger(ComboBoxUpdateOnShowingCoreOnly.class.getName());
 }

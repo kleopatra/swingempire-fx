@@ -49,8 +49,8 @@ public class ComboXSelectionIssues
     }
     
     @Override
-    protected ChoiceInterface getChoiceView() {
-        return (ChoiceInterface) getView();
+    protected ChoiceControl getChoiceView() {
+        return (ChoiceControl) getView();
     }
 
     
@@ -94,7 +94,7 @@ public class ComboXSelectionIssues
     }
     
     
-    public static class ComboXControl<T> extends ComboBoxX<T> implements ChoiceInterface<T> {
+    public static class ComboXControl<T> extends ComboBoxX<T> implements ChoiceControl<T> {
 
         public ComboXControl() {
             super();

@@ -85,6 +85,17 @@ public class ChoiceSetItem extends Application {
         // uncontained value never shown
 //        box.setValue("initial uncontained");
         box.setValue(items.get(0));
+        
+        Button removeItem = new Button("Remove item at selection");
+        removeItem.setOnAction(e -> {
+            SingleSelectionModel model = box.getSelectionModel();
+            if (model == null) return;
+            int oldSelected = model.getSelectedIndex();
+            if (oldSelected == -1) return;
+            box.getItems().remove(oldSelected);
+            LOG.info("selected/item/value" + model.getSelectedIndex() 
+                    + "/" + model.getSelectedItem() + "/" + box.getValue());
+        });
         Button setItem = new Button("Set item at selection");
         setItem.setOnAction(e -> {
             SingleSelectionModel model = box.getSelectionModel();
@@ -119,7 +130,7 @@ public class ChoiceSetItem extends Application {
             box.setSelectionModel(null);
             box.setValue(items.get(2));
         });
-        HBox buttons = new HBox(setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
+        HBox buttons = new HBox(removeItem, setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
         
         BorderPane pane = new BorderPane(box);
         pane.setBottom(buttons);

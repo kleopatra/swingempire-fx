@@ -15,10 +15,17 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.Skin;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+
+import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
+
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -26,11 +33,31 @@ import javafx.scene.shape.Rectangle;
 public class DebugUtils {
 
     public static void printSelectionState(ComboBox<?> choice) {
-        LOG.info("index/selectedItem/value " + choice.getSelectionModel().getSelectedIndex()
+        LOG.info("index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
                 + " / " + choice.getSelectionModel().getSelectedItem() 
                 + " / " + choice.getValue()
+                + " / " + getDisplayText(choice)
                 );
     }
+    
+    public static void printSelectionState(ComboBoxX<?> choice) {
+        LOG.info("index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
+                + " / " + choice.getSelectionModel().getSelectedItem() 
+                + " / " + choice.getValue()
+                + " / " + getDisplayText(choice)
+                );
+    }
+    
+    public static String getDisplayText(Control view) {
+        Skin skin = view.getSkin();
+        if (!(skin instanceof ComboBoxBaseSkin)) return null;
+        Node node = ((ComboBoxBaseSkin) view.getSkin()).getDisplayNode();
+        if (node instanceof ListCell) {
+            return ((ListCell) node).getText();
+        } 
+        return null;
+    }
+
     
     @FunctionalInterface
     public interface AddBounds {

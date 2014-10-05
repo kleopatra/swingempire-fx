@@ -51,7 +51,7 @@ import com.sun.javafx.scene.traversal.TraversalContext;
  * 
  * Changed:
  * - use stringconverter for null if prompt is empty
- * 
+ * - encapsulate comboBoxItems (keep null substitution)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -292,17 +292,34 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         return displayNode;
     }
     
+    /**
+     *  local alias with null substitution (emptyObservableList)
+     *  Null substitution happens only if client code explicitly nulls the 
+     *  items: combo installs a arrayObservableList in its parameterless constructor
+     */
     private void updateComboBoxItems() {
-        comboBoxItems = comboBox.getItems();
-        comboBoxItems = comboBoxItems == null ? FXCollections.<T>emptyObservableList() : comboBoxItems;
+        this.comboBoxItems = comboBox.getItems();
+        this.comboBoxItems = getComboBoxItems() == null ? FXCollections.<T>emptyObservableList() : getComboBoxItems();
     }
     
+    /**
+     * @return the comboBoxItems
+     */
+    private ObservableList<T> getComboBoxItems() {
+        return comboBoxItems;
+    }
+
+    /**
+     * alias to listViewItems to local comboBoxItems, that is 
+     * listView.getItems == this.comboBoxItems (different from combo.getItems if null)
+     * Listening to listViewItems, and the only place where listViewItems is used
+     */
     public void updateListViewItems() {
         if (listViewItems != null) {
             listViewItems.removeListener(weakListViewItemsListener);
         }
 
-        this.listViewItems = comboBoxItems;
+        this.listViewItems = getComboBoxItems();
         listView.setItems(listViewItems);
 
         if (listViewItems != null) {
@@ -433,8 +450,8 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
                 listSelectionLock = false;
             } else {
                 int index = comboBox.getSelectionModel().getSelectedIndex();
-                if (index >= 0 && index < comboBoxItems.size()) {
-                    T itemsObj = comboBoxItems.get(index);
+                if (index >= 0 && index < getComboBoxItems().size()) {
+                    T itemsObj = getComboBoxItems().get(index);
                     if (itemsObj != null && itemsObj.equals(newValue)) {
                         listViewSM.select(index);
                     } else {
@@ -442,7 +459,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
                     }
                 } else {
                     // just select the first instance of newValue in the list
-                    int listViewIndex = comboBoxItems.indexOf(newValue);
+                    int listViewIndex = getComboBoxItems().indexOf(newValue);
                     if (listViewIndex == -1) {
                         // RT-21336 Show the ComboBox value even though it doesn't
                         // exist in the ComboBox items list (part one of fix)
@@ -489,6 +506,10 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     }
     
     private void updateDisplayNode() {
+        // PENDING JW: as of 8u40b7, this is may be called too early 
+        // that is before installing the buttoncell
+        // hacking around by silently returning
+        if (buttonCell == null) return;
         StringConverter<T> c = comboBox.getConverter();
         if (c == null) return;
               
@@ -603,7 +624,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     
     private int getIndexOfComboBoxValueInItemsList() {
         T value = comboBox.getValue();
-        int index = comboBoxItems.indexOf(value);
+        int index = getComboBoxItems().indexOf(value);
         return index;
     }
     
@@ -641,6 +662,9 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
                 // not what is expected in the ComboBox control (unlike the
                 // ListView control, which does this).
                 getProperties().put("selectOnFocusGain", false);
+                // introduced between 8u20 and 8u40b7
+                // with this, testfailures back to normal
+                getProperties().put("selectFirstRowByDefault", false);
             }
 
             @Override protected double computeMinHeight(double width) {
@@ -754,7 +778,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
             VirtualContainerBase<?,?,?> skin = (VirtualContainerBase<?,?,?>)listView.getSkin();
             ph = invokeGetVirtualFlowPreferredHeight(maxRows, skin);
         } else {
-            double ch = comboBoxItems.size() * 25;
+            double ch = getComboBoxItems().size() * 25;
             ph = Math.min(ch, 200);
         }
         

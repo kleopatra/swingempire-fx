@@ -155,8 +155,8 @@ public class ChoiceXSelectionIssues extends
     }
     
     @Override
-    protected ChoiceInterface getChoiceView() {
-        return (ChoiceInterface) getView();
+    protected ChoiceControl getChoiceView() {
+        return (ChoiceControl) getView();
     }
     
     @Override
@@ -192,7 +192,7 @@ public class ChoiceXSelectionIssues extends
         
     }
     
-    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceInterface<T> {
+    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T> {
 
         public ChoiceXControl() {
             super();

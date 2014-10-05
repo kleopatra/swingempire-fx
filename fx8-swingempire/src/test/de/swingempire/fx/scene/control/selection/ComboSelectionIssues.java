@@ -22,7 +22,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.IgnoreRT26078;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreRT26079;
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 
@@ -41,7 +41,7 @@ public class ComboSelectionIssues
      * 
      */
     @Test
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemoryWithBuilderEqualsList() {
         view = 
                 ComboBoxBuilder.<String>create()
@@ -64,7 +64,7 @@ public class ComboSelectionIssues
      * 
      */
     @Test
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemoryWithBuilderSimilarLongerList() {
         view = 
                 ComboBoxBuilder.<String>create()
@@ -87,7 +87,7 @@ public class ComboSelectionIssues
      * 
      */
     @Test
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemoryWithBuilderSimilarList() {
         view = 
                 ComboBoxBuilder.<String>create()
@@ -124,8 +124,8 @@ public class ComboSelectionIssues
     }
     
     @Override
-    protected ChoiceInterface getChoiceView() {
-        return (ChoiceInterface) getView();
+    protected ChoiceControl getChoiceView() {
+        return (ChoiceControl) getView();
     }
 
     
@@ -169,7 +169,7 @@ public class ComboSelectionIssues
     }
     
     
-    public static class ComboCoreControl<T> extends ComboBox<T> implements ChoiceInterface<T> {
+    public static class ComboCoreControl<T> extends ComboBox<T> implements ChoiceControl<T> {
 
         public ComboCoreControl() {
             super();

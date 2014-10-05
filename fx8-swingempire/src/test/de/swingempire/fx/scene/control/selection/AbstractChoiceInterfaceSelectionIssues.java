@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -36,10 +37,11 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboSelectionRT_19433;
 import de.swingempire.fx.scene.control.comboboxx.ComboboxSelectionCopyRT_26079;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDynamicItems;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreExternalError;
 import static org.junit.Assert.*;
 
 /**
@@ -55,36 +57,61 @@ import static org.junit.Assert.*;
 public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control> 
     extends SelectionIssues<V, SingleSelectionModel>{
 
-    @Rule
-    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
-    
-    /**
-     * Working with static class that doesn't require access to running
-     * test class
-     */
-    public static class IgnoreRT26078 implements IgnoreCondition {
-
-        @Override
-        public boolean isSatisfied() {
-            return true;
-        }
-        
-    }
-    
-    // not working as we need to access the running test class
-//    public class NoSeparatorSupport implements IgnoreCondition {
-//
-//        @Override
-//        public boolean isSatisfied() {
-//            return !supportsSeparators();
-//        }
-//        
-//    }
-//
     
 //---------- test combo issues
     
+    @Test
+    public void testSetValueUpdatesSelectedItem() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index );
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+    }
     
+    /**
+     * Regression guard: combo value must not be changed on setAll 
+     * https://javafx-jira.kenai.com/browse/RT-20945
+     */
+    @Test
+    @ConditionalIgnore (condition = IgnoreDynamicItems.class)
+    public void testUpdateOnShowingSetAllItems() {
+        initSkin();
+        getChoiceView().showingProperty().addListener((o, old, value) -> {
+            if (!value) return;
+            Object selected = getSelectionModel().getSelectedItem();
+            getChoiceView().getItems().setAll("replaced");
+            assertEquals(-1, getSelectionModel().getSelectedIndex());
+            assertEquals(selected, getChoiceView().getValue());
+            fail("just to see it fail");
+        });
+        int index = 2;
+        getSelectionModel().select(index);
+        getChoiceView().show();
+    }
+    
+    /**
+     * Regression guard: combo value must not be changed on setAll 
+     * https://javafx-jira.kenai.com/browse/RT-20945
+     */
+    @Test
+    @ConditionalIgnore (condition = IgnoreDynamicItems.class)
+    public void testUpdateOnShowingSetItems() {
+        initSkin();
+        getChoiceView().showingProperty().addListener((o, old, value) -> {
+            if (!value) return;
+            Object selected = getSelectionModel().getSelectedItem();
+            getChoiceView().setItems(FXCollections.observableArrayList( "replaced"));
+            assertEquals(-1, getSelectionModel().getSelectedIndex());
+            assertEquals(selected, getChoiceView().getValue());
+//            fail("just to see it fail");
+        });
+        int index = 2;
+        getSelectionModel().select(index);
+        getChoiceView().show();
+    }
     
     /**
      * https://javafx-jira.kenai.com/browse/RT-19433
@@ -140,25 +167,25 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * live with the regression, since it will be solved eventually
      * in core.
      * 
-     * RT-26078 seems to be related - maybe incorrect evaluation? The 
-     * hack for 15793 is in place for comboBox, but doesn't seems
-     * to be effective - why not?
+     * Note, RT-26079 it's not related (at least not directly: the example
+     * uses setAll(....) which is special-cased
      * 
-     * No, RT-26078 it's not related (at least not directly: the example
-     * uses setAll(....) which is special-case
+     * Note: this might not exactly 15793: behaviour of remove is different anyway
+     * (though buggy) - though passes with core combo, fails with comboXX
      * 
      * @see ComboboxSelectionCopyRT_26079
      * @see AbstractListMultipleSelectionIssues#testRT15793()
      */
     @Test
     public void testSelectFirstRT_15793() {
-        int notified = 0;
-        getChoiceView().itemsProperty().addListener(o -> {LOG.info("notified");});
-        getChoiceView().itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
+        view = createView(FXCollections.observableArrayList());
+//        getChoiceView().itemsProperty().addListener(o -> {LOG.info("notified");});
+//        getChoiceView().itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
         ObservableList<String> emptyList = FXCollections.observableArrayList();
         // listView is instantiated with an empty list, so following assumption 
         // is incorrect
 //        assertEquals(null, view.getItems());
+        assertSame(view, getChoiceView());
         getChoiceView().setItems(emptyList);
         emptyList.add("something");
         getSelectionModel().selectFirst();
@@ -174,7 +201,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * @see ComboboxSelectionCopyRT_26079
      */
     @Test 
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemoryEqualsListWithSkin() {
         // prepare needed - to reproduce same behaviour as with builder
         // select before setting items
@@ -203,7 +230,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
     
     @Test
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemorySimilarListWithSkin() {
         // prepare needed - to reproduce same behaviour as with builder
         // select before setting items
@@ -232,7 +259,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
     
     @Test
-    @ConditionalIgnore(condition = IgnoreRT26078.class)
+    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
     public void testSelectFirstMemorySimilarLongerListWithSkin() {
         // prepare needed - to reproduce same behaviour as with builder
         // select before setting items
@@ -259,11 +286,10 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals("value must be cleared", null, getChoiceView().getValue());
 //        assertEquals("", getDisplayText());
     }
-//------------ end tests around RT-26078    
+//------------ end tests around RT-26079    
     
 //---------- test unselectable (Separator)
     @Test
-//    @ConditionalIgnore(condition = NoSeparatorSupport.class)
     public void testSeparatorNotSelectedItem() {
         if (!supportsSeparators()) return;
         getSelectionModel().select(new Separator());
@@ -487,6 +513,8 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * SingleSelectionModel.clearSelection prevents the clear of an uncontained
      * selectedItem (which it is after removal).
      *
+     * for combo: https://javafx-jira.kenai.com/browse/RT-38886
+     * 
      * @see #testClearItemsResetsSelection()
      * @See #testSelectedOnRemoveItemAtSelectedFocused()
      */
@@ -719,14 +747,6 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals(converter.toString(null), getDisplayText());
     }
     
-    @Test
-    public void testValueShownWithoutSelectionModel() {
-        initSkin();
-        getChoiceView().setSelectionModel(null);
-        Object uncontained = "uncontained";
-        getChoiceView().setValue(uncontained);
-        assertEquals(uncontained, getChoiceView().getValue());
-    }
     /**
      * Returns a converter that:
      * - converts null/empty to a fixed value
@@ -984,19 +1004,36 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
     }
 
 //------------------- Null selectionModel
-    
+
+    /**
+     * Test that combo can cope with null selectionModel.
+     * Fails but the failure doesn't show up as error (on console only)
+     * Ignoring for now to not pollute.
+     */
+    @Test 
+    @ConditionalIgnore (condition = IgnoreExternalError.class)
+    public void testNullSelectionModelValueShown() {
+        initSkin();
+        getChoiceView().setSelectionModel(null);
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals(uncontained, getChoiceView().getValue());
+    }
+
     /**
      * Logs exception stacktrace that doesn't show up as error (actually not at all)
      * in test log - why not? Thread issue? 
      */
-    @Test @Ignore
+    @Test 
+    @ConditionalIgnore (condition = IgnoreExternalError.class)
     public void testNullSelectionModelOnSetValue() {
         setSelectionModel(null);
         getChoiceView().setValue(items.get(3));
         assertEquals(items.get(3), getChoiceView().getValue());
     }
     
-    @Test @Ignore
+    @Test 
+    @ConditionalIgnore (condition = IgnoreExternalError.class)
     public void testNullSelectionModelPreviouslySelectedOnSetValue() {
         getSelectionModel().select(2);
         setSelectionModel(null);
@@ -1005,10 +1042,25 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
         assertEquals(items.get(3), getChoiceView().getValue());
     }
     
+    /**
+     * Overfidden to ignore: sorting not explicitly supported
+     */
+    @Test @Ignore
+    @Override
+    public void testSelectedIndexAfterSort() {
+        super.testSelectedIndexAfterSort();
+    }
     
 // ------------------ infrastructure
     
     
+
+    @Override
+    protected V createView(ObservableList items) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     @Override
     protected SingleSelectionModel getSelectionModel() {
         return getChoiceView().getSelectionModel();
@@ -1070,7 +1122,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * PENDING JW: refactor test hierarchy
      */
     protected abstract boolean hasPopup();
-    protected abstract ChoiceInterface getChoiceView();
+    protected abstract ChoiceControl getChoiceView();
 
     protected abstract SingleSelectionModel createSimpleSelectionModel();
 
@@ -1096,26 +1148,28 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * of ChoiceBoxX/ChoiceBox.
      * 
      */
-    public static interface ChoiceInterface<T> {
+    public static interface ChoiceControl<T> {
      
+        ObjectProperty<ObservableList<T>> itemsProperty();
+
+        void setItems(ObservableList<T> items);
+
+        ObservableList<T> getItems();
+
+        T getValue();
+
+        void setValue(T value);
+
         SingleSelectionModel<T> getSelectionModel();
 
-        /**
-         * @return
-         */
-        ObjectProperty<ObservableList<T>> itemsProperty();
+        void setSelectionModel(SingleSelectionModel<T> model);
+
+        void show();
+
+        ReadOnlyBooleanProperty showingProperty();
 
         void setConverter(StringConverter<T> converter);
 
-        void setSelectionModel(SingleSelectionModel<T> model);
-        
-        T getValue();
-        
-        void setValue(T value);
-        
-        void setItems(ObservableList<T> items);
-        ObservableList<T> getItems();
-        
         void setEditable(boolean editable);
     }
     

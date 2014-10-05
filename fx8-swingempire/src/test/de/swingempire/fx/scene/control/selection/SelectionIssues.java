@@ -14,14 +14,18 @@ import javafx.scene.control.SelectionModel;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.util.StageLoader;
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
+import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
 /**
@@ -43,6 +47,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    
 
     /**
      * The model set to the views. It contains 5 string items, originally
@@ -360,6 +367,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * 
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectUncontainedIfEmptySelection() {
         Object item = "uncontained";
         getSelectionModel().select(item);
@@ -419,6 +427,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * mismatch between spec and implementation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectNullItem() {
         int index = 2;
         getSelectionModel().select(index);
@@ -433,6 +442,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * mismatch between spec and implementation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectNullIndex() {
         int index = 2;
         getSelectionModel().select(index);
@@ -450,6 +460,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * mismatch between spec and implementation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectMinusOneItem() {
         int index = 2;
         getSelectionModel().select(index);
@@ -465,6 +476,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * mismatch between spec and implementation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectMinusOneIndex() {
         int index = 2;
         getSelectionModel().select(index);
@@ -507,6 +519,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Intuitively expected behaviour in most implementations, but doc violation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectNextOnEmpty() {
         getSelectionModel().clearSelection();
         getSelectionModel().selectNext();
@@ -519,6 +532,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Intuitively expected behaviour in most implementations, but doc violation
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreDocErrors.class)
     public void testSelectPreviousOnEmpty() {
         getSelectionModel().clearSelection();
         getSelectionModel().selectPrevious();

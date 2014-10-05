@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceInterface;
+import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -114,8 +114,8 @@ public class ChoiceSelectionIssues
     }
     
     @Override
-    protected ChoiceInterface getChoiceView() {
-        return (ChoiceInterface) getView();
+    protected ChoiceControl getChoiceView() {
+        return (ChoiceControl) getView();
     }
 
     /**
@@ -147,7 +147,7 @@ public class ChoiceSelectionIssues
     }
     
     
-    public static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceInterface<T> {
+    public static class ChoiceCoreControl<T> extends ChoiceBox<T> implements ChoiceControl<T> {
 
         public ChoiceCoreControl() {
             super();

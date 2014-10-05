@@ -20,7 +20,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceInterface;
+import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
 import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.ChoiceCoreControl;
 import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXControl;
 
@@ -102,7 +102,7 @@ public class ChoiceBoxSeparator extends Application {
         }
         
     }
-    protected Parent createButtonPane(ChoiceInterface box) {
+    protected Parent createButtonPane(ChoiceControl box) {
         // variant: initial uncontained value 
         //box.setValue("initial uncontained");
         // variant: initial selection
