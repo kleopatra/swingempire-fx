@@ -11,6 +11,8 @@ package de.swingempire.fx.scene.control.comboboxx;
  */
 
 
+import java.util.logging.Logger;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -41,6 +43,7 @@ import javafx.util.StringConverter;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * 
@@ -587,26 +590,51 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         // PENDING JW: extracted from itemsContentListener
         // cleanup!!
         // watching for changes to the items list content
+        /**
+         * Updates selection state after change of items. <p>
+         * 
+         * This implementation:
+         * - clears selection if no there are no items
+         * - resets selectedItem if item at selectedIndex was either replaced or updated 
+         * - clears selection if selectedItem had been removed
+         * - updates selectedIndex to new position of selectedItem if it's still in the list
+         * 
+         * @param c
+         */
         protected void itemsChanged(Change<? extends T> c) {
-            if (comboBox.getItems() == null || comboBox.getItems().isEmpty()) {
-                setSelectedIndex(-1);
-            } else if (getSelectedIndex() == -1 && getSelectedItem() != null) {
+            if (isEmptyItems()) {
+                clearSelection();
+            } else if (wasReplaced(c, getSelectedIndex()) || wasUpdated(c, getSelectedIndex())) {  
+                T newItem = comboBox.getItems().get(getSelectedIndex());
+                select(newItem);
+            } else if(wasRemoved(c, getSelectedItem())) {
+                clearSelection();
+            } else { // selected item either still in list or wasn't before the change
+                // update index
                 int newIndex = comboBox.getItems().indexOf(getSelectedItem());
-                if (newIndex != -1) {
-                    setSelectedIndex(newIndex);
-                }
+                setSelectedIndex(newIndex);
             }
+
             
-            while (c.next()) {
-                comboBox.wasSetAllCalled = comboBox.previousItemCount == c.getRemovedSize();
-                
-                
-                if (c.getFrom() <= getSelectedIndex() && getSelectedIndex()!= -1 && (c.wasAdded() || c.wasRemoved())) {
-                    int shift = c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
-                    clearAndSelect(getSelectedIndex() + shift);
-                }
-            }
-            
+//            if (comboBox.getItems() == null || comboBox.getItems().isEmpty()) {
+//                setSelectedIndex(-1);
+//            } else if (getSelectedIndex() == -1 && getSelectedItem() != null) {
+//                int newIndex = comboBox.getItems().indexOf(getSelectedItem());
+//                if (newIndex != -1) {
+//                    setSelectedIndex(newIndex);
+//                }
+//            }
+//            
+//            while (c.next()) {
+//                comboBox.wasSetAllCalled = comboBox.previousItemCount == c.getRemovedSize();
+//                
+//                
+//                if (c.getFrom() <= getSelectedIndex() && getSelectedIndex()!= -1 && (c.wasAdded() || c.wasRemoved())) {
+//                    int shift = c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
+//                    clearAndSelect(getSelectedIndex() + shift);
+//                }
+//            }
+//            
             comboBox.previousItemCount = getItemCount();
         }
 
@@ -624,6 +652,83 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 //      setSelectedIndex(newValueIndex);
 
         
+        /**
+         * @param c
+         * @param selectedItem
+         * @return
+         */
+        protected boolean wasUpdated(Change<? extends T> c, int index) {
+            if (index < 0) return false;
+            FXUtils.prettyPrint(c);
+            c.reset();
+            while(c.next()) {
+                if (c.wasUpdated()) {
+                    if (index >= c.getFrom() && index < c.getTo()) {
+                        return true;
+                    }
+//                    int index = c.getRemoved().indexOf(selectedItem);
+//                    if (index >= 0) {
+////                        T newValue = c.getAddedSubList().get(index);
+////                        select(newValue);
+////                        LOG.info("replaced: " + selectedItem);
+//                        return true;
+//                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * @param c
+         * @param selectedItem
+         * @return
+         */
+        protected boolean wasReplaced(Change<? extends T> c, int index) {
+            if (index < 0) return false;
+            FXUtils.prettyPrint(c);
+            c.reset();
+            while(c.next()) {
+                if (c.wasReplaced()) {
+                    if (index >= c.getFrom() && index < c.getTo()) {
+                        return true;
+                    }
+//                    int index = c.getRemoved().indexOf(selectedItem);
+//                    if (index >= 0) {
+//                        T newValue = c.getAddedSubList().get(index);
+//                        select(newValue);
+//                        LOG.info("replaced: " + selectedItem);
+//                        return true;
+//                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns true if the item is in any removedList of the Change, false
+         * otherwise.
+         * 
+         * @param c the ListChange received from ObservableList
+         * @param item
+         * @return
+         */
+        protected boolean wasRemoved(Change<? extends T> c, T item) {
+            c.reset();
+            while (c.next()) {
+                if (item != null && c.getRemoved().contains(item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+       
+        /**
+         * @return
+         */
+        protected boolean isEmptyItems() {
+            return getItemCount() == 0; 
+        }
+
 
         // API Implementation
         @Override protected T getModelItem(int index) {
@@ -663,4 +768,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 //        }
 //    }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(ComboBoxX.class
+            .getName());
 }

@@ -82,8 +82,8 @@ public class ComboBoxSetItem extends Application {
      */
     private Parent getContent() {
         String initialValue = items.get(0);
-        ListView listView = new ListView(items);
-        listView.getSelectionModel().select(initialValue);
+        ListView listView = new ListView();
+//        listView.getSelectionModel().select(initialValue);
         // core choiceBox
 //        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
