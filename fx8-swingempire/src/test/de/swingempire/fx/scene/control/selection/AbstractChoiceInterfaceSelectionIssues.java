@@ -513,7 +513,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control>
      * SingleSelectionModel.clearSelection prevents the clear of an uncontained
      * selectedItem (which it is after removal).
      *
-     * for combo: https://javafx-jira.kenai.com/browse/RT-38886
+     * see for combo: https://javafx-jira.kenai.com/browse/RT-38886
      * 
      * @see #testClearItemsResetsSelection()
      * @See #testSelectedOnRemoveItemAtSelectedFocused()
