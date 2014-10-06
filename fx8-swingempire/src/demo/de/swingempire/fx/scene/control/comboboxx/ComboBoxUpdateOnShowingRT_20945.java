@@ -11,18 +11,18 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+
 import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
 import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.ChoiceCoreControl;
 import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXControl;
@@ -77,9 +77,9 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
 //        ComboBox combo = new ComboBox();
 //        configureCombo(combo, "core combo");
         ComboCoreControl combo = new ComboCoreControl();
-        configureChoice(combo, "core combo");
+        configureCombo(combo, "core combo");
         ComboXControl comboX = new ComboXControl();
-        configureChoice(comboX, "x combo");
+        configureCombo(comboX, "x combo");
         ChoiceCoreControl choice = new ChoiceCoreControl();
         configureChoice(choice, "core choice");
         ChoiceXControl choiceX = new ChoiceXControl();
@@ -93,7 +93,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
         Pane buttons = new HBox(button);
         
         Pane content = new VBox(combos, buttons);
-        primaryStage.setScene(new Scene(content));
+        primaryStage.setScene(new Scene(content, 600, 400));
         primaryStage.setTitle(System.getProperty("java.version"));
         primaryStage.show();
     }
@@ -104,10 +104,12 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
             
             @Override
             public void changed(ObservableValue arg0, Boolean oldValue, Boolean newValue) {
-                LOG.info("type: " + cb.getClass());
                 if (newValue) {                   
+                    LOG.info("filling items ");
                     cb.getItems().setAll("" + System.currentTimeMillis());
 //                    cb.setItems(FXCollections.observableArrayList("" + System.currentTimeMillis()));
+                    LOG.info("filling items done");
+                
                 }
             }
         });
@@ -127,16 +129,16 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
         
     }
     
-    private void configureCombo(ComboBox cb, String initialValue) {
+    private void configureCombo(ChoiceControl cb, String initialValue) {
             // dynamic reset of content on showing
             cb.showingProperty().addListener(new ChangeListener<Boolean>() {
                 
                 @Override
                 public void changed(ObservableValue arg0, Boolean oldValue, Boolean newValue) {
-                    LOG.info("type: " + cb.getClass());
                     if (newValue) {                   
                         cb.getItems().setAll("" + System.currentTimeMillis());
-    //                    cb.setItems(FXCollections.observableArrayList("" + System.currentTimeMillis()));
+//                        cb.setItems(FXCollections.observableArrayList("" + System.currentTimeMillis()));
+                        LOG.info("filling items done");
                     }
                 }
             });
@@ -149,7 +151,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
     //        });
             // intial items
             cb.getItems().add("Toto");
-    //        cb.setEditable(true);
+//            cb.setEditable(true);
             // selectedItem/value uncontained
             cb.setValue(initialValue);
             

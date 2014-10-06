@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
@@ -109,14 +110,14 @@ public class ChoiceBoxSeparator extends Application {
         //box.setValue(items.get(0));
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
-            SingleSelectionModel model = box.getSelectionModel();
+            SelectionModel model = box.getSelectionModel();
             model.select("myDummySelectedItem");
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
         });
         Button setValue = new Button("Set value to uncontained");
         setValue.setOnAction(e -> {
-            SingleSelectionModel<String> model = box.getSelectionModel();
+            SelectionModel model = box.getSelectionModel();
             box.setValue("myDummyValue");
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());

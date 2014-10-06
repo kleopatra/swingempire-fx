@@ -33,7 +33,8 @@ import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 public class DebugUtils {
 
     public static void printSelectionState(ComboBox<?> choice) {
-        LOG.info("index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
+        String choiceClass = choice.getClass().getSimpleName();
+        LOG.info(choiceClass + ": index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
                 + " / " + choice.getSelectionModel().getSelectedItem() 
                 + " / " + choice.getValue()
                 + " / " + getDisplayText(choice)
@@ -41,7 +42,8 @@ public class DebugUtils {
     }
     
     public static void printSelectionState(ComboBoxX<?> choice) {
-        LOG.info("index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
+        String choiceClass = choice.getClass().getSimpleName();
+        LOG.info(choiceClass + ": index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
                 + " / " + choice.getSelectionModel().getSelectedItem() 
                 + " / " + choice.getValue()
                 + " / " + getDisplayText(choice)

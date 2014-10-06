@@ -49,14 +49,14 @@ import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.Co
 /**
  * C&P from core and cleaned.
  * 
- * Changed:
+ * Changes:
  * - use stringconverter for null if prompt is empty
  * - encapsulate comboBoxItems (keep null substitution)
  * - set ListView's selectionModel to SingleMultipleSelectionModel which is coupled
  *   to combo's selectinModel
  * - TODO: commented content of updateValue - needs to be solved cleanly
- * - bind ListView's items to comboBox items
- *     
+ * - bound ListView's items to comboBox items
+ * - TODO: support editing (throws classcastexception, probably need to c&p some more)    
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -387,15 +387,15 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     @Override protected void layoutChildren(final double x, final double y,
             final double w, final double h) {
         if (listViewSelectionDirty) {
-            try {
-                listSelectionLock = true;
-                T item = comboBox.getSelectionModel().getSelectedItem();
-                listView.getSelectionModel().clearSelection();
-                listView.getSelectionModel().select(item);
-            } finally {
-                listSelectionLock = false;
-                listViewSelectionDirty = false;
-            }
+//            try {
+//                listSelectionLock = true;
+//                T item = comboBox.getSelectionModel().getSelectedItem();
+//                listView.getSelectionModel().clearSelection();
+//                listView.getSelectionModel().select(item);
+//            } finally {
+//                listSelectionLock = false;
+//                listViewSelectionDirty = false;
+//            }
         }
         
         super.layoutChildren(x,y,w,h);

@@ -1155,9 +1155,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
 
         void setValue(T value);
 
-//        W getSelectionModel();
-//
-//        void setSelectionModel(W model);
+        W getSelectionModel();
+
+        void setSelectionModel(W model);
 
         void show();
 

@@ -43,6 +43,7 @@ import javafx.util.StringConverter;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
+import de.swingempire.fx.util.DebugUtils;
 import de.swingempire.fx.util.FXUtils;
 
 /**
@@ -56,9 +57,13 @@ import de.swingempire.fx.util.FXUtils;
  * 
  * Changes:
  * - TODO regression testing RT-22572/?? (orig hacked in selectedItemListener)
+ *   is: keep selectedItem on showing 
+ * - TODO solve 22572 in showing itself  
  * - TODO regression testing RT-19227 (orig hacked in listener to valueProperty
  * - TODO regression testing RT-15793 (orig hacked in itemsContentListener)
- * 
+ *   is: missing notification on setting equals but not same list
+ *   waiting for core fix of listProperty notification
+ * - replaced list change handling, doc'ed behaviour 
  * 
  * ------------------------ original api doc below
  * An implementation of the {@link ComboBoxBase} abstract class for the most common
@@ -298,9 +303,85 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             // when editable changes, we reset the selection / value states
             getSelectionModel().clearSelection();
         });
+        showingProperty().addListener((o, old, value) -> {
+            LOG.info("SHOWING_Property: " + value);
+        });
     }
     
- 
+    /**
+     * Overridden to fix RT-22572: keep the fix localized at
+     * the use-case where it is needed, that is only 
+     * when populating the items when showing.
+     * 
+     * 
+     */
+    @Override
+    public void show() {
+        beforeShown();
+        super.show();
+        afterShown();
+    }
+
+    /**
+     * Data dump of selection state.
+     */
+    public static class ItemsSelectionState<T> {
+
+        private int selectedIndex;
+        private T selectedItem;
+        private ObservableList<T> items;
+
+        /**
+         * @param selectedIndex
+         * @param selectedItem
+         * @param items
+         */
+        public ItemsSelectionState(int selectedIndex, T selectedItem,
+                ObservableList<T> items) {
+            this.selectedIndex = selectedIndex;
+            this.selectedItem = selectedItem;
+            this.items = items != null ? FXCollections.observableArrayList(items) : null;
+        }
+
+        @Override
+        public String toString() {
+            return "[index: " + selectedIndex + " item: " + selectedItem + " items: " + items;
+        }
+        
+        
+    }
+
+    private ItemsSelectionState<T> state;
+    
+
+    private void updateValue(T newValue) {
+//        LOG.info("state: " + state);
+//        new RuntimeException("whos calling? State: " + state).printStackTrace();
+        if (state != null) return;
+        if (! valueProperty().isBound()) {
+            setValue(newValue);
+        }
+    }
+
+    protected void beforeShown() {
+        if (getSelectionModel() == null) return;
+        state = new ItemsSelectionState(getSelectionModel().getSelectedIndex(), 
+                getSelectionModel().getSelectedItem(), getItems());
+        DebugUtils.printSelectionState(this);
+    }
+    
+    protected void afterShown() {
+        if (state != null) {
+            T oldSelected = state.selectedItem;
+            state = null;
+            if (oldSelected != getSelectionModel().getSelectedItem()) {
+                LOG.info("value: " + getValue());
+                getSelectionModel().select(getValue());
+            }
+        }
+        DebugUtils.printSelectionState(this);
+    }
+    
     
     /***************************************************************************
      *                                                                         *
@@ -308,6 +389,9 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      *                                                                         *
      **************************************************************************/
     
+
+
+
     // --- items
     /**
      * The list of items to show within the ComboBox popup.
@@ -414,9 +498,10 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     
     // CHANGED JW: listener registered on path
     private ChangeListener<T> selectedItemListener = (ov, t, t1) -> {
-        if (! valueProperty().isBound()) {
-            setValue(t1);
-        }
+        updateValue(t1);
+//        if (! valueProperty().isBound()) {
+//            setValue(t1);
+//        }
     };
     // KEEP until regression testing done
     // Listen to changes in the selectedItem property of the SelectionModel.
@@ -526,15 +611,8 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      *                                                                         *
      **************************************************************************/        
 
-    private void updateValue(T newValue) {
-        if (! valueProperty().isBound()) {
-            setValue(newValue);
-        }
-    }
-     
 
-    
-    
+     
     /***************************************************************************
      *                                                                         *
      * Stylesheet Handling                                                     *
@@ -563,7 +641,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             selectedIndexProperty().addListener(valueModel -> {
                 // we used to lazily retrieve the selected item, but now we just
                 // do it when the selection changes.
-                setSelectedItem(getModelItem(getSelectedIndex()));
+//                setSelectedItem(getModelItem(getSelectedIndex()));
             });
 
             /*
@@ -587,9 +665,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
         }
         
-        // PENDING JW: extracted from itemsContentListener
-        // cleanup!!
-        // watching for changes to the items list content
         /**
          * Updates selection state after change of items. <p>
          * 
@@ -659,7 +734,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          */
         protected boolean wasUpdated(Change<? extends T> c, int index) {
             if (index < 0) return false;
-            FXUtils.prettyPrint(c);
+//            FXUtils.prettyPrint(c);
             c.reset();
             while(c.next()) {
                 if (c.wasUpdated()) {
@@ -685,7 +760,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          */
         protected boolean wasReplaced(Change<? extends T> c, int index) {
             if (index < 0) return false;
-            FXUtils.prettyPrint(c);
+//            FXUtils.prettyPrint(c);
             c.reset();
             while(c.next()) {
                 if (c.wasReplaced()) {
@@ -729,6 +804,41 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             return getItemCount() == 0; 
         }
 
+        /**
+         * Overridden to clear selectedIndex if selectedItem not contained 
+         * in items. Fixes broken class-invariant in super
+         * 
+         * if (!contains(selectedItem)
+         *    assertEquals(-1, selectedIndex)
+         * if (selectedIndex >= 0) 
+         *    assertEquals(selectedItem, items.get(selectedIndex))   
+         * 
+         * PENDING: issue doesn't show up in tests for comboboxX... why not?
+         * Actually, it did - but didn't look at it ;-)
+         */
+        @Override
+        public void select(T obj) {
+            super.select(obj);
+            if (isExternalSelectedItem(obj)) {
+                setSelectedIndex(-1);
+            }
+        }
+
+        /**
+         * Checks and returns whether item is an external selectedItem
+         * 
+         * PENDING JW: re-visit null/empty logic
+         * 
+         * @param item
+         * @return
+         */
+        protected boolean isExternalSelectedItem(T item) {
+            if (item == null) return false;
+            if (getItemCount() == 0) {
+                return true;
+            }
+            return !comboBox.getItems().contains(item);
+        }
 
         // API Implementation
         @Override protected T getModelItem(int index) {

@@ -7,10 +7,14 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
+
+
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -48,6 +52,7 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
         launch(args);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Hello World!");
@@ -62,14 +67,39 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
             public void handle(Event arg0) {
                 // here we replace all items
                 cb.getItems().setAll("" + System.currentTimeMillis());
+//                cb.setItems(FXCollections.observableArrayList("" + System.currentTimeMillis()));
             }
         });
 
+        Button nullSelected = new Button("Null selectedItem");
+        nullSelected.setOnAction(e -> {
+            cb.getSelectionModel().select(null);
+            DebugUtils.printSelectionState(cb);
+            
+        });
+                
+//                new EventHandler() {
+//            @Override
+//            public void handle(Event arg0) {
+//            }
+//
+//        });
+        
+        Button uncontained = new Button("Set uncontained selectedItem");
+        uncontained.setOnAction(e -> {
+            cb.getSelectionModel().select("uncontained");
+            DebugUtils.printSelectionState(cb);
+        });
+        Button clear = new Button("Clear selection");
+        uncontained.setOnAction(e -> {
+            cb.getSelectionModel().select(-1);
+            DebugUtils.printSelectionState(cb);
+        });
         // was RT-20945: receiving action event on opening the popup
         // if was dynamically filled
         // don't understand bug description: there is only one
         // item after showing?
-        cb.setOnAction(e -> LOG.info("got action: " + e));
+//        cb.setOnAction(e -> LOG.info("got action: " + e));
         cb.getItems().add("Toto"); // initial
         cb.setEditable(true);
         cb.setValue("Tata");
@@ -80,7 +110,7 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
         cb.setPromptText("X");
 
         VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(tf, cb);
+        vbox.getChildren().addAll(tf, cb, nullSelected, uncontained, clear);
         AnchorPane root = new AnchorPane();
         root.getChildren().addAll(vbox);
         primaryStage.setScene(new Scene(root, 300, 250));

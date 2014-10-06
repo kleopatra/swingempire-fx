@@ -18,15 +18,39 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Toggle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
+import de.swingempire.fx.util.DebugUtils;
 
 /**
+ * ---- Issue: clear selection depends on history
+ * 
+ * Steps A:
+ * - select an item from popup
+ * - press clearSelection: selectedItem/value cleared (expected)
+ * - press selectUncontainedItem: item shoen as selected item (expected) 
+ * - press clearSelection: selectedItem/value not cleared (maybe expected)[*]
+ * 
+ * Steps B:
+ * - select an item from popup
+ * - press selectUncontainedItem: uncontained shown (expected)
+ * - press clearSelection: selectedItem cleared - inconsistent with last step of A
+ * 
+ * Same inconsistency if the uncontained item is set via setValue 
+ * 
+ *  
+ * [*] the rule for handling the selectedItem on clearSelection seems to be 
+ *  - null if contained in items
+ *  - keep if not contained in items
+ * 
+ * Seems fixed in jdk8u40b7
  * ----- Issue: Behaviour of items.setItem(selectedIndex, newItem)
  * 
  * expected: 
@@ -75,6 +99,10 @@ public class ComboBoxSetItem extends Application {
     ObservableList<String> items = FXCollections.observableArrayList(
             "9-item", "8-item", "7-item", "6-item", 
             "5-item", "4-item", "3-item", "2-item", "1-item");
+    ObservableList<String> items2 = FXCollections.observableArrayList(
+            "one", "two", "nothing", "dummy", "orwhat"
+            );
+    
     private String title;
 
     /**
@@ -85,15 +113,23 @@ public class ComboBoxSetItem extends Application {
         ListView listView = new ListView();
 //        listView.getSelectionModel().select(initialValue);
         // core choiceBox
-//        ComboBox<String> box = new ComboBox<>(items);
+        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
-        ComboBoxX<String> box = new ComboBoxX<>(items);
+//        ComboBoxX<String> box = new ComboBoxX<>(items);
         // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
 //        box.setValue("initial uncontained");
 
         box.setValue(initialValue);
+        
+        Button setItems = new Button("Toggle items list");
+        setItems.setOnAction(e -> {
+            ObservableList<String> old = box.getItems();
+            box.setItems(old == items ? items2 : items);
+            DebugUtils.printSelectionState(box);
+        });
+        
         Button setItem = new Button("Set item at selection");
         setItem.setOnAction(e -> {
             SingleSelectionModel model = box.getSelectionModel();
@@ -102,8 +138,7 @@ public class ComboBoxSetItem extends Application {
             if (oldSelected == -1) return;
             String newItem = box.getItems().get(oldSelected) + "xx";
             box.getItems().set(oldSelected, newItem);
-            LOG.info("selected/item/value " + model.getSelectedIndex() 
-                    + "/" + model.getSelectedItem() + "/" + box.getValue());
+            DebugUtils.printSelectionState(box);
             
         });
         Button removeItem = new Button("Remove item at selection");
@@ -113,32 +148,43 @@ public class ComboBoxSetItem extends Application {
             int oldSelected = model.getSelectedIndex();
             if (oldSelected == -1) return;
             items.remove(oldSelected);
-            LOG.info("selected/item/value " + model.getSelectedIndex() 
-                    + "/" + model.getSelectedItem() + "/" + box.getValue());
-            
+            DebugUtils.printSelectionState(box);
         });
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
             if (model == null) return;
             model.select("myDummySelectedItem");
-            LOG.info("selected/item/value" + model.getSelectedIndex() 
-                    + "/" + model.getSelectedItem() + "/" + box.getValue());
+            DebugUtils.printSelectionState(box);
         });
         Button setValue = new Button("Set value to uncontained");
         setValue.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
+            if (model == null) return;
             box.setValue("myDummyValue");
-            if (model != null)
-            LOG.info("selected/item/value" + model.getSelectedIndex() 
-                    + "/" + model.getSelectedItem() + "/" + box.getValue());
+                DebugUtils.printSelectionState(box);
+        });
+        Button clear = new Button("Clear Selection");
+        clear.setOnAction(e -> {
+            SingleSelectionModel<String> model = box.getSelectionModel();
+            if (model == null) return; 
+            model.clearSelection();
+            DebugUtils.printSelectionState(box);    
+        });
+        Button nullSelected = new Button("Null SelectedItem");
+        nullSelected.setOnAction(e -> {
+            SingleSelectionModel<String> model = box.getSelectionModel();
+            if (model == null) return; 
+            model.select(null);
+            DebugUtils.printSelectionState(box);    
         });
         Button setNullSelectionModel = new Button("set null selectionModel and set value");
         setNullSelectionModel.setOnAction(e -> {
             box.setSelectionModel(null);
             box.setValue(items.get(2));
         });
-        Pane buttons = new FlowPane(removeItem, setItem, setSelectedItemUncontained, setValue, setNullSelectionModel);
+        Pane buttons = new FlowPane(setItems, removeItem, setItem, setSelectedItemUncontained, 
+                setValue, setNullSelectionModel, clear, nullSelected);
         
         
         BorderPane pane = new BorderPane(listView);
