@@ -57,6 +57,8 @@ import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.Co
  * - TODO: commented content of updateValue - needs to be solved cleanly
  * - bound ListView's items to comboBox items
  * - TODO: support editing (throws classcastexception, probably need to c&p some more)    
+ * - removed selection update in layout
+ * - TODO keyboard navigation broken - slave must have some access to focusModel!
  * 
  * @author Jeanette Winzenburg, Berlin
  */

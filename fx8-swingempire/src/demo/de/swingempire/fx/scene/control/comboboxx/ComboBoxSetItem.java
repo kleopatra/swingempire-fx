@@ -113,9 +113,9 @@ public class ComboBoxSetItem extends Application {
         ListView listView = new ListView();
 //        listView.getSelectionModel().select(initialValue);
         // core choiceBox
-        ComboBox<String> box = new ComboBox<>(items);
+//        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
-//        ComboBoxX<String> box = new ComboBoxX<>(items);
+        ComboBoxX<String> box = new ComboBoxX<>(items);
         // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown

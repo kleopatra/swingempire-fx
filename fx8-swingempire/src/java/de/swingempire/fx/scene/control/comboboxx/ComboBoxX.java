@@ -43,8 +43,6 @@ import javafx.util.StringConverter;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
-import de.swingempire.fx.util.DebugUtils;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * 
@@ -52,18 +50,35 @@ import de.swingempire.fx.util.FXUtils;
  * 
  * Experimentations
  * - add and make use of ListProperty for items
- * - cleanup selection model
- * - cleanup selection related code (let the model be in full control)
+ * - cleanup selection model: make it obey its class invariant always,
+ *   react to items changes correctly and make it extendable 
+ * - let the model be in full control about its own state, remove
+ *   all external bowel interference
+ * - fix the fix for dynamic items while opening popup: ignore
+ *   selection changes while in process of opening
+ * - use SingleMultipleSelection (slave of combo's selectionModel)
+ *   in list in popup
+ * - bind list's itemProperty to combo's itemProperty         
  * 
  * Changes:
- * - TODO regression testing RT-22572/?? (orig hacked in selectedItemListener)
- *   is: keep selectedItem on showing 
- * - TODO solve 22572 in showing itself  
+ * - replaced manual wiring to items property by itemsListProperty
+ *   (kept itemsProperty, bound bidi to itemsListProperty)
+ * - replaced manual wiring to selectionModel.selectedItemProperty by PathAdapter
+ * - fixed regression RT-22572/22937 (orig hacked in selectedItemListener)
+ *   is: keep selectedItem while opening popup 
+ * - solved 22572 in show: don't update value if selection changed in
+ *   the course of showing, instead revert selectedItem to value at its end   
  * - TODO regression testing RT-19227 (orig hacked in listener to valueProperty
+ *   is: multiple instances in list (what's the use-case?)
  * - TODO regression testing RT-15793 (orig hacked in itemsContentListener)
  *   is: missing notification on setting equals but not same list
  *   waiting for core fix of listProperty notification
  * - replaced list change handling, doc'ed behaviour 
+ * - removed interference of ComboBox into inner bowels of selectionModel
+ * - fixed selectionModel select(Object) to not break class invariant
+ * - TODO fix editing (broken during re-implement of skin)
+ * - TODO fully cleanup skin
+ * - use converter for null/empty selected item (if there's not prompt)
  * 
  * ------------------------ original api doc below
  * An implementation of the {@link ComboBoxBase} abstract class for the most common
@@ -261,7 +276,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
         setItems(items);
         setSelectionModel(new ComboBoxSelectionModel<T>(this));
-        
+        // KEEP JW: original comment
         // listen to the value property input by the user, and if the value is
         // set to something that exists in the items list, we should update the
         // selection model to indicate that this is the selected item
@@ -303,16 +318,12 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             // when editable changes, we reset the selection / value states
             getSelectionModel().clearSelection();
         });
-        showingProperty().addListener((o, old, value) -> {
-            LOG.info("SHOWING_Property: " + value);
-        });
     }
     
     /**
      * Overridden to fix RT-22572: keep the fix localized at
      * the use-case where it is needed, that is only 
      * when populating the items when showing.
-     * 
      * 
      */
     @Override
@@ -324,18 +335,14 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
     /**
      * Data dump of selection state.
+     * PENDING JW: Storing all, just in case. Re-visit.
      */
-    public static class ItemsSelectionState<T> {
+    protected static class ItemsSelectionState<T> {
 
         private int selectedIndex;
         private T selectedItem;
         private ObservableList<T> items;
 
-        /**
-         * @param selectedIndex
-         * @param selectedItem
-         * @param items
-         */
         public ItemsSelectionState(int selectedIndex, T selectedItem,
                 ObservableList<T> items) {
             this.selectedIndex = selectedIndex;
@@ -347,39 +354,43 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         public String toString() {
             return "[index: " + selectedIndex + " item: " + selectedItem + " items: " + items;
         }
-        
-        
     }
 
-    private ItemsSelectionState<T> state;
+    private ItemsSelectionState<T> selectionState;
     
-
+    /**
+     * Updates value to newValue if selectionState is null and
+     * value not bound. Does nothing otherwise.
+     * @param newValue
+     */
     private void updateValue(T newValue) {
-//        LOG.info("state: " + state);
-//        new RuntimeException("whos calling? State: " + state).printStackTrace();
-        if (state != null) return;
+        if (selectionState != null) return;
         if (! valueProperty().isBound()) {
             setValue(newValue);
         }
     }
 
+    /**
+     * Stores selectionState.
+     */
     protected void beforeShown() {
         if (getSelectionModel() == null) return;
-        state = new ItemsSelectionState(getSelectionModel().getSelectedIndex(), 
+        selectionState = new ItemsSelectionState<>(getSelectionModel().getSelectedIndex(), 
                 getSelectionModel().getSelectedItem(), getItems());
-        DebugUtils.printSelectionState(this);
     }
-    
+
+    /**
+     * Re-selects old value if selectedItem had been changed while
+     * opening popup. Clears selectionState.
+     */
     protected void afterShown() {
-        if (state != null) {
-            T oldSelected = state.selectedItem;
-            state = null;
+        if (selectionState != null) {
+            T oldSelected = selectionState.selectedItem;
+            selectionState = null;
             if (oldSelected != getSelectionModel().getSelectedItem()) {
-                LOG.info("value: " + getValue());
                 getSelectionModel().select(getValue());
             }
         }
-        DebugUtils.printSelectionState(this);
     }
     
     
@@ -465,20 +476,8 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      * The selection model for the ComboBox. A ComboBox only supports
      * single selection.
      */
-    private ObjectProperty<SingleSelectionModel<T>> selectionModel = new SimpleObjectProperty<SingleSelectionModel<T>>(this, "selectionModel") {
-        private SingleSelectionModel<T> oldSM = null;
-        @Override protected void invalidated() {
-            // CHANGED JW: removed manual wiring, replaced by path
-//            if (oldSM != null) {
-//                oldSM.selectedItemProperty().removeListener(selectedItemListener);
-//            }
-//            SingleSelectionModel<T> sm = get();
-//            oldSM = sm;
-//            if (sm != null) {
-//                sm.selectedItemProperty().addListener(selectedItemListener);
-//            }
-        }                
-    };
+    private ObjectProperty<SingleSelectionModel<T>> selectionModel = 
+            new SimpleObjectProperty<SingleSelectionModel<T>>(this, "selectionModel");
     public final void setSelectionModel(SingleSelectionModel<T> value) { selectionModel.set(value); }
     public final SingleSelectionModel<T> getSelectionModel() { return selectionModel.get(); }
     public final ObjectProperty<SingleSelectionModel<T>> selectionModelProperty() { return selectionModel; }
@@ -503,27 +502,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 //            setValue(t1);
 //        }
     };
-    // KEEP until regression testing done
-    // Listen to changes in the selectedItem property of the SelectionModel.
-    // When it changes, set the selectedItem in the value property.
-//    private ChangeListener<T> selectedItemListener = new ChangeListener<T>() {
-//        @Override public void changed(ObservableValue<? extends T> ov, T t, T t1) {
-//            if (wasSetAllCalled && t1 == null) {
-//                // no-op: fix for RT-22572 where the developer was completely
-//                // replacing all items in the ComboBox, and expecting the 
-//                // selection (and ComboBox.value) to remain set. If this isn't
-//                // here, we would updateValue(null). 
-//                // Additional fix for RT-22937: adding the '&& t1 == null'. 
-//                // Without this, there would be circumstances where the user 
-//                // selecting a new value from the ComboBox would end up in here,
-//                // when we really should go into the updateValue(t1) call below.
-//                // We should only ever go into this clause if t1 is null.
-//                wasSetAllCalled = false;
-//            } else {
-//                updateValue(t1);
-//            }
-//        }
-//    };
 
 
 
@@ -594,24 +572,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     @Override protected Skin<?> createDefaultSkin() {
         return new ComboBoxXListViewSkin<T>(this);
     }
-    
-    
-    
-    /***************************************************************************
-     *                                                                         *
-     * Callbacks and Events                                                    *
-     *                                                                         *
-     **************************************************************************/    
-    
-
-
-    /***************************************************************************
-     *                                                                         *
-     * Private methods                                                         *
-     *                                                                         *
-     **************************************************************************/        
-
-
      
     /***************************************************************************
      *                                                                         *
@@ -621,10 +581,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
     private static final String DEFAULT_STYLE_CLASS = "combo-box";
     
-    private boolean wasSetAllCalled = false;
-    private int previousItemCount = -1;
-    
-    // package for testing
     // CHANGED JW: public to allow custom extensions
     public static class ComboBoxSelectionModel<T> extends SingleSelectionModel<T> {
         // CHANGED JW: widened access to protected to allow subclass access
@@ -636,33 +592,11 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
                 throw new NullPointerException("ComboBox can not be null");
             }
             this.comboBox = cb;
-            
-            // PENDING JW: looks fishy - listening to itself?
-            selectedIndexProperty().addListener(valueModel -> {
-                // we used to lazily retrieve the selected item, but now we just
-                // do it when the selection changes.
-//                setSelectedItem(getModelItem(getSelectedIndex()));
-            });
-
-            /*
-             * The following two listeners are used in conjunction with
-             * SelectionModel.select(T obj) to allow for a developer to select
-             * an item that is not actually in the data model. When this occurs,
-             * we actively try to find an index that matches this object, going
-             * so far as to actually watch for all changes to the items list,
-             * rechecking each time.
-             */
-
-//            this.comboBox.itemsProperty().addListener(weakItemsObserver);
-//            if (comboBox.getItems() != null) {
-//                this.comboBox.getItems().addListener(weakItemsContentObserver);
-//            }
-//            
+           
             final ListChangeListener<T> itemsContentObserver = c -> {
                 itemsChanged(c);
             };
             comboBox.itemsListProperty().addListener(itemsContentObserver);
-
         }
         
         /**
@@ -690,27 +624,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
                 setSelectedIndex(newIndex);
             }
 
-            
-//            if (comboBox.getItems() == null || comboBox.getItems().isEmpty()) {
-//                setSelectedIndex(-1);
-//            } else if (getSelectedIndex() == -1 && getSelectedItem() != null) {
-//                int newIndex = comboBox.getItems().indexOf(getSelectedItem());
-//                if (newIndex != -1) {
-//                    setSelectedIndex(newIndex);
-//                }
-//            }
-//            
-//            while (c.next()) {
-//                comboBox.wasSetAllCalled = comboBox.previousItemCount == c.getRemovedSize();
-//                
-//                
-//                if (c.getFrom() <= getSelectedIndex() && getSelectedIndex()!= -1 && (c.wasAdded() || c.wasRemoved())) {
-//                    int shift = c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
-//                    clearAndSelect(getSelectedIndex() + shift);
-//                }
-//            }
-//            
-            comboBox.previousItemCount = getItemCount();
         }
 
         // PENDING JW: copy of code at end of updateItemsObserver
@@ -734,20 +647,12 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          */
         protected boolean wasUpdated(Change<? extends T> c, int index) {
             if (index < 0) return false;
-//            FXUtils.prettyPrint(c);
             c.reset();
             while(c.next()) {
                 if (c.wasUpdated()) {
                     if (index >= c.getFrom() && index < c.getTo()) {
                         return true;
                     }
-//                    int index = c.getRemoved().indexOf(selectedItem);
-//                    if (index >= 0) {
-////                        T newValue = c.getAddedSubList().get(index);
-////                        select(newValue);
-////                        LOG.info("replaced: " + selectedItem);
-//                        return true;
-//                    }
                 }
             }
             return false;
@@ -760,20 +665,12 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          */
         protected boolean wasReplaced(Change<? extends T> c, int index) {
             if (index < 0) return false;
-//            FXUtils.prettyPrint(c);
             c.reset();
             while(c.next()) {
                 if (c.wasReplaced()) {
                     if (index >= c.getFrom() && index < c.getTo()) {
                         return true;
                     }
-//                    int index = c.getRemoved().indexOf(selectedItem);
-//                    if (index >= 0) {
-//                        T newValue = c.getAddedSubList().get(index);
-//                        select(newValue);
-//                        LOG.info("replaced: " + selectedItem);
-//                        return true;
-//                    }
                 }
             }
             return false;
@@ -798,6 +695,8 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         }
        
         /**
+         * Returns true if the items list isn't empty, false
+         * otherwise.
          * @return
          */
         protected boolean isEmptyItems() {
@@ -813,8 +712,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          * if (selectedIndex >= 0) 
          *    assertEquals(selectedItem, items.get(selectedIndex))   
          * 
-         * PENDING: issue doesn't show up in tests for comboboxX... why not?
-         * Actually, it did - but didn't look at it ;-)
          */
         @Override
         public void select(T obj) {
