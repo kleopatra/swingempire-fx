@@ -18,15 +18,14 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.control.Toggle;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
+import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
 import de.swingempire.fx.util.DebugUtils;
 
 /**
@@ -110,12 +109,14 @@ public class ComboBoxSetItem extends Application {
      */
     private Parent getContent() {
         String initialValue = items.get(0);
-        ListView listView = new ListView();
 //        listView.getSelectionModel().select(initialValue);
         // core choiceBox
 //        ComboBox<String> box = new ComboBox<>(items);
         // extended choiceBox
         ComboBoxX<String> box = new ComboBoxX<>(items);
+        ListView listView = new ListView(items);
+        ControllerProvider provider = () -> box.selectionModelProperty();
+        listView.setSelectionModel(new SingleMultipleSelectionModel(provider, listView.getFocusModel()));
         // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown

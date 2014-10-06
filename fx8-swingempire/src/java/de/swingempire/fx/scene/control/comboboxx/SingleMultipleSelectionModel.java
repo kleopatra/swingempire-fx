@@ -4,11 +4,10 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
-import java.util.Objects;
-
 import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import de.swingempire.fx.property.PathAdapter;
@@ -22,6 +21,8 @@ import de.swingempire.fx.property.PathAdapter;
  * PENDING JW:
  * - enforce single mode
  * - return read-only lists of items/indices
+ * - use provider for focusModel
+ * - formally test control by focusModel
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -36,8 +37,13 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
     // combo's selectionModel is changed
     PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
     PathAdapter<SingleSelectionModel<T>, Integer> selectedIndexPath;
+    private FocusModel<T> focusModel;
     
     public SingleMultipleSelectionModel(ControllerProvider<T> provider) {
+        this(provider, null);
+    }
+    
+    public SingleMultipleSelectionModel(ControllerProvider<T> provider, FocusModel<T> focusModel) {
         selectedItemPath = new PathAdapter<>(provider.selectionModelProperty(), 
                 p -> p.selectedItemProperty(), null);
         selectedItemPath.addListener((o, old, value) -> {selectedItemChanged(value);
@@ -47,6 +53,7 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
                 provider.selectionModelProperty(), 
                 p -> p.selectedIndexProperty().asObject(), -1);
         selectedIndexPath.addListener((o, old, value) -> selectedIndexChanged(value));
+        this.focusModel = focusModel;
         
     }
     /**
@@ -62,6 +69,9 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
      */
     private void selectInternal(int value) {
          setSelectedIndex(value);
+         if (focusModel != null) {
+             focusModel.focus(value);
+         }
          if (value >= 0) {
              indices.setAll(value);
          } else {

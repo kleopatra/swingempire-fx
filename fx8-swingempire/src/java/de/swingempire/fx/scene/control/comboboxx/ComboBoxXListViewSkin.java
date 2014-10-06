@@ -58,7 +58,7 @@ import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.Co
  * - bound ListView's items to comboBox items
  * - TODO: support editing (throws classcastexception, probably need to c&p some more)    
  * - removed selection update in layout
- * - TODO keyboard navigation broken - slave must have some access to focusModel!
+ * - fixed keyboard navigation broken - slave must have access to focusModel!
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -670,10 +670,9 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         final ListView<T> _listView = new ListView<T>() {
 
             {
-                // PENDING JW: trying out adapter: doesn't help when set/remove item at selected?
                 ControllerProvider<T> provider = () -> comboBox.selectionModelProperty();
                 
-                SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(provider);
+                SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(provider, getFocusModel());
                 setSelectionModel(adapter);
                 
                 // CHANGED JW
