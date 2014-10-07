@@ -26,7 +26,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
 import de.swingempire.fx.util.DebugUtils;
 
 /**

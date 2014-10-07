@@ -24,6 +24,12 @@ import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import static org.junit.Assert.*;
 
 /**
+ * Testing core ComboBox.
+ * 
+ * Note: replacing the combo's core selectionModel with ComboBoxSelectionModel 
+ * (same as ComboBoxXSelectionModel except typing of control) makes most tests
+ * pass.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -112,7 +118,9 @@ public class ComboSelectionIssues
 
     @Override
     protected ComboBox createView(ObservableList items) {
-        return new ComboCoreControl(items);
+        ComboCoreControl combo = new ComboCoreControl(items);
+//        combo.setSelectionModel(new ComboBoxSelectionModel(combo));
+        return combo;
     }
 
     @Override

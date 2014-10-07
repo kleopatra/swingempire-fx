@@ -155,9 +155,12 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
         return getController() != null;
     }
     /**
+     * PENDING JW: public access to controller is a testing artefact, so far.
+     * Needed/useful elsewhere?
+     * 
      * @return
      */
-    private SingleSelectionModel<T> getController() {
+    public SingleSelectionModel<T> getController() {
         Property<SingleSelectionModel<T>> controllerProperty = selectedItemPath.getRoot();
         return controllerProperty != null ? controllerProperty.getValue() : null;
     }

@@ -23,8 +23,6 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
@@ -43,6 +41,7 @@ import javafx.util.StringConverter;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * 
@@ -275,7 +274,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         itemsProperty().bindBidirectional(itemsList);
 
         setItems(items);
-        setSelectionModel(new ComboBoxSelectionModel<T>(this));
+        setSelectionModel(new ComboBoxXSelectionModel<T>(this));
         // KEEP JW: original comment
         // listen to the value property input by the user, and if the value is
         // set to something that exists in the items list, we should update the
@@ -498,9 +497,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     // CHANGED JW: listener registered on path
     private ChangeListener<T> selectedItemListener = (ov, t, t1) -> {
         updateValue(t1);
-//        if (! valueProperty().isBound()) {
-//            setValue(t1);
-//        }
     };
 
 
@@ -581,176 +577,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
     private static final String DEFAULT_STYLE_CLASS = "combo-box";
     
-    // CHANGED JW: public to allow custom extensions
-    public static class ComboBoxSelectionModel<T> extends SingleSelectionModel<T> {
-        // CHANGED JW: widened access to protected to allow subclass access
-        // it's safe due to being final
-        protected final ComboBoxX<T> comboBox;
-
-        public ComboBoxSelectionModel(final ComboBoxX<T> cb) {
-            if (cb == null) {
-                throw new NullPointerException("ComboBox can not be null");
-            }
-            this.comboBox = cb;
-           
-            final ListChangeListener<T> itemsContentObserver = c -> {
-                itemsChanged(c);
-            };
-            comboBox.itemsListProperty().addListener(itemsContentObserver);
-        }
-        
-        /**
-         * Updates selection state after change of items. <p>
-         * 
-         * This implementation:
-         * - clears selection if no there are no items
-         * - resets selectedItem if item at selectedIndex was either replaced or updated 
-         * - clears selection if selectedItem had been removed
-         * - updates selectedIndex to new position of selectedItem if it's still in the list
-         * 
-         * @param c
-         */
-        protected void itemsChanged(Change<? extends T> c) {
-            if (isEmptyItems()) {
-                clearSelection();
-            } else if (wasReplaced(c, getSelectedIndex()) || wasUpdated(c, getSelectedIndex())) {  
-                T newItem = comboBox.getItems().get(getSelectedIndex());
-                select(newItem);
-            } else if(wasRemoved(c, getSelectedItem())) {
-                clearSelection();
-            } else { // selected item either still in list or wasn't before the change
-                // update index
-                int newIndex = comboBox.getItems().indexOf(getSelectedItem());
-                setSelectedIndex(newIndex);
-            }
-
-        }
-
-        // PENDING JW: copy of code at end of updateItemsObserver
-        // find out what it was for
-//      // when the items list totally changes, we should clear out
-//      // the selection and focus
-//      int newValueIndex = -1;
-//      if (newList != null) {
-//          T value = comboBox.getValue();
-//          if (value != null) {
-//              newValueIndex = newList.indexOf(value);
-//          }
-//      }
-//      setSelectedIndex(newValueIndex);
-
-        
-        /**
-         * @param c
-         * @param selectedItem
-         * @return
-         */
-        protected boolean wasUpdated(Change<? extends T> c, int index) {
-            if (index < 0) return false;
-            c.reset();
-            while(c.next()) {
-                if (c.wasUpdated()) {
-                    if (index >= c.getFrom() && index < c.getTo()) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /**
-         * @param c
-         * @param selectedItem
-         * @return
-         */
-        protected boolean wasReplaced(Change<? extends T> c, int index) {
-            if (index < 0) return false;
-            c.reset();
-            while(c.next()) {
-                if (c.wasReplaced()) {
-                    if (index >= c.getFrom() && index < c.getTo()) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Returns true if the item is in any removedList of the Change, false
-         * otherwise.
-         * 
-         * @param c the ListChange received from ObservableList
-         * @param item
-         * @return
-         */
-        protected boolean wasRemoved(Change<? extends T> c, T item) {
-            c.reset();
-            while (c.next()) {
-                if (item != null && c.getRemoved().contains(item)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-       
-        /**
-         * Returns true if the items list isn't empty, false
-         * otherwise.
-         * @return
-         */
-        protected boolean isEmptyItems() {
-            return getItemCount() == 0; 
-        }
-
-        /**
-         * Overridden to clear selectedIndex if selectedItem not contained 
-         * in items. Fixes broken class-invariant in super
-         * 
-         * if (!contains(selectedItem)
-         *    assertEquals(-1, selectedIndex)
-         * if (selectedIndex >= 0) 
-         *    assertEquals(selectedItem, items.get(selectedIndex))   
-         * 
-         */
-        @Override
-        public void select(T obj) {
-            super.select(obj);
-            if (isExternalSelectedItem(obj)) {
-                setSelectedIndex(-1);
-            }
-        }
-
-        /**
-         * Checks and returns whether item is an external selectedItem
-         * 
-         * PENDING JW: re-visit null/empty logic
-         * 
-         * @param item
-         * @return
-         */
-        protected boolean isExternalSelectedItem(T item) {
-            if (item == null) return false;
-            if (getItemCount() == 0) {
-                return true;
-            }
-            return !comboBox.getItems().contains(item);
-        }
-
-        // API Implementation
-        @Override protected T getModelItem(int index) {
-            final ObservableList<T> items = comboBox.getItems();
-            if (items == null) return null;
-            if (index < 0 || index >= items.size()) return null;
-            return items.get(index);
-        }
-
-        @Override protected int getItemCount() {
-            final ObservableList<T> items = comboBox.getItems();
-            return items == null ? 0 : items.size();
-        }
-    }
-
     /***************************************************************************
      *                                                                         *
      * Accessibility handling                                                  *

@@ -24,7 +24,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX.ComboBoxSelectionModel;
 import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
 import de.swingempire.fx.util.DebugUtils;
 
@@ -202,7 +201,7 @@ public class ComboBoxSetItem extends Application {
      * 
      * @author Jeanette Winzenburg, Berlin
      */
-    public static class MySelectionModel<T> extends ComboBoxSelectionModel<T> {
+    public static class MySelectionModel<T> extends ComboBoxXSelectionModel<T> {
 
         public MySelectionModel(ComboBoxX<T> cb) {
             super(cb);

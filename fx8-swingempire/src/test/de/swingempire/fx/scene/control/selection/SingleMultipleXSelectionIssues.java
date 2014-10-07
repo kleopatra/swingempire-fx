@@ -30,7 +30,10 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelec
 import static org.junit.Assert.*;
 
 /**
- * Here we try to test SingleMultipleSelectionModel basics, using a choiceboxX,
+ * Here we try to test SingleMultipleSelectionModel basics, using a choiceboxX.
+ * 
+ * PENDING JW: typing issues with choice interface - can't use set/getSelectionModel
+ * because the adapter is-a MultipleSelectionModel that can't be set 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -182,8 +185,8 @@ public class SingleMultipleXSelectionIssues extends
     }
   
     @Override
-    protected ChoiceXControl createView(ObservableList items) {
-        return new ChoiceXControl(items);
+    protected ChoiceXMControl createView(ObservableList items) {
+        return new ChoiceXMControl(items);
     }
     
     @Override
@@ -239,13 +242,13 @@ public class SingleMultipleXSelectionIssues extends
         
     }
     
-    public static class ChoiceXControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T, SingleMultipleSelectionModel<T>> {
+    public static class ChoiceXMControl<T> extends ChoiceBoxX<T> implements ChoiceControl<T, SingleMultipleSelectionModel<T>> {
 
-        public ChoiceXControl() {
+        public ChoiceXMControl() {
             super();
         }
 
-        public ChoiceXControl(ObservableList<T> items) {
+        public ChoiceXMControl(ObservableList<T> items) {
             super(items);
         }
         
@@ -257,6 +260,18 @@ public class SingleMultipleXSelectionIssues extends
         public void setEditable(boolean editable) {
             // do nothing
         }
+
+//        @Override
+//        public SingleMultipleSelectionModel<T> getSelectionModel() {
+//            // TODO Auto-generated method stub
+//            return null;
+//        }
+//
+//        @Override
+//        public void setSelectionModel(SingleMultipleSelectionModel<T> model) {
+//            // TODO Auto-generated method stub
+//            
+//        }
 
     }
 

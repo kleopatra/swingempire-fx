@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -42,25 +43,7 @@ public class ChoiceBoxUpdateExample extends Application {
         choiceBox.getSelectionModel().select(0);
         // To help debugging...
         items.addListener((Change<? extends Item> change) -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    System.out.println("Added");
-                }
-                if (change.wasPermutated()) {
-                    System.out.println("Permutated");
-                }
-                if (change.wasReplaced()) {
-                    System.out.println("Replaced");
-                }
-                if (change.wasRemoved()) {
-                    System.out.println("Removed");
-                }
-                if (change.wasUpdated()) {
-                    System.out.println("Updated");
-                }
-                System.out.println("From " + change.getFrom() + " To: "
-                        + change.getTo());
-            }
+            FXUtils.prettyPrint(change);
         });
 
         TextField changeSelectedField = new TextField();

@@ -12,9 +12,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -29,7 +29,11 @@ import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXC
  * Type-safe separator.
  * http://stackoverflow.com/q/25914924/203657
  * 
- * Supported by ChoiceBoxX but not much nicer as the answer at SO.
+ * Supported by ChoiceBoxX 
+ * - SeparatorMarker: but not much nicer as the answer at SO.
+ * - separatorsList property
+ * 
+ * PENDING JW: remove marker support, isn't worth any trouble
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -110,20 +114,26 @@ public class ChoiceBoxSeparator extends Application {
         //box.setValue(items.get(0));
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
-            SelectionModel model = box.getSelectionModel();
+            SelectionModel model = getSelectionModel(box);
             model.select("myDummySelectedItem");
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
         });
         Button setValue = new Button("Set value to uncontained");
         setValue.setOnAction(e -> {
-            SelectionModel model = box.getSelectionModel();
+            SelectionModel model = getSelectionModel(box);
             box.setValue("myDummyValue");
             LOG.info("selected/item/value" + model.getSelectedIndex() 
                     + "/" + model.getSelectedItem() + "/" + box.getValue());
         });
         Parent buttons = new HBox(setSelectedItemUncontained, setValue);
         return buttons;
+    }
+
+    // PENDING JW: hacking around typing issues of test interface
+    protected SelectionModel getSelectionModel(ChoiceControl box) {
+        return (box instanceof ChoiceBox) ? ((ChoiceBox) box).getSelectionModel() 
+                : ((ChoiceBoxX) box).getSelectionModel();
     }
 
     @Override

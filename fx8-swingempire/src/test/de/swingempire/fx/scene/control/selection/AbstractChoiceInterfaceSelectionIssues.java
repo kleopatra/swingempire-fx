@@ -546,7 +546,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         assertEquals("choicebox must show value", uncontained, getDisplayText());
     }
         
-        /**
+    /**
      * Implementation of itemsProperty in choiceBox vs. itemsChangeListener in 
      * model are inconclusive:
      * - former clears selection except if uncontained selectedItem
@@ -1155,9 +1155,10 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
 
         void setValue(T value);
 
-        W getSelectionModel();
-
-        void setSelectionModel(W model);
+        // removed because of typing issues when testing the adapter
+//        W getSelectionModel();
+//
+//        void setSelectionModel(W model);
 
         void show();
 
