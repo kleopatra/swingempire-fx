@@ -198,9 +198,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         // Fix for RT-19431 (also tested via ComboBoxListViewSkinTest)
         updateValue();
         updateDisplayNode();
-        if (buttonCell != null) {
-//            buttonCell.getText();
-        }
+
         // Fix for RT-36902, where focus traversal was getting stuck inside the
         // ComboBox
         comboBox.setImpl_traversalEngine(new ParentTraversalEngine(comboBox,
