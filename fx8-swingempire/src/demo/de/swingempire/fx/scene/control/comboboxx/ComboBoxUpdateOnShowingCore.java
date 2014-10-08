@@ -22,19 +22,17 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 
 /**
- * 
  * Basic test context: behaviour if items are modified while opening the popup.
  * 
  * Basic requirement: selectedItem must not change by opening.
  * 
  * Test setup:
  * each tab contains a editable/not-editable choice control (if supported)
- * each combo's initial value is external to the list
+ * each control's initial value is external to the list
  * initial items can be varied (single/multiple items)
- * items mutations can be varied
+ * item mutations can be varied
  * 
  * Test steps:
  * - click arrow to open popup: initial value unchanged
@@ -48,108 +46,56 @@ import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
  * - items.replaceAll(UnaryOp): "sticky" selection at last 
  * - items.remove(0): clears selection
  * 
+ * 
  * Related to: 
  * https://javafx-jira.kenai.com/browse/RT-22572 - covers items.setAll, fixed
  * https://javafx-jira.kenai.com/browse/RT-20945 - covers items.setAll, fixed
  * https://javafx-jira.kenai.com/browse/RT-38899 - covers control.setItems, open
  * 
- * ---------------
- * Regression guard against: https://javafx-jira.kenai.com/browse/RT-22572
+ * (Note to self: extract for bug report)
  * 
- * - Select the item from the ComboBox menu.
- * - Click on the menuButton without selecting anything : the value is removed.
- * 
- * Regression guard against: https://javafx-jira.kenai.com/browse/RT-22937
- * ?? somehow related to action handler?
- * 
- * Regression guard against: https://javafx-jira.kenai.com/browse/RT-20945
- *  
- * - click button and select item in list: value updated
- * - click on button: action handler fired
- * 
- * Note: the issue here is that the items are always reset on showing!
- * 
- * Also note:
- * - select once
- * - open popup again
- * - press esc: value must not be cleared
- *  
- * fixed in 2.2 
- * 
- * But: 
- * - still cleared if resetting the list (which is functionally equivalent to setAll)
- * - choicebox clears always
- * - other dynamic updates aren't handled correctly
- * 
- * Here trying to dig into other dynamic updates:
- * replaceAll via unaryOperator
- * - behaviour of x combo: replaces changed if contained - why? Only on very first
- *   dynamic update. Invalidation problem? With debugging log, the value is correct
- *   but the list shows the old selected as selected
- * - core combo: completely incorrect selection
- * 
- * Note to self: extracted core-only for bug report
- * @author jfdenise
- * @see ComboboxSelectionRT_26079
- * @see ComboBoxUpdateOnShowingCore
+ * @see ComboBoxUpdateOnShowingRT_20945
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ComboBoxUpdateOnShowingRT_20945 extends Application {
+public class ComboBoxUpdateOnShowingCore extends Application {
 
     protected Parent createContent() {
-        TabPane tabPane = createComboBoxTabs();
-        TabPane tabPaneX = createComboBoxXTabs();
-        Pane box = new VBox(20, tabPane, tabPaneX);
-        return box;
-    }
-
-    protected TabPane createComboBoxTabs() {
-        TabPane tabPane = new TabPane();
+        TabPane tabPane1 = new TabPane();
         // single item initially
         Callback<Void, Facade> singleItem = (p) -> new ComboFacade(
                 FXCollections.observableArrayList("Toto")); 
         // multiple items initially
         Callback<Void, Facade> multipleItems = (p) -> new ComboFacade(
                 FXCollections.observableArrayList("Toto", "Tato", "Tati", "Tata")); 
-        addTestTabs(tabPane, singleItem, multipleItems);
-        return tabPane;
-    }
-    
-    protected TabPane createComboBoxXTabs() {
-        TabPane tabPane = new TabPane();
-        // single item initially
-        Callback<Void, Facade> singleItem = (p) -> new ComboXFacade(
-                FXCollections.observableArrayList("Toto")); 
-        // multiple items initially
-        Callback<Void, Facade> multipleItems = (p) -> new ComboXFacade(
-                FXCollections.observableArrayList("Toto", "Tato", "Tati", "Tata")); 
-        addTestTabs(tabPane, singleItem, multipleItems);
-        return tabPane;
+        addTestTabs(tabPane1, singleItem, multipleItems);
+        TabPane tabPane = tabPane1;
+        Pane box = new VBox(20, tabPane);
+        return box;
     }
 
     protected void addTestTabs(TabPane tabPane,
-            Callback<Void, Facade> singleItem,
-            Callback<Void, Facade> multipleItems) {
-        addTab(tabPane, "single, setAll", singleItem,
+            Callback<Void, Facade> singleInitialItemsFacadeFactory,
+            Callback<Void, Facade> multipleInitialItemsFacadeFactory) {
+        addTab(tabPane, "single, setAll", singleInitialItemsFacadeFactory,
                 control -> {
                     control.getItems().setAll("" +System.currentTimeMillis());
                     return null;
                 }
                 );
-        addTab(tabPane, "single, setItems", singleItem,
+        addTab(tabPane, "single, setItems", singleInitialItemsFacadeFactory,
                 control -> {
-                    control.setItems(FXCollections.observableArrayList(System.currentTimeMillis()));
+                    control.setItems(FXCollections.observableArrayList("" +System.currentTimeMillis()));
                     return null;
                 }
          );
         
-        addTab(tabPane, "multiple, setAll", multipleItems,
+        addTab(tabPane, "multiple, setAll", multipleInitialItemsFacadeFactory,
                 control -> {
                     control.getItems().setAll("" +System.currentTimeMillis(), "constant");
                     return null;
                 }
                 );
-        addTab(tabPane, "multiple, setItems", multipleItems,
+        addTab(tabPane, "multiple, setItems", multipleInitialItemsFacadeFactory,
                 control -> {
                     control.setItems(FXCollections.observableArrayList("" +System.currentTimeMillis(), 
                             "constant"));
@@ -157,7 +103,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
                 }
                 );
         
-        addTab(tabPane, "multiple, replace", multipleItems,
+        addTab(tabPane, "multiple, replace", multipleInitialItemsFacadeFactory,
                 control -> {
                     UnaryOperator<String> op = p -> {
                         if (p.endsWith("o")) {
@@ -169,7 +115,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
                     return null;
                 }
                 );
-        addTab(tabPane, "multiple, remove", multipleItems,
+        addTab(tabPane, "multiple, remove", multipleInitialItemsFacadeFactory,
                 control -> {
                     control.getItems().remove(0);
                     return null;
@@ -200,8 +146,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
         final boolean initialContained;
         final boolean editable;
         
-        public TestItem(Facade comboControl, 
-                Callback<Facade, Void> updater, 
+        public TestItem(Facade comboControl, Callback<Facade, Void> updater, 
                 boolean editable) {
             this.comboControl = comboControl;
             this.updater = updater;
@@ -230,7 +175,7 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
     }
 
     /**
-     * Common api that the TestEntry can manage.
+     * Common api that the TestItem can manage.
      */
     public static interface Facade<T, V extends Control> {
         V getComboControl();
@@ -256,36 +201,19 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
         }
         
     }
-    /**
-     * Facade for core ComboBox.
-     */
-    public static class ComboXFacade<T> extends ComboBoxX<T> implements Facade<T, ComboBoxX<T>> {
 
-
-        public ComboXFacade(ObservableList<T> items) {
-            super(items);
-        }
-        @Override
-        public ComboBoxX<T> getComboControl() {
-            return this;
-        }
-
+    public static void main(String[] args) {
+        launch(args);
     }
     @Override
     public void start(Stage primaryStage) {
         Parent tabPane = createContent();
         
-        primaryStage.setScene(new Scene(tabPane, 600, 400));
+        primaryStage.setScene(new Scene(tabPane));
         primaryStage.setTitle(System.getProperty("java.version"));
         primaryStage.show();
     }
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(args);
-    }
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ComboBoxUpdateOnShowingRT_20945.class.getName());
+            .getLogger(ComboBoxUpdateOnShowingCore.class.getName());
 }

@@ -17,6 +17,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.layout.Pane;
@@ -47,6 +48,15 @@ public class DebugUtils {
                 + " / " + choice.getSelectionModel().getSelectedItem() 
                 + " / " + choice.getValue()
                 + " / " + getDisplayText(choice)
+                );
+    }
+    
+    public static void printSelectionState(ListView<?> choice) {
+        String choiceClass = choice.getClass().getSimpleName();
+        LOG.info(choiceClass + ": index/selectedItem/focus/focusItem " + choice.getSelectionModel().getSelectedIndex()
+                + " / " + choice.getSelectionModel().getSelectedItem() 
+                + " / " + choice.getFocusModel().getFocusedIndex() 
+                + " / " + choice.getFocusModel().getFocusedItem() 
                 );
     }
     

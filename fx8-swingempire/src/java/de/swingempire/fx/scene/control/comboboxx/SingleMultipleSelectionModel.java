@@ -54,7 +54,7 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
                 p -> p.selectedIndexProperty().asObject(), -1);
         selectedIndexPath.addListener((o, old, value) -> selectedIndexChanged(value));
         this.focusModel = focusModel;
-        
+        focusModel.focus(getSelectedIndex());
     }
     /**
      * @param value

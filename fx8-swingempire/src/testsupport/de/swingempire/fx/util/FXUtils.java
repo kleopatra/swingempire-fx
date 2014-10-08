@@ -111,11 +111,11 @@ public class FXUtils {
     
     public static <T> void prettyPrint(Change<? extends T> change) {
         StringBuilder sb = new StringBuilder("\tChange event data:\n");
+        sb.append("\n " + change.getClass() + "\n " + change);
         int i = 0;
         change.reset();
         while (change.next()) {
-            sb.append("\n " + change);
-            sb.append("\t\tcursor = ").append(i++).append("\n");
+            sb.append("\n\tcursor = ").append(i++).append("\n");
 
             final String kind = change.wasPermutated() ? "permutated" : change
                     .wasReplaced() ? "replaced"

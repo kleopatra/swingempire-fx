@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
@@ -25,14 +26,17 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.ListChangeReport;
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
@@ -43,6 +47,53 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
+    /**
+     * which change is fired in ListProperty on list.setAll vs. set(list)
+     * 
+     * fires a replaced (aka added && removed) - detectable via
+     * list.size = change.addedSize?
+     */
+    @Test 
+    public void testListPropertyNotificationDetails() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> lp = new SimpleListProperty<>(list);
+        ListChangeListener l = c -> FXUtils.prettyPrint(c);
+        LOG.info("change from listProperty: ");
+        lp.addListener(l);
+        LOG.info("set same element");
+        list.set(0, list.get(0));
+        LOG.info("set same list");
+        list.setAll(createObservableList(true));
+        // fires one event with two changes
+//        LOG.info("remove two not subsequent");
+//        list.removeAll(list.get(1), list.get(5)); 
+        LOG.info("retain all with complete list");
+        // fires nothing 
+        list.retainAll(createObservableList(true));
+        // fires one event with 3 changes of type remove
+//        list.retainAll(list.get(0), list.get(3), list.get(7));
+        LOG.info("setall with new list");
+        list.setAll("one", "twoorwhat");
+        // fires one replaced event for each element 
+//        UnaryOperator<String> op = p -> {
+//            if (p.length() > 3) return p;
+//            return p + 3;
+//         }; 
+//         list.replaceAll(op);               
+        // fires setAll
+//        FXCollections.replaceAll(list, "one", "other");
+//        list.removeAll("one", "two");
+//        lp.set(createObservableList(true));
+    }
+    
+    @Test @Ignore
+    public void testObservableListNotificationDetails() {
+        ObservableList<String> list = createObservableList(true);
+        ListChangeListener l = c -> FXUtils.prettyPrint(c);
+        LOG.info("change from list: ");
+        list.addListener(l);
+        list.setAll("one", "two");
+    }
 //--------------------  
     /**
      * Testing notification of setup in comboX/choiceX

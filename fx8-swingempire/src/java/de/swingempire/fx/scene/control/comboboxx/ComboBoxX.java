@@ -38,9 +38,11 @@ import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
+import de.swingempire.fx.util.DebugUtils;
 import de.swingempire.fx.util.FXUtils;
 
 /**
@@ -280,11 +282,13 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         // set to something that exists in the items list, we should update the
         // selection model to indicate that this is the selected item
         valueProperty().addListener((ov, t, t1) -> {
+//            new RuntimeException("who's calling? " + t + " / " + t1).printStackTrace();
             // CHANGED JW: copied code from ChoiceBoxX
             final SingleSelectionModel<T> sm = getSelectionModel();
             if (sm != null) {
                 sm.select(t1);
             }
+//            DebugUtils.printSelectionState(ComboBoxX.this);
             // KEEP until regression testing done
             // CHANGED JW: removed all special casing, let the selectionModel handle it
 //            if (getItems() == null) return;
@@ -381,13 +385,36 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     /**
      * Re-selects old value if selectedItem had been changed while
      * opening popup. Clears selectionState.
+     * 
+     * PENDING JW: 
+     * - initial (after startup) selection in the list, 
+     * - update that item dynamically while opening
+     * - without the (debug) access to listCellText: value shows changed item
+     *   and changed item selected in dropdown
+     * - with (debug) access to listCellText: value shows old item (correct)
+     *   and changed item selected in dropdown
+     *   
+     * at any later time, the selection is cleared as expected     
+     *
      */
     protected void afterShown() {
         if (selectionState != null) {
             T oldSelected = selectionState.selectedItem;
             selectionState = null;
+//            getSelectionModel().getSelectedIndex();
+//            getValue();
+            // PENDING JW: this makes the value behave properly!
+            // still: first selection in list incorrect
             if (oldSelected != getSelectionModel().getSelectedItem()) {
                 getSelectionModel().select(getValue());
+            }
+//            DebugUtils.printSelectionState(this);
+            if (getSkin() instanceof ComboBoxXListViewSkin) {
+                // no longer needed in 8u40b7
+                // selection in list is fine, but focus at first item 
+//                DebugUtils.getDisplayText(this);
+                ((ComboBoxXListViewSkin) getSkin()).hacking();
+//                DebugUtils.printSelectionState(((ComboBoxXListViewSkin) getSkin()).getListView());
             }
         }
     }
