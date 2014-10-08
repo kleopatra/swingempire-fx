@@ -175,6 +175,14 @@ public class ComboBoxUpdateOnShowingRT_20945 extends Application {
                     return null;
                 }
                 );
+        addTab(tabPane, "dev select", multipleItems, 
+                control -> {
+                    // dev can override default by explicitly setting the value
+                    control.getItems().setAll("completely diff", "other");
+                    control.setValue(control.getItems().get(0));
+                    return null;
+                }
+                );
     }
 
     /**
