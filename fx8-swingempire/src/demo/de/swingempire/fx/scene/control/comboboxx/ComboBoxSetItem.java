@@ -18,6 +18,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
@@ -190,7 +191,7 @@ public class ComboBoxSetItem extends Application {
         BorderPane pane = new BorderPane(); //listView);
         pane.setTop(box);
         pane.setBottom(buttons);
-        title =box.getClass().getName();
+        title =box.getClass().getSimpleName();
         return pane;
     }
 
@@ -231,7 +232,7 @@ public class ComboBoxSetItem extends Application {
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
         primaryStage.setScene(scene);
-        primaryStage.setTitle(title);
+        primaryStage.setTitle(System.getProperty("java.version") + title);
         primaryStage.show();
 
     }

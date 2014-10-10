@@ -47,6 +47,70 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
+    
+    @Test
+    public void testNotificationSubList() {
+        ObservableList<String> list = createObservableList(true);
+        int index = list.size() - 5;
+        ObservableList<String> subList = FXCollections.observableArrayList(list.subList(index, list.size()));
+        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>();
+        ListProperty<String> listProperty = new SimpleListProperty<>();
+        objectProperty.bindBidirectional(listProperty);
+        objectProperty.set(list);
+        ListChangeReport report = new ListChangeReport(listProperty);
+        objectProperty.set(subList);
+        FXUtils.prettyPrint(report.getLastListChange());
+    }
+
+    @Test
+    public void testNotificationObservableList() {
+        ObservableList<String> list = createObservableList(true);
+        ListChangeListener l = c -> FXUtils.prettyPrint(c);
+        list.addListener(l);
+        modifyListSetAll(list);
+    }
+    
+    @Test 
+    public void testNotificationListProperty() {
+        ObservableList<String> list = createObservableList(true);
+        ListChangeListener l = c -> FXUtils.prettyPrint(c);
+        ListProperty<String> property = new SimpleListProperty<>(list);
+        property.addListener(l);
+        modifyListSetAll(list);
+        LOG.info("property: set equal list");
+        property.set(createObservableList(true));
+        LOG.info("set subList");
+        property.set(FXCollections.observableArrayList(list.subList(2, 5)));
+        LOG.info("set empty list");
+        property.set(createObservableList(false));
+        LOG.info("set empty list on empty list");
+        property.set(createObservableList(false));
+        LOG.info("set sub on empty");
+        property.set(FXCollections.observableArrayList(list.subList(2, 5)));
+        
+        
+    }
+
+    protected void modifyListSetAll(ObservableList<String> list) {
+        LOG.info("setAll with newSize < oldSize");
+        list.setAll("one", "two");
+        LOG.info("setAll with newSize == 0");
+        list.setAll();
+        LOG.info("setAll on empty list");
+        list.setAll("one", "two");
+        LOG.info("setAll with newSize = oldSize");
+        list.setAll("one", "two");
+        LOG.info("setAll with newSize > oldSize");
+        list.setAll("one", "two", "three");
+        LOG.info("clear");
+        list.clear();
+        LOG.info("setAll with collection");
+        list.setAll(createObservableList(true));
+        LOG.info("setAll with equals list");
+        list.setAll(createObservableList(true));
+    }
+    //--------------------    
+    
     /**
      * which change is fired in ListProperty on list.setAll vs. set(list)
      * 
@@ -58,32 +122,35 @@ public class ObservableTest {
         ObservableList<String> list = createObservableList(true);
         ListProperty<String> lp = new SimpleListProperty<>(list);
         ListChangeListener l = c -> FXUtils.prettyPrint(c);
-        LOG.info("change from listProperty: ");
+        LOG.info("change from listProperty: modifying list");
         lp.addListener(l);
         LOG.info("set same element");
         list.set(0, list.get(0));
         LOG.info("set same list");
         list.setAll(createObservableList(true));
         // fires one event with two changes
-//        LOG.info("remove two not subsequent");
-//        list.removeAll(list.get(1), list.get(5)); 
+        LOG.info("remove two not subsequent");
+        list.removeAll(list.get(1), list.get(5)); 
         LOG.info("retain all with complete list");
         // fires nothing 
         list.retainAll(createObservableList(true));
+        LOG.info("setAll to initial");
+        list.setAll(createObservableList(true));
         // fires one event with 3 changes of type remove
-//        list.retainAll(list.get(0), list.get(3), list.get(7));
+        list.retainAll(list.get(0), list.get(3), list.get(7));
         LOG.info("setall with new list");
         list.setAll("one", "twoorwhat");
         // fires one replaced event for each element 
-//        UnaryOperator<String> op = p -> {
-//            if (p.length() > 3) return p;
-//            return p + 3;
-//         }; 
-//         list.replaceAll(op);               
+        UnaryOperator<String> op = p -> {
+            if (p.length() > 3) return p;
+            return p + 3;
+         }; 
+         list.replaceAll(op);               
         // fires setAll
-//        FXCollections.replaceAll(list, "one", "other");
-//        list.removeAll("one", "two");
-//        lp.set(createObservableList(true));
+        FXCollections.replaceAll(list, "one", "other");
+        list.removeAll("one", "two");
+        LOG.info("reset ListProperty to initial list");
+        lp.set(createObservableList(true));
     }
     
     @Test @Ignore

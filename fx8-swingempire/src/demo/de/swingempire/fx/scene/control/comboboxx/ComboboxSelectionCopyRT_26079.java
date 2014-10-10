@@ -4,6 +4,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
@@ -71,11 +72,18 @@ import javafx.stage.Stage;
  * - press selectFirst: all sync'ed again
  * - press resetSameFirst: all remain synched on old value (unexpected)
  * 
- * Run again
+ * Run again: first/sameFirst cycle more than once
  * - press select first to select E1 - all sync'ed
- * - press resetSameFirst: selection remains E1, all sync'ed (fishy)
+ * - press resetSameFirst: selection remains E1, all sync'ed (fishy)[*]
  * - press select first to select E1 again - all sync'ed, no detectable change
  * - press resetSameFirst again - selection cleared, all sync'ed (expected)
+ * 
+ * ComboBoxX as well: we keep the selection if the newly 
+ * selected is part of the new items, same the second time 
+ * around (so no inconsistency) - what do we really want?
+ * Missing spec!
+ * 
+ * 
  * 
  */
 public class ComboboxSelectionCopyRT_26079 extends Application 
@@ -84,8 +92,8 @@ public class ComboboxSelectionCopyRT_26079 extends Application
 {
   private Label state;
   private ToggleGroup tg;
-  private ComboBox<String> cb = new ComboBox<>();
-//  private ComboBoxX<String> cb = new ComboBoxX<>();
+//  private ComboBox<String> cb = new ComboBox<>();
+  private ComboBoxX<String> cb = new ComboBoxX<>();
 
   public static void main(String[] args)
   {
@@ -121,12 +129,25 @@ public class ComboboxSelectionCopyRT_26079 extends Application
     cb.getSelectionModel().selectedItemProperty().addListener(this);
     // clearSelection here, that is before showing: item/index cleared as expected
     cb.getSelectionModel().clearSelection();
+    DebugUtils.printSelectionState(cb);
     
     Button resetToSame = new Button("reset items to same");
     resetToSame.setOnAction(e -> {
         cb.getItems().setAll(createList(cb.getItems().toArray(new String[0])));
-        LOG.info("prevCount/setAllCalled? " + getPreviousItemCount() + " / " + getWasSetAll());
     });
+    Button resetToSameLength = new Button("reset items with same length");
+    resetToSameLength.setOnAction(e -> {
+        // here we reset the list to one with the same first item, but different size
+        String firstItem = cb.getItems().get(0);
+        String[] newItems;
+        if (cb.getItems().size() == 3) {
+            newItems = cb.getItems().get(0).equals("E1") ? threeStartE0 : threeStartE1;
+        } else {
+            newItems = cb.getItems().get(0).equals("E0") ? fourStartE1 : fourStartE0;
+        }
+        cb.getItems().setAll(newItems);
+    });
+    
     Button resetToSameFirst = new Button("reset items with same first item");
     resetToSameFirst.setOnAction(e -> {
         // here we reset the list to one with the same first item, but different size
@@ -138,26 +159,24 @@ public class ComboboxSelectionCopyRT_26079 extends Application
             newItems = cb.getItems().size() == 3 ? fourStartE0 : threeStartE0;
         }
         cb.getItems().setAll(newItems);
-        LOG.info("prevCount/setAllCalled? " + getPreviousItemCount() + " / " + getWasSetAll());
     });
+    
     Button selectFirst = new Button("select first");
     selectFirst.setOnAction(e -> {
         // selects first as expected
         cb.getSelectionModel().selectFirst();
-        LOG.info("prevCount/setAllCalled? " + getPreviousItemCount() + " / " + getWasSetAll());
         
     });
     Button clear = new Button("clear");
     clear.setOnAction(e -> {
         cb.getSelectionModel().clearSelection();
-        LOG.info("prevCount/setAllCalled? " + getPreviousItemCount() + " / " + getWasSetAll());
     });
     
-    Parent hbox = new FlowPane(rb1, rb2, cb, selectFirst, resetToSame, resetToSameFirst, clear);
+    Parent hbox = new FlowPane(rb1, rb2, cb, selectFirst, resetToSame, resetToSameFirst, resetToSameLength, clear);
     Parent root = new VBox(state, hbox);
     Scene scene = new Scene(root);
     primaryStage.setScene(scene);
-    primaryStage.setMinWidth(600);
+    primaryStage.setTitle(System.getProperty("java.version") + cb.getClass().getSimpleName());
     primaryStage.show();
     updateState();
 
@@ -195,6 +214,7 @@ public class ComboboxSelectionCopyRT_26079 extends Application
   }
   
   protected int getPreviousItemCount() {
+      if (cb instanceof ComboBoxX) return -1;
       Class clazz = ComboBox.class;
       try {
           Field field = clazz.getDeclaredField("previousItemCount");
@@ -206,6 +226,7 @@ public class ComboboxSelectionCopyRT_26079 extends Application
       return -1;  
   }
   protected boolean getWasSetAll() {
+      if (cb instanceof ComboBoxX) return false;
       Class clazz = ComboBox.class;
       try {
         Field field = clazz.getDeclaredField("wasSetAllCalled");

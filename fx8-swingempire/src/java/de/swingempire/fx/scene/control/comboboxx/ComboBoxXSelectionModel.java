@@ -12,6 +12,12 @@ import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues;
 
 /**
  * SelectionModel to use with ComboBoxX.
+ * 
+ * PENDING JW:
+ * - bug: when replacing all items (setItems, setAll) a formerly contained
+ *   selectedItem must be cleared. Actual: if oldIndex < newSize, the item
+ *   at oldIndex in newItems is selected, else cleared
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
@@ -45,8 +51,9 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
     protected void itemsChanged(Change<? extends T> c) {
         // PENDING JW: looks fishy - but checking for wasRemoved here
         // introduced test failures
-        if (isEmptyItems()) { // || wasRemoved(c, getSelectedItem())) {
+        if (wasSetAll(c)) { // || wasRemoved(c, getSelectedItem())) {
             clearSelection();
+            // PENDING JW: wrong thingy to do
         } else if (wasReplaced(c, getSelectedIndex())
                 || wasUpdated(c, getSelectedIndex())) {
             T newItem = comboBox.getItems().get(getSelectedIndex());
@@ -75,6 +82,28 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
     // setSelectedIndex(newValueIndex);
 
     /**
+     * Returns true if the whole list was changed.
+     * 
+     * @param c
+     * @return
+     */
+    private boolean wasSetAll(Change<? extends T> c) {
+        // wouldn't have gotten a change if the list had
+        // been empty before - actually, we get one
+        // if setItems(emptyList) 
+        if (isEmptyItems()) return true;
+        c.reset();
+        int count = c.getList().size();
+        while(c.next()) {
+            if (c.wasReplaced() || c.wasAdded()) {
+                if (c.getFrom() != 0) return false;
+                if (c.getAddedSize() == count) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param c
      * @param selectedItem
      * @return
@@ -93,9 +122,11 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
         return false;
     }
 
-    /**
-     * @param c
-     * @param selectedItem
+    /** 
+     * PENDING JW: not doing what's intended ..
+     * 
+     * @param c the change
+     * @param index the index in the _old_ list state
      * @return
      */
     protected boolean wasReplaced(Change<? extends T> c, int index) {

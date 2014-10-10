@@ -110,7 +110,6 @@ public class ComboXSelectionIssues
 
     @Override
     protected boolean isClearSelectionOnSetItem() {
-        // TODO Auto-generated method stub
         return false;
     }
 

@@ -47,9 +47,6 @@ import static org.junit.Assert.*;
 /**
  * Extracted common ancestor for ChoiceBox/ChoiceBoxX testing.
  * 
- * PENDING JW: tried to use conditionalIgnore - doesn't seem to 
- * work with extended test cases. Deferred to future.
- * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -605,14 +602,34 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
      *     keep selectedItem, update index if contained in new list
      * else // selectedItem had been in old list     
      *     clearSelection 
+     *     
+     * PENDING JW: this test passes for ComboBoxX, but behaviour in view example
+     * is different. 
+     * 
+     * - passes if subList(index, items.size() - 1); // accidentally last not included
+     * - fails if subList(index, items.size())
+     * 
+     * what's the difference? 
+     * Bug: incorrect handling of replace 
+     * - with the former the new selectedItem is accidentally null because newIndex > length? 
+     * 
+     * @see ComboboxSelectionCopyRT_26079
      */
     @Test
     public void testSetItemsIfSelectedItemContained() {
         initSkin();
         int index = items.size() - 5;
         getSelectionModel().select(index);
-        ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
+        Object oldSelected = getSelectionModel().getSelectedItem();
+        ObservableList subList = FXCollections.observableList(items.subList(index, items.size()));
+        assertTrue("sanity: oldSelected contained in sublist", subList.contains(oldSelected));
         getChoiceView().setItems(subList);
+        assertTrue("sanity: oldSelected contained in choice items", getChoiceView().getItems().contains(oldSelected));
+        if (getSelectionModel().getSelectedItem() != null) {
+            assertEquals("if not null, selectedItem must be unchanged", 
+                    oldSelected, getSelectionModel().getSelectedItem());
+            assertEquals("if not cleared, selectedIndex must be", 0, getSelectionModel().getSelectedIndex());
+        }
         assertEquals("selectedItem cleared if contained before setting", 
                 null, getSelectionModel().getSelectedItem());
         assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
@@ -630,7 +647,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         int index = items.size() - 5;
         getSelectionModel().select("uncontained");
         Object selectedItem = getSelectionModel().getSelectedItem();
-        ObservableList subList = FXCollections.observableList(items.subList(index, items.size() - 1));
+        ObservableList subList = FXCollections.observableList(items.subList(index, items.size()));
         getChoiceView().setItems(subList);
         assertEquals("selectedItem unchanged if not in new list", selectedItem, getSelectionModel().getSelectedItem());
         assertEquals("choicebox must show value", selectedItem, getDisplayText());

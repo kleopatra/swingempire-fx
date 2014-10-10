@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -40,17 +41,18 @@ public class ChoiceBoxUncontainedValue extends Application {
 
     ObservableList<String> items = FXCollections.observableArrayList(
             "5-item", "4-item", "3-item", "2-item", "1-item");
+    private String title;
 
     /**
      * @return
      */
     private Parent getContent() {
-//        ChoiceBox<String> box = new ChoiceBox<>(items);
-        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
+        ChoiceBox<String> box = new ChoiceBox<>(items);
+//        ChoiceBoxX<String> box = new ChoiceBoxX<>(items);
         // variant: initial uncontained value 
-        //box.setValue("initial uncontained");
+        box.setValue("initial uncontained");
         // variant: initial selection
-        //box.setValue(items.get(0));
+//        box.setValue(items.get(0));
         Button setSelectedItemUncontained = new Button("Set selectedItem to uncontained");
         setSelectedItemUncontained.setOnAction(e -> {
             SingleSelectionModel<String> model = box.getSelectionModel();
@@ -69,6 +71,7 @@ public class ChoiceBoxUncontainedValue extends Application {
         
         BorderPane pane = new BorderPane(box);
         pane.setBottom(buttons);
+        title = box.getClass().getSimpleName();
         return pane;
     }
 
@@ -76,6 +79,7 @@ public class ChoiceBoxUncontainedValue extends Application {
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
         primaryStage.setScene(scene);
+        primaryStage.setTitle(System.getProperty("java.version") + title);
         primaryStage.show();
 
     }
