@@ -22,31 +22,19 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * Regression guard against RT-22572
- * https://javafx-jira.kenai.com/browse/RT-22572
+ * Quick test: who's called in which sequence?
  * 
- * was:
- * open popup, select item
- * click on arrow, don't select: selected removed
+ * expected;
+ * - beforeShown in comboBoxX
+ * - ON_SHOWING event handler
+ * - invalidationListener on showingProperty
+ * - changeListener on showingProperty 
+ * - afterShown in comboBoxX
  * 
- * fixed for 2.2
- * 
- * another:
- * comment setEditable
- * left-click on button to show popup
- * left-click to select item
- * left-click into textfield
- * expected: selected item kept
- * actual, selected item cleared
- * 
- * fixed as well
- * 
- * Note: here the data is modified in OnShowing event Handler, 209xx the data
- * is set on receiving a change of showingProperty!
- * 
- * @author jfdenise
+ * as expected for both ComboX and Combo - show/hide is the root of all 
+ * opening/hiding of popup
  */
-public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
+public class ComboBoxNotificationSequenceOnShowing extends Application {
 
     /**
      * @param args the command line arguments
@@ -58,23 +46,27 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Hello World!");
-        TextField tf = new TextField();
-//        final ComboBox cb = new ComboBox();
-        ComboBoxX cb = new ComboBoxX();
-//        cb.setMaxWidth(100);
-//        cb.setMinWidth(100);
-        // filling the box dynamically
-        cb.setOnShowing(new EventHandler<Event>() {
+        primaryStage.setTitle(System.getProperty("java.version"));
+        ComboBoxX cb = new ComboBoxX() {
+//        ComboBox cb = new ComboBox() {
 
             @Override
-            public void handle(Event arg0) {
-                // here we replace all items
-                cb.getItems().setAll("" + System.currentTimeMillis());
-//                cb.setItems(FXCollections.observableArrayList("" + System.currentTimeMillis()));
+            public void show() {
+                LOG.info("before show");
+                super.show();
+                LOG.info("after show");
             }
+            
+        };
+        cb.getItems().addAll("Toto", "Tati", "Tuto");
+        cb.setOnShowing(e -> {
+            LOG.info("OnShowing");
         });
 
+        cb.showingProperty().addListener(e -> LOG.info("invalidated showingProperty"));
+        cb.showingProperty().addListener((o, old, value) -> {
+            LOG.info("changed showingProperty");
+        });
         Button nullSelected = new Button("Null selectedItem");
         nullSelected.setOnAction(e -> {
             cb.getSelectionModel().select(null);
@@ -92,22 +84,11 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
             cb.getSelectionModel().select(-1);
             DebugUtils.printSelectionState(cb);
         });
-        // was RT-20945: receiving action event on opening the popup
-        // if was dynamically filled
-        // don't understand bug description: there is only one
-        // item after showing?
-//        cb.setOnAction(e -> LOG.info("got action: " + e));
-        cb.getItems().add("Toto"); // initial
-        cb.setEditable(true);
-//        cb.setValue(cb.getItems().get(0));
-        cb.setValue("Tata");
-        // ... end test code 20945 
-        
   
         cb.setPromptText("X");
 
         VBox vbox = new VBox(10);
-        vbox.getChildren().addAll(tf, cb, nullSelected, uncontained, clear);
+        vbox.getChildren().addAll(cb, nullSelected, uncontained, clear);
         AnchorPane root = new AnchorPane();
         root.getChildren().addAll(vbox);
         primaryStage.setScene(new Scene(root, 300, 250));
@@ -116,5 +97,5 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ComboBoxValueOnOpeningPopupRT_22572.class.getName());
+            .getLogger(ComboBoxNotificationSequenceOnShowing.class.getName());
 }

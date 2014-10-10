@@ -187,7 +187,7 @@ public class ComboBoxSetItem extends Application {
                 setValue, setNullSelectionModel, clear, nullSelected);
         
         
-        BorderPane pane = new BorderPane(listView);
+        BorderPane pane = new BorderPane(); //listView);
         pane.setTop(box);
         pane.setBottom(buttons);
         title =box.getClass().getName();

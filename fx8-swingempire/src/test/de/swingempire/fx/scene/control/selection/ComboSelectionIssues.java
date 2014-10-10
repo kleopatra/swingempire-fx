@@ -12,6 +12,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBuilder;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 
 import org.junit.Test;
@@ -20,6 +21,7 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import static org.junit.Assert.*;
 
@@ -119,6 +121,7 @@ public class ComboSelectionIssues
     @Override
     protected ComboBox createView(ObservableList items) {
         ComboCoreControl combo = new ComboCoreControl(items);
+        // quick test: see if replacing selectionModel only helps
 //        combo.setSelectionModel(new ComboBoxSelectionModel(combo));
         return combo;
     }
@@ -144,6 +147,17 @@ public class ComboSelectionIssues
         return false;
     }
     
+    
+    @Override
+    protected boolean hasDependendSelectionModel() {
+        return true;
+    }
+    @Override
+    protected SelectionModel getDependentSelectionModel() {
+        ComboBoxListViewSkin skin = (ComboBoxListViewSkin) getView().getSkin();
+        return skin.getListView().getSelectionModel();
+    }
+
 
     /**
      * Very simplistic model, just for testing setSelectionModel. Can't 

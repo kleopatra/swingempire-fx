@@ -16,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBuilder;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -26,7 +27,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-import com.sun.javafx.scene.control.skin.ComboBoxPopupControl;
 
 
 /**
@@ -54,6 +54,7 @@ public class IssueRT_19227 extends Application {
 //    final ComboBoxX testedComboBox = new ComboBoxX();
     final ComboBox testedComboBox = new ComboBox();
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void start(Stage stage) throws Exception {
         Pane pane = new Pane();
@@ -82,8 +83,7 @@ public class IssueRT_19227 extends Application {
             }); 
         testedComboBox.setOnShown(e -> {
             System.out.println("shown selectedIndex " + testedComboBox.getSelectionModel().getSelectedIndex());
-            ComboBoxListViewSkin skin = (ComboBoxListViewSkin) testedComboBox.getSkin();
-            ListView list = skin.getListView();
+            ListView list = getListView(testedComboBox);
             System.out.println("list selected " + list.getSelectionModel().getSelectedIndex());
         });
         Button setNewItemList = new Button("set new items list");
@@ -100,6 +100,18 @@ public class IssueRT_19227 extends Application {
         stage.setScene(scene);
         stage.setTitle(System.getProperty("java.version"));
         stage.show();
+    }
+
+    protected ListView getListView(Control box) {
+        if (box instanceof ComboBox) {
+            ComboBoxListViewSkin skin = (ComboBoxListViewSkin) box.getSkin();
+            ListView list = skin.getListView();
+            return list;
+            
+        }
+        ComboBoxXListViewSkin skin = (ComboBoxXListViewSkin) box.getSkin();
+        ListView list = skin.getListView();
+        return list;
     }
 
     private HBox getAddItemHBox() {

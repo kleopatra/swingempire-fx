@@ -59,6 +59,51 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
 
     
 //---------- test combo issues
+
+    /**
+     * Trying to catch RT_19227: support duplicate items.
+     * Here we select in combo and test listView's sync
+     * 
+     * None of the two tests fail, despite RT_38927: list selected == 0 
+     * on opening popup again.
+     * 
+     */
+    @Test
+    public void testSelectedIndexWithDuplicateItems() {
+        if (!hasDependendSelectionModel()) return;
+        initSkin();
+        int index = 2;
+        // duplicate
+        items.add(index, items.get(index));
+        int second = index +1;
+        getSelectionModel().select(second);
+        assertEquals("sanity: ", second, getSelectionModel().getSelectedIndex());
+        assertEquals("dependent selectedIndex must be same", second, getDependentSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Here we select in dependent and test selected in combo.
+     */
+    @Test
+    public void testSelectedIndexWithDuplicateItemsInvers() {
+        if (!hasDependendSelectionModel()) return;
+        initSkin();
+        int index = 2;
+        // duplicate
+        items.add(index, items.get(index));
+        int second = index +1;
+        getDependentSelectionModel().select(second);
+        assertEquals("sanity: ", second, getDependentSelectionModel().getSelectedIndex());
+        assertEquals("dependent selectedIndex must be same", second, getSelectionModel().getSelectedIndex());
+    }
+    
+    protected boolean hasDependendSelectionModel() {
+        return false;
+    }
+
+    protected SelectionModel getDependentSelectionModel() {
+        return null;
+    }
     
     @Test
     public void testSetValueUpdatesSelectedItem() {
@@ -161,7 +206,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         assertEquals(selected, getChoiceView().getValue());
     }
     
-//------------ start tests around RT-26078    
+//------------ start tests around RT-26079    
     /**
      * In AnchoredSelectionModel testing, we decided to  
      * live with the regression, since it will be solved eventually
@@ -197,6 +242,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     /**
      * PENDING JW: give up for now, don't understand why
      * behvaiour different with/out skin
+     * 
+     * Still don't understand the reason - but the tests for ComboBoxX pass for 
+     * 8u40b7 (but don't for core combo)
      * 
      * @see ComboboxSelectionCopyRT_26079
      */

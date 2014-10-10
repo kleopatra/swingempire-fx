@@ -70,6 +70,9 @@ import de.swingempire.fx.util.FXUtils;
  *   is: keep selectedItem while opening popup 
  * - solved 22572 in show: don't update value if selection changed in
  *   the course of showing, instead revert selectedItem to value at its end   
+ * - checked if fix in show is good enough, what if dynamic data update is done
+ *   on Event.ON_SHOWING - no, it's fired in setShowing which is called from 
+ *   show/hide. Hooking into show is just fine.  
  * - DEFERRED JW regression testing RT-19227 (orig hacked in listener to valueProperty
  *   is: multiple instances in list (what's the use-case?)
  *   core fix is incomplete - RT-38927 - wait for fix-all until support here
@@ -83,7 +86,50 @@ import de.swingempire.fx.util.FXUtils;
  * - TODO fully cleanup skin
  * - use converter for null/empty selected item (if there's not prompt)
  * 
- * ------------------------ original api doc removed - see core ComboBox
+ * 
+ * 
+ * ------------------------ most of original api doc removed - see core ComboBox
+ * 
+ * Except violation of selectionModel class invariant:
+ * 
+ *     <li>It is valid for the selection model to have a selection set to a given
+ *     index even if there is no items in the list (or less items in the list than
+ *     the given index). Once the items list is further populated, such that the
+ *     list contains enough items to have an item in the given index, both the
+ *     selection model {@link SelectionModel#selectedItemProperty()} and
+ *     value property will be updated to have this value. This is inconsistent with
+ *     other controls that use a selection model, but done intentionally for ComboBox.</li>
+ *
+ * It's not only inconsistent with other controls, it's breaking class invariant of 
+ * SelectionModel which is something like
+ * 
+ * <code><pre>
+ * if (selectedIndex >= 0) {
+ *     assertEquals(selectedItem, getItems(selectedIndex);
+ * }
+ * if (!getItems().contains(selectedItem)) {
+ *      assertEquals(-1, selectedIndex);
+ * }
+ * </pre> </code>
+ * 
+ * not respecting that (which isn't a viable option anyway, basic OO principles <b>MUST</b>
+ * be respected) will lead to breaking valid code that relies on it:
+ * 
+ * if (getSelectedIndex() >= 0) {
+ *     Object interestingItem = getItems(getSelectedIndex));
+ * }
+ * 
+ * Also, the value should be the selectedItem at all stable combo states: unstable are
+ * <li> while opening the popup (client code might populate items)
+ * <li> uncommitted edits in the textField
+ * (maybe: alternatively could be regarded as "ouside" of combo responsibily anyway) 
+ * 
+ * <p> 
+ * 
+ * Forturnately, that breakage isn't really happening too often: the driving issue RT-26079
+ * is hard to reproduce: happens when using a builder, which is deprecated nowadays anyway, or
+ * re-setting a list that is equal but not the same in some (not really understood by me)
+ * circumstances.   
  * 
  * @see ComboBox
  * @see ComboBoxBase
@@ -191,6 +237,8 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         });
     }
     
+    private BeforeShowingState<T> beforeShowingState;
+
     /**
      * Overridden to fix RT-22572: keep the fix localized at
      * the use-case where it is needed, that is only 
@@ -205,37 +253,16 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     }
 
     /**
-     * Data dump of selection state.
-     * PENDING JW: Storing all, just in case. Re-visit.
-     */
-    protected static class ItemsSelectionState<T> {
-
-        private final int selectedIndex;
-        private final T selectedItem;
-        private final ObservableList<T> items;
-
-        public ItemsSelectionState(int selectedIndex, T selectedItem,
-                ObservableList<T> items) {
-            this.selectedIndex = selectedIndex;
-            this.selectedItem = selectedItem;
-            this.items = items != null ? FXCollections.unmodifiableObservableList(items) : null;
-        }
-
-        @Override
-        public String toString() {
-            return "[index: " + selectedIndex + " item: " + selectedItem + " items: " + items;
-        }
-    }
-
-    private ItemsSelectionState<T> selectionState;
-    
-    /**
      * Updates value to newValue if selectionState is null and
      * value not bound. Does nothing otherwise.
-     * @param newValue
+     * 
+     * This method is called from change listener to 
+     * <code>selectedItemProperty()</code>
+     * 
+     * @param newValue the new value of selectedItem.
      */
-    private void selectedItemChanged(T newValue) {
-        if (selectionState != null) return;
+    protected void selectedItemChanged(T newValue) {
+        if (beforeShowingState != null) return;
         if (! valueProperty().isBound()) {
             setValue(newValue);
         }
@@ -246,7 +273,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      */
     protected void beforeShown() {
         if (getSelectionModel() == null) return;
-        selectionState = new ItemsSelectionState<>(getSelectionModel().getSelectedIndex(), 
+        beforeShowingState = new BeforeShowingState<>(getSelectionModel().getSelectedIndex(), 
                 getSelectionModel().getSelectedItem(), getItems());
     }
 
@@ -269,9 +296,9 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      *
      */
     protected void afterShown() {
-        if (selectionState != null) {
-            T oldSelected = selectionState.selectedItem;
-            selectionState = null;
+        if (beforeShowingState != null) {
+            T oldSelected = beforeShowingState.selectedItem;
+            beforeShowingState = null;
             if (oldSelected != getSelectionModel().getSelectedItem()) {
                 getSelectionModel().select(getValue());
             }
@@ -287,6 +314,29 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     
 
 
+
+    /**
+     * Data dump of selection state.
+     * PENDING JW: Storing all, just in case. Re-visit.
+     */
+    protected static class BeforeShowingState<T> {
+    
+        private final int selectedIndex;
+        private final T selectedItem;
+        private final ObservableList<T> items;
+    
+        public BeforeShowingState(int selectedIndex, T selectedItem,
+                ObservableList<T> items) {
+            this.selectedIndex = selectedIndex;
+            this.selectedItem = selectedItem;
+            this.items = items != null ? FXCollections.unmodifiableObservableList(items) : null;
+        }
+    
+        @Override
+        public String toString() {
+            return "[index: " + selectedIndex + " item: " + selectedItem + " items: " + items;
+        }
+    }
 
     // --- items
     /**

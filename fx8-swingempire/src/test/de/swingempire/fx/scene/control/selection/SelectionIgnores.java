@@ -23,7 +23,7 @@ public class SelectionIgnores {
     
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }
