@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.property;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.DoubleProperty;
@@ -12,10 +14,15 @@ import javafx.beans.property.FloatProperty;
 import javafx.beans.property.FloatPropertyBase;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.IntegerPropertyBase;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ListPropertyBase;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.LongPropertyBase;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.collections.ObservableList;
 
+import com.sun.istack.internal.NotNull;
 import com.sun.javafx.binding.BidirectionalBinding;
 
 /**
@@ -27,6 +34,100 @@ import com.sun.javafx.binding.BidirectionalBinding;
  * @author Jeanette Winzenburg, Berlin
  */
 public class BugPropertyAdapters {
+    
+    /**
+     * Trying invers binding initial source = this, initial target = property
+     * Wild experiment - similar setup in external listener (in comboBox)
+     * looks fine. Where's the difference?
+     * @param property
+     * @return
+     */
+    public static <T> ListProperty<T> listInverseProperty(@NotNull final Property<ObservableList<T>> property) {
+        if (property instanceof ListProperty) return (ListProperty<T>) property;
+        ListProperty<T> adapter = new ListPropertyBase<T>() {
+            
+            {
+                // PENDING JW: this is the other way round... temporarily!!
+                Bindings.bindBidirectional(property, this);
+                InvalidationListener hack15793 = o -> {
+                    // this is the hack that seems to be working in comboX?
+                    ObservableList<T> newItems =property.getValue();
+                    ObservableList<T> oldItems = get();
+                    boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
+                    if (changedEquals) {
+                        set(newItems);
+                    }
+                };
+                property.addListener(hack15793);
+            }
+            @Override
+            public Object getBean() {
+                return null; // virtual property, no bean
+            }
+            
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+            
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    Bindings.unbindBidirectional(property, this);
+                } finally {
+                    super.finalize();
+                }
+            }
+            
+        };
+        return adapter;
+        
+    }
+    
+    /**
+     * Normal binding: initial source = property, initial target = adapter
+     * @param property
+     * @return
+     */
+    public static <T> ListProperty<T> listProperty(@NotNull final Property<ObservableList<T>> property) {
+        if (property instanceof ListProperty) return (ListProperty<T>) property;
+        ListProperty<T> adapter = new ListPropertyBase<T>() {
+
+            {
+                Bindings.bindBidirectional(this, property);
+                InvalidationListener hack15793 = o -> {
+                    ObservableList<T> newItems =property.getValue();
+                    ObservableList<T> oldItems = get();
+                    boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
+                    if (changedEquals) {
+                        set(newItems);
+                    }
+                };
+                property.addListener(hack15793);
+            }
+            @Override
+            public Object getBean() {
+                return null; // virtual property, no bean
+            }
+
+            @Override
+            public String getName() {
+                return property.getName();
+            }
+            
+            @Override
+            protected void finalize() throws Throwable {
+                try {
+                    Bindings.unbindBidirectional(property, this);
+                } finally {
+                    super.finalize();
+                }
+            }
+
+        };
+        return adapter;
+        
+    }
 
     public static BooleanProperty booleanProperty(final Property<Boolean> property) {
         if (property == null) {

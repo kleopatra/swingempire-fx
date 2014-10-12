@@ -13,6 +13,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -39,52 +40,55 @@ import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.PathAdapter;
-import de.swingempire.fx.util.DebugUtils;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * 
  * C&P'ed core 8u20 to experiment with cleanup ideas.
  * 
  * Experimentations
- * - add and make use of ListProperty for items
- * - cleanup selection model: make it obey its class invariant always,
+ * <li> add and make use of ListProperty for items
+ * <li> cleanup selection model: make it obey its class invariant always,
  *   react to items changes correctly and make it extendable 
- * - let the model be in full control about its own state, remove
+ * <li> let the model be in full control about its own state, remove
  *   all external bowel interference
- * - fix the fix for dynamic items while opening popup: ignore
+ * <li> fix the fix for dynamic items while opening popup: ignore
  *   selection changes while in process of opening
- * - use SingleMultipleSelection (slave of combo's selectionModel)
+ * <li> use SingleMultipleSelection (slave of combo's selectionModel)
  *   in list in popup
- * - bind list's itemProperty to combo's itemProperty         
+ * <li> bind list's itemProperty to combo's itemProperty         
  * 
+ * <li>
  * Changes:
- * - replaced manual wiring to items property by itemsListProperty
+ * <li> replaced manual wiring to items property by itemsListProperty
  *   (kept itemsProperty, bound bidi to itemsListProperty)
- * - replaced manual wiring to selectionModel.selectedItemProperty by PathAdapter
- * - fixed regression RT-22572/22937 (orig hacked in selectedItemListener)
+ * <li> replaced manual wiring to selectionModel.selectedItemProperty by PathAdapter
+ * <li> fixed regression RT-22572/22937 (orig hacked in selectedItemListener)
  *   is: keep selectedItem while opening popup 
- * - solved 22572 in show: don't update value if selection changed in
+ * <li> solved 22572 in show: don't update value if selection changed in
  *   the course of showing, instead revert selectedItem to value at its end   
- * - checked if fix in show is good enough, what if dynamic data update is done
- *   on Event.ON_SHOWING - no, it's fired in setShowing which is called from 
+ * <li> checked if fix in show is good enough, what if dynamic data update is done
+ *   on Event.ON_SHOWING no, it's fired in setShowing which is called from 
  *   show/hide. Hooking into show is just fine.  
- * - DEFERRED JW regression testing RT-19227 (orig hacked in listener to valueProperty
+ * <li> DEFERRED JW regression testing RT-19227 (orig hacked in listener to valueProperty
  *   is: multiple instances in list (what's the use-case?)
  *   core fix is incomplete - RT-38927 - wait for fix-all until support here
- * - TODO regression testing RT-15793 (orig hacked in itemsContentListener)
+ * <li> regression testing RT-15793 (orig hacked in itemsContentListener)
  *   is: missing notification on setting equals but not same list
- *   waiting for core fix of listProperty notification
- * - replaced list change handling, doc'ed behaviour 
- * - removed interference of ComboBox into inner bowels of selectionModel
- * - fixed selectionModel select(Object) to not break class invariant
- * - fixed editing (broken during re-implement of skin)
- * - TODO fully cleanup skin
- * - use converter for null/empty selected item (if there's not prompt)
+ *   hacked with InvalidationListener on itemsProperty that forces a set on 
+ *   the itemsListProperty (see code comment in constructor)
+ *   (no, see below) waiting for core fix of listProperty notification
+ * <li> Note: RT-15793 is about missing config option of ObjectProperty (can't configure
+ *   to fire on identity check vs. equality check) so listProperty is not the culprit 
+ * <li> PENDING JW: adapter that's useful in a broader context  
+ * <li> replaced list change handling, doc'ed behaviour 
+ * <li> removed interference of ComboBox into inner bowels of selectionModel
+ * <li> fixed selectionModel select(Object) to not break class invariant
+ * <li> fixed editing (broken during re-implement of skin)
+ * <li> TODO fully cleanup skin
+ * <li> use converter for null/empty selected item (if there's not prompt)
  * 
  * 
  * 
@@ -187,6 +191,30 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         // CHANDED JW: bidi-bind to new ListProperty
         itemsProperty().bindBidirectional(itemsList);
 
+        /*
+         * Hacking around RT_15793: ObjectProperty doesn't fire changeEvent for
+         * equals but not same list. Need identity check.
+         * 
+         * Not really better than core, just more localized: all collaborators
+         * that are interested in items' changes are listening/binding
+         * to itemsListProperty. 
+         * 
+         * Think about formalizing into an adapter with general usefulness.
+         */
+        // seems to works here, not in BugPropertyAdapters.listProperty
+        // PENDING JW: what's the difference? here's an external listener
+        // can't make a differnce, can it?
+        InvalidationListener hack15793 = o -> {
+            ObservableList<T> newItems = ((ObjectProperty<ObservableList<T>>) o).get();
+            ObservableList<T> oldItems = itemsList.get();
+            boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
+            if (changedEquals) {
+                itemsList.set(newItems);
+            }
+        };
+        
+        
+        itemsProperty().addListener(hack15793);
         setItems(items);
         setSelectionModel(new ComboBoxXSelectionModel<T>(this));
         // KEEP JW: original comment
@@ -282,11 +310,11 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      * opening popup. Clears selectionState.
      * 
      * PENDING JW: 
-     * - initial (after startup) selection in the list, 
-     * - update that item dynamically while opening
-     * - without the (debug) access to listCellText: value shows changed item
+     * <li> initial (after startup) selection in the list, 
+     * <li> update that item dynamically while opening
+     * <li> without the (debug) access to listCellText: value shows changed item
      *   and changed item selected in dropdown
-     * - with (debug) access to listCellText: value shows old item (correct)
+     * <li> with (debug) access to listCellText: value shows old item (correct)
      *   and changed item selected in dropdown
      *   
      * at any later time, the selection is cleared as expected   
@@ -357,14 +385,31 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 //            }
         }
     };
+
     public final void setItems(ObservableList<T> value) { itemsProperty().set(value); }
     public final ObservableList<T> getItems() {return items.get(); }
     public ObjectProperty<ObservableList<T>> itemsProperty() { return items; }
     
     // CHANGED JW: added itmesListProperty
-    private ListProperty<T> itemsList = new SimpleListProperty<>(this, "itemsList");
+    // PENDING JW: hacking around 15793 - where to do it?
+    private ListProperty<T> itemsList = new SimpleListProperty<T>(this, "itemsList") {
+        {
+//            bindBidirectional(items);
+//            // PENDING JW: here the hack is working - not in BugPropertyAdapter: why not? 
+//            // the other is an adapter, here we do it ourselves?
+//            InvalidationListener hack15793 = o -> {
+//                ObservableList<T> newItems = ((ObjectProperty<ObservableList<T>>) o).get();
+//                ObservableList<T> oldItems = get();
+//                boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
+//                if (changedEquals) {
+//                    set(newItems);
+//                }
+//            };
+//            items.addListener(hack15793);
+        }
+    };
     public final ListProperty<T> itemsListProperty() {return itemsList;}; 
-    
+
     // --- string converter
     /**
      * Converts the user-typed input (when the ComboBox is 

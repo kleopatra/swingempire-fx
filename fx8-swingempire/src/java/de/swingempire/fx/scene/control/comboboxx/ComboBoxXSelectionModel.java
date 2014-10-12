@@ -41,19 +41,26 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
      * Updates selection state after change of items.
      * <p>
      * 
-     * This implementation: - clears selection if no there are no items or the
-     * selectedItem has been removed - resets selectedItem if item at
-     * selectedIndex was either replaced or updated - updates selectedIndex to
+     * This implementation:
+     *  <li> clears selection if the list has totally changed (being empty is
+     *  a special case here) or a formerly contained selectedItem  has been removed
+     *  <li> updates selectedItem if item at
+     * selectedIndex was either replaced or updated 
+     * <li> - updates selectedIndex to
      * new position of selectedItem
+     * 
+     * PENDING JW: further test if the conditions above are really met
+     * PENDING JW: explore which combinations of all/added/removed/replaced/ are
+     * to be expected
      * 
      * @param c
      */
     protected void itemsChanged(Change<? extends T> c) {
         // PENDING JW: looks fishy - but checking for wasRemoved here
         // introduced test failures
-        if (wasSetAll(c)) { // || wasRemoved(c, getSelectedItem())) {
+        if (wasAllChanged(c)) { // || wasRemoved(c, getSelectedItem())) {
             clearSelection();
-            // PENDING JW: wrong thingy to do
+            // PENDING JW: wrong thingy to do?
         } else if (wasReplaced(c, getSelectedIndex())
                 || wasUpdated(c, getSelectedIndex())) {
             T newItem = comboBox.getItems().get(getSelectedIndex());
@@ -87,7 +94,7 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
      * @param c
      * @return
      */
-    private boolean wasSetAll(Change<? extends T> c) {
+    private boolean wasAllChanged(Change<? extends T> c) {
         // wouldn't have gotten a change if the list had
         // been empty before - actually, we get one
         // if setItems(emptyList) 

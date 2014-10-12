@@ -208,18 +208,27 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
      * In AnchoredSelectionModel testing, we decided to  
      * live with the regression, since it will be solved eventually
      * in core.
-     * 
+     * <p>
      * Note, RT-26079 it's not related (at least not directly: the example
      * uses setAll(....) which is special-cased
+     * <p>
+     * Note: this might not be exactly 15793: behaviour of remove is different anyway
+     * (though buggy) - though passes with core combo, fails with comboXX. 
+     * <p>
+     * Good 
+     * enough, though basically we have to test whether the wiring to 
+     * listChangeEvents is updated on 
      * 
-     * Note: this might not exactly 15793: behaviour of remove is different anyway
-     * (though buggy) - though passes with core combo, fails with comboXX
+     * <code><pre>
+     * newList.equals(oldList) && newList != oldList
+     * </pre></code>
+     * 
      * 
      * @see ComboboxSelectionCopyRT_26079
      * @see AbstractListMultipleSelectionIssues#testRT15793()
      */
     @Test
-    public void testSelectFirstRT_15793() {
+    public void testSelectFirstRT_15793RemoveItem() {
         view = createView(FXCollections.observableArrayList());
 //        getChoiceView().itemsProperty().addListener(o -> {LOG.info("notified");});
 //        getChoiceView().itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
@@ -234,6 +243,36 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         assertEquals(0, getSelectionModel().getSelectedIndex());
         emptyList.remove(0);
         assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Here we test with replace.<p>
+     * 
+     * PENDING JW: need to add at least two items to the replaced list,
+     * otherwise the set(0, something) can't be distinguished from 
+     * setAll(something). Behaviour is (should be?) different
+     * - first is replace ==> update selectedItem to new value at selectedIndex
+     * - second is allChanged ==> clear selection if old selectedItem had been in list  
+     */
+    @Test
+    public void testSelectFirstRT_15793ReplaceItem() {
+        view = createView(FXCollections.observableArrayList());
+//        getChoiceView().itemsProperty().addListener(o -> {LOG.info("notified");});
+//        getChoiceView().itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
+        ObservableList<String> emptyList = FXCollections.observableArrayList();
+        // listView is instantiated with an empty list, so following assumption 
+        // is incorrect
+//        assertEquals(null, view.getItems());
+        assertSame(view, getChoiceView());
+        getChoiceView().setItems(emptyList);
+        String first = "something";
+        emptyList.addAll(first, "something else");
+        getSelectionModel().selectFirst();
+        assertEquals(0, getSelectionModel().getSelectedIndex());
+        String other = "other";
+        emptyList.set(0, other);
+        assertEquals(0, getSelectionModel().getSelectedIndex());
+        assertEquals(other, getSelectionModel().getSelectedItem());
     }
 
     /**
