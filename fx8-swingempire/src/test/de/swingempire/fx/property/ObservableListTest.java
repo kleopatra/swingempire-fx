@@ -99,38 +99,48 @@ public class ObservableListTest {
         ObservableList<String> otherList = createObservableList(true);
         ListChangeReport report = new ListChangeReport(listProperty);
         objectProperty.set(otherList);
-        assertEquals("must fire change on setting list to objectProperty", 1, report.getEventCount());
-    }
-    
-    @Test
-    public void testListPropertyAdapterSetEqualListInverseListChangeEvent() {
-        ObservableList<String> list = createObservableList(true);
-        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>();
-        ListProperty<String> listProperty = listInverseProperty(objectProperty);
-        objectProperty.set(list);
-        ObservableList<String> otherList = createObservableList(true);
-        ListChangeReport report = new ListChangeReport(listProperty);
-        objectProperty.set(otherList);
+//        otherList.remove(0);
         assertEquals("must fire change on setting list to objectProperty", 1, report.getEventCount());
     }
     
     /**
-     * Real test: setting list.equals(oldList) AND list != oldList must fire
-     * This is what the adapter is meant to hack around.
+     * Testing modification on list modifications after setting an equals list.
+     * Arguable, the set itself may (or not) fire a change (that's RT-38770),
+     * but subsequent modifications on the new list must to taken.
      * 
+     * Here we test the adapter
      */
     @Test
-    public void testListPropertyAdapterSetEqualListOnObjectPropertyInvers() {
+    public void testListPropertyAdapterSetEqualListListChangeEventAfter() {
         ObservableList<String> list = createObservableList(true);
-        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>();
-        ListProperty<String> listProperty = listInverseProperty(objectProperty);
-        objectProperty.set(list);
+        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>(list);
+        ListProperty<String> listProperty = listProperty(objectProperty);
         ObservableList<String> otherList = createObservableList(true);
-        ChangeReport report = new ChangeReport(listProperty);
+        ListChangeReport report = new ListChangeReport(listProperty);
         objectProperty.set(otherList);
-        assertEquals("must fire change on setting list to objectProperty", 1, report.getEventCount());
+        otherList.remove(0);
+        assertEquals("must fire list change after modification on new list", 1, report.getEventCount());
     }
     
+    /**
+     * Testing modification on list modifications after setting an equals list.
+     * Arguable, the set itself may (or not) fire a change (that's RT-38770),
+     * but subsequent modifications on the new list must to taken.
+     * 
+     * Here we test the adapter
+     */
+    @Test
+    public void testListPropertySetEqualListListChangeEventAfter() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>(list);
+        ListProperty<String> listProperty = new SimpleListProperty<>();
+        listProperty.bindBidirectional(objectProperty);
+        ObservableList<String> otherList = createObservableList(true);
+        ListChangeReport report = new ListChangeReport(listProperty);
+        objectProperty.set(otherList);
+        otherList.remove(0);
+        assertEquals("must fire list change after modification on new list", 1, report.getEventCount());
+    }
     
     
   //--------------------  
@@ -140,6 +150,8 @@ public class ObservableListTest {
      * sequence, direction, or where-to-set list doesn't make a difference ..
      * but probably will once RT-35214 is fixed (bubbles up to public preview)
      * not yet in 8u40b7
+     * 
+     * 
      */
     @Test
     public void testObjectPropertyBoundToListProperty() {
@@ -229,6 +241,9 @@ public class ObservableListTest {
     }
 
     
+    /**
+     * Issue RT-38828 ListProperty fires ChangeEvent on modifications to the list
+     */
     @Test
     public void testListPropertyChangeNotificationOnRemoveItem() {
         ObservableList<String> list = createObservableList(true);

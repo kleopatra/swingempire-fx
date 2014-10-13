@@ -201,9 +201,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
          * 
          * Think about formalizing into an adapter with general usefulness.
          */
-        // seems to works here, not in BugPropertyAdapters.listProperty
-        // PENDING JW: what's the difference? here's an external listener
-        // can't make a differnce, can it?
         InvalidationListener hack15793 = o -> {
             ObservableList<T> newItems = ((ObjectProperty<ObservableList<T>>) o).get();
             ObservableList<T> oldItems = itemsList.get();
@@ -212,7 +209,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
                 itemsList.set(newItems);
             }
         };
-        
         
         itemsProperty().addListener(hack15793);
         setItems(items);
@@ -391,7 +387,8 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     public ObjectProperty<ObservableList<T>> itemsProperty() { return items; }
     
     // CHANGED JW: added itmesListProperty
-    // PENDING JW: hacking around 15793 - where to do it?
+    // PENDING JW: hacking around 15793 - currently done in constructor, use adapter 
+    // insttead
     private ListProperty<T> itemsList = new SimpleListProperty<T>(this, "itemsList") {
         {
 //            bindBidirectional(items);

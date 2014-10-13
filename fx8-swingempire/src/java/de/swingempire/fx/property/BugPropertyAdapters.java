@@ -36,75 +36,45 @@ import com.sun.javafx.binding.BidirectionalBinding;
 public class BugPropertyAdapters {
     
     /**
-     * Trying invers binding initial source = this, initial target = property
-     * Wild experiment - similar setup in external listener (in comboBox)
-     * looks fine. Where's the difference?
-     * @param property
-     * @return
-     */
-    public static <T> ListProperty<T> listInverseProperty(@NotNull final Property<ObservableList<T>> property) {
-        if (property instanceof ListProperty) return (ListProperty<T>) property;
-        ListProperty<T> adapter = new ListPropertyBase<T>() {
-            
-            {
-                // PENDING JW: this is the other way round... temporarily!!
-                Bindings.bindBidirectional(property, this);
-                InvalidationListener hack15793 = o -> {
-                    // this is the hack that seems to be working in comboX?
-                    ObservableList<T> newItems =property.getValue();
-                    ObservableList<T> oldItems = get();
-                    boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
-                    if (changedEquals) {
-                        set(newItems);
-                    }
-                };
-                property.addListener(hack15793);
-            }
-            @Override
-            public Object getBean() {
-                return null; // virtual property, no bean
-            }
-            
-            @Override
-            public String getName() {
-                return property.getName();
-            }
-            
-            @Override
-            protected void finalize() throws Throwable {
-                try {
-                    Bindings.unbindBidirectional(property, this);
-                } finally {
-                    super.finalize();
-                }
-            }
-            
-        };
-        return adapter;
-        
-    }
-    
-    /**
-     * Normal binding: initial source = property, initial target = adapter
+     * Adapter of Property<ObservableList> to ListProperty. 
+     * <p>
+     * 
+     * This is a fix for missing config option for ObjectProperty to foces fire
+     * changeEvents based on identity (vs. equality).
+     * <p>
+     * Without change to core api, there's no nice solution except adapting
+     * a ListProperty that's bidi-binding itself to the objectProperty and
+     * additionally registering an invalidationListener - on invalidation of
+     * the bound objectProperty it'll explicitly sets its own value to that of
+     * the objectProperty. Will not fire anything in itself, but rewires itself
+     * to the new list, thus correctly firing notifications on modifications
+     * to the new list (vs. nothing without, as its internal listChangeListener wasn't
+     * rewired)
+     * <p>
+     * 
      * @param property
      * @return
      */
     public static <T> ListProperty<T> listProperty(@NotNull final Property<ObservableList<T>> property) {
         if (property instanceof ListProperty) return (ListProperty<T>) property;
         ListProperty<T> adapter = new ListPropertyBase<T>() {
-
+            // PENDING JW: need weakListener?
+            private InvalidationListener hack15793;
             {
                 Bindings.bindBidirectional(this, property);
-                InvalidationListener hack15793 = o -> {
+                hack15793 = o -> {
                     ObservableList<T> newItems =property.getValue();
                     ObservableList<T> oldItems = get();
-                    boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
+                    // force rewiring to new list if equals
+                    boolean changedEquals = (newItems != null) && (oldItems != null) 
+                            && newItems.equals(oldItems);
                     if (changedEquals) {
                         set(newItems);
                     }
                 };
                 property.addListener(hack15793);
             }
+            
             @Override
             public Object getBean() {
                 return null; // virtual property, no bean
@@ -119,6 +89,7 @@ public class BugPropertyAdapters {
             protected void finalize() throws Throwable {
                 try {
                     Bindings.unbindBidirectional(property, this);
+                    property.removeListener(hack15793);
                 } finally {
                     super.finalize();
                 }
