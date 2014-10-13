@@ -12,11 +12,11 @@ import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues;
 
 /**
  * SelectionModel to use with ComboBoxX.
+ * <p>
  * 
  * PENDING JW:
- * - bug: when replacing all items (setItems, setAll) a formerly contained
- *   selectedItem must be cleared. Actual: if oldIndex < newSize, the item
- *   at oldIndex in newItems is selected, else cleared
+ * <li> remove dependency from view, reduce coupling to its itemsProperty
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */

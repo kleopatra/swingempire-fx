@@ -82,7 +82,7 @@ import de.swingempire.fx.property.PathAdapter;
  *   (no, see below) waiting for core fix of listProperty notification
  * <li> Note: RT-15793 is about missing config option of ObjectProperty (can't configure
  *   to fire on identity check vs. equality check) so listProperty is not the culprit 
- * <li> PENDING JW: adapter that's useful in a broader context  
+ * <li> PENDING JW: use BugPropertyAdapters.listProperty instead of manual hack here  
  * <li> replaced list change handling, doc'ed behaviour 
  * <li> removed interference of ComboBox into inner bowels of selectionModel
  * <li> fixed selectionModel select(Object) to not break class invariant
@@ -138,8 +138,8 @@ import de.swingempire.fx.property.PathAdapter;
  * @see ComboBox
  * @see ComboBoxBase
  * @see ComboBoxXListViewSkin
+ * @see de.swingempire.fx.property.BugPropertyAdapters#listProperty(javafx.beans.property.Property)
  * 
- * @since JavaFX 2.1
  */
 public class ComboBoxX<T> extends ComboBoxBase<T> {
     

@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
+import com.sun.istack.internal.NotNull;
+
 import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,69 +19,100 @@ import de.swingempire.fx.property.PathAdapter;
  * Intended for use in ComboBox's ListView - should be controlled by
  * the combo's selectionModel (ideally, would even use the same
  * model but not possible due to hierarchy ...)
+ * <p>
  * 
+ * All public singleSelection api is delegated to the controller, internal
+ * state is updated when receiving change notifications from the controller.
+ * Note that clients <b>must not</b> use internal modifying api (like calling
+ * setSelectedIndex/Item) - otherwise the sync might break. But then, sane
+ * clients will not have their hands in our bowels anyway, would they :-);
+ * <p>
+ *  
  * PENDING JW:
- * - enforce single mode
- * - return read-only lists of items/indices
- * - use provider for focusModel
- * - formally test control by focusModel
+ * <li> enforce single mode
+ * <li> return read-only lists of items/indices
+ * <li> formally test control by focusModel
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
     
     // PENDING JW: use read-only wrappers
-    ObservableList<Integer> indices = FXCollections.observableArrayList();
-    ObservableList<T> selectedItems = FXCollections.observableArrayList();
+    private ObservableList<Integer> indices = FXCollections.observableArrayList();
+    private ObservableList<T> selectedItems = FXCollections.observableArrayList();
 
-    SingleSelectionModel<T> controller;
     // use a path to the controller, we need to update internals if 
     // combo's selectionModel is changed
-    PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
-    PathAdapter<SingleSelectionModel<T>, Integer> selectedIndexPath;
-    private FocusModel<T> focusModel;
+    private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
+    private PathAdapter<SingleSelectionModel<T>, Integer> selectedIndexPath;
+    private Property<FocusModel<T>> focusModel;
     
-    public SingleMultipleSelectionModel(ControllerProvider<T> provider) {
-        this(provider, null);
+    /**
+     * Instantiates a MultipleSelectionModel that is the slave to the given
+     * selectionModel and no focusModel.
+     * 
+     * @param selectionModel the selectionModel to sync itself to
+     */
+    public SingleMultipleSelectionModel(@NotNull Property<SingleSelectionModel<T>> selectionModel) {
+        this(selectionModel, null);
     }
     
-    public SingleMultipleSelectionModel(ControllerProvider<T> provider, FocusModel<T> focusModel) {
-        selectedItemPath = new PathAdapter<>(provider.selectionModelProperty(), 
+    /**
+     * Instantiates a MultipleSelectionModel that is the slave to the given
+     * selection- and focusModel.
+     * 
+     * @param selectionModel the selectionModel to sync itself to
+     * @param focusModel the focusModel to update on selection changes, may be null
+     */
+    public SingleMultipleSelectionModel(@NotNull Property<SingleSelectionModel<T>> selectionModel, 
+            Property<FocusModel<T>> focusModel) {
+        selectedItemPath = new PathAdapter<>(selectionModel, 
                 p -> p.selectedItemProperty(), null);
         selectedItemPath.addListener((o, old, value) -> {selectedItemChanged(value);
         });
         
         selectedIndexPath  = new PathAdapter<SingleSelectionModel<T>, Integer>(
-                provider.selectionModelProperty(), 
+                selectionModel, 
                 p -> p.selectedIndexProperty().asObject(), -1);
         selectedIndexPath.addListener((o, old, value) -> selectedIndexChanged(value));
         this.focusModel = focusModel;
-        focusModel.focus(getSelectedIndex());
+        focus();
     }
-    /**
-     * @param value
-     * @return
+    
+    /** 
+     * Callback invoked when receiving changes of the selectedIndex of the controlling
+     * selectionModel.
+     *  
+     * @param value the new selected index
      */
     private void selectedIndexChanged(int value) {
         selectInternal(value);
     }
+    
     /**
      * @param value
      * @return
      */
     private void selectInternal(int value) {
          setSelectedIndex(value);
-         if (focusModel != null) {
-             focusModel.focus(value);
-         }
          if (value >= 0) {
              indices.setAll(value);
          } else {
              indices.clear();
          }
+         focus();
     }
-    /**
-     * 
+
+    private void focus() {
+        if (focusModel == null || focusModel.getValue() == null) return;
+        focusModel.getValue().focus(getSelectedIndex());
+    }
+
+    /** 
+     * Callback invoked when receiving changes of the selectedItem of the controlling
+     * selectionModel.
+     *  
+     * @param value the new selected item
      */
     private void selectedItemChanged(T value) {
         selectInternal(value);
@@ -142,6 +175,8 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
     public void selectAll() {
     }
 
+//------------------------ delegate to controller
+    
     @Override
     public void selectFirst() {
         if (hasController())
@@ -164,6 +199,7 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
         Property<SingleSelectionModel<T>> controllerProperty = selectedItemPath.getRoot();
         return controllerProperty != null ? controllerProperty.getValue() : null;
     }
+    
     @Override
     public void selectLast() {
         if (hasController()) {
@@ -184,7 +220,6 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
         if (hasController()) {
             getController().select(index);
         }
-        
     }
 
     @Override
@@ -236,11 +271,6 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
         if (hasController()) {
             getController().selectNext();
         }
-    }
-    
-    public static interface ControllerProvider<T> {
-        
-        public Property<SingleSelectionModel<T>> selectionModelProperty();
     }
 
 }

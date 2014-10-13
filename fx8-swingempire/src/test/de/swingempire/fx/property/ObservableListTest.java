@@ -106,9 +106,11 @@ public class ObservableListTest {
     /**
      * Testing modification on list modifications after setting an equals list.
      * Arguable, the set itself may (or not) fire a change (that's RT-38770),
-     * but subsequent modifications on the new list must to taken.
+     * but subsequent modifications on the new list must fire.
      * 
-     * Here we test the adapter
+     * Here we test the adapter.
+     * 
+     * @see BugPropertyAdapters#listProperty(javafx.beans.property.Property)
      */
     @Test
     public void testListPropertyAdapterSetEqualListListChangeEventAfter() {

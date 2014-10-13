@@ -43,20 +43,25 @@ import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javafx.scene.traversal.ParentTraversalEngine;
 import com.sun.javafx.scene.traversal.TraversalContext;
 
-import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
 
 //import javafx.scene.accessibility.Attribute;
 
 /**
  * C&P from core and cleaned.
  * 
- * Changes: - use stringconverter for null if prompt is empty - encapsulate
- * comboBoxItems (keep null substitution) - set ListView's selectionModel to
+ * Changes: 
+ * <li> use stringconverter for null if prompt is empty 
+ * <li> encapsulate comboBoxItems (keep null substitution) 
+ * <li> set ListView's selectionModel to
  * SingleMultipleSelectionModel which is coupled to combo's selectinModel -
- * TODO: commented content of updateValue - needs to be solved cleanly - bound
- * ListView's items to comboBox items - TODO: support editing (throws
- * classcastexception, probably need to c&p some more) - removed selection
- * update in layout - fixed keyboard navigation broken - slave must have access
+ * <li> TODO: commented content of updateValue - needs to be solved cleanly 
+ * <li> bound
+ * ListView's items to comboBox items 
+ * <li> TODO: support editing (throws
+ * classcastexception, probably need to c&p some more) 
+ * <li> removed selection
+ * update in layout 
+ * <li> fixed keyboard navigation broken - slave must have access
  * to focusModel!
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -745,16 +750,13 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         final ListView<T> _listView = new ListView<T>() {
 
             {
-                ControllerProvider<T> provider = () -> comboBox
-                        .selectionModelProperty();
-
                 SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(
-                        provider, getFocusModel());
+                        comboBox.selectionModelProperty(), focusModelProperty());
                 setSelectionModel(adapter);
 
                 // CHANGED JW
                 // simply bind the items' properties
-                itemsProperty().bind(comboBox.itemsProperty());
+                itemsProperty().bind(comboBox.itemsListProperty());
 
                 // disable selecting the first item on focus gain - this is
                 // not what is expected in the ComboBox control (unlike the

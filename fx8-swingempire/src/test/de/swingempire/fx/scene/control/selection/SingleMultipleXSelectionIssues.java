@@ -14,7 +14,6 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -25,8 +24,8 @@ import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceSetItem.MySelectionModel;
 import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
 import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel;
-import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
+
 import static org.junit.Assert.*;
 
 /**
@@ -210,8 +209,7 @@ public class SingleMultipleXSelectionIssues extends
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ControllerProvider p = () -> getView().selectionModelProperty();
-        adapter = new SingleMultipleSelectionModel(p); 
+        adapter = new SingleMultipleSelectionModel(getView().selectionModelProperty()); 
     }
 
     /**
