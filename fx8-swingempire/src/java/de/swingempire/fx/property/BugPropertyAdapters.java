@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.Objects;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -36,10 +38,10 @@ import com.sun.javafx.binding.BidirectionalBinding;
 public class BugPropertyAdapters {
     
     /**
-     * Adapter of Property<ObservableList> to ListProperty. 
+     * Returns a ListProperty that adapts the property and is bidi-bound.
      * <p>
      * 
-     * This is a fix for missing config option for ObjectProperty to foces fire
+     * This is a fix for missing config option for ObjectProperty to force fire
      * changeEvents based on identity (vs. equality).
      * <p>
      * Without change to core api, there's no nice solution except adapting
@@ -48,15 +50,16 @@ public class BugPropertyAdapters {
      * the bound objectProperty it'll explicitly sets its own value to that of
      * the objectProperty. Will not fire anything in itself, but rewires itself
      * to the new list, thus correctly firing notifications on modifications
-     * to the new list (vs. nothing without, as its internal listChangeListener wasn't
-     * rewired)
+     * to the new list (vs. nothing without, as its internal listChangeListener 
+     * wasn't rewired)
      * <p>
      * 
-     * @param property
-     * @return
+     * @param property the property to adapt as ListProperty
+     * @return a ListProperty that's bidi-bound to the property and updates itself
+     *   on invalidation if needed.
      */
-    public static <T> ListProperty<T> listProperty(@NotNull final Property<ObservableList<T>> property) {
-        if (property instanceof ListProperty) return (ListProperty<T>) property;
+    public static <T> ListProperty<T> listProperty(final Property<ObservableList<T>> property) {
+        Objects.requireNonNull(property, "property must not be null");
         ListProperty<T> adapter = new ListPropertyBase<T>() {
             // PENDING JW: need weakListener?
             private InvalidationListener hack15793;
@@ -100,6 +103,7 @@ public class BugPropertyAdapters {
         
     }
 
+    
     public static BooleanProperty booleanProperty(final Property<Boolean> property) {
         if (property == null) {
             throw new NullPointerException("Property cannot be null");

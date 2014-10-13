@@ -4,11 +4,17 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
+import java.util.Objects;
+
+import de.swingempire.fx.property.BugPropertyAdapters;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.scene.control.SingleSelectionModel;
-import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues;
+
+
 
 /**
  * SelectionModel to use with ComboBoxX.
@@ -21,20 +27,39 @@ import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues;
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
-    // CHANGED JW: widened access to protected to allow subclass access
-    // it's safe due to being final
-    protected final ComboBoxX<T> comboBox;
 
-    public ComboBoxXSelectionModel(final ComboBoxX<T> cb) {
-        if (cb == null) {
-            throw new NullPointerException("ComboBox can not be null");
-        }
-        this.comboBox = cb;
-
+    protected final ListProperty<T> itemsList;
+    
+    /**
+     * Instantiates a selectionModel coupled to the given items property.
+     * Note that the items are adapted to a listProperty that keeps
+     * itself synched to correct value of the property (see RT-15973).
+     * 
+     * @param items the items to select from, must not be null.
+     * 
+     * @see BugPropertyAdapters#listProperty(javafx.beans.property.Property)
+     */
+    public ComboBoxXSelectionModel(ObjectProperty<ObservableList<T>> items) {
+        this(BugPropertyAdapters.listProperty(Objects.requireNonNull(items, "items property must not be null")));
+    }
+    
+    /**
+     * Instantiates a selectionModel coupled to th given itemsList property, must
+     * not be null.
+     * 
+     * @param itemsList the items to select from, must not be null.
+     */
+    public ComboBoxXSelectionModel(ListProperty<T> itemsList) {
+        this.itemsList = Objects.requireNonNull(itemsList, "itemsList property must not be null");
+        
         final ListChangeListener<T> itemsContentObserver = c -> {
             itemsChanged(c);
         };
-        comboBox.itemsListProperty().addListener(itemsContentObserver);
+        itemsListProperty().addListener(itemsContentObserver);
+    }
+
+    protected ListProperty<T> itemsListProperty() {
+        return itemsList;
     }
 
     /**
@@ -63,16 +88,20 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
             // PENDING JW: wrong thingy to do?
         } else if (wasReplaced(c, getSelectedIndex())
                 || wasUpdated(c, getSelectedIndex())) {
-            T newItem = comboBox.getItems().get(getSelectedIndex());
+            T newItem = getItems().get(getSelectedIndex());
             select(newItem);
         } else if (wasRemoved(c, getSelectedItem())) {
             clearSelection();
         } else { // selected item either still in list or wasn't before the
                  // change
             // update index
-            int newIndex = comboBox.getItems().indexOf(getSelectedItem());
+            int newIndex = getItems().indexOf(getSelectedItem());
             setSelectedIndex(newIndex);
         }
+    }
+
+    protected ObservableList<T> getItems() {
+        return itemsListProperty().get();
     }
 
     // PENDING JW: copy of code at end of updateItemsObserver
@@ -214,13 +243,13 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
         if (getItemCount() == 0) {
             return true;
         }
-        return !comboBox.getItems().contains(item);
+        return !getItems().contains(item);
     }
 
     // API Implementation
     @Override
     protected T getModelItem(int index) {
-        final ObservableList<T> items = comboBox.getItems();
+        final ObservableList<T> items = getItems();
         if (items == null)
             return null;
         if (index < 0 || index >= items.size())
@@ -230,7 +259,7 @@ public class ComboBoxXSelectionModel<T> extends SingleSelectionModel<T> {
 
     @Override
     protected int getItemCount() {
-        final ObservableList<T> items = comboBox.getItems();
+        final ObservableList<T> items = getItems();
         return items == null ? 0 : items.size();
     }
 }

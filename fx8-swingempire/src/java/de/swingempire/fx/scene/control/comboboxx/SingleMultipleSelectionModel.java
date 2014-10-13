@@ -4,7 +4,8 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
-import com.sun.istack.internal.NotNull;
+
+import java.util.Objects;
 
 import javafx.beans.property.Property;
 import javafx.collections.FXCollections;
@@ -53,7 +54,7 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
      * 
      * @param selectionModel the selectionModel to sync itself to
      */
-    public SingleMultipleSelectionModel(@NotNull Property<SingleSelectionModel<T>> selectionModel) {
+    public SingleMultipleSelectionModel(Property<SingleSelectionModel<T>> selectionModel) {
         this(selectionModel, null);
     }
     
@@ -64,8 +65,9 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
      * @param selectionModel the selectionModel to sync itself to
      * @param focusModel the focusModel to update on selection changes, may be null
      */
-    public SingleMultipleSelectionModel(@NotNull Property<SingleSelectionModel<T>> selectionModel, 
+    public SingleMultipleSelectionModel(Property<SingleSelectionModel<T>> selectionModel, 
             Property<FocusModel<T>> focusModel) {
+        Objects.requireNonNull(selectionModel, "selectionModel property must not be null");
         selectedItemPath = new PathAdapter<>(selectionModel, 
                 p -> p.selectedItemProperty(), null);
         selectedItemPath.addListener((o, old, value) -> {selectedItemChanged(value);

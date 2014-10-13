@@ -212,7 +212,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         
         itemsProperty().addListener(hack15793);
         setItems(items);
-        setSelectionModel(new ComboBoxXSelectionModel<T>(this));
+        setSelectionModel(new ComboBoxXSelectionModel<T>(itemsList));
         // KEEP JW: original comment
         // listen to the value property input by the user, and if the value is
         // set to something that exists in the items list, we should update the
