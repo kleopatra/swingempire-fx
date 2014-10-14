@@ -261,19 +261,20 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         });
     }
     
-    private BeforeShowingState<T> beforeShowingState;
 
     /**
-     * Overridden to fix RT-22572: keep the fix localized at
+     * Overridden for RT-22572: keep it locale at
      * the use-case where it is needed, that is only 
-     * when populating the items while opening the popup.
+     * when populating the items while opening the popup.<p>
      * 
+     * This calls beforeShowing/afterShowing before/after
+     * messaging super.
      */
     @Override
     public void show() {
-        beforeShown();
+        beforeShowing();
         super.show();
-        afterShown();
+        afterShowing();
     }
 
     /**
@@ -295,31 +296,21 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     /**
      * Stores selectionState.
      */
-    protected void beforeShown() {
+    protected void beforeShowing() {
         if (getSelectionModel() == null) return;
         beforeShowingState = new BeforeShowingState<>(getSelectionModel().getSelectedIndex(), 
-                getSelectionModel().getSelectedItem(), getItems());
+                getSelectionModel().getSelectedItem());
     }
 
     /**
      * Re-selects old value if selectedItem had been changed while
      * opening popup. Clears selectionState.
      * 
-     * PENDING JW: 
-     * <li> initial (after startup) selection in the list, 
-     * <li> update that item dynamically while opening
-     * <li> without the (debug) access to listCellText: value shows changed item
-     *   and changed item selected in dropdown
-     * <li> with (debug) access to listCellText: value shows old item (correct)
-     *   and changed item selected in dropdown
-     *   
-     * at any later time, the selection is cleared as expected   
-     * 
-     * as of 8u40b7, all fine without debug access, except for focus rect
+     * As of 8u40b7, all fine without debug access, except for focus rect
      * being on first item  
      *
      */
-    protected void afterShown() {
+    protected void afterShowing() {
         if (beforeShowingState != null) {
             T oldSelected = beforeShowingState.selectedItem;
             beforeShowingState = null;
@@ -328,7 +319,27 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
             }
         }
     }
+
+    private BeforeShowingState<T> beforeShowingState;
+    /**
+     * Data dump of selection state.
+     */
+    protected static class BeforeShowingState<T> {
     
+        private final int selectedIndex;
+        private final T selectedItem;
+    
+        public BeforeShowingState(int selectedIndex, T selectedItem) {
+            this.selectedIndex = selectedIndex;
+            this.selectedItem = selectedItem;
+        }
+    
+        @Override
+        public String toString() {
+            return "[index: " + selectedIndex + " item: " + selectedItem;
+        }
+    }
+
     
     /***************************************************************************
      *                                                                         *
@@ -336,32 +347,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      *                                                                         *
      **************************************************************************/
     
-
-
-
-    /**
-     * Data dump of selection state.
-     * PENDING JW: Storing all, just in case. Re-visit.
-     */
-    protected static class BeforeShowingState<T> {
     
-        private final int selectedIndex;
-        private final T selectedItem;
-        private final ObservableList<T> items;
-    
-        public BeforeShowingState(int selectedIndex, T selectedItem,
-                ObservableList<T> items) {
-            this.selectedIndex = selectedIndex;
-            this.selectedItem = selectedItem;
-            this.items = items != null ? FXCollections.unmodifiableObservableList(items) : null;
-        }
-    
-        @Override
-        public String toString() {
-            return "[index: " + selectedIndex + " item: " + selectedItem + " items: " + items;
-        }
-    }
-
     // --- items
     /**
      * The list of items to show within the ComboBox popup.

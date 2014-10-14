@@ -25,7 +25,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel.ControllerProvider;
 import de.swingempire.fx.util.DebugUtils;
 
 /**
@@ -115,8 +114,8 @@ public class ComboBoxSetItem extends Application {
         // extended choiceBox
         ComboBoxX<String> box = new ComboBoxX<>(items);
         ListView listView = new ListView(items);
-        ControllerProvider provider = () -> box.selectionModelProperty();
-        listView.setSelectionModel(new SingleMultipleSelectionModel(provider, listView.getFocusModel()));
+        listView.setSelectionModel(new SingleMultipleSelectionModel(box.itemsListProperty(), 
+                listView.focusModelProperty()));
         // can control behaviour details by custom model in extended
 //        box.setSelectionModel(new MySelectionModel(box));
         // uncontained value never shown
@@ -205,7 +204,7 @@ public class ComboBoxSetItem extends Application {
     public static class MySelectionModel<T> extends ComboBoxXSelectionModel<T> {
 
         public MySelectionModel(ComboBoxX<T> cb) {
-            super(cb);
+            super(cb.itemsListProperty());
         }
 
         @Override
@@ -236,7 +235,6 @@ public class ComboBoxSetItem extends Application {
         primaryStage.show();
 
     }
-
     public static void main(String[] args) {
         launch();
     }

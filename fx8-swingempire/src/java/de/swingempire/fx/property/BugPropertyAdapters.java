@@ -30,8 +30,13 @@ import com.sun.javafx.binding.BidirectionalBinding;
 /**
  * Typed wrappers for ObjectProperty<TYPE>. Temporary workaround for 
  * https://javafx-jira.kenai.com/browse/RT-37523, will be fixed in 8u20.
- * 
+ * <p>
  * Confirmed: fixed as of 8u20.
+ * 
+ * <p>
+ * 
+ * ListProperty wrapper around ObjectProperty<ObservableList> that 
+ * re-wires itself on replacing list with equal list.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
