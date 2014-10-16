@@ -26,13 +26,15 @@ import javafx.stage.Stage;
  * Reported: https://javafx-jira.kenai.com/browse/RT-38326
  * Simple demo to demonstrate the focusedCell bug.
  *
- * To reproduce:
+ * To reproduce: fixed as of 8u40b7
  * 
  * - click into any cell: focusedCell has both row and column
  * - move around with arrow keys: focusedCell changes both row and column
  *   according to the navigation (expected behaviour)
  * - move up/down with ctrl-up/down: focusedCell row
  *   keeps updating according to navigation, column is set to null (bug)
+ *   
+ * <hr>
  *   
  * Plus: incorrect focus cell on adding items at/above the focus
  * reported https://javafx-jira.kenai.com/browse/RT-38491  
@@ -43,6 +45,17 @@ import javafx.stage.Stage;
  *   - press shift-down to extend selection
  *   - expected: second and third row selected [2]
  *   - actual: first to fourth row selected 
+ *    
+ * This behaviour is changed as of 8u40b7 (was it ever for tableView?)
+ * at the very first time (later, or while selecting by keyboard,
+ * the old misbehaviour is virulent)
+ * - click into first row 
+ * - press f1 to insert row at top
+ * - expected: second row selected and focused
+ * - actual: second row selected and first row focused
+ * - press shift-down to extend selection
+ * - expected: second and third row selected
+ * - actual: first and second row selected     
  *    
  */
 public class TableFocusedCell extends Application {
@@ -56,9 +69,9 @@ public class TableFocusedCell extends Application {
     public void start(Stage stage) {
         stage.setTitle("Table FocusedCell Bug");
         // add a listener to see loosing the column
-        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("old/new " + oldValue + "\n  " + newValue);
-        });
+//        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
+//            LOG.info("old/new " + oldValue + "\n  " + newValue);
+//        });
         TableColumn<Locale, String> language = new TableColumn<>(
                 "Language");
         language.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));

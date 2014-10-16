@@ -25,15 +25,14 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
-
 import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
 
     @Test
@@ -118,8 +117,8 @@ public class ObservableListTest {
         ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>(list);
         ListProperty<String> listProperty = listProperty(objectProperty);
         ObservableList<String> otherList = createObservableList(true);
-        ListChangeReport report = new ListChangeReport(listProperty);
         objectProperty.set(otherList);
+        ListChangeReport report = new ListChangeReport(listProperty);
         otherList.remove(0);
         assertEquals("must fire list change after modification on new list", 1, report.getEventCount());
     }
@@ -129,7 +128,16 @@ public class ObservableListTest {
      * Arguable, the set itself may (or not) fire a change (that's RT-38770),
      * but subsequent modifications on the new list must to taken.
      * 
-     * Here we test the adapter
+     * Consequence for usage of list-valued properties: 
+     * - don't use a ChangeListener on a listValued ObjectProperty if you
+     *   are interested in content-listening, instead use an invalidationListener
+     * - don't use listValued ObjectProperties at all, instead use ListProperty   
+     * 
+     * Consequences for usage of ListProperty 
+     * - don't raw bidi-bind listProperty to a listValued ObjectProperty, instead
+     * - either: bind to listValued property (if the listProperty can be read-only)
+     * - or: additionally add an InvalidationListener that updates the value
+     *   of the listProperty in case the new value is equals  
      */
     @Test
     public void testListPropertySetEqualListListChangeEventAfter() {
@@ -138,36 +146,15 @@ public class ObservableListTest {
         ListProperty<String> listProperty = new SimpleListProperty<>();
         listProperty.bindBidirectional(objectProperty);
         ObservableList<String> otherList = createObservableList(true);
-        ListChangeReport report = new ListChangeReport(listProperty);
         objectProperty.set(otherList);
+        ListChangeReport report = new ListChangeReport(listProperty);
         otherList.remove(0);
-        assertEquals("must fire list change after modification on new list", 1, report.getEventCount());
+        assertEquals("Culprit is bidi-bound ObjectProperty \n listProperty must fire list change after modification on new list", 
+                1, report.getEventCount());
     }
     
     
   //--------------------  
-    /**
-     * Testing notification of setup in comboX/choiceX
-     * 
-     * sequence, direction, or where-to-set list doesn't make a difference ..
-     * but probably will once RT-35214 is fixed (bubbles up to public preview)
-     * not yet in 8u40b7
-     * 
-     * 
-     */
-    @Test
-    public void testObjectPropertyBoundToListProperty() {
-        ListProperty<String> listProperty = new SimpleListProperty<>();
-        ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>();
-        objectProperty.bindBidirectional(listProperty);
-        ObservableList<String> list = createObservableList(true);
-        objectProperty.set(list);
-        ChangeReport listPropertyReport = new ChangeReport(listProperty);
-        ChangeReport objectPropertyReport = new ChangeReport(objectProperty);
-        listProperty.set(createObservableList(true));
-        assertEquals(1, listPropertyReport.getEventCount());
-        assertEquals(1, objectPropertyReport.getEventCount());
-    }
     /**
      * underlying issue with RT-15793: no notification on list that is equals
      * but not the same. Fires fine for ListPropery, but not for list-valued
@@ -191,6 +178,10 @@ public class ObservableListTest {
      *   and fires
      * - expressionHelper.fire check against value.equals(oldValue) and
      *   doesn't fire 
+     *   
+     * sequence, direction, or where-to-set list doesn't make a difference ..
+     * NO - can't! but probably will once RT-35214 is fixed (bubbles up to public preview)
+     * 
      */
     @Test
     public void testListValuedObjectPropertyChange() {
@@ -198,7 +189,8 @@ public class ObservableListTest {
         ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
         ChangeReport report = new ChangeReport(property);
         property.set(createObservableList(true));
-        assertEquals("list-valued objectProperty must fire on not-same list", 1, report.getEventCount());
+        assertEquals("not supported: \n list-valued objectProperty must fire on not-same list", 
+                1, report.getEventCount());
     }
     
     /**
@@ -210,12 +202,32 @@ public class ObservableListTest {
         ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
         InvalidationReport report = new InvalidationReport(property);
         property.set(createObservableList(true));
-        assertEquals("list-valued objectProperty must fire on not-same list", 1, report.getEventCount());
+        assertEquals("supported: list-valued objectProperty must fire on not-same list", 
+                1, report.getEventCount());
     }
     
     /**
-     * Reported: https://javafx-jira.kenai.com/browse/RT-38828
-     * 
+     * Invalidation events are fired.
+     */
+    @Test
+    public void testListValuedObjectPropertyBoundTo() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
+        ListProperty listProperty = new SimpleListProperty();
+        listProperty.bind(property);
+        
+        ChangeReport report = new ChangeReport(listProperty);
+        property.set(createObservableList(true));
+        assertEquals("supported: listProperty bound to listValued property fires change event", 
+                1, report.getEventCount());
+        ListChangeReport lr = new ListChangeReport(listProperty);
+        property.get().remove(0);
+        assertEquals(1, lr.getEventCount());
+    }
+    
+    
+    /**
+     * Issue RT-38828 ListProperty fires ChangeEvent on modifications to the list
      * Confused: listProperty fires changeEvent if items in underlying list
      * removed?
      * 
@@ -226,25 +238,6 @@ public class ObservableListTest {
      * - listeners need to be aware of the fact
      * - ObjectProperty.set test against identity, so no notification explosion in bidi-binding    
      * 
-     * Here we have an additional bidi-binding
-     */
-    @Test
-    public void testListPropertyBidiBindingChangeNotificationOnSetList() {
-        ObservableList<String> list = createObservableList(true);
-        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>();
-        ListProperty<String> listProperty = new SimpleListProperty<>();
-        property.bindBidirectional(listProperty);
-        ChangeReport report = new ChangeReport(listProperty);
-        property.set(list);
-        assertEquals("listProperty must fire changeEvent on setting list", 1, report.getEventCount());
-        report.clear();
-        list.remove(0);
-        assertEquals("listProperty must not fire changeEvent on removing item", 0, report.getEventCount());
-    }
-
-    
-    /**
-     * Issue RT-38828 ListProperty fires ChangeEvent on modifications to the list
      */
     @Test
     public void testListPropertyChangeNotificationOnRemoveItem() {
@@ -253,7 +246,8 @@ public class ObservableListTest {
         ChangeReport report = new ChangeReport(listProperty);
         list.remove(0);
         assertSame("sanity: value didn't change", list, listProperty.get());
-        assertEquals("listProperty must not fire changeEvent on removing item", 0, report.getEventCount());
+        assertEquals("RT-38828: listProperty must not fire changeEvent on removing item", 
+                0, report.getEventCount());
     }
     
     @Test
@@ -297,6 +291,38 @@ public class ObservableListTest {
     
 //----------------- tests related to RT-38770: changeListeners not notified 
 //----------------- https://javafx-jira.kenai.com/browse/RT-38770    
+    
+    /**
+     * Testing bidi-binding between 2 listProperty.
+     */
+    @Test
+    public void testListPropertyBidiBindingToListProperty() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> p1 = new SimpleListProperty<>(list);
+        ListProperty<String> p2 = new SimpleListProperty<>(list);
+        p2.bindBidirectional(p1);
+        assertSame("sanity, same list bidi-bound", list, p2.get());
+        ObservableList<String> other = createObservableList(true);
+        ChangeReport report = new ChangeReport(p2);
+        p1.set(other);
+        assertEquals("RT-38770 - bidi-binding between two ListProperties", 1, report.getEventCount());
+    }
+    
+    /**
+     * Testing binding between 2 listProperty.
+     */
+    @Test
+    public void testListPropertyBindingToListProperty() {
+        ObservableList<String> list = createObservableList(true);
+        ListProperty<String> p1 = new SimpleListProperty<>(list);
+        ListProperty<String> p2 = new SimpleListProperty<>(list);
+        p2.bind(p1);
+        assertSame("sanity, same list bidi-bound", list, p2.get());
+        ObservableList<String> other = createObservableList(true);
+        ChangeReport report = new ChangeReport(p2);
+        p1.set(other);
+        assertEquals("RT-38770 - bind 2 ListProperties", 1, report.getEventCount());
+    }
     
     /**
      * Test notification of changeListeners on setting a list that equals the old

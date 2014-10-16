@@ -93,20 +93,20 @@ public class ListFocusedCell extends Application {
 
     protected void configureList(ListView<Locale> list) {
         // add a listener to see loosing the column
-        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("focused index old/new " + oldValue + " / " + newValue);
-        });
-        
-        list.getFocusModel().focusedItemProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("focused item old/new " + oldValue + " / " + newValue);
-        });
-        
-        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
-            LOG.info("selected index old/new " + oldValue + " / " + newValue);
-        });
-        list.getSelectionModel().selectedItemProperty().addListener((p, oldValue, newValue) -> {
-            LOG.info("selected item old/new " + oldValue + " / " + newValue);
-        });
+//        list.getFocusModel().focusedIndexProperty().addListener((p, oldValue, newValue)-> {
+//            LOG.info("focused index old/new " + oldValue + " / " + newValue);
+//        });
+//        
+//        list.getFocusModel().focusedItemProperty().addListener((p, oldValue, newValue)-> {
+//            LOG.info("focused item old/new " + oldValue + " / " + newValue);
+//        });
+//        
+//        list.getSelectionModel().selectedIndexProperty().addListener((p, oldValue, newValue) -> {
+//            LOG.info("selected index old/new " + oldValue + " / " + newValue);
+//        });
+//        list.getSelectionModel().selectedItemProperty().addListener((p, oldValue, newValue) -> {
+//            LOG.info("selected item old/new " + oldValue + " / " + newValue);
+//        });
         // prevent selection on focusGained
 //        list.getProperties().put("selectOnFocusGain", Boolean.FALSE);
         list.setItems(data);
