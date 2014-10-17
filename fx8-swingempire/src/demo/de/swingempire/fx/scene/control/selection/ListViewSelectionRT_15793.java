@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -37,6 +38,13 @@ import javafx.stage.Stage;
  * (skin, selectionModel, ...) install a ChangeHandler on
  * the itemsProperty
  * 
+ * The hack is implemented for ListView, TableView, ComboBox - not for
+ * ChoiceBox. For ComboBox it's fixed for initial list only: resetting
+ * an equal list later on, doesn't update correctly. Reason are aliases
+ * in ComboBoxListViewSkin: hack calls updateListViewItems which updates 
+ * the list's items to the _alias_ of the comboBoxItems. Without calling 
+ * updateComboBoxItems as well, that's still the old reference.
+ * 
  * @author jfdenise
  */
 public class ListViewSelectionRT_15793 extends Application {
@@ -51,10 +59,14 @@ public class ListViewSelectionRT_15793 extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
        Pane ap = new VBox();
-       final ListView lv = new ListViewAnchored<>();
+//       final ListView lv = new ListViewAnchored<>();
+       
+       final ListView lv = new ListView<>();
+       
+//       final ComboBox lv = new ComboBox();
        // invalidationListener fires (as it doesn't check any value by definition)
 //       lv.itemsProperty().addListener(o -> LOG.info("got invalidation!"));
-       // changeListener doesn't fires because it checks for equality of old/new value
+//       // changeListener doesn't fires because it checks for equality of old/new value
 //       lv.itemsProperty().addListener((o, old, value) -> LOG.info("got change!"));
        final ObservableList lst = FXCollections.observableArrayList();
        lv.setItems(lst);

@@ -59,6 +59,17 @@ public class BugPropertyAdapters {
      * wasn't rewired)
      * <p>
      * 
+     * Consequence for usage of list-valued properties: 
+     * - don't use a ChangeListener on a listValued ObjectProperty if you
+     *   are interested in content-listening, instead use an invalidationListener
+     * - don't use listValued ObjectProperties at all, instead use ListProperty   
+     * 
+     * Consequences for usage of ListProperty 
+     * - don't raw bidi-bind listProperty to a listValued ObjectProperty, instead
+     * - either: bind to listValued property (if the listProperty can be read-only)
+     * - or: additionally add an InvalidationListener that updates the value
+     *   of the listProperty in case the new value is equals  
+     * 
      * @param property the property to adapt as ListProperty
      * @return a ListProperty that's bidi-bound to the property and updates itself
      *   on invalidation if needed.
