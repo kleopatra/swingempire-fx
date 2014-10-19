@@ -55,7 +55,7 @@ import de.swingempire.fx.property.BugPropertyAdapters;
  * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
  * - changed listening to use listProperty (to fix 15793)
  */
-public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
+public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
 
  //--------------- hacking access   
     protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
@@ -104,7 +104,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
      * Default constructor that installs core ListViewBehaviour.
      * @param listView
      */
-    public ListViewSkin(final ListView<T> listView) {
+    public ListViewASkin(final ListView<T> listView) {
         this(listView, new ListViewABehavior<T>(listView));
 
     }
@@ -114,7 +114,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
      * @param listView
      * @param listViewBehavior
      */
-    public ListViewSkin(ListView<T> listView,
+    public ListViewASkin(ListView<T> listView,
             ListViewABehavior<T> listViewBehavior) {
         super(listView, listViewBehavior);
         listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
@@ -125,7 +125,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
         flow.setId("virtual-flow");
         flow.setPannable(IS_PANNABLE);
         flow.setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
-        flow.setCreateCell(flow1 -> ListViewSkin.this.createCell());
+        flow.setCreateCell(flow1 -> ListViewASkin.this.createCell());
         flow.setFixedCellSize(listView.getFixedCellSize());
         getChildren().add(flow);
         
