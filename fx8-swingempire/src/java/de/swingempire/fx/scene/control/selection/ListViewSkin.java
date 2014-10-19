@@ -17,8 +17,8 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import javafx.beans.property.ListProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -39,14 +39,21 @@ import com.sun.javafx.scene.control.skin.VirtualFlow;
 import com.sun.javafx.scene.control.skin.VirtualScrollBar;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
+import de.swingempire.fx.property.BugPropertyAdapters;
+
 /**
+ * Idea was (but no longer is)
  * Plain copy of core 8u20, except the (non-functional) changes listed below to allow subclassing
- * and pluggable behaviour.
+ * and pluggable behaviour.<p>
+ * 
+ * Note: on my way to completely give up on the idea of pluggable something - changes are getting
+ * deeper, the extension does nothing!<p>
  * 
  * Changes: 
  * - hack access to flow's scrollBars
  * - added constructor which takes behaviour
  * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
+ * - changed listening to use listProperty (to fix 15793)
  */
 public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
 
@@ -79,6 +86,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
     // FIXME this should not be a StackPane
     private StackPane placeholderRegion;
     private Node placeholderNode;
+    private ListProperty<T> listProperty;
 //    private Label placeholderLabel;
     private static final String EMPTY_LIST_TEXT = ControlResources.getString("ListView.noContent");
 
@@ -90,7 +98,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
     private static final boolean IS_PANNABLE =
             AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> Boolean.getBoolean("com.sun.javafx.scene.control.skin.ListViewSkin.pannable"));
 
-    private ObservableList<T> listViewItems;
+//    private ObservableList<T> listViewItems;
 
     /**
      * Default constructor that installs core ListViewBehaviour.
@@ -109,7 +117,9 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
     public ListViewSkin(ListView<T> listView,
             ListViewABehavior<T> listViewBehavior) {
         super(listView, listViewBehavior);
-        updateListViewItems();
+        listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
+        listProperty.addListener(weakListViewItemsListener);
+//        updateListViewItems();
         
         // init the VirtualFlow
         flow.setId("virtual-flow");
@@ -162,7 +172,7 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
         if ("ITEMS".equals(p)) {
-            updateListViewItems();
+//            updateListViewItems();
         } else if ("ORIENTATION".equals(p)) {
             flow.setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
         } else if ("CELL_FACTORY".equals(p)) {
@@ -211,20 +221,20 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
     private final WeakListChangeListener<T> weakListViewItemsListener =
             new WeakListChangeListener<T>(listViewItemsListener);
 
-    public void updateListViewItems() {
-        if (listViewItems != null) {
-            listViewItems.removeListener(weakListViewItemsListener);
-        }
-
-        this.listViewItems = getSkinnable().getItems();
-
-        if (listViewItems != null) {
-            listViewItems.addListener(weakListViewItemsListener);
-        }
-
-        rowCountDirty = true;
-        getSkinnable().requestLayout();
-    }
+//    public void updateListViewItems() {
+//        if (listViewItems != null) {
+//            listViewItems.removeListener(weakListViewItemsListener);
+//        }
+//
+//        this.listViewItems = getSkinnable().getItems();
+//
+//        if (listViewItems != null) {
+//            listViewItems.addListener(weakListViewItemsListener);
+//        }
+//
+//        rowCountDirty = true;
+//        getSkinnable().requestLayout();
+//    }
     
     private int itemCount = -1;
 
@@ -240,8 +250,9 @@ public class ListViewSkin<T> extends VirtualContainerBase<ListView<T>, ListViewA
         if (flow == null) return;
         
         int oldCount = itemCount;
-        int newCount = listViewItems == null ? 0 : listViewItems.size();
-        
+//        int newCount = listViewItems == null ? 0 : listViewItems.size();
+        // CHANGED JW: 
+        int newCount = listProperty.size();
         itemCount = newCount;
         
         flow.setCellCount(newCount);

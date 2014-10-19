@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.swingempire.fx.property.BugPropertyAdapters;
 import de.swingempire.fx.scene.control.selection.MultipleSelectionModelBase.ShiftParams;
+import javafx.beans.property.ListProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener;
@@ -19,6 +21,8 @@ import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
 /**
+ * 
+ * 
  * Plain copy of core, for playing with extensions.
  * 
  * Except: 
@@ -35,9 +39,15 @@ import javafx.util.Callback;
  * Listeners that have a ListChangeListener to the value can't re-wired
  * that listener to the new collection, thus listening to the old ... 
  * 
+ * Changed in 8u40b9:
+ * - with a better understanding of what's happening around 15793, changed
+ *   to use listProperty.
+ * 
  */ 
 public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<T> {
 
+
+    private ListProperty<T> listProperty;
 
     /***********************************************************************
      *                                                                     *
@@ -52,7 +62,8 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
 
         this.listView = listView;
 
-
+        listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
+        listProperty.addListener(weakItemsContentObserver);
         /*
          * The following two listeners are used in conjunction with
          * SelectionModel.select(T obj) to allow for a developer to select
@@ -61,13 +72,13 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
          * so far as to actually watch for all changes to the items list,
          * rechecking each time.
          */
-
-        this.listView.itemsProperty().addListener(weakItemsObserver);
-        if (listView.getItems() != null) {
-            this.listView.getItems().addListener(weakItemsContentObserver);
-//            updateItemsObserver(null, this.listView.getItems());
-        }
-        
+//
+//        this.listView.itemsProperty().addListener(weakItemsObserver);
+//        if (listView.getItems() != null) {
+//            this.listView.getItems().addListener(weakItemsContentObserver);
+////            updateItemsObserver(null, this.listView.getItems());
+//        }
+//        
         updateItemCount();
     }
     
@@ -106,42 +117,42 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
         }
     };
     
-    // watching for changes to the items list
-    private final ChangeListener<ObservableList<T>> itemsObserver = (valueModel, oldList, newList) -> {
-            updateItemsObserver(oldList, newList);
-    };
-    
     private WeakListChangeListener<T> weakItemsContentObserver =
             new WeakListChangeListener<T>(itemsContentObserver);
     
-    private WeakChangeListener<ObservableList<T>> weakItemsObserver = 
-            new WeakChangeListener<ObservableList<T>>(itemsObserver);
-    
+//    // watching for changes to the items list
+//    private final ChangeListener<ObservableList<T>> itemsObserver = (valueModel, oldList, newList) -> {
+//        updateItemsObserver(oldList, newList);
+//    };
+//    
+//    private WeakChangeListener<ObservableList<T>> weakItemsObserver = 
+//            new WeakChangeListener<ObservableList<T>>(itemsObserver);
+//    
     // CHANGED JW: widened access for hacking around RT_15793
-    protected void updateItemsObserver(ObservableList<T> oldList, ObservableList<T> newList) {
-        // update listeners
-        if (oldList != null) {
-            oldList.removeListener(weakItemsContentObserver);
-        }
-        if (newList != null) {
-            newList.addListener(weakItemsContentObserver);
-        }
-        
-        updateItemCount();
-
-        // when the items list totally changes, we should clear out
-        // the selection and focus
-        int newValueIndex = -1;
-        if (newList != null) {
-            T selectedItem = getSelectedItem();
-            if (selectedItem != null) {
-                newValueIndex = newList.indexOf(selectedItem);
-            }
-        }
-
-        setSelectedIndex(newValueIndex);
-        focus(newValueIndex);
-    }
+//    protected void updateItemsObserver(ObservableList<T> oldList, ObservableList<T> newList) {
+//        // update listeners
+//        if (oldList != null) {
+//            oldList.removeListener(weakItemsContentObserver);
+//        }
+//        if (newList != null) {
+//            newList.addListener(weakItemsContentObserver);
+//        }
+//        
+//        updateItemCount();
+//
+//        // when the items list totally changes, we should clear out
+//        // the selection and focus
+//        int newValueIndex = -1;
+//        if (newList != null) {
+//            T selectedItem = getSelectedItem();
+//            if (selectedItem != null) {
+//                newValueIndex = newList.indexOf(selectedItem);
+//            }
+//        }
+//
+//        setSelectedIndex(newValueIndex);
+//        focus(newValueIndex);
+//    }
 
 
 
