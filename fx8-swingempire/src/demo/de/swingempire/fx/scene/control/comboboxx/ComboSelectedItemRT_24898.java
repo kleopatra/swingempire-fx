@@ -24,19 +24,19 @@ import javafx.stage.Stage;
  * - actual reported: selectedIndex in second kept, that is 
  *      selectedItem/value updated to first car in second
  *      (that's the memory bug, maybe)
- * - actual 8u20: selectedItem in second kept at fruit
+ * - actual 8u20, 8u40ea: selectedItem in second kept at fruit
  * clearSelection doesn't make a difference!
  * 
  * Note: comboBoxX behaves as expected
  */
 public class ComboSelectedItemRT_24898 extends Application {
 
-    private ComboBoxX<String> comboBoxA = new ComboBoxX();
-
-    private ComboBoxX<String> comboBoxB = new ComboBoxX();
-//    private ComboBox<String> comboBoxA = new ComboBox();
+//    private ComboBoxX<String> comboBoxA = new ComboBoxX();
 //
-//    private ComboBox<String> comboBoxB = new ComboBox();
+//    private ComboBoxX<String> comboBoxB = new ComboBoxX();
+    private ComboBox<String> comboBoxA = new ComboBox();
+
+    private ComboBox<String> comboBoxB = new ComboBox();
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -59,6 +59,7 @@ public class ComboSelectedItemRT_24898 extends Application {
                 });
         stage.setWidth(800);
         stage.setScene(new Scene(hbox));
+        stage.setTitle(System.getProperty("java.version") + " " + comboBoxA.getClass().getSimpleName());
         stage.show();
     }
 

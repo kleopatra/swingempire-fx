@@ -130,12 +130,16 @@ public class SelectionAndModification extends Application {
         
         ListFacade listView = new ListFacade<>();
         listView.setItems(createList());
+
+        ListXFacade listXView = new ListXFacade();
+        listXView.setItems(createList());
         
         Map<String, Consumer<Facade>> actionMap = createActions();
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
         Map<String, KeyCodeCombination> inversInputMap = invertMap(inputMap);
         configureActions(table, actionMap, inputMap);
         configureActions(listView, actionMap, inputMap);
+        configureActions(listXView, actionMap, inputMap);
         
         ContextMenu menu = new ContextMenu();
         GridPane info = new GridPane ();
@@ -164,7 +168,7 @@ public class SelectionAndModification extends Application {
         TabPane tabPane = new TabPane();
         
         Tab tab = new Tab("dummy.me");
-        Pane content = new HBox(table, listView, info);
+        Pane content = new HBox(table, listView, listXView, info);
         table.setContextMenu(menu);
         tab.setContent(content);
         // information only - should use a tooltip instead
@@ -173,7 +177,6 @@ public class SelectionAndModification extends Application {
         return content;
     }
 
-    
     /**
      * @param inputMap
      * @return
@@ -187,7 +190,15 @@ public class SelectionAndModification extends Application {
         return invers;
     }
 
+    public static class ListXFacade<T> extends ListViewAnchored<T>
+        implements Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
 
+        @Override
+        public ListViewAnchored<T> getControl() {
+            return this;
+        }
+        
+    }
     public static class ListFacade<T> extends ListView<T>
         implements Facade<T, ListView<T>, MultipleSelectionModel<T>> {
 
