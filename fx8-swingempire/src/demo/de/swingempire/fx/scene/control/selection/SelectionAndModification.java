@@ -141,39 +141,15 @@ public class SelectionAndModification extends Application {
         configureActions(listView, actionMap, inputMap);
         configureActions(listXView, actionMap, inputMap);
         
-        ContextMenu menu = new ContextMenu();
         GridPane info = new GridPane ();
         info.setPadding(new Insets(20));
         info.setVgap(10);
         info.setHgap(10);
         for (int i = 0; i < actionKeys.length; i++) {
-            MenuItem mi = new MenuItem(actionKeys[i]);
-            Consumer c = actionMap.get(actionKeys[i]);
-            mi.setOnAction(e -> {
-                // PENDING JW: how to get the component that triggered the
-                // showing of the context?
-                ContextMenu m = mi.getParentPopup();
-                Node owner = m.getOwnerNode();
-                // this is wrong ...
-                c.accept(owner);
-            });
-            mi.setAccelerator(inversInputMap.get(actionKeys[i]));
-            mi.setDisable(true);
-            menu.getItems().add(mi);
-            
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        
-        TabPane tabPane = new TabPane();
-        
-        Tab tab = new Tab("dummy.me");
         Pane content = new HBox(table, listView, listXView, info);
-        table.setContextMenu(menu);
-        tab.setContent(content);
-        // information only - should use a tooltip instead
-        tabPane.setContextMenu(menu);
-        tabPane.getTabs().add(tab);
         return content;
     }
 

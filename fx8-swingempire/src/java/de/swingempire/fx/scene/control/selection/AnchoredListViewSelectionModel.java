@@ -160,7 +160,7 @@ public class AnchoredListViewSelectionModel<T> extends
         itemsInvalidationListener = o -> { 
             LOG.info("got invalidation");
             Platform.runLater(() -> {
-                // changeListener wasn't notified due to not firing on identity
+                // changeListener wasn't notified due to not firing on equality
                 if (items != listView.getItems()) {
                     LOG.info("deferred invalidation: " + items + listView.getItems());
                     updateItemsObserver(items, listView.getItems());
