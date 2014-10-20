@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+
+
+import static de.swingempire.fx.util.DebugUtils.*;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,6 +20,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
@@ -46,6 +50,61 @@ import javafx.stage.Stage;
  * Unrelated PENDING
  * - re-invent actionMaps?
  * - unified handling of KeyCode/KeyCodeCombination - how to?
+ *
+ * TableView
+ * 
+ * ReplaceAtSelected:
+ * - press down several times
+ * - press f4 to replace item at selection
+ * - expected: selection on replaced item
+ * - actual: selection moved to first row
+ * 
+ * InsertAtSelected
+ * - press down several times
+ * - press f2 to insert at selection
+ * - expected: selection at old (+/-1, modulo RT-30931)
+ * - actual: selection at first
+ * - do again: down several times, press to insert f2 at selection
+ * - expected as above, actual: selection at old + 2
+ * 
+ * InsertAt0 if first selected (initial state)
+ * - press f1 to insert at 0
+ * - expected: selection/focus on second item
+ * - actual: focus on first, selection on second
+ * 
+ * 
+ * InsertAt0
+ * - press down several times
+ * - press f1 to insert at 0
+ * - expected: selection/focus stick to selected item
+ * - actual: focus at 0 (selection as expected)
+ * - press f1 again to insert at 0
+ * - expected same as above
+ * - actual: focus one item below selected (selection as expected) 
+ * 
+ * ListView
+ * ReplaceAtSelected - works at expected
+ * 
+ * InsertAtSelected
+ * - same bug as "do again" in tableView
+ * 
+ * InsertAt0
+ * - press down several times
+ * - press f1 to insert at 0
+ * - expected: selection/focus sticks to selected item
+ * - actual: selection/focus moved to item below old selected
+ * 
+ * ListViewA
+ * ReplaceAtSelected - works as expected
+ * 
+ * InsertAtSelected
+ * - same bug as "do again" in tableView
+ * 
+ * InsertAt0
+ * - press down several times
+ * - press f1 to insert at 0
+ * - expected: selection/focus sticks to selected item
+ * - actual: selection sticks, focus is one below (the delta increases with repeated f1)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -66,6 +125,7 @@ public class SelectionAndModification extends Application {
         actions.put("insertAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
             f.getItems().add(f.getSelectedIndex(), createItem(f.getSelectedIndex()));
+            printSelectionState("insertAtSelected", f);
         });
         actions.put("removeAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
@@ -74,6 +134,7 @@ public class SelectionAndModification extends Application {
         actions.put("setAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
             f.getItems().set(f.getSelectedIndex(), createItem(f.getSelectedIndex()));
+            printSelectionState("setAtSelected", f);
         });
         return actions ;
     }
@@ -105,8 +166,9 @@ public class SelectionAndModification extends Application {
     }
 //-------------------------- infrastructure
 
+    int count;
     private Locale createItem(int i) {
-        return new Locale("language-" + i, "country-" + i, "var-" + i);
+        return new Locale("language-" + count++, "country-" + i, "var-" + i);
     }
     
     private ObservableList<Locale> createList() {
@@ -131,15 +193,15 @@ public class SelectionAndModification extends Application {
         ListFacade listView = new ListFacade<>();
         listView.setItems(createList());
 
-        ListXFacade listXView = new ListXFacade();
-        listXView.setItems(createList());
+//        ListXFacade listXView = new ListXFacade();
+//        listXView.setItems(createList());
         
         Map<String, Consumer<Facade>> actionMap = createActions();
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
         Map<String, KeyCodeCombination> inversInputMap = invertMap(inputMap);
         configureActions(table, actionMap, inputMap);
         configureActions(listView, actionMap, inputMap);
-        configureActions(listXView, actionMap, inputMap);
+//        configureActions(listXView, actionMap, inputMap);
         
         GridPane info = new GridPane ();
         info.setPadding(new Insets(20));
@@ -149,7 +211,8 @@ public class SelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        Pane content = new HBox(table, listView, listXView, info);
+//        Pane content = new HBox(table, listView, listXView, info);
+        Pane content = new HBox(table, listView, info);
         return content;
     }
 
@@ -166,46 +229,6 @@ public class SelectionAndModification extends Application {
         return invers;
     }
 
-    public static class ListXFacade<T> extends ListViewAnchored<T>
-        implements Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
-
-        @Override
-        public ListViewAnchored<T> getControl() {
-            return this;
-        }
-        
-    }
-    public static class ListFacade<T> extends ListView<T>
-        implements Facade<T, ListView<T>, MultipleSelectionModel<T>> {
-
-        @Override
-        public ListView<T> getControl() {
-            return this;
-        }
-    }
-  
-    public static class TableFacade<T> extends TableView<T> 
-        implements Facade<T, TableView<T>, MultipleSelectionModel<T>> {
-
-        @Override
-        public TableView<T> getControl() {
-            return this;
-        }
-
-    }
-    /**
-     * Common api that the TestEntry can manage.
-     */
-    public static interface Facade<T, V extends Control, S extends SelectionModel<T>> {
-        V getControl();
-        S getSelectionModel();
-        default int getSelectedIndex() {
-            return getSelectionModel() != null ? getSelectionModel().getSelectedIndex() : - 1;
-        }
-        ObservableList<T> getItems();
-        void setItems(ObservableList<T> items);
-        FocusModel getFocusModel();
-     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {

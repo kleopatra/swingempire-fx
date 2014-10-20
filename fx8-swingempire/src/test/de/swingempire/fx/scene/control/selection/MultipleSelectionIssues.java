@@ -22,6 +22,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.StageLoader;
 
@@ -45,6 +47,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     protected V view;
     protected boolean multipleMode;
 
+    /**
+     * The stageLoader used to force skin creation. It's an artefact of fx
+     * instantiation process, not meant to be really used.
+     * Note that it's the responsibility of the test method itself (not the setup)
+     * to init if needed.
+     */
+    protected StageLoader loader;
+
 
     /**
      * Trying to dig into unexpected failure of alsoSelect.
@@ -54,7 +64,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testAnchorAlsoSelectPreviousSingleMode() {
         if (multipleMode) return;
         // general case: anchor kept in behavior for core
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().selectPrevious();
@@ -71,7 +81,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testAnchorAlsoSelectPreviousByRangeSingleMode() {
         if (multipleMode) return;
         // general case: anchor kept in behavior for core
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         getSelectionModel().select(index);
         int newFocus = getFocusIndex() - 1;
@@ -79,6 +89,21 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals(1, getSelectionModel().getSelectedIndices().size());
         assertEquals("anchor must be updated to previous in single mode", 
                 newFocus, getAnchorIndex());
+    }
+
+    /**
+     * Loads the view into a StageLoader to enforce skin creation.
+     * asserts empty selection.
+     */
+    protected void initSkin() {
+        loader = new StageLoader(getView());
+        assertSelectionStateAfterSkin();
+    }
+
+    protected void assertSelectionStateAfterSkin() {
+        assertEquals("sanity: initially unselected", -1, getSelectionModel().getSelectedIndex());
+        // following fails as of 8u40b9 - why exactly?
+        assertEquals("sanity: initially unfocused", -1, getFocusIndex());
     }
     
 
@@ -90,7 +115,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnSelectRangeWithNext() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int first = 2;
         getSelectionModel().select(first);
         int last = 4;
@@ -107,7 +132,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnClearSelectionInRangeWithNext() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int first = 2;
         getSelectionModel().select(first);
         int last = 4;
@@ -125,7 +150,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnClearSelectionAtInRangeWithNext() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int first = 2;
         getSelectionModel().select(first);
         int last = 4;
@@ -145,7 +170,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnClearSelectionOfAnchorInRangeWithNext() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int first = 2;
         getSelectionModel().select(first);
         int last = 4;
@@ -165,7 +190,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnClearSelectionAtAfterRange() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);
@@ -177,7 +202,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnSelectRangeAscending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);
@@ -188,7 +213,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAnchorOnSelectRangeDescending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int start = 5;
         int end = 2;
         getSelectionModel().selectRange(start, end);
@@ -202,7 +227,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectNextSameAtFirst() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(0);
         int anchor = getAnchorIndex();
         int oldFocus = getFocusIndex();
@@ -215,7 +240,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     
     @Test
     public void testAnchorOnClearSelectionAt() {
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int index = 2;
         // initial
         getSelectionModel().select(0);
@@ -237,7 +262,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectPreviousSameAtFirst() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(0);
         int anchor = getAnchorIndex();
         int oldFocus = getFocusIndex();
@@ -254,7 +279,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testSelectRangeUpFromOne() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         getSelectionModel().select(1);
         getSelectionModel().selectRange(1, -1);
         assertEquals("anchor unchanged", 1, getAnchorIndex());
@@ -268,7 +293,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testSelectRangeDownFromSecondLast() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int last = items.size() - 1;
         getSelectionModel().select(last - 1);
         int anchor = last - 1;
@@ -286,7 +311,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testSelectRangeDownFromLast() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int last = items.size() - 1;
         getSelectionModel().select(last);
         int anchor = last;
@@ -304,7 +329,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectNextDescending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         prepareAlsoSelectDescending();
         
         int anchor = getAnchorIndex();
@@ -328,7 +353,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectPreviousDescending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         prepareAlsoSelectDescending();
         
         int anchor = getAnchorIndex();
@@ -385,7 +410,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectNextAscending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         prepareAlsoSelectAscending();
         
         int anchor = getAnchorIndex();
@@ -414,7 +439,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testAlsoSelectPreviousAscending() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         prepareAlsoSelectAscending();
         
         int anchor = getAnchorIndex();
@@ -461,7 +486,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testFocusOnRangeAscendingMoveFocusSelectRange() {
         if (!multipleMode) return;
-        StageLoader loader = new StageLoader(getView());
+        initSkin();
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);

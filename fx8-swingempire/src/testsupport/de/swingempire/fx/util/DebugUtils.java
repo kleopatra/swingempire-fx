@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -16,10 +17,14 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -27,109 +32,168 @@ import javafx.scene.shape.Rectangle;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
+import de.swingempire.fx.scene.control.selection.ListViewAnchored;
 
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugUtils {
 
+    public static class ListXFacade<T> extends ListViewAnchored<T> implements
+            Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
+
+        @Override
+        public ListViewAnchored<T> getControl() {
+            return this;
+        }
+
+    }
+
+    public static class ListFacade<T> extends ListView<T> implements
+            Facade<T, ListView<T>, MultipleSelectionModel<T>> {
+
+        @Override
+        public ListView<T> getControl() {
+            return this;
+        }
+    }
+
+    public static class TableFacade<T> extends TableView<T> implements
+            Facade<T, TableView<T>, MultipleSelectionModel<T>> {
+
+        @Override
+        public TableView<T> getControl() {
+            return this;
+        }
+
+    }
+
+    /**
+     * Common api that the TestEntry can manage.
+     */
+    public static interface Facade<T, V extends Control, S extends SelectionModel<T>> {
+        V getControl();
+
+        S getSelectionModel();
+
+        default int getSelectedIndex() {
+            return getSelectionModel() != null ? getSelectionModel()
+                    .getSelectedIndex() : -1;
+        }
+
+        ObservableList<T> getItems();
+
+        void setItems(ObservableList<T> items);
+
+        FocusModel getFocusModel();
+    }
+
     public static void printSelectionState(ComboBox<?> choice) {
         String choiceClass = choice.getClass().getSimpleName();
-        LOG.info(choiceClass + ": index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
-                + " / " + choice.getSelectionModel().getSelectedItem() 
-                + " / " + choice.getValue()
-                + " / " + getDisplayText(choice)
-                );
+        LOG.info(choiceClass + ": index/selectedItem/value/display "
+                + choice.getSelectionModel().getSelectedIndex() + " / "
+                + choice.getSelectionModel().getSelectedItem() + " / "
+                + choice.getValue() + " / " + getDisplayText(choice));
     }
-    
+
     public static void printSelectionState(ComboBoxX<?> choice) {
         String choiceClass = choice.getClass().getSimpleName();
-        LOG.info(choiceClass + ": index/selectedItem/value/display " + choice.getSelectionModel().getSelectedIndex()
-                + " / " + choice.getSelectionModel().getSelectedItem() 
-                + " / " + choice.getValue()
-                + " / " + getDisplayText(choice)
-                );
+        LOG.info(choiceClass + ": index/selectedItem/value/display "
+                + choice.getSelectionModel().getSelectedIndex() + " / "
+                + choice.getSelectionModel().getSelectedItem() + " / "
+                + choice.getValue() + " / " + getDisplayText(choice));
+    }
+
+    public static void printSelectionState(String message, Facade<?, ?, ?> choice) {
+        String choiceClass = message + " " + choice.getClass().getSimpleName() ;
+        LOG.info(choiceClass + "\n index/selectedItem/focus/focusItem "
+                + choice.getSelectionModel().getSelectedIndex() + " / "
+                + choice.getSelectionModel().getSelectedItem() + " / "
+                + choice.getFocusModel().getFocusedIndex() + " / "
+                + choice.getFocusModel().getFocusedItem());
     }
     
     public static void printSelectionState(ListView<?> choice) {
         String choiceClass = choice.getClass().getSimpleName();
-        LOG.info(choiceClass + ": index/selectedItem/focus/focusItem " + choice.getSelectionModel().getSelectedIndex()
-                + " / " + choice.getSelectionModel().getSelectedItem() 
-                + " / " + choice.getFocusModel().getFocusedIndex() 
-                + " / " + choice.getFocusModel().getFocusedItem() 
-                );
+        LOG.info(choiceClass + ": index/selectedItem/focus/focusItem "
+                + choice.getSelectionModel().getSelectedIndex() + " / "
+                + choice.getSelectionModel().getSelectedItem() + " / "
+                + choice.getFocusModel().getFocusedIndex() + " / "
+                + choice.getFocusModel().getFocusedItem());
     }
-    
+
     public static String getDisplayText(Control view) {
         Skin skin = view.getSkin();
-        if (!(skin instanceof ComboBoxBaseSkin)) return null;
+        if (!(skin instanceof ComboBoxBaseSkin))
+            return null;
         Node node = ((ComboBoxBaseSkin) view.getSkin()).getDisplayNode();
         if (node instanceof ListCell) {
             return ((ListCell) node).getText();
-        } 
+        }
         return null;
     }
 
-    
     @FunctionalInterface
     public interface AddBounds {
         void addBounds(Parent parent, Node node);
     }
-    
-    /** 
+
+    /**
      * just for fun: playing with method references.
      */
-    public enum BoundsType  implements AddBounds {
-        LOCAL(DebugUtils::addBoundsInLocal),
-        INPARENT(DebugUtils::addBoundsInParent),
-        LAYOUT(DebugUtils::addLayoutBounds);
+    public enum BoundsType implements AddBounds {
+        LOCAL(DebugUtils::addBoundsInLocal), INPARENT(
+                DebugUtils::addBoundsInParent), LAYOUT(
+                DebugUtils::addLayoutBounds);
 
         private final AddBounds delegate;
-        
+
         private BoundsType(AddBounds delegate) {
             this.delegate = delegate;
         }
-        
+
         @Override
         public void addBounds(Parent parent, Node node) {
             delegate.addBounds(parent, node);
         }
     }
-    
+
     public static void addAllBounds(Parent parent, Node node) {
-        // PENDING JW: see no way to use a method reference if the method 
+        // PENDING JW: see no way to use a method reference if the method
         // needs parameters
-//        Arrays.asList(BoundsType.values()).stream().forEach(BoundsType::addBounds(parent, node);
+        // Arrays.asList(BoundsType.values()).stream().forEach(BoundsType::addBounds(parent,
+        // node);
         // use a stream plus lambda
-        Arrays.asList(BoundsType.values()).stream().forEach(type -> type.addBounds(parent, node));
+        Arrays.asList(BoundsType.values()).stream()
+                .forEach(type -> type.addBounds(parent, node));
         // normal for each
-//        for (BoundsType type : BoundsType.values()) {
-//           addBounds(parent, node, type);
-//        }
+        // for (BoundsType type : BoundsType.values()) {
+        // addBounds(parent, node, type);
+        // }
     }
-    
+
     public static void addBounds(Parent parent, Node node, BoundsType type) {
         type.addBounds(parent, node);
     }
-    
+
     public static void addBoundsInParent(Parent parent, Node node) {
         Bounds bounds = node.getBoundsInParent();
         Color strokePaint = Color.RED;
         addBounds(parent, bounds, strokePaint);
     }
-    
+
     public static void addBoundsInLocal(Parent parent, Node node) {
         Bounds bounds = node.getBoundsInLocal();
         Color strokePaint = Color.BLUE;
         addBounds(parent, bounds, strokePaint);
     }
-    
+
     public static void addLayoutBounds(Parent parent, Node node) {
         Bounds bounds = node.getLayoutBounds();
         Color strokePaint = Color.GREEN;
         addBounds(parent, bounds, strokePaint);
     }
-    
+
     /**
      * Adds a transparent Rectangle with stroke color at bounds to the parent if
      * the parent is of type Pane or Group. Does nothing silently otherwise.
@@ -150,8 +214,8 @@ public class DebugUtils {
         }
     }
 
-//------------------- getting at child of particular type
-//------------------- pretty sure there is some support, can't find it    
+    // ------------------- getting at child of particular type
+    // ------------------- pretty sure there is some support, can't find it
     public ScrollBar getScrollBar(Parent table) {
         List<Node> allChildren = getAllNodes(table);
         for (Node node : allChildren) {
@@ -162,7 +226,7 @@ public class DebugUtils {
             }
         }
         return null;
-        
+
     }
 
     public static List<Node> getAllNodes(Parent root) {
@@ -179,9 +243,8 @@ public class DebugUtils {
         }
     }
 
-
-
-    private DebugUtils(){};
+    private DebugUtils() {
+    };
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(DebugUtils.class

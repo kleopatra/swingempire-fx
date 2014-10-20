@@ -60,8 +60,12 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
 
     @Override
     protected ListViewAnchored createView(ObservableList items) {
-        ListViewAnchored table = new ListViewAnchored(items);
-        MultipleSelectionModel model = table.getSelectionModel();
+        ListViewAnchored listView = new ListViewAnchored(items);
+        // disable default selection
+        listView.getProperties().put("selectFirstRowByDefault", Boolean.FALSE);
+        // initial focus on 0 (as of 8u40b9), force into unfocused
+        listView.getFocusModel().focus(-1);
+        MultipleSelectionModel model = listView.getSelectionModel();
         assertEquals("sanity: test setup assumes that initial mode is single", 
                 SelectionMode.SINGLE, model.getSelectionMode());
         checkMode(model);
@@ -69,7 +73,7 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
         // the problem is to keep super blissfully unaware of possible modes
         assertEquals(multipleMode, model.getSelectionMode() == SelectionMode.MULTIPLE);
         
-        return table;
+        return listView;
     }
 
     @Override

@@ -47,13 +47,6 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
      * low- vs. semantic level. Doesn't make a difference, though?.
      */
     protected boolean needsKey;
-    /**
-     * The stageLoader used to force skin creation. It's an artefact of fx
-     * instantiation process, not meant to be really used.
-     * Note that it's the responsibility of the test method itself (not the setup)
-     * to init if needed.
-     */
-    protected StageLoader loader;
 
     protected void assertBehaviourFocusMove(String method, int intialSelected,
             int expectedFocus) throws Exception {
@@ -215,15 +208,6 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     @Test
     public void testBehaviorSelectAllToFocusTrue() throws Exception {
         assertBehaviorSelectAllToFocus(true); 
-    }
-
-    /**
-     * Loads the view into a StageLoader to enforce skin creation.
-     * asserts empty selection.
-     */
-    protected void initSkin() {
-        loader = new StageLoader(getView());
-        assertEquals("sanity: initially unselected", -1, getSelectionModel().getSelectedIndex());
     }
 
     /**
