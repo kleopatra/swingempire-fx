@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
@@ -21,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import de.swingempire.fx.scene.control.cell.Person22463;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
@@ -35,6 +38,56 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
 
+//------------- testing list notification if elements are equal: RT_22463    
+    
+    @Test
+    public void testNotificationSetEqualElement() {
+        ObservableList first = FXCollections.observableArrayList(getPerson1());
+        ObservableList second = FXCollections.observableArrayList(getPerson2());
+        int index = 0;
+        assertEquals("sanity: ", first.get(index), second.get(index));
+        ListChangeReport report = new ListChangeReport(first);
+        first.set(index, second.get(index));
+        assertEquals("list must have fired on setting equal item", 1, report.getEventCount());
+        
+    }
+    @Test
+    public void testNotificationSetAllEqualList() {
+        ObservableList first = FXCollections.observableArrayList(getPerson1());
+        ObservableList second = FXCollections.observableArrayList(getPerson2());
+        assertEquals("sanity: ", first, second);
+        ListChangeReport report = new ListChangeReport(first);
+        first.setAll(second);
+        assertEquals("list must have fired on setting equal item", 1, report.getEventCount());
+        
+    }
+    private List<Person22463> getPerson1() {
+        List<Person22463> p = new ArrayList<>();
+        Person22463 p1 = new Person22463();
+        p1.setId(1l);
+        p1.setName("name1");
+        Person22463 p2 = new Person22463();
+        p2.setId(2l);
+        p2.setName("name2");
+        p.add(p1);
+        p.add(p2);
+        return p;
+    }
+
+    private List<Person22463> getPerson2() {
+        List<Person22463> p = new ArrayList<>();
+        Person22463 p1 = new Person22463();
+        p1.setId(1l);
+        p1.setName("updated name1");
+        Person22463 p2 = new Person22463();
+        p2.setId(2l);
+        p2.setName("updated name2");
+        p.add(p1);
+        p.add(p2);
+        return p;
+    }
+
+//---------- end testing 22463    
     @Test
     public void testListPropertyAdapterInitial() {
         ObservableList<String> list = createObservableList(true);

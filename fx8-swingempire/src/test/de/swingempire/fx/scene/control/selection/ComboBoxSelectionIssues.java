@@ -42,8 +42,12 @@ public class ComboBoxSelectionIssues extends SelectionIssues<ComboBox, SingleSel
 
     @Override
     protected void setSelectionModel(SingleSelectionModel model) {
-        // TODO Auto-generated method stub
         getView().setSelectionModel(model);
+    }
+
+    @Override
+    protected void resetItems(ObservableList other) {
+        getView().setItems(other);
     }
     
     

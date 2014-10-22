@@ -160,6 +160,8 @@ public class SelectionAndModification extends Application {
             facade.getControl().addEventFilter(KeyEvent.KEY_PRESSED, e -> {
                 if (e.getCode() == combi.getCode()) {
                     c.accept(facade);   
+                    // PENDING JW: without consuming we get weird selection in TableView?
+                    e.consume();
                 }
             });
         });
@@ -193,15 +195,15 @@ public class SelectionAndModification extends Application {
         ListFacade listView = new ListFacade<>();
         listView.setItems(createList());
 
-//        ListXFacade listXView = new ListXFacade();
-//        listXView.setItems(createList());
+        ListXFacade listXView = new ListXFacade();
+        listXView.setItems(createList());
         
         Map<String, Consumer<Facade>> actionMap = createActions();
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
         Map<String, KeyCodeCombination> inversInputMap = invertMap(inputMap);
         configureActions(table, actionMap, inputMap);
         configureActions(listView, actionMap, inputMap);
-//        configureActions(listXView, actionMap, inputMap);
+        configureActions(listXView, actionMap, inputMap);
         
         GridPane info = new GridPane ();
         info.setPadding(new Insets(20));
@@ -211,8 +213,9 @@ public class SelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-//        Pane content = new HBox(table, listView, listXView, info);
-        Pane content = new HBox(table, listView, info);
+        Pane content = new HBox(table, listView, listXView, info);
+//        Pane content = new HBox(table, listView, info);
+//        Pane content = new HBox(table, info);
         return content;
     }
 

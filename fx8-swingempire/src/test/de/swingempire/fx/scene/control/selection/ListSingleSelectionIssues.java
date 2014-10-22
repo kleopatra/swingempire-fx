@@ -87,8 +87,12 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
         getView().setSelectionModel(model);
     }
 
+    @Override
+    protected void resetItems(ObservableList other) {
+        getView().setItems(other);
+    }
+
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(ListSingleSelectionIssues.class.getName());
-
 }

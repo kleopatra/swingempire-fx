@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,16 +30,19 @@ import javafx.stage.Stage;
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public class ListViewInsertRT_39042 extends Application {
     
+        ObservableList items = FXCollections.observableArrayList("one", "two", "three");
         int count;
         @Override
         public void start(Stage primaryStage) throws Exception {
-            ObservableList items = FXCollections.observableArrayList("one", "two", "three");
+//            ListCell c;
             ListView listView = new ListView();
             listView.setItems(items);
             Button add = new Button("Insert at selection");
             add.setOnAction(e -> {
-                if (listView.getSelectionModel().getSelectedIndex() < 0) return;
-                listView.getItems().add(listView.getSelectionModel().getSelectedIndex(), "item " + count++);
+                int index = listView.getSelectionModel().getSelectedIndex();
+                if (index < 0) return;
+                listView.getItems().add(0, "item " + count++);
+                DebugUtils.printSelectionState(listView);
             });
             // check if always on new items ... yes
             Button setItems = new Button("Set items");
@@ -46,8 +50,15 @@ import javafx.stage.Stage;
                 
                 listView.setItems(FXCollections.observableArrayList("other", "items", "same", "problem"));
             });
-            Parent pane = new VBox(listView, add, setItems);
-            primaryStage.setScene(new Scene(pane));
+            Button remove = new Button("Remove at selection");
+            remove.setOnAction(e -> {
+                // remove seems okay
+                int index = listView.getSelectionModel().getSelectedIndex();
+                if (index < 0) return;
+                listView.getItems().remove(index);
+            });
+            Parent pane = new VBox(listView, add, setItems, remove);
+            primaryStage.setScene(new Scene(pane, 100, 220));
             primaryStage.setTitle(System.getProperty("java.version"));
             primaryStage.show();
         }

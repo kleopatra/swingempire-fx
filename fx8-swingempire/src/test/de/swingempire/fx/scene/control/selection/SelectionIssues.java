@@ -190,6 +190,58 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 expected, getFocusIndex(expected));
     }
     
+    /**
+     * Core installs listener twice of items reset, introduces problems with insert
+     */
+    @Test
+    public void testFocusOnInsertItemAtSelected39042() {
+        ObservableList other = FXCollections.observableArrayList(items.subList(0, 5));
+        resetItems(other);
+        int index = 2;
+        getSelectionModel().select(index);
+        other.add(index, "6-item");
+        int expected = index +1;
+        assertEquals("focused moved by one after inserting item", 
+                expected, getFocusIndex(expected));
+    }
+    
+    /**
+     * Core installs listener twice of items reset, introduces problems with insert
+     */
+    @Test
+    public void testSelectedOnInsertItemAtSelected39042() {
+        ObservableList other = FXCollections.observableArrayList(items.subList(0, 5));
+        resetItems(other);
+        int index = 2;
+        getSelectionModel().select(index);
+        other.add(index, "6-item");
+        int expected = index +1;
+        assertEquals("selected moved by one after inserting item", 
+                expected, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Core installs listener twice of items reset, introduces problems with insert
+     */
+    @Test
+    public void testAnchorOnInsertItemAtSelected39042() {
+        initSkin();
+        ObservableList other = FXCollections.observableArrayList(items.subList(0, 5));
+        resetItems(other);
+        int index = 2;
+        getSelectionModel().select(index);
+        other.add(index, "6-item");
+        int expected = index +1;
+        assertEquals("selected moved by one after inserting item", 
+                expected, getAnchorIndex(expected));
+    }
+    
+    /**
+     * Re-configures the view with new items via view.setItems(other)
+     * @param other
+     */
+    protected abstract void resetItems(ObservableList other);
+    
     @Test
     public void testFocusOnInsertItemAtSelected() {
         initSkin();

@@ -18,11 +18,14 @@ public class ListChangeReport implements ListChangeListener {
 
     List<Change> changes = new LinkedList<>();
     
-    ObservableListValue source;
+    ObservableList source;
     
-    public ListChangeReport(ObservableListValue source) {
+    public ListChangeReport() {
+        this(null);
+    }
+    public ListChangeReport(ObservableList source) {
         this.source = source;
-        source.addListener(this);
+        if (source != null) source.addListener(this);
     }
     
     @Override

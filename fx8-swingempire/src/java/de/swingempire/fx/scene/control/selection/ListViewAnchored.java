@@ -66,6 +66,7 @@ public class ListViewAnchored<T> extends ListView<T> {
     public ListViewAnchored(ObservableList<T> items) {
         super(items);
         setSelectionModel(new AnchoredListViewSelectionModel<>(this));
+        setFocusModel(new ListViewAFocusModel<>(this));
 //        getProperties().put("selectOnFocusGain", Boolean.FALSE);
 //        getProperties().put("selectFirstRowByDefault", Boolean.FALSE);
     }

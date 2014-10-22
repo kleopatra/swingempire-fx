@@ -100,4 +100,9 @@ public class ListAnchoredSingleSelectionIssues extends SingleSelectionIssues<Lis
         getView().setSelectionModel(model);
     }
 
+    @Override
+    protected void resetItems(ObservableList other) {
+        getView().setItems(other);
+    }
+
 }

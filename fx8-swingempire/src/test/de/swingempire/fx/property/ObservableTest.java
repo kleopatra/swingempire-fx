@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.property;
 
-import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
 import javafx.beans.InvalidationListener;
@@ -13,31 +12,25 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import de.swingempire.fx.scene.control.cell.Person22463;
 import de.swingempire.fx.util.ChangeReport;
-import de.swingempire.fx.util.FXUtils;
-import de.swingempire.fx.util.ListChangeReport;
+import de.swingempire.fx.util.InvalidationReport;
+
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -47,7 +40,45 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 public class ObservableTest {
 
+    /**
+     * ObjectProperty fires on !equal only, sanity check here.
+     * So why does TableRowSkin gets notified when re-setting
+     * item with equals?
+     * 
+     */
+    @Test
+    public void testObjectPropertyEqualItem() {
+        Person22463 first = new Person22463();
+        first.setId(1l);
+        first.setName("dummy 1");
+        Person22463 second = new Person22463();
+        second.setId(first.getId());
+        second.setName("dummy doo");
+        ObjectProperty property = new SimpleObjectProperty(first);
+        ChangeReport report = new ChangeReport(property);
+        property.set(second);
+        assertEquals("doesn't fire - expected", 0, report.getEventCount());
+    }
     
+    /**
+     * ObjectProperty fires on !equal only, sanity check here.
+     * So why does TableRowSkin gets notified when re-setting
+     * item with equals?
+     * 
+     */
+    @Test
+    public void testObjectPropertyEqualItemInvalidation() {
+        Person22463 first = new Person22463();
+        first.setId(1l);
+        first.setName("dummy 1");
+        Person22463 second = new Person22463();
+        second.setId(first.getId());
+        second.setName("dummy doo");
+        ObjectProperty property = new SimpleObjectProperty(first);
+        InvalidationReport report = new InvalidationReport(property);
+        property.set(second);
+        assertEquals("invalidation must fire", 1, report.getEventCount());
+    }
     
 //-------------------- end test related to https://javafx-jira.kenai.com/browse/RT-38770
     

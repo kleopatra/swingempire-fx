@@ -1236,12 +1236,15 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     protected FocusModel getFocusModel() {
         return null;
     }
-
     
     @Override
     protected abstract void setSelectionModel(W model);
 
 
+    @Override
+    protected void resetItems(ObservableList other) {
+        getChoiceView().setItems(other);
+    }
     /**
      * Simply a tagging interface with methods needed for comparative testing
      * of ChoiceBoxX/ChoiceBox.
