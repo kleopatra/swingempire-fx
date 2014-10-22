@@ -68,6 +68,9 @@ public class IdentityCheckingTableRow<T>  extends TableRow<T> {
         // update if not same
         if (oldItem != listItem) {
             // doesn't help much because itemProperty doesn't fire
+            // so we need the help of the skin: it must listen
+            // to invalidation and force an update if 
+            // its super wouldn't get a changeEvent
             updateItem(listItem, isEmpty());
         }
     }
@@ -93,7 +96,7 @@ public class IdentityCheckingTableRow<T>  extends TableRow<T> {
             itemInvalidationListener = o -> {
                 T newItem = ((ObservableValue<T>) o).getValue();
                 T oldItem = oldItemRef != null ? oldItemRef.get() : null;
-                oldItemRef = new WeakReference(newItem);
+                oldItemRef = new WeakReference<>(newItem);
                 if (oldItem != null && newItem != null && oldItem.equals(newItem)) {
                     forceCellUpdate();
                 }
