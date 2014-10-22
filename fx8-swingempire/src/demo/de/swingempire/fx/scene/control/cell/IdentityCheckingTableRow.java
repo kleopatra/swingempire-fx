@@ -17,6 +17,21 @@ import com.sun.javafx.scene.control.skin.TableRowSkin;
 
 
 /**
+ * Extended TableRow that updates its item if equal but not same.
+ * Needs custom skin to update cells on invalidation of the 
+ * item property.<p>
+ * 
+ * Looks ugly, as we have to let super doing its job and then
+ * re-check the state. No way to hook anywhere else into super 
+ * because all is private. <p>
+ * 
+ * Super might support a configuration option to check against
+ * identity vs. against equality.<p>
+ * 
+ * Note that this is _not_ formally tested! Any execution paths calling
+ * <code>updateItem(int)</code> other than through 
+ * <code>indexedCell.updateIndex(int)</code> are not handled.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class IdentityCheckingTableRow<T>  extends TableRow<T> {
