@@ -49,22 +49,16 @@ public class TestCaseTable22463 extends Application {
         primaryStage.setTitle("Test case");
         primaryStage.setX(0);
         primaryStage.setY(0);
-        TableCell c;
         Button refreshButton = new Button("Refresh");
         final TableView<Person22463> table = new TableView<>();
+        table.setRowFactory(p -> new IdentityCheckingTableRow());
         table.setTableMenuButtonVisible(true);
-//        TableColumn c1 = new TableColumn("Id");
+        TableColumn c1 = new TableColumn("Id");
         TableColumn c2 = new TableColumn("Name");
-//        c1.setCellValueFactory(new PropertyValueFactory<Person22463, Long>("id"));
+        c1.setCellValueFactory(new PropertyValueFactory<Person22463, Long>("id"));
         c2.setCellValueFactory(new PropertyValueFactory<Person22463, String>("name"));
         c2.setPrefWidth(200);
-        // replacing cell factory works for listView, not for tableView
-        // plain TableCell override .. c&p from default in TableColumn        
-        Callback<TableColumn<Person22463, String>, TableCell<Person22463, String>> plainCellFactory =        
-            p-> new PlainTableCell();
-//        c1.setCellFactory(plainCellFactory);
-        c2.setCellFactory(plainCellFactory);
-        table.getColumns().addAll(c2);
+        table.getColumns().addAll(c1, c2);
 
         refreshButton.setOnAction(new EventHandler<ActionEvent>() {
 

@@ -19,7 +19,7 @@ import com.sun.javafx.scene.control.skin.TableRowSkin;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
-public class IdentitiyCheckingTableRow<T>  extends TableRow<T> {
+public class IdentityCheckingTableRow<T>  extends TableRow<T> {
 
     @Override
     public void updateIndex(int i) {
@@ -42,7 +42,6 @@ public class IdentitiyCheckingTableRow<T>  extends TableRow<T> {
      * @param wasEmpty cell's empty before update
      */
     protected void updateItemIfNeeded(int oldIndex, T oldItem, boolean wasEmpty) {
-        LOG.info("Row item unchanged? " + (oldItem == getItem()) + getItem());
         // weed out the obvious
         if (oldIndex != getIndex()) return;
         if (oldItem == null || getItem() == null) return;

@@ -64,7 +64,7 @@ public class TestCaseTableTweak22463 extends Application {
         Button refreshButton = new Button("Refresh list");
 
         final TableView<Person22463> table = new TableView<>();
-        table.setRowFactory(p -> new IdentitiyCheckingTableRow<>());
+        table.setRowFactory(p -> new IdentityCheckingTableRow<>());
         table.setTableMenuButtonVisible(true);
         TableColumn c2 = new TableColumn("Name");
         c2.setCellValueFactory(new PropertyValueFactory<Person22463, String>(
