@@ -81,6 +81,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         items.remove(index);
         assertEquals("open 30931 - focus after remove focused", index, getFocusIndex(index));
     }
+    
     @Test
     public void testSelectedOnRemoveItemAtSelectedFocused() {
         int index = 2;

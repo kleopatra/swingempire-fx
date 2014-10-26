@@ -10,38 +10,32 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-
-
-import static de.swingempire.fx.util.DebugUtils.*;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Control;
-import javafx.scene.control.FocusModel;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import de.swingempire.fx.util.DebugUtils.Facade;
+import de.swingempire.fx.util.DebugUtils.ListFacade;
+import de.swingempire.fx.util.DebugUtils.ListXFacade;
+import de.swingempire.fx.util.DebugUtils.TableFacade;
+
+import static de.swingempire.fx.util.DebugUtils.*;
 
 
 /**
@@ -106,16 +100,24 @@ import javafx.stage.Stage;
  * - expected: selection/focus sticks to selected item
  * - actual: selection sticks, focus is one below (the delta increases with repeated f1)
  * 
+ * PENDING ALL:
+ * weird update if removeAll(...) which leads to multiple changes 
+ * - focus moved independent of selection
+ * - selection half-way correct
+ * - tableView unselects if selection is between first/last removed, focus unpredictable
+ * - listView disables navigation if selection on first removed
+ * - listViewA has same problems as core
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class SelectionAndModification extends Application {
 
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
-            "setAtSelectedIndex"};
+            "setAtSelectedIndex", "removeAll(3, 5, 7)"};
     // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null};
+    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null};
     
     protected Map<String, Consumer<Facade>> createActions() {
         Map<String, Consumer<Facade>> actions = new HashMap<>();
@@ -135,6 +137,9 @@ public class SelectionAndModification extends Application {
             if (f.getSelectedIndex() < 0) return;
             f.getItems().set(f.getSelectedIndex(), createItem(f.getSelectedIndex()));
             printSelectionState("setAtSelected", f);
+        });
+        actions.put("removeAll(3, 5, 7)", f -> {
+            f.getItems().removeAll(f.getItems().get(3), f.getItems().get(5), f.getItems().get(7));
         });
         return actions ;
     }
@@ -193,6 +198,15 @@ public class SelectionAndModification extends Application {
         table.getColumns().addAll(language, country, variant);
         
         ListFacade listView = new ListFacade<>();
+        // quick check for auto-focus/select
+//        // disable selecting the first item on focus gain - this is
+//        // not what is expected in the ComboBox control (unlike the
+//        // ListView control, which does this).
+//        listView.getProperties().put("selectOnFocusGain", false);
+//        // introduced between 8u20 and 8u40b7
+//        // with this, testfailures back to normal
+//        listView.getProperties().put("selectFirstRowByDefault", false);
+
         listView.setItems(createList());
 
         ListXFacade listXView = new ListXFacade();
@@ -214,9 +228,21 @@ public class SelectionAndModification extends Application {
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
         Pane content = new HBox(table, listView, listXView, info);
+        CheckBox check = new CheckBox("MultipleMode");
+        check.setOnAction(e -> {
+            LOG.info("isSelected: " + check.isSelected());
+            SelectionMode old = listView.getSelectionModel().getSelectionMode();
+            SelectionMode newMode = check.isSelected() ? SelectionMode.MULTIPLE : SelectionMode.MULTIPLE;
+            listView.getSelectionModel().setSelectionMode(newMode);
+            table.getSelectionModel().setSelectionMode(newMode);
+            listXView.getSelectionModel().setSelectionMode(newMode);
+        });
+        Pane buttons = new HBox(check);
 //        Pane content = new HBox(table, listView, info);
 //        Pane content = new HBox(table, info);
-        return content;
+        BorderPane borderPane = new BorderPane(content);
+        borderPane.setBottom(buttons);
+        return borderPane;
     }
 
     /**

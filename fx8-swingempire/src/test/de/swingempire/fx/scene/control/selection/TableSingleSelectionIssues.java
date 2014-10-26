@@ -84,4 +84,9 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
     protected void setSelectionModel(MultipleSelectionModel model) {
         getView().setSelectionModel((TableViewSelectionModel) model);
     }
+
+    @Override
+    protected void resetItems(ObservableList other) {
+        getView().setItems(other);
+    }
 }

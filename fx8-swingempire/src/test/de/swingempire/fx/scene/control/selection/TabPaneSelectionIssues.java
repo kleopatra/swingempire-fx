@@ -13,16 +13,19 @@ import javafx.scene.control.TabPane;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 
 /**
  * Testing TabPaneSelectionModel: incomplete, needs additional testing because it
  * should enforce exactly one selected tab at any time.
+ * 
+ * SelectionIssues evolved into a direction that's getting more and more
+ * incompatible with this: with the list modification tests, we get 
+ * errors due to items !instanceof Tab.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -84,6 +87,85 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
     public void testSelectedIndexAfterSort() {
     }
 
+    
+
+    @Override @Ignore @Test
+    public void testSelectedOnSetItemAtSelectedFocused() {
+        // TODO Auto-generated method stub
+        super.testSelectedOnSetItemAtSelectedFocused();
+    }
+
+    @Override @Ignore @Test
+    public void testFocusOnSetItemAtSelectedFocused() {
+        // TODO Auto-generated method stub
+        super.testFocusOnSetItemAtSelectedFocused();
+    }
+
+    @Override @Ignore @Test
+    public void testAnchorOnSetItemAtSelectedFocused() {
+        // TODO Auto-generated method stub
+        super.testAnchorOnSetItemAtSelectedFocused();
+    }
+
+    @Override @Ignore @Test
+    public void testSelectedOnInsertItemAbove() {
+        // TODO Auto-generated method stub
+        super.testSelectedOnInsertItemAbove();
+    }
+
+    @Override @Ignore @Test
+    public void testFocusOnInsertItemAbove() {
+        // TODO Auto-generated method stub
+        super.testFocusOnInsertItemAbove();
+    }
+
+    @Override @Ignore @Test
+    public void testFocusOnInsertItemAtSelected39042() {
+        // TODO Auto-generated method stub
+        super.testFocusOnInsertItemAtSelected39042();
+    }
+
+    @Override @Ignore @Test
+    public void testSelectedOnInsertItemAtSelected39042() {
+        // TODO Auto-generated method stub
+        super.testSelectedOnInsertItemAtSelected39042();
+    }
+
+    @Override @Ignore @Test
+    public void testAnchorOnInsertItemAtSelected39042() {
+        // TODO Auto-generated method stub
+        super.testAnchorOnInsertItemAtSelected39042();
+    }
+
+    @Override @Ignore @Test
+    public void testFocusOnInsertItemAtSelected() {
+        // TODO Auto-generated method stub
+        super.testFocusOnInsertItemAtSelected();
+    }
+
+    @Override @Ignore @Test
+    public void testSelectedOnInsertItemAtSelected() {
+        // TODO Auto-generated method stub
+        super.testSelectedOnInsertItemAtSelected();
+    }
+
+    @Override @Ignore @Test
+    public void testAnchorOnInsertItemAtSelected() {
+        // TODO Auto-generated method stub
+        super.testAnchorOnInsertItemAtSelected();
+    }
+
+    @Override @Ignore @Test
+    public void testAnchorOnInsertItemBelow() {
+        // TODO Auto-generated method stub
+        super.testAnchorOnInsertItemBelow();
+    }
+
+    @Override @Ignore @Test
+    public void testAnchorOnInsertItemAbove() {
+        // TODO Auto-generated method stub
+        super.testAnchorOnInsertItemAbove();
+    }
 
     @Override
     protected SingleSelectionModel getSelectionModel() {
@@ -109,6 +191,11 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
         return pane;
     }
 
+    
+    @Override
+    protected int getAnchorIndex(int index) {
+        return index;
+    }
 
     @Override
     protected FocusModel getFocusModel() {
@@ -118,5 +205,10 @@ public class TabPaneSelectionIssues extends SelectionIssues<TabPane, SingleSelec
     @Override
     protected void setSelectionModel(SingleSelectionModel model) {
         getView().setSelectionModel(model);
+    }
+
+    @Override
+    protected void resetItems(ObservableList other) {
+        // nothing to do, tabPane doesn't support setTabs
     }
 }

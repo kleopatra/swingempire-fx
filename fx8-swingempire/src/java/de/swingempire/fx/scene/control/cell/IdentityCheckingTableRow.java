@@ -78,6 +78,7 @@ public class IdentityCheckingTableRow<T>  extends TableRow<T> {
     
     @Override
     protected Skin<?> createDefaultSkin() {
+//        return super.createDefaultSkin();
         return new TableRowSkinX<>(this);
     }
 

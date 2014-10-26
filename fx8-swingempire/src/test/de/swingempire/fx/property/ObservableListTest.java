@@ -11,12 +11,16 @@ import java.util.logging.Logger;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TableView;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,6 +32,7 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -37,6 +42,39 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
+    
+//------------- compile test: replace ObjectProperty<List> by ListProperty?
+    
+    @Test
+    public void testAPIChange() {
+        WithListValue<String> p = new WithListValue<>();
+        Property<ObservableList<String>> property = p.itemsProperty();
+        ChangeListener<? super ObservableList<String>> listener = new ChangeListener<ObservableList<String>>() {
+
+            @Override
+            public void changed(
+                    ObservableValue<? extends ObservableList<String>> observable,
+                    ObservableList<String> oldValue,
+                    ObservableList<String> newValue) {
+                LOG.info("dummy dooo!");
+                
+            }
+        } ;
+        
+        property.addListener(listener);
+        TableView table = new TableView();
+//        ListProperty items = table.itemsProperty();
+    }
+
+    public static class WithListValue<T> {
+        
+        ObjectProperty<ObservableList<T>> items = new SimpleObjectProperty<>();
+        ListProperty<T> itemsList = new SimpleListProperty();
+        
+        Property<ObservableList<T>> itemsProperty() {
+            return itemsList;
+        }
+    }
 
 //------------- testing list notification if elements are equal: RT_22463    
     
@@ -266,6 +304,10 @@ public class ObservableListTest {
     public void testListValuedObjectPropertyBoundTo() {
         ObservableList<String> list = createObservableList(true);
         ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
+        ObjectProperty<ObservableList<String>> otherProperty =
+                new SimpleObjectProperty(createObservableList(true));
+        assertFalse("sanity: two properties with equal list are not equal", 
+                property.equals(otherProperty));
         ListProperty listProperty = new SimpleListProperty();
         listProperty.bind(property);
         

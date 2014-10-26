@@ -10,6 +10,8 @@ package de.swingempire.fx.scene.control.comboboxx;
  *
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -379,7 +381,16 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      * PENDING JW Hack around not-visible method, no-op for now
      */
     protected void invokeReconfigurePopup() {
-        // reconfigurePopup();
+        Class clazz = ComboBoxPopupControl.class;
+        try {
+            Method method = clazz.getDeclaredMethod("reconfigurePopup");
+            method.setAccessible(true);
+            method.invoke(this);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+//         reconfigurePopup();
     }
 
     @Override
@@ -810,6 +821,15 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
              */
             protected double invokeGetMaxCellWidth(ListViewSkin<?> skin,
                     int rowsToMeasure) {
+                Class clazz = VirtualContainerBase.class;
+                try {
+                    Method method = clazz.getDeclaredMethod("getMaxCellWidth", int.class);
+                    method.setAccessible(true);
+                    return (double) method.invoke(skin, rowsToMeasure);
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 return 100;
                 // return skin.getMaxCellWidth(rowsToMeasure);
             }
@@ -818,6 +838,15 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
              * PENDING JW: hack around not visible super method, no-op for now.
              */
             protected void invokeSkinUpdateRowCount(ListViewSkin<?> skin) {
+                Class clazz = ListViewSkin.class;
+                try {
+                    Method method = clazz.getDeclaredMethod("updateRowCount");
+                    method.setAccessible(true);
+                    method.invoke(skin);
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 // skin.updateRowCount();
             }
 
@@ -907,6 +936,15 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      */
     protected double invokeGetVirtualFlowPreferredHeight(int maxRows,
             VirtualContainerBase<?, ?, ?> skin) {
+        Class clazz = VirtualContainerBase.class;
+        try {
+            Method method = clazz.getDeclaredMethod("getVirtualFlowPreferredHeight", int.class);
+            method.setAccessible(true);
+            return (double) method.invoke(skin, maxRows);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return maxRows * 20f;
         // return skin.getVirtualFlowPreferredHeight(maxRows);
     }

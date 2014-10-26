@@ -51,7 +51,7 @@ public class TestCaseTable22463 extends Application {
         primaryStage.setY(0);
         Button refreshButton = new Button("Refresh");
         final TableView<Person22463> table = new TableView<>();
-        table.setRowFactory(p -> new IdentityCheckingTableRow());
+//        table.setRowFactory(p -> new IdentityCheckingTableRow());
         table.setTableMenuButtonVisible(true);
         TableColumn c1 = new TableColumn("Id");
         TableColumn c2 = new TableColumn("Name");

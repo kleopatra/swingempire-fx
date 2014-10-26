@@ -74,7 +74,7 @@ public class DebugUtils {
     public static interface Facade<T, V extends Control, S extends SelectionModel<T>> {
         V getControl();
 
-        S getSelectionModel();
+        MultipleSelectionModel getSelectionModel();
 
         default int getSelectedIndex() {
             return getSelectionModel() != null ? getSelectionModel()
