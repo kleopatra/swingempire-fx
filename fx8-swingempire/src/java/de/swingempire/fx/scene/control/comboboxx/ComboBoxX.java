@@ -42,6 +42,7 @@ import javafx.util.StringConverter;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
+import de.swingempire.fx.property.BugPropertyAdapters;
 import de.swingempire.fx.property.PathAdapter;
 
 /**
@@ -189,28 +190,9 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         selectedItemPath = new PathAdapter<>(selectionModelProperty(), p -> p.selectedItemProperty());
         selectedItemPath.addListener(selectedItemListener);
         // CHANDED JW: bidi-bind to new ListProperty
-        itemsProperty().bindBidirectional(itemsList);
+        // handled by adapter
+//        itemsProperty().bindBidirectional(itemsList);
 
-        /*
-         * Hacking around RT_15793: ObjectProperty doesn't fire changeEvent for
-         * equals but not same list. Need identity check.
-         * 
-         * Not really better than core, just more localized: all collaborators
-         * that are interested in items' changes are listening/binding
-         * to itemsListProperty. 
-         * 
-         * Think about formalizing into an adapter with general usefulness.
-         */
-        InvalidationListener hack15793 = o -> {
-            ObservableList<T> newItems = ((ObjectProperty<ObservableList<T>>) o).get();
-            ObservableList<T> oldItems = itemsList.get();
-            boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
-            if (changedEquals) {
-                itemsList.set(newItems);
-            }
-        };
-        
-        itemsProperty().addListener(hack15793);
         setItems(items);
         setSelectionModel(new ComboBoxXSelectionModel<T>(itemsList));
         // KEEP JW: original comment
@@ -352,45 +334,14 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     /**
      * The list of items to show within the ComboBox popup.
      */
-    private ObjectProperty<ObservableList<T>> items = new SimpleObjectProperty<ObservableList<T>>(this, "items") {
-        @Override protected void invalidated() {
-            // KEEP until regression testing done
-            // CHANGED JW: removed hack
-            // FIXME temporary fix for RT-15793. This will need to be
-            // properly fixed when time permits
-//            if (getSelectionModel() instanceof ComboBoxSelectionModel) {
-//                ((ComboBoxSelectionModel<T>)getSelectionModel()).updateItemsObserver(null, getItems());
-//            }
-//            if (getSkin() instanceof ComboBoxListViewSkin) {
-//                ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) getSkin();
-//                skin.updateListViewItems();
-//            }
-        }
-    };
+    private ObjectProperty<ObservableList<T>> items = 
+            new SimpleObjectProperty<ObservableList<T>>(this, "items");
 
     public final void setItems(ObservableList<T> value) { itemsProperty().set(value); }
     public final ObservableList<T> getItems() {return items.get(); }
     public ObjectProperty<ObservableList<T>> itemsProperty() { return items; }
     
-    // CHANGED JW: added itmesListProperty
-    // PENDING JW: hacking around 15793 - currently done in constructor, use adapter 
-    // insttead
-    private ListProperty<T> itemsList = new SimpleListProperty<T>(this, "itemsList") {
-        {
-//            bindBidirectional(items);
-//            // PENDING JW: here the hack is working - not in BugPropertyAdapter: why not? 
-//            // the other is an adapter, here we do it ourselves?
-//            InvalidationListener hack15793 = o -> {
-//                ObservableList<T> newItems = ((ObjectProperty<ObservableList<T>>) o).get();
-//                ObservableList<T> oldItems = get();
-//                boolean changedEquals = (newItems != null) && (oldItems != null) && newItems.equals(oldItems);
-//                if (changedEquals) {
-//                    set(newItems);
-//                }
-//            };
-//            items.addListener(hack15793);
-        }
-    };
+    private ListProperty<T> itemsList = BugPropertyAdapters.listProperty(itemsProperty());
     public final ListProperty<T> itemsListProperty() {return itemsList;}; 
 
     // --- string converter

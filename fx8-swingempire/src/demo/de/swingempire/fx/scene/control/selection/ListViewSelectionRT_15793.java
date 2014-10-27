@@ -45,6 +45,8 @@ import javafx.stage.Stage;
  * the list's items to the _alias_ of the comboBoxItems. Without calling 
  * updateComboBoxItems as well, that's still the old reference.
  * 
+ * Cleanup issue: RT-16072, open since 2011
+ * 
  * @author jfdenise
  */
 public class ListViewSelectionRT_15793 extends Application {
