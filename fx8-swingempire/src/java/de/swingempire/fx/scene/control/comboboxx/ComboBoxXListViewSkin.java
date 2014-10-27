@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -53,18 +54,20 @@ import com.sun.javafx.scene.traversal.TraversalContext;
  * 
  * Changes: 
  * <li> use stringconverter for null if prompt is empty 
- * <li> encapsulate comboBoxItems (keep null substitution) 
  * <li> set ListView's selectionModel to
  * SingleMultipleSelectionModel which is coupled to combo's selectinModel -
  * <li> TODO: commented content of updateValue - needs to be solved cleanly 
- * <li> bound
- * ListView's items to comboBox items 
+ * <li> bound ListView's items to comboBox items 
  * <li> TODO: support editing (throws
  * classcastexception, probably need to c&p some more) 
  * <li> removed selection
  * update in layout 
  * <li> fixed keyboard navigation broken - slave must have access
  * to focusModel!
+ * <li> outdated: encapsulate comboBoxItems (keep null substitution) 
+ * <li> removed updateListViewItems/updateComboBoxItems 
+ * <li> TODO: verify that updateListViewItems is replaced by listening to itemsProperty
+ * <li> re-enabled popup layout by invoking super methods as needed 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -82,7 +85,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
 
     private final ComboBoxX<T> comboBox;
 
-    private ObservableList<T> comboBoxItems;
+//    private ObservableList<T> comboBoxItems;
 
     private ListCell<T> buttonCell;
 
@@ -92,8 +95,9 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
 
     private final ListView<T> listView;
 
-    private ObservableList<T> listViewItems;
+//    private ObservableList<T> listViewItems;
 
+    // PENDING JW: these two shouldn't be necessary: handled by slave model
     private boolean listSelectionLock = false;
 
     private boolean listViewSelectionDirty = false;
@@ -109,6 +113,22 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         public void onChanged(ListChangeListener.Change<? extends T> c) {
             itemCountDirty = true;
             getSkinnable().requestLayout();
+            // RT-37622: popup width not updated
+            // doesn't help
+//            invokeReconfigurePopup();
+            // doesn't help
+//            getListView().requestLayout();
+            // doesn't help
+//            Platform.runLater(() -> {
+//                
+//                if (listView instanceof ComboBoxXListViewSkin.ComboListView) {
+//                    ComboListView view = (ComboBoxXListViewSkin<T>.ComboListView) listView;
+//                    view.invokeUpdateRowCount((ListViewSkin<?>) view.getSkin());
+//                    view.setPrefWidth(view.computePrefWidth(-1));
+//                    listView.requestLayout();
+//                }
+//            });
+            
         }
     };
 
@@ -144,7 +164,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     public ComboBoxXListViewSkin(final ComboBoxX<T> comboBox) {
         super(comboBox, new ComboBoxXListViewBehavior<T>(comboBox));
         this.comboBox = comboBox;
-        updateComboBoxItems();
+//        updateComboBoxItems();
 
         // editable input node
         this.textField = comboBox.isEditable() ? getEditableInputNode() : null;
@@ -160,14 +180,16 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
 
         // listview for popup
         this.listView = createListView();
-
+        // add the listener to update row in list?
+        comboBox.itemsListProperty().addListener(weakListViewItemsListener);
+        
         // Fix for RT-21207. Additional code related to this bug is further
         // below.
         this.listView.setManaged(false);
         getChildren().add(listView);
         // -- end of fix
 
-        updateListViewItems();
+//        updateListViewItems();
         updateCellFactory();
 
         updateButtonCell();
@@ -236,6 +258,8 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         registerChangeListener(comboBox.buttonCellProperty(), "BUTTON_CELL");
         registerChangeListener(comboBox.valueProperty(), "VALUE");
         registerChangeListener(comboBox.editableProperty(), "EDITABLE");
+        
+        
     }
 
     /***************************************************************************
@@ -258,6 +282,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         super.handleControlPropertyChanged(p);
 
         if ("ITEMS".equals(p)) {
+            // CHANGED JW: update handled in listener to itemsList property
             // updateComboBoxItems();
             // updateListViewItems();
         } else if ("PROMPT_TEXT".equals(p)) {
@@ -269,7 +294,9 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
                 return;
             listView.setPrefHeight(getListViewPrefHeight());
         } else if ("CONVERTER".equals(p)) {
-            updateListViewItems();
+            // PENDING JW: test the effect of removing updateListViewItems
+            // was no-op in this context anyway
+//            updateListViewItems();
         } else if ("EDITOR".equals(p)) {
             getEditableInputNode();
         } else if ("BUTTON_CELL".equals(p)) {
@@ -330,17 +357,17 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      * substitution happens only if client code explicitly nulls the items:
      * combo installs a arrayObservableList in its parameterless constructor
      */
-    private void updateComboBoxItems() {
-        this.comboBoxItems = comboBox.getItems();
-        this.comboBoxItems = getComboBoxItems() == null ? FXCollections
-                .<T> emptyObservableList() : getComboBoxItems();
-    }
+//    private void updateComboBoxItems() {
+//        this.comboBoxItems = comboBox.getItems();
+//        this.comboBoxItems = getComboBoxItems() == null ? FXCollections
+//                .<T> emptyObservableList() : getComboBoxItems();
+//    }
 
     /**
      * @return the comboBoxItems
      */
     private ObservableList<T> getComboBoxItems() {
-        return comboBoxItems;
+        return comboBox.getItems(); //comboBoxItems;
     }
 
     /**
@@ -349,21 +376,21 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      * from combo.getItems if null) Listening to listViewItems, and the only
      * place where listViewItems is used
      */
-    public void updateListViewItems() {
-        // if (listViewItems != null) {
-        // listViewItems.removeListener(weakListViewItemsListener);
-        // }
-        //
-        // this.listViewItems = getComboBoxItems();
-        // listView.setItems(listViewItems);
-        //
-        // if (listViewItems != null) {
-        // listViewItems.addListener(weakListViewItemsListener);
-        // }
-        //
-        // itemCountDirty = true;
-        // getSkinnable().requestLayout();
-    }
+//    public void updateListViewItems() {
+//         if (listViewItems != null) {
+//         listViewItems.removeListener(weakListViewItemsListener);
+//         }
+//        
+//         this.listViewItems = getComboBoxItems();
+//         listView.setItems(listViewItems);
+//        
+//         if (listViewItems != null) {
+//         listViewItems.addListener(weakListViewItemsListener);
+//         }
+//        
+//         itemCountDirty = true;
+//         getSkinnable().requestLayout();
+//    }
 
     @Override
     public Node getPopupContent() {
@@ -400,7 +427,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
                 rightInset, bottomInset, leftInset);
         double listViewWidth = listView.prefWidth(height);
         double pw = Math.max(superPrefWidth, listViewWidth);
-
+        // PENDING JW: really reconfig after querying the pref width? 
         invokeReconfigurePopup();
 
         return pw;
@@ -511,7 +538,6 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      */
     private void updateValue() {
         T newValue = comboBox.getValue();
-        
 //        LOG.info("update value " + newValue);
 //         SelectionModel<T> listViewSM = listView.getSelectionModel();
 //         listViewSM.getSelectedIndex();
@@ -757,103 +783,118 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         };
     }
 
+    // PENDING JW: extracted for digging 37622
+    protected class ComboListView extends ListView<T> {
+        
+        public ComboListView() {
+            SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(
+                    comboBox.selectionModelProperty(), focusModelProperty());
+            setSelectionModel(adapter);
+            
+            // PENDING JW: need to set the properties _before_
+            // binding the items, otherwise we get the focus on first
+            // disable selecting the first item on focus gain - this is
+            // not what is expected in the ComboBox control (unlike the
+            // ListView control, which does this).
+            getProperties().put("selectOnFocusGain", false);
+            // introduced between 8u20 and 8u40b7
+            // with this, testfailures back to normal
+            getProperties().put("selectFirstRowByDefault", false);
+            
+            // CHANGED JW
+            // simply bind the items' properties
+            itemsProperty().bind(comboBox.itemsListProperty());
+            
+            
+        }
+        
+
+        @Override
+        protected double computeMinHeight(double width) {
+            return 30;
+        }
+
+        // PENDING JW: this is _not_ called in misbehaviour of RT_37622
+        // how can selection lead to not calling
+        @Override
+        protected double computePrefWidth(double height) {
+            double pw;
+            if (getSkin() instanceof ListViewSkin) {
+                ListViewSkin<?> skin = (ListViewSkin<?>) getSkin();
+                if (itemCountDirty) {
+                    invokeUpdateRowCount(skin);
+                    itemCountDirty = false;
+                }
+
+                int rowsToMeasure = -1;
+                if (comboBox.getProperties().containsKey(
+                        COMBO_BOX_ROWS_TO_MEASURE_WIDTH_KEY)) {
+                    rowsToMeasure = (Integer) comboBox.getProperties().get(
+                            COMBO_BOX_ROWS_TO_MEASURE_WIDTH_KEY);
+                }
+
+                double calc = invokeGetMaxCellWidth(skin, rowsToMeasure);
+                pw = Math.max(comboBox.getWidth(), calc + 30);
+            } else {
+                pw = Math.max(100, comboBox.getWidth());
+            }
+
+            // need to check the ListView pref height in the case that the
+            // placeholder node is showing
+            if (getItems().isEmpty() && getPlaceholder() != null) {
+                pw = Math.max(super.computePrefWidth(height), pw);
+            }
+
+            return Math.max(50, pw);
+        }
+
+        /**
+         * PENDING JW: hack around not visible super method, hard-coded for
+         * now.
+         */
+        protected double invokeGetMaxCellWidth(ListViewSkin<?> skin,
+                int rowsToMeasure) {
+            Class clazz = VirtualContainerBase.class;
+            try {
+                Method method = clazz.getDeclaredMethod("getMaxCellWidth", int.class);
+                method.setAccessible(true);
+                return (double) method.invoke(skin, rowsToMeasure);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return 100;
+            // return skin.getMaxCellWidth(rowsToMeasure);
+        }
+
+        /**
+         * PENDING JW: hack around not visible super method, no-op for now.
+         */
+        protected void invokeUpdateRowCount(ListViewSkin<?> skin) {
+            Class clazz = ListViewSkin.class;
+            try {
+                Method method = clazz.getDeclaredMethod("updateRowCount");
+                method.setAccessible(true);
+                method.invoke(skin);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            // skin.updateRowCount();
+        }
+
+        @Override
+        protected double computePrefHeight(double width) {
+            return getListViewPrefHeight();
+        }
+    }
+    
     private ListView<T> createListView() {
-        final ListView<T> _listView = new ListView<T>() {
+        final ListView<T> _listView = new ComboListView() {
 
             {
-                SingleMultipleSelectionModel<T> adapter = new SingleMultipleSelectionModel<>(
-                        comboBox.selectionModelProperty(), focusModelProperty());
-                setSelectionModel(adapter);
-
-                // CHANGED JW
-                // simply bind the items' properties
-                itemsProperty().bind(comboBox.itemsListProperty());
-
-                // disable selecting the first item on focus gain - this is
-                // not what is expected in the ComboBox control (unlike the
-                // ListView control, which does this).
-                getProperties().put("selectOnFocusGain", false);
-                // introduced between 8u20 and 8u40b7
-                // with this, testfailures back to normal
-                getProperties().put("selectFirstRowByDefault", false);
             }
 
-            @Override
-            protected double computeMinHeight(double width) {
-                return 30;
-            }
-
-            @Override
-            protected double computePrefWidth(double height) {
-                double pw;
-                if (getSkin() instanceof ListViewSkin) {
-                    ListViewSkin<?> skin = (ListViewSkin<?>) getSkin();
-                    if (itemCountDirty) {
-                        invokeSkinUpdateRowCount(skin);
-                        itemCountDirty = false;
-                    }
-
-                    int rowsToMeasure = -1;
-                    if (comboBox.getProperties().containsKey(
-                            COMBO_BOX_ROWS_TO_MEASURE_WIDTH_KEY)) {
-                        rowsToMeasure = (Integer) comboBox.getProperties().get(
-                                COMBO_BOX_ROWS_TO_MEASURE_WIDTH_KEY);
-                    }
-
-                    pw = Math.max(comboBox.getWidth(),
-                            invokeGetMaxCellWidth(skin, rowsToMeasure) + 30);
-                } else {
-                    pw = Math.max(100, comboBox.getWidth());
-                }
-
-                // need to check the ListView pref height in the case that the
-                // placeholder node is showing
-                if (getItems().isEmpty() && getPlaceholder() != null) {
-                    pw = Math.max(super.computePrefWidth(height), pw);
-                }
-
-                return Math.max(50, pw);
-            }
-
-            /**
-             * PENDING JW: hack around not visible super method, hard-coded for
-             * now.
-             */
-            protected double invokeGetMaxCellWidth(ListViewSkin<?> skin,
-                    int rowsToMeasure) {
-                Class clazz = VirtualContainerBase.class;
-                try {
-                    Method method = clazz.getDeclaredMethod("getMaxCellWidth", int.class);
-                    method.setAccessible(true);
-                    return (double) method.invoke(skin, rowsToMeasure);
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                return 100;
-                // return skin.getMaxCellWidth(rowsToMeasure);
-            }
-
-            /**
-             * PENDING JW: hack around not visible super method, no-op for now.
-             */
-            protected void invokeSkinUpdateRowCount(ListViewSkin<?> skin) {
-                Class clazz = ListViewSkin.class;
-                try {
-                    Method method = clazz.getDeclaredMethod("updateRowCount");
-                    method.setAccessible(true);
-                    method.invoke(skin);
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                // skin.updateRowCount();
-            }
-
-            @Override
-            protected double computePrefHeight(double width) {
-                return getListViewPrefHeight();
-            }
         };
 
         _listView.setId("list-view");
@@ -861,23 +902,23 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         _listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         _listView.setFocusTraversable(false);
 
-        _listView
-                .getSelectionModel()
-                .selectedIndexProperty()
-                .addListener(
-                        o -> {
-                            if (listSelectionLock)
-                                return;
-                            int index = listView.getSelectionModel()
-                                    .getSelectedIndex();
-                            comboBox.getSelectionModel().select(index);
-                            updateDisplayNode();
-                            // comboBox.accSendNotification(Attribute.TITLE);
-                        });
+//        _listView
+//                .getSelectionModel()
+//                .selectedIndexProperty()
+//                .addListener(
+//                        o -> {
+//                            if (listSelectionLock)
+//                                return;
+//                            int index = listView.getSelectionModel()
+//                                    .getSelectedIndex();
+//                            comboBox.getSelectionModel().select(index);
+////                            updateDisplayNode();
+//                            // comboBox.accSendNotification(Attribute.TITLE);
+//                        });
 
-        comboBox.getSelectionModel().selectedItemProperty().addListener(o -> {
-            listViewSelectionDirty = true;
-        });
+//        comboBox.getSelectionModel().selectedItemProperty().addListener(o -> {
+//            listViewSelectionDirty = true;
+//        });
 
         _listView.addEventFilter(MouseEvent.MOUSE_RELEASED, t -> {
             // RT-18672: Without checking if the user is clicking in the

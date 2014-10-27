@@ -39,6 +39,12 @@ import de.swingempire.fx.scene.control.selection.ListViewAnchored;
  */
 public class DebugUtils {
 
+    public static String widthInfo(Control node) {
+        String size = "width - pref/min/max \n   " + 
+                node.getWidth() + " - " + node.prefWidth(-1) + 
+                " / " + node.minWidth(-1) + " / " + node.maxWidth(-1);
+        return size;
+    }
     public static class ListXFacade<T> extends ListViewAnchored<T> implements
             Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
 
