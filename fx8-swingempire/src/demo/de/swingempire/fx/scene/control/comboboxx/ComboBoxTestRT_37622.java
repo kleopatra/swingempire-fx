@@ -70,7 +70,7 @@ public class ComboBoxTestRT_37622 extends Application {
 //       primaryStage.setHeight(200);
 //       primaryStage.setWidth(300);
        List<String> list1 = new ArrayList<>();
-       list1.add("one");
+       list1.add("one 0");
        list1.add("two");
        list1.add("three");
        
