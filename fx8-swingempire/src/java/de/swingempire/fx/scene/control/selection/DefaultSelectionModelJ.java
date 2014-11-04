@@ -53,7 +53,7 @@ public class DefaultSelectionModelJ<T> implements SelectionModelJ<T> {
     }
 
     @Override
-    public void select(int index) {
+    public void clearAndSelect(int index) {
         if (!isSelectable(index)) return;
         setSelectedIndex(index);
     }

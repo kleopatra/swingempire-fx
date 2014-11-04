@@ -13,14 +13,12 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -187,7 +185,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
         
         // CHANGED JW: replaced manual wiring by PathAdapter
-        selectedItemPath = new PathAdapter<>(selectionModelProperty(), p -> p.selectedItemProperty());
+        selectedItemPath = new PathAdapter<>(selectionModelProperty(), SelectionModel::selectedItemProperty);
         selectedItemPath.addListener(selectedItemListener);
         // CHANDED JW: bidi-bind to new ListProperty
         // handled by adapter
@@ -195,46 +193,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
 
         setItems(items);
         setSelectionModel(new ComboBoxXSelectionModel<T>(itemsList));
-        // KEEP JW: original comment
-        // listen to the value property input by the user, and if the value is
-        // set to something that exists in the items list, we should update the
-        // selection model to indicate that this is the selected item
-        valueProperty().addListener((ov, t, t1) -> {
-//            new RuntimeException("who's calling? " + t + " / " + t1).printStackTrace();
-            // CHANGED JW: copied code from ChoiceBoxX
-            final SingleSelectionModel<T> sm = getSelectionModel();
-            if (sm != null) {
-                sm.select(t1);
-            }
-            // KEEP until regression testing done
-            // PENDING JW: the part in the else-block is about supporting duplicates RT-19227
-            // which is incomplete: reported as RT-38927
-            // CHANGED JW: removed all special casing, let the selectionModel handle it
-//            if (getItems() == null) return;
-//
-//            SelectionModel<T> sm = getSelectionModel();
-//            int index = getItems().indexOf(t1);
-//
-//            if (index == -1) {
-//                // PENDING JW: selectItem vs. setSelectedItem
-////                sm.setSelectedItem(t1);
-//                sm.select(t1);
-//            } else {
-//                // we must compare the value here with the currently selected
-//                // item. If they are different, we overwrite the selection
-//                // properties to reflect the new value.
-//                // We do this as there can be circumstances where there are
-//                // multiple instances of a value in the ComboBox items list,
-//                // and if we don't check here we may change the selection
-//                // mistakenly because the indexOf above will return the first
-//                // instance always, and selection may be on the second or
-//                // later instances. This is RT-19227.
-//                T selectedItem = sm.getSelectedItem();
-//                if (selectedItem == null || ! selectedItem.equals(getValue())) {
-//                    sm.clearAndSelect(index);
-//                }
-//            }
-        });
+        valueProperty().addListener(valueListener);
         
         editableProperty().addListener(o -> {
             // when editable changes, we reset the selection / value states
@@ -322,7 +281,43 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
         }
     }
 
-    
+    protected void valueChanged(T newValue) {
+//      new RuntimeException("who's calling? " + t + " / " + t1).printStackTrace();
+      // CHANGED JW: copied code from ChoiceBoxX
+      final SingleSelectionModel<T> sm = getSelectionModel();
+      if (sm != null) {
+          sm.select(newValue);
+      }
+      // KEEP until regression testing done
+      // PENDING JW: the part in the else-block is about supporting duplicates RT-19227
+      // which is incomplete: reported as RT-38927
+      // CHANGED JW: removed all special casing, let the selectionModel handle it
+//      if (getItems() == null) return;
+//
+//      SelectionModel<T> sm = getSelectionModel();
+//      int index = getItems().indexOf(t1);
+//
+//      if (index == -1) {
+//          // PENDING JW: selectItem vs. setSelectedItem
+////          sm.setSelectedItem(t1);
+//          sm.select(t1);
+//      } else {
+//          // we must compare the value here with the currently selected
+//          // item. If they are different, we overwrite the selection
+//          // properties to reflect the new value.
+//          // We do this as there can be circumstances where there are
+//          // multiple instances of a value in the ComboBox items list,
+//          // and if we don't check here we may change the selection
+//          // mistakenly because the indexOf above will return the first
+//          // instance always, and selection may be on the second or
+//          // later instances. This is RT-19227.
+//          T selectedItem = sm.getSelectedItem();
+//          if (selectedItem == null || ! selectedItem.equals(getValue())) {
+//              sm.clearAndSelect(index);
+//          }
+//      }
+        
+    }
     /***************************************************************************
      *                                                                         *
      * Properties                                                              *
@@ -386,9 +381,15 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     
     
     // --- Selection Model
+
     /**
-     * The selection model for the ComboBox. A ComboBox only supports
-     * single selection.
+     * The selection model for the ComboBox. Only a single choice can be made,
+     * hence, the ComboBox supports only a SingleSelectionModel. Generally, the
+     * main interaction with the selection model is to explicitly set which item
+     * in the items list should be selected, or to listen to changes in the
+     * selection to know which item has been chosen.
+     * 
+     * CHANGED JW: just a simple property, re-wiring listeners is done in PathAdapter.
      */
     private ObjectProperty<SingleSelectionModel<T>> selectionModel = 
             new SimpleObjectProperty<SingleSelectionModel<T>>(this, "selectionModel");
@@ -396,16 +397,6 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     public final SingleSelectionModel<T> getSelectionModel() { return selectionModel.get(); }
     public final ObjectProperty<SingleSelectionModel<T>> selectionModelProperty() { return selectionModel; }
     
-
-    /**
-     * The selection model for the ChoiceBox. Only a single choice can be made,
-     * hence, the ChoiceBox supports only a SingleSelectionModel. Generally, the
-     * main interaction with the selection model is to explicitly set which item
-     * in the items list should be selected, or to listen to changes in the
-     * selection to know which item has been chosen.
-     * 
-     * CHANGED JW: just a simple property, re-wiring listeners is done in PathAdapter.
-     */
     
     private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
     
@@ -413,8 +404,11 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     private ChangeListener<T> selectedItemListener = (ov, t, t1) -> {
         selectedItemChanged(t1);
     };
-
-
+    // KEEP JW: original comment
+    // listen to the value property input by the user, and if the value is
+    // set to something that exists in the items list, we should update the
+    // selection model to indicate that this is the selected item
+    private ChangeListener<T> valueListener = (ov, t, t1) -> valueChanged(t1);
 
     // --- Visible Row Count
     /**

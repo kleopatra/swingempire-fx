@@ -14,6 +14,7 @@ import javafx.collections.ObservableList;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListChangeReport implements ListChangeListener {
 
     List<Change> changes = new LinkedList<>();

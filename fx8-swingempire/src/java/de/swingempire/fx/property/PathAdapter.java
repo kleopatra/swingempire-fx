@@ -62,10 +62,10 @@ import javafx.util.Callback;
 public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
 
     private T defaultValue;
-    private Property<S> root;
+    private ObservableValue<S> root;
     private Callback<S, ObservableValue<T>> childFactory;
-    private ChangeListener<? super S> rootListener;
-    private WeakChangeListener<? super S> weakRootListener;
+    private ChangeListener<? super S> rootListener = (p, oldRoot, newRoot) -> updateChild(oldRoot, newRoot);
+    private WeakChangeListener<? super S> weakRootListener = new WeakChangeListener<>(rootListener);
 
     /**
      * 
@@ -113,7 +113,7 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
      *    be null
      * @param defaultValue value to set if root is null
      */
-    public PathAdapter(Property<S> root, Callback<S, ObservableValue<T>> factory, T defaultValue) {
+    public PathAdapter(ObservableValue<S> root, Callback<S, ObservableValue<T>> factory, T defaultValue) {
         this.childFactory = Objects.requireNonNull(factory);
         setDefaultValue(defaultValue);
         setRoot(root);
@@ -132,7 +132,7 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
      * 
      * @param root
      */
-    public void setRoot(Property<S> root) {
+    public void setRoot(ObservableValue<S> root) {
         uninstallRoot();
         this.root = root;
         installRoot();
@@ -241,7 +241,7 @@ public class PathAdapter<S, T> extends ObjectPropertyBase<T> {
     }
 
 
-    public Property<S> getRoot() {
+    public ObservableValue<S> getRoot() {
         return root;
     }
     

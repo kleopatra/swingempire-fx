@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.property;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -20,13 +21,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableView;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
@@ -34,6 +42,7 @@ import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
 
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -42,6 +51,184 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
+
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    
+//-------------- ListChange events
+    
+    @Test
+    public void testFilteredList() {
+        ObservableList<String> list = createObservableList(true);
+        LOG.info("" + list.getClass());
+        // needs a predicate
+//        FilteredList<String> sorted = list.filtered();
+        FilteredList filtered = new FilteredList(list);
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            added.add(list.get(i));
+        }
+        
+        ListChangeReport report = new ListChangeReport(filtered);
+        filtered.setPredicate(p -> added.contains(p));
+        prettyPrint(report.getLastListChange());
+        assertEquals(1, report.getEventCount());
+        // unexpected: filtering fires a single replaced
+        assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastListChange()));
+    }
+    
+    @Test
+    public void testSortedListAdd() {
+        ObservableList<String> list = createObservableList(true);
+        SortedList<String> sorted = list.sorted();// doesn't compile: (Collator.getInstance());
+        sorted.setComparator(Collator.getInstance());
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            String item = list.get(i);
+            added.add(item.charAt(0) + item);
+        }
+        ListChangeReport report = new ListChangeReport(sorted);
+        list.addAll(added);
+        prettyPrint(report.getLastListChange());
+        assertEquals(1, report.getEventCount());
+        assertEquals("disjoint adds", added.size(), getChangeCount(report.getLastListChange()));
+    }
+    
+    @Test
+    public void testSortedList() {
+        ObservableList list = createObservableList(true);
+        SortedList sorted = new SortedList(list);
+        ListChangeReport report = new ListChangeReport(sorted);
+        sorted.setComparator(Collator.getInstance());
+        assertEquals(1, report.getEventCount());
+        assertTrue(isSinglePermutatedChange(report.getLastListChange()));
+    }
+    
+    @Test
+    public void testSubListClear() {
+        ObservableList list = createObservableList(true);
+        int from = 2;
+        int to = 6;
+        List subList = list.subList(from, to);
+        int subSize = subList.size();
+        ListChangeReport report = new ListChangeReport(list);
+        subList.clear();
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(subSize, getRemovedSize(c));
+        assertEquals(0, getAddedSize(c));
+    }
+    
+    /**
+     * subList is of type List and there's no setAll for List
+     * 
+     * So we can't get a replaced by a sublist?
+     */
+    @Test @Ignore
+    public void testSubListSetAll() {
+        ObservableList list = createObservableList(true);
+        int from = 2;
+        int to = 6;
+        List subList = list.subList(from, to);
+        int subSize = subList.size();
+        List itemsOfSubList = new ArrayList(subList);
+//        itemsOfSubList.remove(0);
+        ListChangeReport report = new ListChangeReport(list);
+        subList.retainAll(itemsOfSubList);
+        assertEquals("wrong assumption: implementation is clever enough to detect retain same",
+                1, report.getEventCount());
+        Change c = report.getLastListChange();
+        LOG.info("changed list: " + list);
+        prettyPrint(c);
+        assertEquals("single change" , 1, getChangeCount(c));
+        assertEquals("removed", subSize, getRemovedSize(c));
+        assertEquals("added" , subSize, getAddedSize(c));
+        assertTrue("single replace" + c, isSingleReplacedChange(c));
+    }
+    
+    @Test
+    public void testSetAllEqualList() {
+        ObservableList list = createObservableList(true);
+        int size = list.size();
+        ObservableList other = createObservableList(true);
+        ListChangeReport report = new ListChangeReport(list);
+        list.setAll(other);
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(size, getAddedSize(c));
+        assertEquals(size, getRemovedSize(c));
+        assertEquals(1, getChangeCount(c));
+        assertTrue(isAllChanged(c));
+        assertTrue(isSingleReplacedChange(c));
+    }
+    
+    @Test
+    public void testSetAllSmallerList() {
+        ObservableList list = createObservableList(true);
+        int size = list.size();
+        ObservableList other = createObservableList(true);
+        other.remove(1);
+        int otherSize = other.size();
+        ListChangeReport report = new ListChangeReport(list);
+        list.setAll(other);
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(otherSize, getAddedSize(c));
+        assertEquals(size, getRemovedSize(c));
+        assertEquals(1, getChangeCount(c));
+        assertTrue(isAllChanged(c));
+        assertTrue(isSingleReplacedChange(c));
+    }
+    
+    @Test
+    public void testSetAllLargerList() {
+        ObservableList list = createObservableList(true);
+        int size = list.size();
+        ObservableList other = createObservableList(true);
+        other.add("additional");
+        int otherSize = other.size();
+        ListChangeReport report = new ListChangeReport(list);
+        list.setAll(other);
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(otherSize, getAddedSize(c));
+        assertEquals(size, getRemovedSize(c));
+        assertEquals(1, getChangeCount(c));
+        assertTrue(isAllChanged(c));
+        assertTrue(isSingleReplacedChange(c));
+    }
+    
+    @Test
+    public void testSetAllWithEmptyList() {
+        ObservableList list = createObservableList(true);
+        int size = list.size();
+        ObservableList other = createObservableList(false);
+        int otherSize = other.size();
+        ListChangeReport report = new ListChangeReport(list);
+        list.setAll(other);
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(otherSize, getAddedSize(c));
+        assertEquals(size, getRemovedSize(c));
+        assertEquals(1, getChangeCount(c));
+        assertTrue(isAllChanged(c));
+    }
+    
+    @Test
+    public void testSetAllToEmptyList() {
+        ObservableList list = createObservableList(false);
+        int size = list.size();
+        ObservableList other = createObservableList(true);
+        int otherSize = other.size();
+        ListChangeReport report = new ListChangeReport(list);
+        list.setAll(other);
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastListChange();
+        assertEquals(otherSize, getAddedSize(c));
+        assertEquals(size, getRemovedSize(c));
+        assertEquals(1, getChangeCount(c));
+        assertTrue(isAllChanged(c));
+    }
     
 //------------- compile test: replace ObjectProperty<List> by ListProperty?
     
@@ -62,7 +249,6 @@ public class ObservableListTest {
         } ;
         
         property.addListener(listener);
-        TableView table = new TableView();
 //        ListProperty items = table.itemsProperty();
     }
 
@@ -231,6 +417,7 @@ public class ObservableListTest {
      *   of the listProperty in case the new value is equals  
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreEqualsNotFire.class)
     public void testListPropertySetEqualListListChangeEventAfter() {
         ObservableList<String> list = createObservableList(true);
         ObjectProperty<ObservableList<String>> objectProperty = new SimpleObjectProperty<>(list);
@@ -275,6 +462,7 @@ public class ObservableListTest {
      * 
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreEqualsNotFire.class)
     public void testListValuedObjectPropertyChange() {
         ObservableList<String> list = createObservableList(true);
         ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
@@ -335,6 +523,7 @@ public class ObservableListTest {
      * 
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreReported.class)
     public void testListPropertyChangeNotificationOnRemoveItem() {
         ObservableList<String> list = createObservableList(true);
         ListProperty<String> listProperty = new SimpleListProperty<>(list);

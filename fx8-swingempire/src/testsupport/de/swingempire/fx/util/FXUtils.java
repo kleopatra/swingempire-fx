@@ -26,12 +26,62 @@ import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class FXUtils {
 
     public final static String ANCHOR_KEY = "anchor";
     private FXUtils() {
     }
 
+//--------------- list change
+    
+    public static int getAddedSize(Change c) {
+        c.reset();
+        int size = 0;
+        while (c.next()) {
+            size += c.getAddedSize();
+        }
+        return size;
+    }
+    
+    public static int getRemovedSize(Change c) {
+        c.reset();
+        int size = 0;
+        while (c.next()) {
+            size += c.getRemovedSize();
+        }
+        return size;
+    }
+    
+    
+    public static int getChangeCount(Change c) {
+        c.reset();
+        int count = 0;
+        while (c.next()) {
+            count++;
+        }
+        return count;
+    }
+    
+    public static boolean isAllChanged(Change c) {
+        return getAddedSize(c) == c.getList().size() ;
+    }
+    
+    public static boolean isSingleReplacedChange(Change c) {
+        if (getChangeCount(c) != 1) return false;
+        c.reset();
+        c.next();
+        return c.wasReplaced();
+    }
+    
+    public static boolean isSinglePermutatedChange(Change c) {
+        if (getChangeCount(c) != 1) return false;
+        c.reset();
+        c.next();
+        return c.wasPermutated();
+    }
+//-------------------anchor    
+    
     public static int getAnchorIndex(ListView<?> view) {
         if (view.getSelectionModel() instanceof AnchoredSelectionModel) {
             return ((AnchoredSelectionModel) view.getSelectionModel()).getAnchorIndex();

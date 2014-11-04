@@ -9,16 +9,28 @@ import javafx.scene.control.SelectionModel;
 
 /**
  * Going back (compared to SelectionModelX): let implementations handle 
- * - selectable
  * - allowsEmpty
  * 
- * In this experiment, there's an implicit notion of selectable based
+ * In this experiment, there's a notion of selectable based
  * on index being in-range of items, that is 
  * 
+ * <code><pre>
  * 0 <= selectedIndex < getItemCount();
+ * </pre></code>
  * 
- * Without a formal itemCount, there's no way of enforcing, so we add
+ * Without a formal itemCount, there's no way of enforcing, so we added
  * it here. CHANGED JW: added getItemCount() and backing list.
+ * 
+ * We have a notion of set/add selection, names slightly unusual following
+ * rules in SelectionModel:
+ * 
+ * select(...) -> addSelection
+ * clearAndSelect(..) -> setSelection
+ * 
+ * As this base-implementation is biased for single-selection, all default methods
+ * ultimately delegate to clearAndSelect - it's up to
+ * subclasses to override for multiple. All the add/set navigational methods
+ * delegate to their base add/set.
  * 
  * PENDING JW: add select(T) and selectedItem.
  * 
@@ -106,14 +118,14 @@ public interface SelectionModelJ<T> {
  
     /**
      * Sets selection to the index if selectable, does nothing otherwise. 
+     * 
+     * Note: we delegate from select to here - that's because we want
+     * to keep the notification minimal: 
+     * 
      * @param index
      * @see javafx.scene.control.SelectModel#clearAndSelect(int)
      */
-    default void clearAndSelect(int index) {
-        if (!isSelectable(index)) return;
-        clearSelection();
-        select(index);
-    }
+    void clearAndSelect(int index);
     
     /**
      * Adds the index to the selection if selectable, does nothing otherwise.
@@ -121,7 +133,10 @@ public interface SelectionModelJ<T> {
      * @param index
      * @see javafx.scene.control.SelectModel#select(int)
      */
-    void select(int index);
+    default void select(int index) {
+        if (!isSelectable(index)) return;
+        clearAndSelect(index);
+    }
     
     /**
      * Clears the selection at the given index if it is selected,

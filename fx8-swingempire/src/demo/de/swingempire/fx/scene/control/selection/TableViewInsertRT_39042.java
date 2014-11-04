@@ -37,7 +37,7 @@ public class TableViewInsertRT_39042 extends Application {
         ObservableList<Locale> items = FXCollections.observableArrayList(Locale.getAvailableLocales());
 
         TableView tableView = new TableView();
-//        tableView.setItems(items);
+        tableView.setItems(items);
         TableColumn column = new TableColumn("Column");
         column.setCellValueFactory(new PropertyValueFactory<>("language"));
         tableView.getColumns().addAll(column);

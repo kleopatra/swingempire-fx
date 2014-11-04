@@ -8,6 +8,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 import java.util.Objects;
 
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
@@ -198,7 +199,7 @@ public class SingleMultipleSelectionModel<T> extends MultipleSelectionModel<T> {
      * @return
      */
     public SingleSelectionModel<T> getController() {
-        Property<SingleSelectionModel<T>> controllerProperty = selectedItemPath.getRoot();
+        ObservableValue<SingleSelectionModel<T>> controllerProperty = selectedItemPath.getRoot();
         return controllerProperty != null ? controllerProperty.getValue() : null;
     }
     
