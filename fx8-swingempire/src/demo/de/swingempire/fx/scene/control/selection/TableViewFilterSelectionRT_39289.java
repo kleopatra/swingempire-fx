@@ -14,6 +14,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -33,6 +34,24 @@ import javafx.stage.Stage;
  *    still selected/focused
  * - actual: only one item selected (selectedIndex?), focus at 0    
  * 
+ * FilteredListX
+ * - behaves mostly as expected
+ * - strange navigation, though
+ * - cant reproduce reliably: down arrow selects japanese sometimes after on/off filter?
+ * - looks like focus is confused?
+ * - select some "A"s
+ * - press F1 4 times (filter on/off/on/off)
+ * - note that after first off the first cell has focus, after second not
+ * - press down to move selection
+ * - expected: selected index below the previous last
+ * - actual: selected index near end items, "Chinese"
+ * - checking focused index after second off reveals it moved to Chinese
+ * - TableFocusModel can't handle multiple adds! Checks against > only once,
+ *   after that simply adds the summed addedSizes
+ * 
+ * ListView
+ * - FilteredListX doesn't help much
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -43,11 +62,11 @@ public class TableViewFilterSelectionRT_39289 extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         ObservableList<Locale> items = FXCollections.observableArrayList(Locale.getAvailableLocales());
-        FilteredList<Locale> filtered = new FilteredList<>(items, always);
+//        FilteredList<Locale> filtered = new FilteredList<>(items, always);
         // inverse check: patched filteredList keeps selection
-//        FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
-//        filtered.setPredicate(null);
+        FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
         TableView tableView = new TableView();
+//        ListView tableView = new ListView();
         tableView.setItems(filtered);
         TableColumn column = new TableColumn("Column");
         column.setCellValueFactory(new PropertyValueFactory("displayName"));

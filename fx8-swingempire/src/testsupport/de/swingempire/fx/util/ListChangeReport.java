@@ -51,5 +51,9 @@ public class ListChangeReport implements ListChangeListener {
     public boolean hasChanges() {
         return getEventCount() > 0;
     }
+    
+    public void clear() {
+        changes.clear();
+    }
 
 }
