@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
@@ -54,7 +55,17 @@ import com.sun.javafx.collections.SortHelper;
  * - implemented refilter to delegate to updateFilter(fromSource, toSource) with
  *   (0, source.size())
  * - PENDING JW: performance? doing lots of array copies
- * - TODO support null predicate  
+ * - supports null predicate
+ * - removed null check in constructor and predicateProperty  
+ * - replaced direct access to predicate by include in update. Note: couldn't
+ *   come up with a failing test for addRemove, look into core tests to
+ *   understand when that's needed. 
+ * - using null in constructor without ALWAYS_TRUE makes test
+ *   with multiple removes fail - why? 
+ *   Reason: Doesn't initialize because replacing a null with a null
+ *   doesn't trigger properties invalidation
+ *   
+ *   
  *  
  * Wraps an ObservableList and filters it's content using the provided Predicate.
  * All changes in the ObservableList are propagated immediately
@@ -77,7 +88,8 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
      * Constructs a new FilteredList wrapper around the source list.
      * The provided predicate will match the elements in the source list that will be visible.
      * @param source the source list
-     * @param predicate the predicate to match the elements. Cannot be null.
+     * @param predicate the predicate to match the elements. May be null to indicate
+     * including all items of the source list
      */
     public FilteredListX(@NamedArg("source") ObservableList<E> source, @NamedArg("predicate") Predicate<? super E> predicate) {
         super(source);
@@ -85,28 +97,26 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
 //            throw new NullPointerException();
 //        }
         filtered = new int[source.size() * 3 / 2  + 1];
-        this.predicate.set(predicate);
+        setPredicate(predicate);
+        // PENDING JW: do better!
+        if (predicate == null) refilter();
     }
 
     /**
-     * Constructs a new FilteredList wrapper around the source list.
-     * This list has an "always true" predicate, containing all the elements
-     * of the source list.
-     * <p>
-     * This constructor might be useful if you want to bind {@link #predicateProperty()}
-     * of this list.
+     * Constructs a new FilteredList wrapper around the source list with null predicate.
      * @param source the source list
      */
     public FilteredListX(@NamedArg("source") ObservableList<E> source) {
-        this(source, ALWAYS_TRUE);
+        this(source, null); //ALWAYS_TRUE);
     }
 
     /**
      * The predicate that will match the elements that will be in this FilteredList.
-     * Elements not matching the predicate will be filtered-out.
+     * Elements not matching the predicate will be filtered-out. A null predicate
+     * is equivalent to all matching.
      */
-    private final ObjectProperty<Predicate<? super E>> predicate =
-            new ObjectPropertyBase<Predicate<? super E>>() {
+    private final ObjectProperty<Predicate<? super E>> predicate = new SimpleObjectProperty<Predicate<? super E>>(this, "predicate") {
+//            new ObjectPropertyBase<Predicate<? super E>>() {
 
         @Override
         protected void invalidated() {
@@ -120,16 +130,16 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
 //            }
             refilter();
         }
-
-        @Override
-        public Object getBean() {
-            return FilteredListX.this;
-        }
-
-        @Override
-        public String getName() {
-            return "predicate";
-        }
+//
+//        @Override
+//        public Object getBean() {
+//            return FilteredListX.this;
+//        }
+//
+//        @Override
+//        public String getName() {
+//            return "predicate";
+//        }
 
     };
 
@@ -258,7 +268,6 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
     }
 
     private void addRemove(Change<? extends E> c) {
-        Predicate<? super E> pred = predicate.get();
         ensureSize(getSource().size());
         final int from = findPosition(c.getFrom());
         final int to = findPosition(c.getFrom() + c.getRemovedSize());
@@ -277,7 +286,7 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
 
         ListIterator<? extends E> it = getSource().listIterator(pos);
         for (; fpos < to && it.nextIndex() < c.getTo();) {
-            if (pred.test(it.next())) {
+            if (include(it.next())) {
                 filtered[fpos] = it.previousIndex();
                 nextAdd(fpos, fpos + 1);
                 ++fpos;
@@ -291,7 +300,7 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
         } else {
             // Add the remaining elements
             while (it.nextIndex() < c.getTo()) {
-                if (pred.test(it.next())) {
+                if (include(it.next())) {
                     System.arraycopy(filtered, fpos, filtered, fpos + 1, size - fpos);
                     filtered[fpos] = it.previousIndex();
                     nextAdd(fpos, fpos + 1);
@@ -304,21 +313,20 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
     }
 
     private void updateFilter(int sourceFrom, int sourceTo) {
-        Predicate<? super E> pred = predicate.get();
         beginChange();
         // Fast path for single element update
         if (sourceFrom == sourceTo - 1) {
             int pos = findPosition(sourceFrom);
             final E sourceFromElement = getSource().get(sourceFrom);
             if (filtered[pos] == sourceFrom) {
-                if (!pred.test(sourceFromElement)) {
+                if (!include(sourceFromElement)) {
                     nextRemove(pos, sourceFromElement);
                     System.arraycopy(filtered, pos + 1, filtered, pos, size - pos - 1);
                     --size;
                 }
             } else {
                 ensureSize(getSource().size());
-                if (pred.test(sourceFromElement)) {
+                if (include(sourceFromElement)) {
                     nextAdd(pos, pos + 1);
                     System.arraycopy(filtered, pos, filtered, pos + 1, size - pos);
                     filtered[pos] = sourceFrom;
@@ -338,7 +346,7 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
                 final ListIterator<? extends E> it = getSource().listIterator(sourceFrom);
                 for (; it.nextIndex() < jTo;) {
                     E el = it.next();
-                    if (pred.test(el)) {
+                    if (include(el)) {
                         nextAdd(i, i + 1);
                         System.arraycopy(filtered, i, filtered, i + 1, size - i);
                         filtered[i] = it.previousIndex();
@@ -356,7 +364,7 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
             for (; i < filterTo; ++i) {
                 advanceTo(it, filtered[i]);
                 final E el = it.next();
-                if (!pred.test(el)) {
+                if (!include(el)) {
                     nextRemove(i, el);
                     System.arraycopy(filtered, i + 1, filtered, i, size - i - 1);
                     size--;
@@ -368,7 +376,7 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
                 // and it's successor
                 while (it.nextIndex() < jTo) {
                     final E midEl = it.next();
-                    if (pred.test(midEl)) {
+                    if (include(midEl)) {
                         nextAdd(i + 1, i + 2);
                         System.arraycopy(filtered, i + 1, filtered, i + 2, size - i - 1);
                         filtered[i + 1] = it.previousIndex();
@@ -381,6 +389,16 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
 
         }
         endChange();
+    }
+
+    /**
+     * Returns whether the item should be included, queries the predicate if
+     * not null or returns true if predicate is null.
+     * @param el
+     * @return
+     */
+    protected boolean include(final E el) {
+        return getPredicate() != null ? getPredicate().test(el) : true;
     }
 
     private static void advanceTo(ListIterator<?> it, int index) {
@@ -396,6 +414,19 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
 //        refilterByReplace();
     }
 
+    /**
+     * Implemented to delegate to updateFilter.
+     */
+    protected void refilterByUpdate() {
+        beginChange();
+        updateFilter(0, getSource().size());
+        endChange();
+    }
+
+    /**
+     * Extracted refilter from core, not used.
+     * Changed to not directly access pred, but delegate to include.
+     */
     protected void refilterByReplace() {
         List<E> removed = null;
         if (hasListeners()) {
@@ -403,10 +434,9 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
         }
         size = 0;
         int i = 0;
-        Predicate<? super E> pred = predicate.get();
         for (Iterator<? extends E> it = getSource().iterator();it.hasNext(); ) {
             final E next = it.next();
-            if (pred.test(next)) {
+            if (include(next)) {
                 filtered[size++] = i;
             }
             ++i;
@@ -414,12 +444,6 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
         if (hasListeners()) {
             fireChange(new GenericAddRemoveChange<>(0, size, removed, this));
         }
-    }
-
-    protected void refilterByUpdate() {
-        beginChange();
-        updateFilter(0, getSource().size());
-        endChange();
     }
 
 }

@@ -84,17 +84,103 @@ public class ObservableListTest {
         }
         ListChangeReport report = new ListChangeReport(filtered);
         filtered.setPredicate(p -> !added.contains(p));
-        prettyPrint(report.getLastChange());
+//        prettyPrint(report.getLastChange());
         assertEquals(1, report.getEventCount());
         // unexpected: filtering fires a single replaced
         assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastChange()));
     }
     
+    /**
+     * Test that filtered accepts null.
+     */
     @Test
     public void testFilteredListXNullPredicate() {
         ObservableList<String> list = createObservableList(true);
-        FilteredListX filtered = new FilteredListX(list);
+        FilteredListX filtered = new FilteredListX(list, p -> true) ;
         filtered.setPredicate(null);
+    }
+    
+    @Test
+    public void testFilteredXInitialPredicate() {
+        ObservableList<String> list = createObservableList(true);
+        Predicate predicate = p -> false;
+        FilteredListX filtered = new FilteredListX(list, predicate);
+        assertSame(predicate, filtered.getPredicate());
+    }
+    
+    @Test
+    public void testFilteredXInitialDefaultPredicateIsNull() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredListX filtered = new FilteredListX(list);
+        assertSame(null, filtered.getPredicate());
+    }
+    
+    /**
+     * Basically trying to test that all notification paths can cope with
+     * null, so need a failing test ;)
+     * This isn't good: filtered has no need to test again, simply removes.
+     */
+    @Test
+    public void testFilteredXAddRemoveNullPredicate() {
+        ObservableList list = createObservableList(true);
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            added.add(list.get(i));
+        }
+        FilteredListX filtered = new FilteredListX(list);
+        assertEquals(list.size(), filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        list.removeAll(added);
+        assertEquals(list.size(), filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertEquals("disjoint remove " , added.size(), getChangeCount(report.getLastChange()));
+    }
+    
+    /**
+     * Basically trying to test that all notification paths can cope with
+     * null, so need a failing test ;)
+     * This isn't good: filtered has no need to test again, simply removes.
+     */
+    @Test
+    public void testFilteredXAddRemoveNullPredicateConsecuitive() {
+        ObservableList list = createObservableList(true);
+        List added = new ArrayList(list.subList(2, 5));
+        FilteredListX filtered = new FilteredListX(list);
+        assertEquals(list.size(), filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        list.removeAll(added);
+        assertEquals(list.size(), filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("single remove " , wasSingleRemoved(report.getLastChange()));
+    }
+    
+    /**
+     * Testing removal of filtered items. Note: predicate != 0
+     */
+    @Test
+    public void testFilteredXAddRemoveChange() {
+        ObservableList list = createObservableList(true);
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            added.add(list.get(i));
+        }
+        Predicate contains = p -> added.contains(p);
+        FilteredListX filtered = new FilteredListX(list, contains);
+        assertEquals(added.size(), filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        list.removeAll(added);
+        assertEquals(0, filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("single remove but was " + report.getLastChange(), wasSingleRemoved(report.getLastChange()));
+//        prettyPrint(report.getLastChange());
+    }
+    
+    @Test
+    public void testFilteredXPredicate() {
+        FilteredListX filtered = new FilteredListX(createObservableList(true));
+        assertNull(filtered.getPredicate());
+        assertSame(filtered, filtered.predicateProperty().getBean());
+        assertEquals("predicate", filtered.predicateProperty().getName());
     }
 //--------- advanced ListChange events (understanding better FilteredList)
     
