@@ -29,10 +29,17 @@ import javafx.collections.transformation.TransformationList;
 import com.sun.javafx.collections.NonIterableChange.GenericAddRemoveChange;
 import com.sun.javafx.collections.SortHelper;
 
+import de.swingempire.fx.scene.control.selection.TableViewFilterSelectionRT_39289;
+
 /**
- * C&P core - modified to:
+ * C&P core with modifications to fix (not completely tested!):
  * - to support finer-grained notification in re-filter
+ *   https://javafx-jira.kenai.com/browse/RT-39291 
  * - cope with null predicates
+ *   https://javafx-jira.kenai.com/browse/RT-39290
+ * - help TableView to keep selection state
+ *   https://javafx-jira.kenai.com/browse/RT-39289  
+ *   
  * 
  * Changed:
  * - implemented refilter to delegate to updateFilter(fromSource, toSource) with
@@ -56,6 +63,7 @@ import com.sun.javafx.collections.SortHelper;
  *
  * @see TransformationList
  * @since JavaFX 8.0
+ * 
  */
 @SuppressWarnings("unchecked")
 public final class FilteredListX<E> extends TransformationList<E, E>{

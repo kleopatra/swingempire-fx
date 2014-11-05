@@ -62,6 +62,7 @@ public class TableViewFilterSelectionRT_39289 extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         ObservableList<Locale> items = FXCollections.observableArrayList(Locale.getAvailableLocales());
+        items.remove(0);
 //        FilteredList<Locale> filtered = new FilteredList<>(items, always);
         // inverse check: patched filteredList keeps selection
         FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
