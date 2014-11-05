@@ -38,12 +38,15 @@ public class ListChangeReport implements ListChangeListener {
         return changes.size();
     }
     
-    public Change getLastListChange() {
+    /**
+     * @return
+     */
+    public Change getLastChange() {
         return hasChanges() ? changes.get(0) : null;
     }
     
-    public ObservableList getLastListValue() {
-        return hasChanges() ? getLastListChange().getList() : null;
+    public ObservableList getLastValue() {
+        return hasChanges() ? getLastChange().getList() : null;
     }
     public boolean hasChanges() {
         return getEventCount() > 0;

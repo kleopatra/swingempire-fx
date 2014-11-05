@@ -63,23 +63,51 @@ public class FXUtils {
         return count;
     }
     
-    public static boolean isAllChanged(Change c) {
+    /**
+     * Returns true if the content of the list was completely changed.
+     * @param c
+     * @return
+     */
+    public static boolean wasAllChanged(Change c) {
         return getAddedSize(c) == c.getList().size() ;
     }
     
-    public static boolean isSingleReplacedChange(Change c) {
+    public static boolean wasSingleReplaced(Change c) {
         if (getChangeCount(c) != 1) return false;
         c.reset();
         c.next();
         return c.wasReplaced();
     }
     
-    public static boolean isSinglePermutatedChange(Change c) {
+    public static boolean wasSingleRemoved(Change c) {
+        if (getChangeCount(c) != 1) return false;
+        c.reset();
+        c.next();
+        return c.wasRemoved() && !c.wasAdded();
+    }
+    
+    public static boolean wasSingleAdded(Change c) {
+        if (getChangeCount(c) != 1) return false;
+        c.reset();
+        c.next();
+        return c.wasAdded() && !c.wasRemoved();
+    }
+    
+    public static boolean wasSinglePermutated(Change c) {
         if (getChangeCount(c) != 1) return false;
         c.reset();
         c.next();
         return c.wasPermutated();
     }
+    
+    public static boolean wasSingleUpdated(Change c) {
+        if (getChangeCount(c) != 1) return false;
+        c.reset();
+        c.next();
+        return c.wasUpdated();
+    }
+    
+    
 //-------------------anchor    
     
     public static int getAnchorIndex(ListView<?> view) {

@@ -6,10 +6,13 @@ package de.swingempire.fx.property;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -23,6 +26,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.util.Callback;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -33,6 +37,8 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import de.swingempire.fx.collection.FilteredListX;
+import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;
@@ -40,7 +46,6 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -55,12 +60,186 @@ public class ObservableListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     
-//-------------- ListChange events
+//-------------- filteredListX
     
     @Test
+    public void testFilteredXOne() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredListX filtered = new FilteredListX(list, p -> true);
+        ListChangeReport report = new ListChangeReport(filtered);
+        // keep all except the third, equivalent to removing one item
+        filtered.setPredicate(p-> p != list.get(2));
+        Change c = report.getLastChange();
+        c.next();
+        assertTrue("expected: single remove but was: " + c, wasSingleRemoved(c));
+    }
+    
+    @Test
+    public void testFilteredListX() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredListX filtered = new FilteredListX(list);
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            added.add(list.get(i));
+        }
+        ListChangeReport report = new ListChangeReport(filtered);
+        filtered.setPredicate(p -> !added.contains(p));
+        prettyPrint(report.getLastChange());
+        assertEquals(1, report.getEventCount());
+        // unexpected: filtering fires a single replaced
+        assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastChange()));
+    }
+    
+    @Test
+    public void testFilteredListXNullPredicate() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredListX filtered = new FilteredListX(list);
+        filtered.setPredicate(null);
+    }
+//--------- advanced ListChange events (understanding better FilteredList)
+    
+    @Test
+    public void testFilteredUpdateRemoved() {
+        ObservableList<Person> persons = createPersons(p ->
+            new Observable[]{p.lastNameProperty()});
+        FilteredList<Person> filtered = persons.filtered(p -> true);
+        Predicate<Person> predicate = p -> p.getLastName().startsWith("J");
+        filtered.setPredicate(predicate);
+        assertEquals(2, filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        filtered.get(1).setLastName("nonJ");
+        assertEquals(1, filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed but was: " + report.getLastChange(), 
+                wasSingleRemoved(report.getLastChange()));
+    }
+    
+    @Test
+    public void testFilteredUpdateAdded() {
+        ObservableList<Person> persons = createPersons(p ->
+            new Observable[]{p.lastNameProperty()});
+        FilteredList<Person> filtered = persons.filtered(p -> true);
+        Predicate<Person> predicate = p -> p.getLastName().startsWith("J");
+        filtered.setPredicate(predicate);
+        assertEquals(2, filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        persons.get(8).setLastName("J");
+        assertEquals(3, filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single added but was: " + report.getLastChange(), 
+                wasSingleAdded(report.getLastChange()));
+    }
+    
+    @Test
+    public void testFilteredUpdateUpdated() {
+        ObservableList<Person> persons = createPersons(p ->
+            new Observable[]{p.lastNameProperty()});
+        FilteredList<Person> filtered = persons.filtered(p -> true);
+        Predicate<Person> predicate = p -> p.getLastName().startsWith("J");
+        filtered.setPredicate(predicate);
+        assertEquals(2, filtered.size());
+        ListChangeReport report = new ListChangeReport(filtered);
+        filtered.get(1).setLastName("JJ");
+        assertEquals(2, filtered.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single update but was: " + report.getLastChange(), 
+                wasSingleUpdated(report.getLastChange()));
+    }
+    
+    protected ObservableList<Person> createPersons(Callback<Person, Observable[]> extractor) {
+        return FXCollections.observableList(createPersons(), extractor);
+    }
+    
+    protected ObservableList<Person> createPersons() {
+        ObservableList<Person> persons = FXCollections.observableArrayList(
+                new Person("Jacob", "Smith", "jacob.smith@example.com"),
+                new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
+                new Person("Ethan", "Williams", "ethan.williams@example.com"),
+                new Person("Emma", "Jones", "emma.jones@example.com"),
+                new Person("Lucinda", "Micheals", "lucinda.micheals@example.com"),
+                new Person("Michael", "Brown", "michael.brown@example.com"),
+                new Person("Barbara", "Pope", "barbara.pope@example.com"),
+                new Person("Penelope", "Rooster", "penelope.rooster@example.com"),
+                new Person("Raphael", "Adamson", "raphael.adamson@example.com")
+                );
+        return persons;
+    }
+    
+    public static class LastNameComparator implements Comparator<Person> {
+
+        Collator collator = Collator.getInstance();
+        @Override
+        public int compare(Person o1, Person o2) {
+            return collator.compare(o1.getLastName(), o2.getLastName());
+        }
+        
+    }
+    
+//-------------- ListChange events
+    /**
+     * Signature of default method clashes with Collator:
+     * 
+     * <code><pre>
+     * Collator implements Comparable<Object>
+     * // default method in ObservableList
+     * SortedList<E> default sorted(Comparator<E>)
+     * // typing of sortedList
+     * void setComparator<Comparator<? super E>> 
+     * 
+     *  // such that followning doesn't compile
+     * SortedList<String> sorted = list.sorted(Collator.getInstance());
+     * // compiles
+     * SortedList<String> sorted = list.sorted();
+     * sorted.setComparator(Collator.getInstance());
+     * </pre></code>
+     * 
+     */
+    @Test @Ignore
+    public void testCompileListSorted() {
+        ObservableList<String> list = createObservableList(true);
+        SortedList<String> sorted = list.sorted();
+        sorted.setComparator(Collator.getInstance());
+    }
+    
+    /**
+     * FilteredList throws on null predicate.
+     * https://javafx-jira.kenai.com/browse/RT-39290
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreReported.class)
+    public void testFilteredListNullPredicate() {
+        ObservableList<String> list = createObservableList(true);
+        // needs a predicate
+        FilteredList<String> filtered = list.filtered(p -> false);
+        filtered.setPredicate(null);
+        LOG.info("getting further?" + filtered);
+    }
+    
+    /**
+     * Expecting fine grained notification from filteredList
+     * https://javafx-jira.kenai.com/browse/RT-39291
+     */
+    @Test
+    @ConditionalIgnore (condition = IgnoreReported.class)
+    public void testFilteredListOneFiltered() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredList filtered = list.filtered(p -> true);
+        ListChangeReport report = new ListChangeReport(filtered);
+        // keep all except the third, equivalent to removing one item
+        filtered.setPredicate(p-> p != list.get(2));
+        Change c = report.getLastChange();
+        c.next();
+        assertTrue("expected: single remove but was: " + c, wasSingleRemoved(c));
+    }
+    
+    /**
+     * Expecting fine grained notification from filteredList
+     * https://javafx-jira.kenai.com/browse/RT-39291
+     */
+    @Test
+    @ConditionalIgnore (condition = IgnoreReported.class)
     public void testFilteredList() {
         ObservableList<String> list = createObservableList(true);
-        LOG.info("" + list.getClass());
         // needs a predicate
 //        FilteredList<String> sorted = list.filtered();
         FilteredList filtered = new FilteredList(list);
@@ -71,10 +250,10 @@ public class ObservableListTest {
         
         ListChangeReport report = new ListChangeReport(filtered);
         filtered.setPredicate(p -> added.contains(p));
-        prettyPrint(report.getLastListChange());
+        prettyPrint(report.getLastChange());
         assertEquals(1, report.getEventCount());
         // unexpected: filtering fires a single replaced
-        assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastListChange()));
+        assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastChange()));
     }
     
     @Test
@@ -89,9 +268,9 @@ public class ObservableListTest {
         }
         ListChangeReport report = new ListChangeReport(sorted);
         list.addAll(added);
-        prettyPrint(report.getLastListChange());
+//        prettyPrint(report.getLastListChange());
         assertEquals(1, report.getEventCount());
-        assertEquals("disjoint adds", added.size(), getChangeCount(report.getLastListChange()));
+        assertEquals("disjoint adds", added.size(), getChangeCount(report.getLastChange()));
     }
     
     @Test
@@ -101,7 +280,7 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(sorted);
         sorted.setComparator(Collator.getInstance());
         assertEquals(1, report.getEventCount());
-        assertTrue(isSinglePermutatedChange(report.getLastListChange()));
+        assertTrue(wasSinglePermutated(report.getLastChange()));
     }
     
     @Test
@@ -114,7 +293,7 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         subList.clear();
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(subSize, getRemovedSize(c));
         assertEquals(0, getAddedSize(c));
     }
@@ -137,13 +316,13 @@ public class ObservableListTest {
         subList.retainAll(itemsOfSubList);
         assertEquals("wrong assumption: implementation is clever enough to detect retain same",
                 1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         LOG.info("changed list: " + list);
         prettyPrint(c);
         assertEquals("single change" , 1, getChangeCount(c));
         assertEquals("removed", subSize, getRemovedSize(c));
         assertEquals("added" , subSize, getAddedSize(c));
-        assertTrue("single replace" + c, isSingleReplacedChange(c));
+        assertTrue("single replace" + c, wasSingleReplaced(c));
     }
     
     @Test
@@ -154,12 +333,12 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         list.setAll(other);
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(size, getAddedSize(c));
         assertEquals(size, getRemovedSize(c));
         assertEquals(1, getChangeCount(c));
-        assertTrue(isAllChanged(c));
-        assertTrue(isSingleReplacedChange(c));
+        assertTrue(wasAllChanged(c));
+        assertTrue(wasSingleReplaced(c));
     }
     
     @Test
@@ -172,12 +351,12 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         list.setAll(other);
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(otherSize, getAddedSize(c));
         assertEquals(size, getRemovedSize(c));
         assertEquals(1, getChangeCount(c));
-        assertTrue(isAllChanged(c));
-        assertTrue(isSingleReplacedChange(c));
+        assertTrue(wasAllChanged(c));
+        assertTrue(wasSingleReplaced(c));
     }
     
     @Test
@@ -190,12 +369,12 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         list.setAll(other);
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(otherSize, getAddedSize(c));
         assertEquals(size, getRemovedSize(c));
         assertEquals(1, getChangeCount(c));
-        assertTrue(isAllChanged(c));
-        assertTrue(isSingleReplacedChange(c));
+        assertTrue(wasAllChanged(c));
+        assertTrue(wasSingleReplaced(c));
     }
     
     @Test
@@ -207,11 +386,11 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         list.setAll(other);
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(otherSize, getAddedSize(c));
         assertEquals(size, getRemovedSize(c));
         assertEquals(1, getChangeCount(c));
-        assertTrue(isAllChanged(c));
+        assertTrue(wasAllChanged(c));
     }
     
     @Test
@@ -223,11 +402,11 @@ public class ObservableListTest {
         ListChangeReport report = new ListChangeReport(list);
         list.setAll(other);
         assertEquals(1, report.getEventCount());
-        Change c = report.getLastListChange();
+        Change c = report.getLastChange();
         assertEquals(otherSize, getAddedSize(c));
         assertEquals(size, getRemovedSize(c));
         assertEquals(1, getChangeCount(c));
-        assertTrue(isAllChanged(c));
+        assertTrue(wasAllChanged(c));
     }
     
 //------------- compile test: replace ObjectProperty<List> by ListProperty?
@@ -554,8 +733,8 @@ public class ObservableListTest {
         listProperty.set(list);
         assertEquals("listProperty must fire changeEvent on setList", 
                 1, report.getEventCount());
-        Change<String> change = report.getLastListChange();
-        assertSame("source of listChange must be list property", listProperty, report.getLastListValue());
+        Change<String> change = report.getLastChange();
+        assertSame("source of listChange must be list property", listProperty, report.getLastValue());
     }
     
     
@@ -698,6 +877,7 @@ public class ObservableListTest {
         return withData ? FXCollections.observableArrayList(DATA) : FXCollections.observableArrayList();
     }
     
+    
     /**
      * Sanity: double-check notifications on Object properties
      */
@@ -734,7 +914,7 @@ public class ObservableListTest {
         objectProperty.set(list);
         ListChangeReport report = new ListChangeReport(listProperty);
         objectProperty.set(subList);
-        FXUtils.prettyPrint(report.getLastListChange());
+        FXUtils.prettyPrint(report.getLastChange());
     }
 
     @Test @Ignore
