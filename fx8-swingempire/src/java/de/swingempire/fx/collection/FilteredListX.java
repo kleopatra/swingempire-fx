@@ -8,25 +8,6 @@ package de.swingempire.fx.collection;
  * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
  */
 
 
@@ -49,7 +30,9 @@ import com.sun.javafx.collections.NonIterableChange.GenericAddRemoveChange;
 import com.sun.javafx.collections.SortHelper;
 
 /**
- * C&P core - trying to support finer-grained notification in re-filter.
+ * C&P core - modified to:
+ * - to support finer-grained notification in re-filter
+ * - cope with null predicates
  * 
  * Changed:
  * - implemented refilter to delegate to updateFilter(fromSource, toSource) with
@@ -93,12 +76,11 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
      */
     public FilteredListX(@NamedArg("source") ObservableList<E> source, @NamedArg("predicate") Predicate<? super E> predicate) {
         super(source);
-//        if (predicate == null) {
-//            throw new NullPointerException();
-//        }
         filtered = new int[source.size() * 3 / 2  + 1];
         setPredicate(predicate);
-        // PENDING JW: do better!
+        // Note JW: the initial value of predicateProperty is null, 
+        // refiltering triggered in its invalidated
+        // to not initializing the filter if the predicate is null initially
         if (predicate == null) refilter();
     }
 
@@ -116,30 +98,11 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
      * is equivalent to all matching.
      */
     private final ObjectProperty<Predicate<? super E>> predicate = new SimpleObjectProperty<Predicate<? super E>>(this, "predicate") {
-//            new ObjectPropertyBase<Predicate<? super E>>() {
 
         @Override
         protected void invalidated() {
-//            if (get() == null) {
-//                if (isBound()) {
-//                    unbind();
-//                }
-//                set(ALWAYS_TRUE);
-//                throw new IllegalArgumentException("Predicate cannot be null.");
-//
-//            }
             refilter();
         }
-//
-//        @Override
-//        public Object getBean() {
-//            return FilteredListX.this;
-//        }
-//
-//        @Override
-//        public String getName() {
-//            return "predicate";
-//        }
 
     };
 
@@ -418,6 +381,8 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
      * Implemented to delegate to updateFilter.
      */
     protected void refilterByUpdate() {
+        // PENDING JW: need the begin/endChange?
+        // updateFilter does it anyway
         beginChange();
         updateFilter(0, getSource().size());
         endChange();
