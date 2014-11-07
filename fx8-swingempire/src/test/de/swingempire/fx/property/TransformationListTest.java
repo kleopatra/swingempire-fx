@@ -49,6 +49,12 @@ public class TransformationListTest {
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     
 //-------------- filteredListX
+    @Test
+    public void testFilteredXEmptyList() {
+        ObservableList list = createObservableList(false);
+        FilteredListX filtered = new FilteredListX(list, p -> true);
+        filtered.setPredicate(p -> false);
+    }
     
     @Test
     public void testFilteredXOne() {
@@ -80,7 +86,7 @@ public class TransformationListTest {
         filtered.setPredicate(null);
         assertEquals(1, report.getEventCount());
         assertEquals("disjoint adds", added.size(), getChangeCount(report.getLastChange()));
-        prettyPrint(report.getLastChange());
+//        prettyPrint(report.getLastChange());
     }
     
     /**
@@ -91,6 +97,7 @@ public class TransformationListTest {
         ObservableList<String> list = createObservableList(true);
         FilteredListX filtered = new FilteredListX(list, p -> true) ;
         filtered.setPredicate(null);
+        assertEquals(null, filtered.getPredicate());
     }
     
     @Test

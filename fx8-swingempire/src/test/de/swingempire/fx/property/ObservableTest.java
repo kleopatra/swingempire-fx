@@ -30,7 +30,6 @@ import org.junit.runners.JUnit4;
 import de.swingempire.fx.scene.control.cell.Person22463;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.InvalidationReport;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -38,6 +37,7 @@ import static org.junit.Assert.*;
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableTest {
 
     /**
@@ -102,23 +102,31 @@ public class ObservableTest {
 
     /**
      * Bug: the observable in notifications must be the instance the 
-     * listener was added to.
+     * listener was added to. 
+     * 
+     * Here: testing invalidation.
      */
     @Test
     public void testReadOnlyWrapperInvalidation() {
         ReadOnlyObjectWrapper<String> wrapper = new ReadOnlyObjectWrapper<>();
         wrapper.addListener(o -> {
-            assertSame(wrapper, o);
+            assertSame("event source must be same the listener was added", wrapper, o);
         });
         wrapper.setValue("dummy");
     }
     
+    /**
+     * Bug: the observable in notifications must be the instance the 
+     * listener was added to. 
+     * 
+     * Here: testing change.
+     */
     @Test
     public void testReadOnlyWrapperChange() {
         ReadOnlyObjectWrapper<String> wrapper = new ReadOnlyObjectWrapper<>();
         wrapper.addListener((o, oldValue, newValue) -> {
             assertEquals(o.getValue(), newValue);
-            assertSame(wrapper, o);
+            assertSame("event source must be same the listener was added", wrapper, o);
         });
         wrapper.setValue("dummy");
     }
@@ -128,6 +136,26 @@ public class ObservableTest {
         IntegerProperty base = new SimpleIntegerProperty(initial);
         base.setValue(10.5);
         assertEquals(Integer.class, base.getValue().getClass());
+    }
+
+    /**
+     * A null value is changed to 0 in set (documented in
+     * WritableIntegerValue). 
+     * 
+     * How about bind? That's documented and handled in IntegerPropertyBase:
+     * it has its bind(observable) implemented to wrap a IntegerBinding
+     * around the objectProperty with a computeValue method that
+     * converts a null into a 0.
+     */
+    @Test
+    public void testIntegerBind() {
+        IntegerProperty integerProperty = new SimpleIntegerProperty();
+        ObjectProperty<Integer> objectProperty = new SimpleObjectProperty<>(1);
+        integerProperty.bind(objectProperty);
+        objectProperty.setValue(10);
+        assertEquals(10, integerProperty.get());
+        objectProperty.setValue(null);
+        assertEquals(0, integerProperty.get());
     }
     
     /**

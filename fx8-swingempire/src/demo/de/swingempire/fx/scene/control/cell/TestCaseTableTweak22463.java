@@ -20,8 +20,10 @@ import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -65,20 +67,55 @@ public class TestCaseTableTweak22463 extends Application {
         Button refreshButton = new Button("Refresh list");
 
         final TableView<Person22463> table = new TableView<>();
-//        table.setRowFactory(p -> new IdentityCheckingTableRow<>());
         table.setTableMenuButtonVisible(true);
         TableColumn c2 = new TableColumn("Name");
         c2.setCellValueFactory(new PropertyValueFactory<Person22463, String>(
                 "name"));
         c2.setPrefWidth(200);
-        Callback<TableColumn<Person22463, String>, TableCell<Person22463, String>> 
-             plainCellFactory = p -> {
-                 System.out.println("created");
-                 TableCell cell = new IdentityCheckingTableCell();
-                 cell.setId("cell-id: " + idCount++);
-                return cell;
-             };
-//        c2.setCellFactory(plainCellFactory);
+        // with new api
+        Callback<TableView<Person22463>, TableRow<Person22463>> rowFactory = p -> {
+            return new TableRow<Person22463>() {
+
+                @Override
+                protected boolean isItemChanged(Person22463 oldItem,
+                        Person22463 newItem) {
+                    return oldItem != newItem;
+                }
+                
+                // needs help of skin to trigger update of cells
+                @Override
+                protected Skin<?> createDefaultSkin() {
+                    return new TableRowSkinX(this);
+                }
+
+                
+            };
+        };
+        table.setRowFactory(rowFactory);
+        Callback<TableColumn<Person22463, String>, TableCell<Person22463, String>> cellFactory = p -> {
+            return new PlainTableCell<Person22463, String>() {
+
+                @Override
+                protected boolean isItemChanged(String oldItem, String newItem) {
+                    return oldItem != newItem;
+                }
+
+            };
+        };
+        // not needed, why not?
+//        c2.setCellFactory(cellFactory);
+        
+        //-------------- tweak, prior to fix
+        // Callback<TableColumn<Person22463, String>, TableCell<Person22463,
+        // String>>
+        // plainCellFactory = p -> {
+        // System.out.println("created");
+        // TableCell cell = new IdentityCheckingTableCell();
+        // cell.setId("cell-id: " + idCount++);
+        // return cell;
+        // };
+        // table.setRowFactory(p -> new IdentityCheckingTableRow<>());
+        // c2.setCellFactory(plainCellFactory);
         table.getColumns().addAll(c2);
         Button init = new Button("init for setItem");
         init.setOnAction(e -> {

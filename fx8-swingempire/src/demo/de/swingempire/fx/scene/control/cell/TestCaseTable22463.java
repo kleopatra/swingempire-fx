@@ -20,8 +20,10 @@ import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -51,6 +53,7 @@ public class TestCaseTable22463 extends Application {
         primaryStage.setY(0);
         Button refreshButton = new Button("Refresh");
         final TableView<Person22463> table = new TableView<>();
+        // tweak prior to fix
 //        table.setRowFactory(p -> new IdentityCheckingTableRow());
         table.setTableMenuButtonVisible(true);
         TableColumn c1 = new TableColumn("Id");
@@ -60,6 +63,40 @@ public class TestCaseTable22463 extends Application {
         c2.setPrefWidth(200);
         table.getColumns().addAll(c1, c2);
 
+        // with new api, since 8u40b12
+        Callback rowFactory = p -> {
+            return new TableRow() {
+
+                @Override
+                protected boolean isItemChanged(Object oldItem,
+                        Object newItem) {
+                    return oldItem != newItem;
+                }
+                
+                // still needs help of skin to trigger update of child cells
+                //@Override
+                //protected Skin<?> createDefaultSkin() {
+                //    return new TableRowSkinX(this);
+                //}
+
+                
+            };
+        };
+        table.setRowFactory(rowFactory);
+        Callback<TableColumn<Person22463, String>, TableCell<Person22463, String>> cellFactory = p -> {
+            return new PlainTableCell<Person22463, String>() {
+
+                @Override
+                protected boolean isItemChanged(String oldItem, String newItem) {
+                    return oldItem != newItem;
+                }
+
+            };
+        };
+        // not needed, why not?
+//        c2.setCellFactory(cellFactory);
+
+        
         refreshButton.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override

@@ -40,6 +40,10 @@ import de.swingempire.fx.scene.control.selection.TableViewFilterSelectionRT_3928
  * - help TableView to keep selection state
  *   https://javafx-jira.kenai.com/browse/RT-39289  
  *   
+ * PENDING JW:
+ * - think about implications of raw null here: might be that we want
+ *   a silent transformation of null into a predicate? Then could use
+ *   in ands without further check?
  * 
  * Changed:
  * - implemented refilter to delegate to updateFilter(fromSource, toSource) with
@@ -55,8 +59,6 @@ import de.swingempire.fx.scene.control.selection.TableViewFilterSelectionRT_3928
  *   Reason: Doesn't initialize because replacing a null with a null
  *   doesn't trigger properties invalidation
  *   
- *   
- *  
  * Wraps an ObservableList and filters it's content using the provided Predicate.
  * All changes in the ObservableList are propagated immediately
  * to the FilteredList.
