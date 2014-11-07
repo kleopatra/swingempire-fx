@@ -6,11 +6,14 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.skin.TableRowSkin;
+
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableRow;
 
 
 /**
+ * 
  * Extended TableRow that updates its item if equal but not same.
  * Needs custom skin to update cells on invalidation of the 
  * item property.<p>
@@ -21,6 +24,13 @@ import javafx.scene.control.TableRow;
  * 
  * Super might support a configuration option to check against
  * identity vs. against equality.<p>
+ * 
+ * Note: with the fix of  
+ * https://javafx-jira.kenai.com/browse/RT-39094
+ * super has a method <code>isItemChanged(old, new)</code> that can be overridden
+ * instead of the ugly hook here. The custom skin is still needed, until
+ * fix of https://javafx-jira.kenai.com/browse/RT-39321.
+ * 
  * 
  * Note that this is _not_ formally tested! Any execution paths calling
  * <code>updateItem(int)</code> other than through 
@@ -72,10 +82,8 @@ public class IdentityCheckingTableRow<T>  extends TableRow<T> {
     
     @Override
     protected Skin<?> createDefaultSkin() {
-//        return super.createDefaultSkin();
         return new TableRowSkinX<>(this);
     }
-
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

@@ -33,6 +33,10 @@ import javafx.util.Callback;
 import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 
 /**
+ * Reported: support update of items that are equal
+ * https://javafx-jira.kenai.com/browse/RT-39094 (partly fixed, 8u40b12)
+ * https://javafx-jira.kenai.com/browse/RT-39321
+ * 
  * Here we have a list that's equal to the new list because its items are
  * equals. Should be covered by 15793? Why not?
  * 
