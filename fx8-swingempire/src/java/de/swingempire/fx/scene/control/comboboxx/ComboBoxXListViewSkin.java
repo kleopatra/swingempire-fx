@@ -15,8 +15,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
@@ -29,6 +29,8 @@ import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
@@ -45,6 +47,8 @@ import com.sun.javafx.scene.traversal.Algorithm;
 import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javafx.scene.traversal.ParentTraversalEngine;
 import com.sun.javafx.scene.traversal.TraversalContext;
+
+import de.swingempire.fx.property.PathAdapter;
 
 
 //import javafx.scene.accessibility.Attribute;
@@ -228,26 +232,26 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         updateValue();
         updateDisplayNode();
 
+        // Fix for regression: not displaying the correct value on dynamic 
+        // update of items
+        selectedIndexPath = new PathAdapter<SingleSelectionModel<T>, Number>(
+                comboBox.selectionModelProperty(),  SingleSelectionModel::selectedIndexProperty);
+        selectedIndexPath.addListener((p, old, value) -> updateDisplayNode());
         // Fix for RT-36902, where focus traversal was getting stuck inside the
         // ComboBox
-        comboBox.setImpl_traversalEngine(new ParentTraversalEngine(comboBox,
-                new Algorithm() {
-                    @Override
-                    public Node select(Node owner, Direction dir,
-                            TraversalContext context) {
-                        return null;
-                    }
+        comboBox.setImpl_traversalEngine(new ParentTraversalEngine(comboBox, new Algorithm() {
+            @Override public Node select(Node owner, Direction dir, TraversalContext context) {
+                return null;
+            }
 
-                    @Override
-                    public Node selectFirst(TraversalContext context) {
-                        return null;
-                    }
+            @Override public Node selectFirst(TraversalContext context) {
+                return null;
+            }
 
-                    @Override
-                    public Node selectLast(TraversalContext context) {
-                        return null;
-                    }
-                }));
+            @Override public Node selectLast(TraversalContext context) {
+                return null;
+            }
+        }));
 
         // registerChangeListener(comboBox.itemsProperty(), "ITEMS");
         registerChangeListener(comboBox.promptTextProperty(), "PROMPT_TEXT");
@@ -262,6 +266,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         
     }
 
+    private PathAdapter<SingleSelectionModel<T>, Number> selectedIndexPath;
     /***************************************************************************
      * * Public API * *
      **************************************************************************/
@@ -292,7 +297,8 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         } else if ("VISIBLE_ROW_COUNT".equals(p)) {
             if (listView == null)
                 return;
-            listView.setPrefHeight(getListViewPrefHeight());
+//            listView.setPrefHeight(getListViewPrefHeight());
+            listView.requestLayout();
         } else if ("CONVERTER".equals(p)) {
             // PENDING JW: test the effect of removing updateListViewItems
             // was no-op in this context anyway
@@ -303,6 +309,9 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
             updateButtonCell();
         } else if ("VALUE".equals(p)) {
             updateValue();
+            // PENDING JW: trying to fix regression on dynamic list update
+            // doesn't help
+//            updateDisplayNode();
         } else if ("EDITABLE".equals(p)) {
             updateEditable();
         }
@@ -907,12 +916,12 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
 //                .selectedIndexProperty()
 //                .addListener(
 //                        o -> {
-//                            if (listSelectionLock)
-//                                return;
-//                            int index = listView.getSelectionModel()
-//                                    .getSelectedIndex();
-//                            comboBox.getSelectionModel().select(index);
-////                            updateDisplayNode();
+////                            if (listSelectionLock)
+////                                return;
+////                            int index = listView.getSelectionModel()
+////                                    .getSelectedIndex();
+////                            comboBox.getSelectionModel().select(index);
+//                            updateDisplayNode();
 //                            // comboBox.accSendNotification(Attribute.TITLE);
 //                        });
 

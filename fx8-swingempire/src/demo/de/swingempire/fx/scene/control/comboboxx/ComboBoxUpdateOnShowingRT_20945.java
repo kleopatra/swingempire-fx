@@ -25,6 +25,8 @@ import javafx.util.Callback;
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 
 /**
+ * Alert ComboBoxX: as of 8u40b12, first item is updated in onShowing if !isEditable.
+ * PENDING JW: check what's changed.
  * 
  * Basic test context: behaviour if items are modified while opening the popup.
  * 

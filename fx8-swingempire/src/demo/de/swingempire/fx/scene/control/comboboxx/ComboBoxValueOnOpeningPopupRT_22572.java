@@ -98,7 +98,7 @@ public class ComboBoxValueOnOpeningPopupRT_22572 extends Application {
         // item after showing?
 //        cb.setOnAction(e -> LOG.info("got action: " + e));
         cb.getItems().add("Toto"); // initial
-        cb.setEditable(true);
+//        cb.setEditable(true);
 //        cb.setValue(cb.getItems().get(0));
         cb.setValue("Tata");
         // ... end test code 20945 

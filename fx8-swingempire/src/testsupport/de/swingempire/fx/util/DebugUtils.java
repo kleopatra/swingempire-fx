@@ -107,7 +107,8 @@ public class DebugUtils {
         LOG.info(choiceClass + ": index/selectedItem/value/display "
                 + choice.getSelectionModel().getSelectedIndex() + " / "
                 + choice.getSelectionModel().getSelectedItem() + " / "
-                + choice.getValue() + " / " + getDisplayText(choice));
+                + choice.getValue() + " / " + getDisplayText(choice)
+                );
     }
 
     public static void printSelectionState(String message, Facade<?, ?, ?> choice) {

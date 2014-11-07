@@ -38,13 +38,14 @@ import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
 import de.swingempire.fx.property.PathAdapter;
+import de.swingempire.fx.util.DebugUtils;
 
 /**
- * 
  * C&P'ed core 8u20 to experiment with cleanup ideas.
  * 
  * Experimentations
@@ -90,6 +91,13 @@ import de.swingempire.fx.property.PathAdapter;
  * <li> use converter for null/empty selected item (if there's not prompt)
  * 
  * 
+ * Regression as of 8u40b12
+ * PENDING JW: if items replaced in onShowing, the selected
+ * item is changed. Check what changed.
+ * - no change (except fixed wasAllSet) in ComboBox
+ * - nothing in skin/model
+ * 
+ * Fixed skin (see comment in afterShowing)
  * 
  * ------------------------ most of original api doc removed - see core ComboBox
  * 
@@ -248,15 +256,35 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
      * opening popup. Clears selectionState.
      * 
      * As of 8u40b7, all fine without debug access, except for focus rect
-     * being on first item  
-     *
+     * being on first item.
+     * 
+     * Debug access needed again in 8u40b12 (possibly didn't test for 8u40b9) 
+     * minimum is to access the displayNode once (before/after updating doesn't 
+     * matter, no need to read anything inside, though. That's done internally,
+     * by calling updateDisplayNode which configures the cell.
+     * 
+     * Looks like the display is showing something != value: display still on old
+     * value/selectedItem have the "old" value as expected, display is on
+     * first of new list - where does it happen?
+     * 
+     * was home-made in skin: while removing all bindings to selectionstate in skin
+     * updateDisplayNode on index change got lost. Added listener to selectedIndexProperty
+     * to force updateDisplayNode. That's needed because it is a ListCell - bound to the
+     * index - without being really controlled by a listView. Think about a better solution!  
      */
     protected void afterShowing() {
         if (beforeShowingState != null) {
             T oldSelected = beforeShowingState.selectedItem;
             beforeShowingState = null;
-            if (oldSelected != getSelectionModel().getSelectedItem()) {
+            T intermediate = getSelectionModel().getSelectedItem();
+            if (oldSelected != intermediate) {
                 getSelectionModel().select(getValue());
+//                LOG.info("oldSelected/intermediateSelected/currentSelected/currentValue: \n" + oldSelected 
+//                        + "/" + intermediate + "/" + getSelectionModel().getSelectedItem() + "/"+ getValue());
+//                 ((ComboBoxBaseSkin<?>) getSkin()).getDisplayNode();
+//                DebugUtils.printSelectionState(this);
+//                getSelectionModel().getSelectedItem();
+//                getValue();
             }
         }
     }
