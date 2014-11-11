@@ -4,40 +4,52 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import java.util.List;
-
-import javafx.beans.property.ListProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.WeakListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
-import de.swingempire.fx.property.BugPropertyAdapters;
 
 /**
  * C&P core - extracted to keep ListView from meddling with internals
- * (RT-39042)
- * 
- * PENDING JW:
- * - tried to remove listener to items, this should be the slave of the selectionModel
- *   (listening to item changes might compete with selectionModel control)
- * - didn't work out, focus not properly updated without ...
- * - nested while(c.next) in contentListener, intentional?
- * 
+ * (RT-39042) plus some changes
  * 
  * Changes:
  * - adapted ListView's itemProperty to listProperty (with additional invalidationListener)
  * - registered contentListener with itemsProperty
  * - removed itemsObserver (handled by listProperty)
+ * - removed listening to itemsContent (for now, regarding this as slave of SelectionModel)
+ *   without doing so, we get problems with competing self-updates on changes to the items
+ *   (see https://javafx-jira.kenai.com/browse/RT-38785)
+ * - removed alias itemCount, query items directly instead: without listening to items,
+ *   it's going out of sync  
+ * - removed nested while when evaluating list change  
+ * - implements FocusModelSlave: depending on some other class to take over update of
+ *   focus, except when calling listChanged
+ * - changed listChanged to not let focus get -1 on removes (added lower limit of 0)  
+ * 
+ * PENDING JW:
+ * - focusModelSlave really needed? All it does here is to call its own public
+ *   api, so might be directly handled in SelectionModel?  
+ * 
+ * PENDING JW:
+ * - tried to remove listener to items, this should be the slave of the selectionModel
+ *   (listening to item changes might compete with selectionModel control)
+ *   didn't work out, focus not properly updated without ... tests are passing,
+ *   but real navigation fails. Fixed now (was: alias itemCount out of sync) 
+ *   but WHY didn't the tests fail?
+ * - fixed: nested while(c.next) in contentListener, intentional?
+ * - fixed: no listening, but slave need to re-introduce listening for cases 
+ *   when the selectionModel doesn't take
+ *   over, f.i. if !isSelected(focusedIndex)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 // package for testing
-public class ListViewAFocusModel<T> extends FocusModel<T> {
+public class ListViewAFocusModel<T> extends FocusModel<T> implements FocusModelSlave<T> {
 
     private final ListView<T> listView;
-    private int itemCount = 0;
+//    private int itemCount = 0;
 
-    ListProperty<T> itemsList;
+//    ListProperty<T> itemsList;
     
     public ListViewAFocusModel(final ListView<T> listView) {
         if (listView == null) {
@@ -45,11 +57,11 @@ public class ListViewAFocusModel<T> extends FocusModel<T> {
         }
 
         this.listView = listView;
-        itemsList = BugPropertyAdapters.listProperty(listView.itemsProperty());
-        itemsList.addListener(weakItemsContentListener);
-        updateItemCount();
+//        itemsList = BugPropertyAdapters.listProperty(listView.itemsProperty());
+//        itemsList.addListener(weakItemsContentListener);
+//        updateItemCount();
 
-        if (itemCount > 0) {
+        if (getItemCount() > 0) {
             focus(0);
         }
     }
@@ -57,16 +69,22 @@ public class ListViewAFocusModel<T> extends FocusModel<T> {
     
     // Listen to changes in the listview items list, such that when it
     // changes we can update the focused index to refer to the new indices.
-    private final ListChangeListener<T> itemsContentListener = c -> {
-        updateItemCount();
+//    private final ListChangeListener<T> itemsContentListener = c -> {
+////        updateItemCount();
+//
+////        listChanged(c);
+//    };
 
+    @Override
+    public void listChanged(Change<? extends T> c) {
+        c.reset();
         while (c.next()) {
             // looking at the first change
             int from = c.getFrom();
             if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
                 return;
             }
-
+        }
             c.reset();
             boolean added = false;
             boolean removed = false;
@@ -82,35 +100,36 @@ public class ListViewAFocusModel<T> extends FocusModel<T> {
             if (added && !removed) {
                 focus(getFocusedIndex() + addedSize);
             } else if (!added && removed) {
-                focus(getFocusedIndex() - removedSize);
+                // fix of navigation issue on remove focus at 0
+                focus(Math.max(0, getFocusedIndex() - removedSize));
             }
-        }
-    };
+    }
     
-    private WeakListChangeListener<T> weakItemsContentListener 
-            = new WeakListChangeListener<T>(itemsContentListener);
+//    private WeakListChangeListener<T> weakItemsContentListener 
+//            = new WeakListChangeListener<T>(itemsContentListener);
     
     @Override protected int getItemCount() {
-        return itemCount;
+        if (listView == null || listView.getItems() == null) return 0;
+        return listView.getItems().size();
     }
 
     @Override protected T getModelItem(int index) {
         if (isEmpty()) return null;
-        if (index < 0 || index >= itemCount) return null;
+        if (index < 0 || index >= getItemCount()) return null;
 
         return listView.getItems().get(index);
     }
 
     private boolean isEmpty() {
-        return itemCount == -1;
+        return getItemCount() == -1;
     }
     
-    private void updateItemCount() {
-        if (listView == null) {
-            itemCount = -1;
-        } else {
-            List<T> items = listView.getItems();
-            itemCount = items == null ? -1 : items.size();
-        }
-    } 
+//    private void updateItemCount() {
+//        if (listView == null) {
+//            itemCount = -1;
+//        } else {
+//            List<T> items = listView.getItems();
+//            itemCount = items == null ? -1 : items.size();
+//        }
+//    } 
 }

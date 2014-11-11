@@ -114,10 +114,10 @@ import static de.swingempire.fx.util.DebugUtils.*;
 public class SelectionAndModification extends Application {
 
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
-            "setAtSelectedIndex", "removeAll(3, 5, 7)"};
+            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0"};
     // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null};
+    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null};
     
     protected Map<String, Consumer<Facade>> createActions() {
         Map<String, Consumer<Facade>> actions = new HashMap<>();
@@ -140,6 +140,9 @@ public class SelectionAndModification extends Application {
         });
         actions.put("removeAll(3, 5, 7)", f -> {
             f.getItems().removeAll(f.getItems().get(3), f.getItems().get(5), f.getItems().get(7));
+        });
+        actions.put("removeAt0", f -> {
+            f.getItems().remove(0);
         });
         return actions ;
     }

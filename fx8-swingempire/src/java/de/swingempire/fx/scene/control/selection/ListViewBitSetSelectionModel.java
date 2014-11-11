@@ -28,20 +28,14 @@ import javafx.util.Callback;
  * Except: 
  * - widened access to updateItemsObserver (hacking around 15973)
  * 
- * PENDING JW: Note that this evades the hack (some called it fix ;-) of RT-15973
- * because it is not a core ListViewBitSetSelectionModel. Tried some hacking
- * around, but wasn't successful, so reverted that part again.
- * 
- * The base reason for RT-15973 is that ChangeListeners are notified only if
- * the !areEquals(oldValue, newValue). In particular, 
- * Collection-valued properties don't fire on
- * setting a new collection with the same content as the old collection. 
- * Listeners that have a ListChangeListener to the value can't re-wired
- * that listener to the new collection, thus listening to the old ... 
- * 
  * Changed in 8u40b9:
  * - with a better understanding of what's happening around 15793, changed
  *   to use listProperty.
+ *   
+ * Changed for 8u40b12:
+ * - widened scope of updateSelection (unused, can't decide where to locate the hack ;)
+ * - changed updateSelection to message the focusModel if we didn't handle the focus
+ *   update here  
  * 
  */ 
 public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<T> {
@@ -173,7 +167,7 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
     // new indices.
     // At present this is basically a left/right shift operation, which
     // seems to work ok.
-    private void updateSelection(Change<? extends T> c) {
+    protected void updateSelection(Change<? extends T> c) {
 //        // debugging output
 //        System.out.println(listView.getId());
 //        if (c.wasAdded()) {
@@ -189,6 +183,8 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
 //            System.out.println("\tWas permutated");
 //        }
         c.reset();
+        // this is not safe! can't really handle multiple changes ...
+        boolean focusHandled = true;
         while (c.next()) {
             if (c.wasReplaced()) {
                 if (c.getList().isEmpty()) {
@@ -215,6 +211,7 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
             } else if (c.wasAdded() || c.wasRemoved()) {
                 int shift = c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
                 shiftSelection(c.getFrom(), shift, null);
+                focusHandled = false;
             } else if (c.wasPermutated()) {
 
                 // General approach:
@@ -271,6 +268,9 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
         }
         
         previousModelSize = getItemCount();
+        if (!focusHandled && listView.getFocusModel() instanceof FocusModelSlave) {
+            ((FocusModelSlave) listView.getFocusModel()).listChanged(c);
+        }
     }
 
 

@@ -147,43 +147,7 @@ public class AnchoredListViewSelectionModel<T> extends
             setAnchorIndex(oldAnchor + shift);
     }
 
-// ---------- trying to hack around 15973: missing notification
-// ---------- not really working ..    
-//    ChangeListener<ObservableList<T>> itemsChangeListener;
-//    InvalidationListener itemsInvalidationListener;
-//    ObservableList<T> items;
-//    ListView<T> listView;
-//    protected void installHack15973(ListView<T> listView) {
-//        this.listView = listView;
-//        // hacking around https://javafx-jira.kenai.com/browse/RT-38731
-//        items = listView.getItems();
-//        itemsInvalidationListener = o -> { 
-//            LOG.info("got invalidation");
-//            Platform.runLater(() -> {
-//                // changeListener wasn't notified due to not firing on equality
-//                if (items != listView.getItems()) {
-//                    LOG.info("deferred invalidation: " + items + listView.getItems());
-//                    updateItemsObserver(items, listView.getItems());
-//                }
-//            }); 
-//            
-//        }; 
-//        itemsChangeListener = (o, old, value) -> {
-//            LOG.info("change: " + old + value + " alias:" + items);
-//        };
-//        listView.itemsProperty().addListener(itemsInvalidationListener);
-//        listView.itemsProperty().addListener(itemsChangeListener);
-//    }
-//
-
-//    @Override
-//    protected void updateItemsObserver(ObservableList<T> oldList,
-//            ObservableList<T> newList) {
-//        super.updateItemsObserver(oldList, newList);
-//        items = newList;
-//    }
-
-
+    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(AnchoredListViewSelectionModel.class.getName());

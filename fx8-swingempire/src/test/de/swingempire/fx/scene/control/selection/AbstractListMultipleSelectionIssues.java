@@ -7,8 +7,6 @@ package de.swingempire.fx.scene.control.selection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.RandomAccess;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
@@ -23,8 +21,6 @@ import org.junit.runners.Parameterized;
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-
-import de.swingempire.fx.util.StageLoader;
 
 import static org.junit.Assert.*;
 
@@ -60,6 +56,11 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
     
     @Test
+    public void testBehaviorFocusNextRowIfBefore() throws Exception {
+        assertBehaviourFocusMove("focusNextRow", -1, 0);
+    }
+    
+    @Test
     public void testBehaviorFocusNextRow() throws Exception {
         assertBehaviourFocusMove("focusNextRow", 2, 3);
     }
@@ -80,17 +81,61 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
     
     protected void assertBehaviorSelectionMoved(String method, int index,
-            int focus) throws NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException {
-        initSkin();
-        getSelectionModel().select(index);
-        invokeBehavior(method);
-        assertEquals(method + " selected index must be moved", focus, getSelectionModel().getSelectedIndex());
-        assertEquals(method + " focus must same as selected index", focus, getFocusIndex());
-        assertEquals(method + " selection size must be one", 1, getSelectionModel().getSelectedIndices().size());
-        assertEquals(method + " anchor must be same as focus", focus, getAnchorIndex());
+            int focus) throws Exception {
+        assertBehaviorSelectionMovedWithModification(method, index, focus, null);
     }
 
+    /**
+     * Steps tested:
+     * 
+     * select -> run (if not null) -> invokeBehavior(method) -> test selection/focus state
+     * 
+     * 
+     * @param method the name of the method do invoke in behaviour
+     * @param selectedIndex the index to select
+     * @param expectedIndex the expected index after running and invoking
+     * @param run the action to run after selecting, may be null to 
+     *    do nothing
+     * @throws Exception
+     */
+    protected void assertBehaviorSelectionMovedWithModification(String method,
+            int selectedIndex, int expectedIndex, Runnable run) throws Exception {
+        initSkin();
+        getSelectionModel().select(selectedIndex);
+        if (run != null) run.run();
+        invokeBehavior(method);
+        assertEquals(method + " selected index must be moved", expectedIndex, getSelectionModel().getSelectedIndex());
+        assertEquals(method + " focus must same as selected index", expectedIndex, getFocusIndex());
+        assertEquals(method + " selection size must be one", 1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(method + " anchor must be same as focus", expectedIndex, getAnchorIndex());
+    }
+
+    /**
+     * Navigation disabled if first is selected/focused and removed
+     * https://javafx-jira.kenai.com/browse/RT-38785
+     * 
+     * (fixed for TableView, not for ListView 8u40b12)
+     * 
+     * Two issues: 
+     * - after remove, focus on -1 instead of 0 ) that is, != selected
+     * - navigation disabled
+     * 
+     * @see #testFocusFirstRemovedItem() 
+     */
+    @Test
+    public void testBehaviorSelectNextRowIfFirstRemoved() throws Exception {
+        // select first
+        int index = 0;
+        // remove first:
+        Runnable r = () -> getView().getItems().remove(index );
+        // selectNext: 
+        assertBehaviorSelectionMovedWithModification("selectNextRow", index, 1, r);
+    }
+    
+    @Test
+    public void testBehaviorSelectNextRowIfFirst() throws Exception {
+        assertBehaviorSelectionMoved("selectNextRow", -1, 0);
+    }
     @Test
     public void testBehaviorSelectNextRow() throws Exception {
         int index = 2;
@@ -271,8 +316,8 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     public void testRT15793() {
         ListView<String> view = createEmptyView();
         int notified = 0;
-        view.itemsProperty().addListener(o -> {LOG.info("notified");});
-        view.itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
+//        view.itemsProperty().addListener(o -> {LOG.info("notified");});
+//        view.itemsProperty().addListener((o, old, value) -> {LOG.info("notified");});
         ObservableList<String> emptyList = FXCollections.observableArrayList();
         // listView is instantiated with an empty list, so following assumption 
         // is incorrect
