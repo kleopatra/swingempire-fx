@@ -7,14 +7,11 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-import de.swingempire.fx.collection.FilteredListX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -23,6 +20,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import de.swingempire.fx.collection.FilteredListX;
+import de.swingempire.fx.scene.control.ControlUtils;
+import de.swingempire.fx.scene.control.ControlUtils.ObservableFactory;
 
 /**
  * Filtering looses selection state
@@ -66,10 +66,10 @@ public class TableViewFilterSelectionRT_39289 extends Application {
 //        FilteredList<Locale> filtered = new FilteredList<>(items, always);
         // inverse check: patched filteredList keeps selection
         FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
-        TableView tableView = new TableView();
+        TableView<Locale> tableView = new TableView<>();
 //        ListView tableView = new ListView();
         tableView.setItems(filtered);
-        TableColumn column = new TableColumn("Column");
+        TableColumn<Locale, String> column = new TableColumn<>("Column");
         column.setCellValueFactory(new PropertyValueFactory("displayName"));
         tableView.getColumns().addAll(column); 
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -91,5 +91,4 @@ public class TableViewFilterSelectionRT_39289 extends Application {
         Locale.setDefault(Locale.ENGLISH);
         launch(args);
     }
-
 }

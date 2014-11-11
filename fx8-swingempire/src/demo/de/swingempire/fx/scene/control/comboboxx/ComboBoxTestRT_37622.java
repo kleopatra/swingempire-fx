@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import de.swingempire.fx.util.DebugUtils;
@@ -59,7 +60,8 @@ import de.swingempire.fx.util.DebugUtils;
  *   are replaced in the original
  * - on listView _are_ registered twice because skin calls setItems
  *     
- * 
+ * fixed as of 8u40b12 (except that width isn't decreased when changing back
+ * to short-width items)
  */
 public class ComboBoxTestRT_37622 extends Application {
 
@@ -70,7 +72,7 @@ public class ComboBoxTestRT_37622 extends Application {
 //       primaryStage.setHeight(200);
 //       primaryStage.setWidth(300);
        List<String> list1 = new ArrayList<>();
-       list1.add("one 0");
+       list1.add("one");
        list1.add("two");
        list1.add("three");
        

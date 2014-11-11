@@ -14,7 +14,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -46,10 +45,11 @@ import javafx.util.converter.DefaultStringConverter;
 import com.sun.javafx.css.Stylesheet;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.ControlUtils;
+import de.swingempire.fx.scene.control.ControlUtils.PropertyFactory;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * Example from tutorial. 

@@ -46,14 +46,15 @@ public class TableViewFocusTestRT_38892 extends Application {
 
         TableColumn<Person,String> firstNameCol = new TableColumn<>("First Name");
         firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        table.getColumns().addAll(firstNameCol, create2ndColumn());
+        table.getColumns().addAll(firstNameCol, create2ndColumn(), create2ndColumn());
         table.setItems(data);
 
         Button button = new Button("Replace 2nd Column");
         button.setFocusTraversable(false);
         button.setOnAction(actionEvent -> {
-            table.getColumns().remove(1);
-            table.getColumns().add(create2ndColumn());
+            int last = table.getColumns().size() - 1;
+//            table.getColumns().remove(last);
+            table.getColumns().set(last, create2ndColumn());
         });
         flowPane.getChildren().addAll(table, button);
         stage.show();
