@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import javafx.collections.ListChangeListener.Change;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 
@@ -38,6 +37,8 @@ import javafx.scene.control.ListView;
  * - fixed: no listening, but slave need to re-introduce listening for cases 
  *   when the selectionModel doesn't take
  *   over, f.i. if !isSelected(focusedIndex)
+ * - changed again: Slave is tagging interface only, master takes over all focus
+ *   updates   
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -73,35 +74,35 @@ public class ListViewAFocusModel<T> extends FocusModel<T> implements FocusModelS
 ////        listChanged(c);
 //    };
 
-    @Override
-    public void listChanged(Change<? extends T> c) {
-        c.reset();
-        while (c.next()) {
-            // looking at the first change
-            int from = c.getFrom();
-            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
-                return;
-            }
-        }
-            c.reset();
-            boolean added = false;
-            boolean removed = false;
-            int addedSize = 0;
-            int removedSize = 0;
-            while (c.next()) {
-                added |= c.wasAdded();
-                removed |= c.wasRemoved();
-                addedSize += c.getAddedSize();
-                removedSize += c.getRemovedSize();
-            }
-
-            if (added && !removed) {
-                focus(getFocusedIndex() + addedSize);
-            } else if (!added && removed) {
-                // fix of navigation issue on remove focus at 0
-                focus(Math.max(0, getFocusedIndex() - removedSize));
-            }
-    }
+//    @Override
+//    public void listChanged(Change<? extends T> c) {
+//        c.reset();
+//        while (c.next()) {
+//            // looking at the first change
+//            int from = c.getFrom();
+//            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
+//                return;
+//            }
+//        }
+//            c.reset();
+//            boolean added = false;
+//            boolean removed = false;
+//            int addedSize = 0;
+//            int removedSize = 0;
+//            while (c.next()) {
+//                added |= c.wasAdded();
+//                removed |= c.wasRemoved();
+//                addedSize += c.getAddedSize();
+//                removedSize += c.getRemovedSize();
+//            }
+//
+//            if (added && !removed) {
+//                focus(getFocusedIndex() + addedSize);
+//            } else if (!added && removed) {
+//                // fix of navigation issue on remove focus at 0
+//                focus(Math.max(0, getFocusedIndex() - removedSize));
+//            }
+//    }
     
 //    private WeakListChangeListener<T> weakItemsContentListener 
 //            = new WeakListChangeListener<T>(itemsContentListener);

@@ -742,6 +742,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      */
     @Test
     public void testIndicesSelectedIndexIsUpdatedAfterUnselect() {
+        if (!multipleMode) return;
         int[] indices = new int[] {2,3};
         int lastSelected = indices[indices.length - 1];
         for (int i : indices) {
@@ -767,6 +768,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      */
     @Test
     public void testIndicesUnselectAll() {
+        if (!multipleMode) return;
         int[] indices = new int[] {2,3};
         int size = indices.length;
         for (int index : indices) {
@@ -786,6 +788,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     
     @Test
     public void testSelectedIndices() {
+        if (!multipleMode) return;
         int[] indices = new int[] {2,3};
         for (int i : indices) {
             getSelectionModel().select(i);

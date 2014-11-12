@@ -273,10 +273,38 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
         
         previousModelSize = getItemCount();
         if (!focusHandled && listView.getFocusModel() instanceof FocusModelSlave) {
-            ((FocusModelSlave) listView.getFocusModel()).listChanged(c);
+            updateFocus(c);
         }
     }
 
+    protected void updateFocus(Change<? extends T> c) {
+        c.reset();
+        while (c.next()) {
+            // looking at the first change
+            int from = c.getFrom();
+            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
+                return;
+            }
+        }
+            c.reset();
+            boolean added = false;
+            boolean removed = false;
+            int addedSize = 0;
+            int removedSize = 0;
+            while (c.next()) {
+                added |= c.wasAdded();
+                removed |= c.wasRemoved();
+                addedSize += c.getAddedSize();
+                removedSize += c.getRemovedSize();
+            }
+
+            if (added && !removed) {
+                focus(getFocusedIndex() + addedSize);
+            } else if (!added && removed) {
+                // fix of navigation issue on remove focus at 0
+                focus(Math.max(0, getFocusedIndex() - removedSize));
+            }
+    }
 
 
     /***********************************************************************
