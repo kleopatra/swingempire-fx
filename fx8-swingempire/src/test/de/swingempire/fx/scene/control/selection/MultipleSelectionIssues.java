@@ -116,6 +116,19 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals("focus must be cleared on setting -1", -1, getFocusModel().getFocusedIndex());
     }
     
+    
+    /**
+     * Regression testing: removing first selected item doesn't update the item.
+     * https://javafx-jira.kenai.com/browse/RT-28637
+     */
+    @Test
+    public void testRemoveSelectedItem_28637() {
+        getSelectionModel().select(0);
+        Object selectedItem = getSelectionModel().getSelectedItem();
+        items.remove(selectedItem);
+        assertEquals(getSelectionModel().getSelectedItems().get(0), getSelectionModel().getSelectedItem());
+    }
+    
     /**
      * Regression testing 
      * https://javafx-jira.kenai.com/browse/RT-38884
@@ -127,7 +140,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * - tableView throws NoSuchElement
      */
     @Test
-    public void testNoSuchElementOnClear() {
+    public void testNoSuchElementOnClear_38884() {
         getSelectionModel().select(0);
         Object item = getSelectionModel().getSelectedItem();
         ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
