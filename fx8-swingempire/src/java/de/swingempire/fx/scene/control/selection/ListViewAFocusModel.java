@@ -13,9 +13,7 @@ import javafx.scene.control.ListView;
  * (RT-39042) plus some changes
  * 
  * Changes:
- * - adapted ListView's itemProperty to listProperty (with additional invalidationListener)
- * - registered contentListener with itemsProperty
- * - removed itemsObserver (handled by listProperty)
+ * - removed itemsObserver (handled by controller, we are slave)
  * - removed listening to itemsContent (for now, regarding this as slave of SelectionModel)
  *   without doing so, we get problems with competing self-updates on changes to the items
  *   (see https://javafx-jira.kenai.com/browse/RT-38785)

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
@@ -21,12 +22,11 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.junit.Assert.*;
-
-import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import static de.swingempire.fx.util.FXUtils.*;
+import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
+import static org.junit.Assert.*;
 /**
  * Tests behaviour of MultipleSelection api.
  * 
@@ -114,6 +114,42 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals("sanity", 0, getFocusModel().getFocusedIndex());
         getFocusModel().focus(-1);
         assertEquals("focus must be cleared on setting -1", -1, getFocusModel().getFocusedIndex());
+    }
+    
+    /**
+     * Regression testing 
+     * https://javafx-jira.kenai.com/browse/RT-38884
+     * 
+     * One-off error in boundary condition
+     * 
+     * Error slightly different for TableView/ListView:
+     * - listView simply doesn't fire the correct event (removed item is null)
+     * - tableView throws NoSuchElement
+     */
+    @Test
+    public void testNoSuchElementOnClear() {
+        getSelectionModel().select(0);
+        Object item = getSelectionModel().getSelectedItem();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        int size = items.size();
+        items.clear();
+        assertEquals("sanity: single event", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        assertNotNull("sanity: the change is not null", c);
+        // here we get a NSEE in tableView- wondering where exactly?
+        // commenting leads to IndexOutOfbounds below
+        // note: if we add the c for printing here, we get an NSEE here
+//        assertTrue("last must be single removed but was " + c, FXUtils.wasSingleRemoved(c));
+        // without printing we get an IndexOutofBounds when accessing the removed list below
+        assertTrue("last must be single removed", wasSingleRemoved(c));
+        c.reset();
+        c.next();
+        assertEquals("removed size", size, c.getRemovedSize());
+        // this is throwing before fix of 38884 with an NoSuchElementException 
+        // actually, it's not throwing an NSEE, but an IOOBE
+        // NSEE only if iterating over the list as done f.i. when printing
+        // isn't here, get simple assertionError
+        assertEquals("must be removed item without NSEE", item, c.getRemoved().get(0));
     }
     /**
      * Trying to dig into unexpected failure of alsoSelect.

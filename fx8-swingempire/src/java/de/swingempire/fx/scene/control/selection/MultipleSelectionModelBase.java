@@ -41,6 +41,12 @@ import static javafx.scene.control.SelectionMode.*;
  * subclasses (like List/TableXXSelection). Can't due in prototype because
  * of fixed class hierarchy.
  * 
+ * Changes:
+ * - widened scope of shift to protected (need in subclasses)
+ * - applied patch for RT-3884 (incorrect removed notification) - note that
+ *   we are listening to internal selectedIndicesSeq to fire changes on
+ *   behalf of selectedItemsSeq!
+ * 
  * @param <T> The type of the underlying data model for the UI control.
  */
 public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionModel<T> 
@@ -83,9 +89,14 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
                     hasRealChangeOccurred = c.wasAdded() || c.wasRemoved();
                 }
 
+                // CHANGED JW: patch for RT-38884 copied
                 if (hasRealChangeOccurred) {
-                    c.reset();
-                    selectedItemsSeq.callObservers(new MappingChange<Integer, T>(c, map, selectedItemsSeq));
+                    if (selectedItemChange != null) {
+                        selectedItemsSeq.callObservers(selectedItemChange);
+                    } else {
+                        c.reset();
+                        selectedItemsSeq.callObservers(new MappingChange<Integer, T>(c, map, selectedItemsSeq));
+                    }
                 }
                 c.reset();
             }
@@ -154,6 +165,10 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
      *                                                                     *
      **********************************************************************/
 
+    // CHANGED JW: copied patch for RT-38884
+    // implementing classes must set this when 
+    ListChangeListener.Change selectedItemChange;
+    
     // Fix for RT-20945 (and numerous other issues!)
     private int atomicityCount = 0;
     boolean isAtomic() {

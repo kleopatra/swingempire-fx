@@ -36,6 +36,7 @@ import javafx.util.Callback;
  * - widened scope of updateSelection (unused, can't decide where to locate the hack ;)
  * - changed updateSelection to message the focusModel if we didn't handle the focus
  *   update here  
+ * - copied patch for RT-38884   
  * 
  */ 
 public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<T> {
@@ -86,7 +87,10 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
                 final int selectedIndex = getSelectedIndex();
                 
                 if (listView.getItems() == null || listView.getItems().isEmpty()) {
+                    // CHANGED JW: copied patch for RT-38884
+                    selectedItemChange = c;
                     clearSelection();
+                    selectedItemChange = null;
                 } else if (selectedIndex == -1 && selectedItem != null) {
                     int newIndex = listView.getItems().indexOf(selectedItem);
                     if (newIndex != -1) {
