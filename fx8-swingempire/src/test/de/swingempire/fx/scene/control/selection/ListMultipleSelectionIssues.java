@@ -29,6 +29,19 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
+    @Test
+    public void testSelectedIndicesFireOnAddItem() {
+        if (!multipleMode) return;
+        ListView<String> stringListView = new ListView<>();
+        stringListView.getItems().addAll("a", "b");
+        
+        MultipleSelectionModel<String> sm = stringListView.getSelectionModel();
+        sm.setSelectionMode(SelectionMode.MULTIPLE);
+        IntegerProperty counter = new SimpleIntegerProperty();
+        sm.selectAll();
+        
+    }
+    
     /**
      * Issue: ListView must not fire on re-select already selected.
      */

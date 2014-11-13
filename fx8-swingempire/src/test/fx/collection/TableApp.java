@@ -99,7 +99,7 @@ public class TableApp extends Application {
             installed.selectedIndexProperty().addListener(invalidationListener);
             // setting new items doesn't help
 //            table.setItems(getTeamMembers());
-            table.getItems().addListener(new FXUtils.MyListener());
+            table.getItems().addListener(new FXUtils.PrintingListChangeListener());
             ListChangeListener.Change change = null;
             return table;
         }

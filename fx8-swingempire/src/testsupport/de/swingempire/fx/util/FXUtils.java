@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.control.ListView;
 
@@ -219,7 +220,7 @@ public class FXUtils {
                         .append("\n");
             }
 
-            if (kind.equals("permutted")) {
+            if (kind.equals("permutated")) {
                 StringBuilder permutationStringBuilder = new StringBuilder("[");
                 for (int k = change.getFrom(); k < change.getTo(); k++) {
                     permutationStringBuilder.append(k).append("->")
@@ -233,13 +234,22 @@ public class FXUtils {
                 sb.append("\t\tPermutation: ").append(permutation).append("\n");
             }
         }
-        LOG.info(sb.toString());
+        System.out.println(sb.toString());
     };
 
-    public static class MyListener implements ListChangeListener<String> {
+    public static class PrintingListChangeListener implements ListChangeListener {
+        String source;
+        int counter;
+        public PrintingListChangeListener() {
+        }
+        
+        public PrintingListChangeListener(String message, ObservableList<?> list) {
+            list.addListener(this);
+            source = message;
+        }
         @Override
-        public void onChanged(Change<? extends String> change) {
-            System.out.println("\tlist = " + change.getList());
+        public void onChanged(Change change) {
+            System.out.println("Change #" + counter++ + " on " +source + "\nlist = " + change.getList());
             prettyPrint(change);
         }
     }

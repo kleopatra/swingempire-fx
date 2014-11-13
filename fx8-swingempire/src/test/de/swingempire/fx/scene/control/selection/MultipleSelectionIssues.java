@@ -26,12 +26,13 @@ import org.junit.runners.Parameterized;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -66,6 +67,42 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     protected StageLoader loader;
 
 //---------- notification from selectedItems/Indices
+    
+    /**
+     * Why do we get a permutated? How are we supposed to use it?
+     */
+    @Test
+    public void testSelectedIndicesEventsOnAddedItem() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        ObservableList<Integer> indices = getSelectionModel().getSelectedIndices();
+        ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
+        LOG.info("before add: " + copy);
+        ListChangeReport report = new ListChangeReport(indices);
+        items.add(0, "newItem");
+        LOG.info("after add: " + indices);
+        Change c = report.getLastChange();
+        prettyPrint(c);
+        c.reset();
+        c.next();
+        for (int i = c.getFrom(); i < c.getTo(); i++) {
+            int newIndex = c.getPermutation(i);
+            assertEquals("item at oldIndex " + i, copy.get(i), indices.get(newIndex));
+        }
+    }
+    
+    @Test
+    public void testSelectedItemsEventsOnAddedItem() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        items.add(0, "newItem");
+        assertEquals("selected items unchanged on adding above", 0, report.getEventCount());
+    }
     
     /**
      * Issue: selectionModel must not fire on reselect selected index

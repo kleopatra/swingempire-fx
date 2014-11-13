@@ -37,6 +37,9 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.collection.FilteredListX;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
@@ -57,7 +60,25 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
 
+ 
+    @Test
+    public void testSanityPermutation() {
+        ObservableList<Integer> list = FXCollections.observableArrayList(1, 2, 3, 4);
+        ObservableList<Integer> copy = FXCollections.observableArrayList(list);
+        ListChangeReport report = new ListChangeReport(list);
+        FXCollections.sort(list);
+        Change c = report.getLastChange();
+        assertTrue(wasSinglePermutated(c));
+        c.reset();
+        c.next();
+        for (int i = c.getFrom(); i < c.getTo(); i++) {
+            int newIndex = c.getPermutation(i);
+            assertEquals(copy.get(i), list.get(newIndex));
+        }
+        
+    }
     
+
     @Test
     public void testSubListClear() {
         ObservableList list = createObservableList(true);
