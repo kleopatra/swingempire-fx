@@ -17,15 +17,22 @@ import javafx.scene.control.SelectionMode;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import static de.swingempire.fx.util.FXUtils.*;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
  * Tests behaviour of MultipleSelection api.
@@ -37,6 +44,9 @@ import static org.junit.Assert.*;
 public abstract class MultipleSelectionIssues<V extends Control, T extends MultipleSelectionModel> {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
+
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
 
     /**
@@ -55,6 +65,269 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      */
     protected StageLoader loader;
 
+//---------- notification from selectedItems/Indices
+    
+    /**
+     * Issue: selectionModel must not fire on reselect selected index
+     * 
+     * Here: test selectedIndex.
+     * 
+     * spurned by:
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     */
+    @Test
+    public void testSelectedItemEventsMultipleReselectSingle() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("received single event", 1, report.getEventCount());
+        report.clear();
+        getSelectionModel().select(selected);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    /**
+     * Issue: selectionModel must not fire on reselect selected index
+     * 
+     * Here: test selectedIndex.
+     * 
+     * spurned by:
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     */
+    @Test
+    public void testSelectedIndexEventsMultipleReselectSingle() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("received single event", 1, report.getEventCount());
+        report.clear();
+        getSelectionModel().select(selected);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    /**
+     * Issue: selectionModel must not fire on reselect selected index
+     * 
+     * Here: test selectedIndices.
+     * 
+     * spurned by:
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     */
+    @Test
+    public void testSelectedIndicesEventsMultipleReselectSingle() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectRange(start, end);
+        assertEquals("received single event", 1, report.getEventCount());
+        assertTrue(wasSingleAdded(report.getLastChange()));
+        report.clear();
+        getSelectionModel().select(end - 1);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    /**
+     * Issue: selectionModel must not fire on reselect selected index
+     * 
+     * Here: test selectedItems.
+     * 
+     * spurned by:
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     */
+    @Test
+    public void testSelectedItemsEventsMultipleReselectSingle() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().selectRange(start, end);
+        assertEquals("received single event", 1, report.getEventCount());
+        assertTrue(wasSingleAdded(report.getLastChange()));
+        report.clear();
+        getSelectionModel().select(end - 1);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    /**
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     * 
+     * This is the test for 37360: clearAndSelect an already selected
+     */
+    @Test
+    public void testSelectedItemsEventsMultipleToSingle() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().selectRange(start, end);
+        assertEquals("received single event", 1, report.getEventCount());
+        assertTrue(wasSingleAdded(report.getLastChange()));
+        report.clear();
+        getSelectionModel().clearAndSelect(end - 1);
+        assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        assertTrue("must be single remove but was " + c, wasSingleRemoved(c));
+    }
+    
+//-------------------- items modification    
+    
+    /**
+     * Here's one branch of listening to items' change:
+     * 
+     * <code><pre>
+     * if selectedIndex == -1 and selectedItem != null 
+     *    updateIndex if selectedItem is contained
+     * </pre></code>
+     * 
+     * missing spec, though   
+     */
+    @Test
+    public void testSelectedOnInsertUncontainedSingle() {
+        Object uncontained = "uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        // make uncontained part of the items
+        int insertIndex = 3;
+        items.add(insertIndex, uncontained);
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Reported: 
+     * <p>
+     * Rinse with multiple indices selected.<p>
+     * 
+     * Nevertheless, fails due to competing handling of Change: 
+     * <li> in itemsContentListener falls into block where the index is updated
+     *   to the index position of the item
+     * <li> in selectionChanged the wasAdded-block shifts the selectedIndex, thus
+     *   shifting away from the already correct index
+     * <p>
+     * best would be to not separate out both - just let selectionChanged handle all
+     * then analyse each block whether or not it requires further action
+     * 
+     * <hr> ----------- older isssue, fixed as of 8u40b12
+     * multiple selection might break super's (tentative) invariant:
+     * 
+     * <pre><code>
+     * if (selectedIndex > -1)
+     *   selectedItem == getItems().get(selectedIndex);
+     *   </code></pre>
+     * 
+     * Some time between 8u20 and 8u40b12, MultipleSelectionModelBase was
+     * changed to enforce class invariant above. Added setSelectedIndex(-1)
+     * if item uncontained.<p>
+     * 
+     * @see #testSelectedOnInsertUncontainedSingle()
+     */
+    @Test
+    public void testSelectedOnInsertUncontainedMultiple() {
+        if (!multipleMode)
+            return;
+        Object uncontained = "uncontained";
+        // prepare state, select a range
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        assertEquals("sanity: selectedItem on last of range",
+                items.get(end - 1), getSelectionModel().getSelectedItem());
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: having uncontained selectedItem", uncontained,
+                getSelectionModel().getSelectedItem());
+        assertEquals("sanity: selected index removed ", -1, getSelectionModel()
+                .getSelectedIndex());
+        // make uncontained part of the items
+        int insertIndex = 3;
+        items.add(insertIndex, uncontained);
+        assertEquals("selectedItem unchanged", uncontained,
+                getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectionModel()
+                .getSelectedIndex());
+    }
+
+    /**
+     * Is an uncontained selectedItem in selectedItems? 
+     * Looks like no: should update doc to clarify that selectedItems are those that are
+     * backed by the model.
+     */
+    @Test
+    public void testSelectedItemUncontainedInSelectedItemsSingle() {
+        Object uncontained = "uncontained";
+        getSelectionModel().select(uncontained);
+        assertFalse("uncontained selectedItem part of selectedItems?", getSelectionModel().getSelectedItems().contains(uncontained));
+    }
+    
+    /**
+     * Rinse for multiple selections.
+     * @see #testSelectedItemUncontainedInSelectedItemsSingle()
+     */
+    @Test
+    public void testSelectedItemUncontainedInSelectedItemsMultiple() {
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        Object uncontained = "uncontained";
+        getSelectionModel().select(uncontained);
+        assertFalse("uncontained selectedItem part of selectedItems?", getSelectionModel().getSelectedItems().contains(uncontained));
+    }
+    /**
+     * What happens with uncontained when replacing items with list that contains it? 
+     * selectedIndex is updated: is consistent with typical handling - a selectedItem
+     * that had not been in the list is treated like being independent and left alone.
+     */
+    @Test
+    public void testSelectedOnSetItemsWithUncontained() {
+        Object uncontained = "uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        // make uncontained part of the items by replacing old items
+        ObservableList copy = FXCollections.observableArrayList(items);
+        int insertIndex = 3;
+        copy.add(insertIndex, uncontained);
+        items.setAll(copy);
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * What happens if uncontained not in new list? 
+     * selectedIndex -1, uncontained still selectedItem
+     */
+    @Test
+    public void testSelectedOnSetItemsWithoutUncontained() {
+        Object uncontained = "uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        // make uncontained part of the items by replacing old items
+        ObservableList copy = FXCollections.observableArrayList(items);
+        int insertIndex = 3;
+        copy.add(insertIndex, "anything");
+        items.setAll(copy);
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex unchanged", -1, getSelectionModel().getSelectedIndex());
+    }
+    
+    
+//------------ focus on modifying list    
     @Test
     public void testFocusUnselectedUpdateOnInsertAbove() {
         int index = 2;
@@ -810,6 +1083,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * case in that we start of with multiple selected indices
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectMinusOneIndex() {
         if (!multipleMode) return;
         int[] indices = new int[] {2,3};
@@ -824,7 +1098,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Test select(-1) must do nothing - this differs from the single selection
      * case in that we start of with multiple selected indices
      */
-    @Test
+    @Test 
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectMinusOneItem() {
         if (!multipleMode) return;
         int[] indices = new int[] {2,3};
@@ -841,6 +1116,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * case in that we start of with multiple selected indices
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectNullIndex() {
         if (!multipleMode) return;
         int[] indices = new int[] {2,3};
@@ -856,13 +1132,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * case in that we start of with multiple selected indices
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectNullItem() {
         if (!multipleMode) return;
         int[] indices = new int[] {2,3};
         for (int i : indices) {
             getSelectionModel().select(i);
         }
-        getSelectionModel().select(null);
         Object item = getSelectionModel().getSelectedItem();
         getSelectionModel().select(null);
         assertEquals(item, getSelectionModel().getSelectedItem());

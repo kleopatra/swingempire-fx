@@ -24,6 +24,8 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
+    
+    
 //---------- direct tests of action methods in behaviour: access reflectively  
 
     /**

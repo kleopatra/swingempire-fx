@@ -43,9 +43,11 @@ import static javafx.scene.control.SelectionMode.*;
  * 
  * Changes:
  * - widened scope of shift to protected (need in subclasses)
- * - applied patch for RT-3884 (incorrect removed notification) - note that
+ * - applied patch for RT-38884 (incorrect removed notification) - note that
  *   we are listening to internal selectedIndicesSeq to fire changes on
  *   behalf of selectedItemsSeq!
+ * - applied patch for RT-37360: incorrect number/type of events when
+ *   singleSelect item after it had been part of a multiple selection
  * 
  * @param <T> The type of the underlying data model for the UI control.
  */
@@ -288,8 +290,12 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
         
         // This ensure that the selection remains accurate when a shift occurs.
         final int selectedIndex = getSelectedIndex();
-        if (selectedIndex >= position && selectedIndex > -1 && selectedIndex + shift > -1) {
-            final int newSelectionLead = selectedIndex + shift;
+        if (selectedIndex >= position && selectedIndex > -1) {
+            // Fix for RT-38787: we used to not enter this block if
+            // selectedIndex + shift resulted in a value less than zero, whereas
+            // now we just set the newSelectionLead to zero in that instance.
+            // There exists unit tests that cover this.
+            final int newSelectionLead = Math.max(0, selectedIndex + shift);
             setSelectedIndex(newSelectionLead);
 
             // added for RT-30356
@@ -310,23 +316,31 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     @Override public void clearAndSelect(int row) {
+        final boolean wasSelected = isSelected(row);
+
         // RT-33558 if this method has been called with a given row, and that
         // row is the only selected row currently, then this method becomes a no-op.
-        if (getSelectedIndices().size() == 1 && isSelected(row)) {
-            return;
+        if (wasSelected && getSelectedIndices().size() == 1) {
+            // before we return, we double-check that the selected item
+            // is equal to the item in the given index
+            if (getSelectedItem() == getModelItem(row)) {
+                return;
+            }
         }
+
+        // firstly we make a copy of the selection, so that we can send out
+        // the correct details in the selection change event.
+        // We remove the new selection from the list seeing as it is not removed.
+        BitSet selectedIndicesCopy = new BitSet();
+        selectedIndicesCopy.or(selectedIndices);
+        selectedIndicesCopy.clear(row);
+        List<Integer> previousSelectedIndices = createListFromBitSet(selectedIndicesCopy);
 
         // RT-32411 We used to call quietClearSelection() here, but this
         // resulted in the selectedItems and selectedIndices lists never
         // reporting that they were empty.
         // makeAtomic toggle added to resolve RT-32618
         startAtomic();
-
-        // firstly we make a copy of the selection, so that we can send out
-        // the correct details in the selection change event
-        BitSet selectedIndicesCopy = new BitSet();
-        selectedIndicesCopy.or(selectedIndices);
-        List<Integer> previousSelectedIndices = createListFromBitSet(selectedIndicesCopy);
 
         // then clear the current selection
         clearSelection();
@@ -337,9 +351,33 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
 
         // fire off a single add/remove/replace notification (rather than
         // individual remove and add notifications) - see RT-33324
-        int changeIndex = selectedIndicesSeq.indexOf(row);
-        selectedIndicesSeq.callObservers(new NonIterableChange.GenericAddRemoveChange<>(
-                changeIndex, changeIndex+1, previousSelectedIndices, selectedIndicesSeq));
+        ListChangeListener.Change change;
+
+        /*
+         * getFrom() documentation:
+         *   If wasAdded is true, the interval contains all the values that were added.
+         *   If wasPermutated is true, the interval marks the values that were permutated.
+         *   If wasRemoved is true and wasAdded is false, getFrom() and getTo() should
+         *   return the same number - the place where the removed elements were positioned in the list.
+         */
+        if (wasSelected) {
+            change = new NonIterableChange.GenericAddRemoveChange<Integer>(
+                    0, 0, previousSelectedIndices, selectedIndicesSeq) {
+                @Override public boolean wasAdded() {
+                    return false;
+                }
+
+                @Override public boolean wasRemoved() {
+                    return true;
+                }
+            };
+        } else {
+            int changeIndex = selectedIndicesSeq.indexOf(row);
+            change = new NonIterableChange.GenericAddRemoveChange<>(
+                    changeIndex, changeIndex+1, previousSelectedIndices, selectedIndicesSeq);
+        }
+
+        selectedIndicesSeq.callObservers(change);
     }
 
     @Override public void select(int row) {
@@ -412,6 +450,9 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
         // We expect that in concrete subclasses of this class we observe the
         // data model such that we check to see if the given item exists in it,
         // whilst SelectedIndex == -1 && SelectedItem != null.
+        // PENDING JW: next line was added some time between 8u20 and 8u40b12
+        // thus enforcing class invariant for uncontained selected item
+        setSelectedIndex(-1);
         setSelectedItem(obj);
     }
 

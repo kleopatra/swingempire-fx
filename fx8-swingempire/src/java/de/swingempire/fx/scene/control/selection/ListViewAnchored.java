@@ -76,6 +76,4 @@ public class ListViewAnchored<T> extends ListView<T> {
         return new ListViewASkin<>(this);
     }
     
-    
-
 }

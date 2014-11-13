@@ -72,4 +72,14 @@ public class TableMultipleSelectionIssues extends MultipleSelectionIssues<TableV
         return getView().getFocusModel();
     }
 
+    @Override
+    protected int getAnchorIndex() {
+        Object anchor = getView().getProperties().get(SelectionIssues.ANCHOR_KEY);
+        if (anchor instanceof TablePosition) {
+            return ((TablePosition) anchor).getRow();
+        }
+        return -1;
+    }
+
+    
 }

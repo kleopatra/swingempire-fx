@@ -8,17 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.swingempire.fx.property.BugPropertyAdapters;
-import de.swingempire.fx.scene.control.selection.MultipleSelectionModelBase.ShiftParams;
 import javafx.beans.property.ListProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.WeakChangeListener;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.ListView;
-import javafx.util.Callback;
+import de.swingempire.fx.property.BugPropertyAdapters;
 
 /**
  * 
@@ -57,7 +53,9 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
 
         this.listView = listView;
 
-        listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
+//        listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
+        listProperty = new SimpleListProperty<>(this, "itemsList");
+        listProperty.bind(listView.itemsProperty());
         listProperty.addListener(weakItemsContentObserver);
         /*
          * The following two listeners are used in conjunction with
@@ -172,22 +170,9 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
     // At present this is basically a left/right shift operation, which
     // seems to work ok.
     protected void updateSelection(Change<? extends T> c) {
-//        // debugging output
-//        System.out.println(listView.getId());
-//        if (c.wasAdded()) {
-//            System.out.println("\tAdded size: " + c.getAddedSize() + ", Added sublist: " + c.getAddedSubList());
-//        }
-//        if (c.wasRemoved()) {
-//            System.out.println("\tRemoved size: " + c.getRemovedSize() + ", Removed sublist: " + c.getRemoved());
-//        }
-//        if (c.wasReplaced()) {
-//            System.out.println("\tWas replaced");
-//        }
-//        if (c.wasPermutated()) {
-//            System.out.println("\tWas permutated");
-//        }
         c.reset();
-        // this is not safe! can't really handle multiple changes ...
+        // PENDING JW: this is not safe! can't really handle multiple changes ...
+        // but at the same error level as all mis-handling of multiple changes 
         boolean focusHandled = true;
         while (c.next()) {
             if (c.wasReplaced()) {
@@ -271,10 +256,10 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
             }
         }
         
-        previousModelSize = getItemCount();
         if (!focusHandled && listView.getFocusModel() instanceof FocusModelSlave) {
             updateFocus(c);
         }
+        previousModelSize = getItemCount();
     }
 
     protected void updateFocus(Change<? extends T> c) {
