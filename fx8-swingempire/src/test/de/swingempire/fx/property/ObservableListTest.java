@@ -4,15 +4,11 @@
  */
 package de.swingempire.fx.property;
 
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
-import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -25,23 +21,14 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
-import javafx.util.Callback;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-
-import de.swingempire.fx.collection.FilteredListX;
-import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;
@@ -49,6 +36,7 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -60,7 +48,82 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
 
- 
+    
+    /**
+     * Simulate indirect modifications:
+     * 
+     * - selectedIndices keeps indices into the base list
+     * - needs to keep the indices up-to-date when the base list is modified
+     * - is observable and fires notifications as expected
+     * - listeners to selectedIndices _must not_ change the base list during
+     *   processing the change on indices! 
+     *  
+     */
+    @Test
+    public void testCoupledLists() {
+        ObservableList<String> list = createObservableList(true);
+        // simulate selection into list above
+        ObservableList<Integer> selectedIndices = FXCollections.observableArrayList(2, 3);
+        // simulate selectedItems
+        ObservableList<String> selectedItems = FXCollections.observableArrayList();
+        for (Integer index : selectedIndices) {
+            selectedItems.add(list.get(index));
+        }
+        FilteredList t;
+        // this listener is responsible for updating the indices on modifications
+        // of the base llist
+        ListChangeListener selectedIndexUpdater = c -> {
+            // PENDING JW: this is _not_ the pattern used in FilteredList, 
+            // think again!
+            while (c.next()) {
+                if (c.wasReplaced()) {
+                    // weed out synthetic adds/removes
+                    // ignore for now 
+                } else if (c.wasAdded()) {
+                    // real adds
+                    // position where this change starts
+                    int pos = c.getFrom();
+                    int firstAffected = -1;
+                    for (int i = 0; i < selectedIndices.size(); i++) {
+                        if (selectedIndices.get(i) >= pos) {
+                            firstAffected = i;
+                            break;
+                        }
+                    }
+                    if (firstAffected >= 0) {
+                        int addedSize = c.getAddedSize();
+                        for (int i = firstAffected; i < selectedIndices.size(); i++) {
+                            selectedIndices.set(i, selectedIndices.get(i) + addedSize);
+                        }
+                    }
+                } else if (c.wasRemoved()) {
+                    // real removes
+                }
+            }
+        };
+        
+        list.addListener(selectedIndexUpdater);
+        // this is the listener that updates the backing list while
+        // receiving notifications from the updater
+        // this is _wrong_ if the notifications from the selected
+        // where fired during processing of the change
+        // and blows somewhere alöng thelines
+        ListChangeListener back = c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    List<Integer> added = c.getAddedSubList();
+                    for (int i = added.size() - 1; i >= 0; i--) {
+                        int index = added.get(i);
+                        list.remove(index);
+                    }
+                }
+            }
+        };
+//        selectedIndices.addListener(back);
+        list.add(3, "item-added");
+        LOG.info(selectedIndices + "");
+    }
+    
     @Test
     public void testSanityPermutation() {
         ObservableList<Integer> list = FXCollections.observableArrayList(1, 2, 3, 4);

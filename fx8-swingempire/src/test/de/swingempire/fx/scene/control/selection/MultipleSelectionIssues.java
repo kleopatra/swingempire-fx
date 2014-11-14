@@ -69,6 +69,45 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 //---------- notification from selectedItems/Indices
     
     /**
+     * Any sort on selectedIndices? Or correlation of position of
+     * selectedIndices/items?
+     * 
+     * Undocumented, but seems to be
+     */
+    @Test
+    public void testSelectedIndicesItemsSynced() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {1, 8, 3};
+        getSelectionModel().selectIndices(first, indices);
+        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
+        ObservableList selectedItems = getSelectionModel().getSelectedItems();
+        for (int i = 0; i < selectedIndices.size(); i++) {
+            int index = selectedIndices.get(i);
+            assertEquals(items.get(index), selectedItems.get(i));
+        }
+    }
+    /**
+     * Any sort on selectedIndices? Or correlation of position of
+     * selectedIndices/items?
+     * 
+     * Undocumented, but seems to be
+     */
+    @Test
+    public void testSelectedIndicesSorted() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {1, 8, 3};
+        getSelectionModel().selectIndices(first, indices);
+        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
+        int previous = selectedIndices.get(0);
+        for (int i = 1; i < selectedIndices.size(); i++) {
+            int current = selectedIndices.get(i);
+            assertTrue("sorted but was (prev/ current) " + previous + " / " + current, current > previous);
+            previous = current;
+        }
+    }
+    /**
      * Why do we get a permutated? How are we supposed to use it?
      */
     @Test
