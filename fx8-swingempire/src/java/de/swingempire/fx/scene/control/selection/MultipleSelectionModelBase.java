@@ -762,8 +762,12 @@ public abstract class MultipleSelectionModelBase<T> extends MultipleSelectionMod
     private ReadOnlyUnbackedObservableList<Integer> createListFromBitSet(final BitSet bitset) {
         return new ReadOnlyUnbackedObservableList<Integer>() {
             @Override public Integer get(int index) {
+                // PENDING JW: wrong! this list is defined for our own list only
+                // not the backing list!
                 if (index < 0 || index >= getItemCount()) return -1;
 
+                // PENDING JW: the incorrect guard above requires this
+                // double check
                 for (int pos = 0, val = bitset.nextSetBit(0);
                      val >= 0 || pos == index;
                      pos++, val = bitset.nextSetBit(val+1)) {
