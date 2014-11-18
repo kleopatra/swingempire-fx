@@ -12,6 +12,17 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
  */
 public class PropertyIgnores {
 
+    /**
+     * Administrative: ignore not yet implemented.
+     */
+    public static class IgnoreNotYetImplemented implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
     
     /**
      * Object property doesn't fire change if newVale.equals(oldValue), 

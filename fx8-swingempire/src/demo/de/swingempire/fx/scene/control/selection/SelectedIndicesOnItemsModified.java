@@ -25,18 +25,21 @@ public class SelectedIndicesOnItemsModified extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        ObservableList<Integer> items = FXCollections.observableArrayList(1, 2, 3, 4);
+        ObservableList<Integer> items = FXCollections.observableArrayList(1, 2, 3, 4, 5, 6);
         TableView<Integer> table = new TableView<>(items);
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        table.getSelectionModel().selectRange(2, 4);
+//        table.getSelectionModel().selectRange(2, 4);
+        table.getSelectionModel().selectIndices(2, 4, 5);
         System.out.println("indices before modification: " + table.getSelectionModel().getSelectedIndices());
         ListView<Integer> list = new ListView<>(items);
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        list.getSelectionModel().selectRange(2, 4);
+//        list.getSelectionModel().selectRange(2, 4);
+        list.getSelectionModel().selectIndices(2, 4, 5);
         
         new PrintingListChangeListener("TableView indices ", table.getSelectionModel().getSelectedIndices());        
         new PrintingListChangeListener("ListView indices ", list.getSelectionModel().getSelectedIndices());  
-        items.add(0, 111);
+//        items.add(0, 111);
+        items.removeAll(2, 4);
     }
 
     public static void main(String[] args) {

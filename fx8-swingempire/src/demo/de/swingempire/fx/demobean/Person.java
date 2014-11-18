@@ -6,6 +6,8 @@ package de.swingempire.fx.demobean;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  * Example fx bean. Copied from tutorial with added
@@ -49,5 +51,19 @@ public class Person {
     
     public StringProperty emailProperty() {
         return email;
+    }
+    
+    public static ObservableList<Person> persons() {
+        return FXCollections.observableArrayList(
+                new Person("Jacob", "Smith", "jacob.smith@example.com"),
+                new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
+                new Person("Ethan", "Williams", "ethan.williams@example.com"),
+                new Person("Emma", "Jones", "emma.jones@example.com"),
+                new Person("Lucinda", "Micheals", "lucinda.micheals@example.com"),
+                new Person("Michael", "Brown", "michael.brown@example.com"),
+                new Person("Barbara", "Pope", "barbara.pope@example.com"),
+                new Person("Penelope", "Rooster", "penelope.rooster@example.com"),
+                new Person("Raphael", "Adamson", "raphael.adamson@example.com"));
+        
     }
 }

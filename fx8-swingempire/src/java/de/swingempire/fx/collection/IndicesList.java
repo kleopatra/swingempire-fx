@@ -5,6 +5,7 @@
 package de.swingempire.fx.collection;
 
 import java.util.BitSet;
+import java.util.logging.Logger;
 
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -16,7 +17,20 @@ import javafx.collections.transformation.TransformationList;
  * tricky change notifications.<p>
  * 
  * Note that TransformList might not be the correct starter, it's just
- * convenient for now.
+ * convenient for now.<p>
+ * 
+ * Tentative Rules:
+ * 
+ * <li> sourceList.eventCount == this.eventCount
+ * <li> added: values > getFrom increased by addedSize - updated or replaced?
+ * <li> removed: indices in removedSize cleared, values > getFrom + removedSize 
+ *      decreased by removedSize
+ * <li> updated: pass-through (listeners might be interested in underlying items)     
+ * <li> permutated: replaced on range (?)
+ * <li> replaced: technically a mix of added/removed but THINK - 1:1 might be "set"
+ *      in underlying model, the net effect on value here would be unchanged, 
+ *      actual removal of value unwanted     
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -112,18 +126,36 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     /**
-     * PENDING JW: need to handle range replace with addedSize != removedSize
+     * 
+     * Replaced are fired on
+     * - single set(n, element) in the underlying list
+     * - setAll/setItems when swapping out its contents
+     * - technical result of multiple add/remove (f.i. when filtering or other transformations)  
+     * 
+     * PENDING JW: Need to think about specification - a replace of a single element
+     * might be the result of a simple set(..), which may or may not require to
+     * remove a the index at the set position. Any way to differentiate?
+     * 
      * @param c
      */
     private void replace(Change<? extends T> c) {
         // need to replace even if unchanged, listeners to selectedItems
         // depend on it
         // handle special case of "real" replaced, often size == 1
-        if (c.getAddedSize() == c.getRemovedSize()) {
+        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
             for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
                 int pos = indexOf(i);
                 nextSet(pos, i);
             }
+            return;
+        }
+
+        doRemoveIndices(c.getFrom(), c.getRemovedSize());
+        int diff = c.getAddedSize() - c.getRemovedSize();
+        if (diff < 0) {
+            doShiftLeft(c.getFrom(), diff);
+        } else {
+            doShiftRight(c.getFrom(), diff);
         }
     }
 
@@ -139,46 +171,114 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
 
         if (c.wasAdded() && c.wasRemoved()) 
             throw new IllegalStateException("expected real add/remove but was: " + c);
-        // added
-        for (int i = bitSet.length(); (i = bitSet.previousSetBit(i-1)) >= c.getFrom(); ) {
+        if (c.wasAdded()) {
+            add(c);
+        } else if (c.wasRemoved()) {
+            remove(c);
+        } else {
+            throw new IllegalStateException("what have we got here? " + c);
+        }
+    }
+
+    private void remove(Change<? extends T> c) {
+        // removed is two-step:
+        // if any of the values that are mapped to indices, is removed remove the index
+        // for all left over indices after the remove, decrease the value by removedSize (?)
+        int removedSize = c.getRemovedSize();
+        int from = c.getFrom();
+        doRemoveIndices(from, removedSize);
+        // step 2
+        doShiftLeft(from, removedSize);
+    }
+
+    private void doShiftLeft(int from, int removedSize) {
+        for (int i = bitSet.nextSetBit(from); i >= 0; i = bitSet.nextSetBit(i+1)) {
+            int pos = indexOf(i);
+            bitSet.clear(i);
+            int bitIndex = i - removedSize;
+            if (bitIndex < 0) {
+                // PENDING JW: really still needed? Should be removed in step 1?
+//                LOG.info("Really remove again? " + i + "/" + bitIndex);
+//                nextRemove(pos, i);
+                throw new IllegalStateException("remove should have happened in first step at " 
+                        + "bit: " + i + " value: " + pos );
+            } else {
+                bitSet.set(bitIndex);
+                if (pos != indexOf(i - removedSize)) {
+                    throw new IllegalStateException ("wrongy! - learn to use bitset");
+                }
+                nextSet(pos, i);
+            }
+        }
+    }
+
+    private void doRemoveIndices(int from, int removedSize) {
+        int[] removedIndices = new int[removedSize];
+        int index = from;
+        for (int i = 0; i < removedIndices.length; i++) {
+            removedIndices[i] = index++;
+        }
+        // do step one by delegating to clearIndices
+        clearIndices(removedIndices);
+    }
+
+    private void add(Change<? extends T> c) {
+        // added: values that are after the added index must be increased by addedSize
+        int from = c.getFrom();
+        int addedSize = c.getAddedSize();
+        doShiftRight(from, addedSize);
+    }
+
+    public void doShiftRight(int from, int addedSize) {
+        for (int i = bitSet.length(); (i = bitSet.previousSetBit(i-1)) >= from; ) {
             // operate on index i here
             int pos = indexOf(i);
             // operate on index i here
             bitSet.clear(i);
-            bitSet.set(i + c.getAddedSize());
-            if (pos != indexOf(i + c.getAddedSize())) {
+            bitSet.set(i + addedSize);
+            if (pos != indexOf(i + addedSize)) {
                 throw new RuntimeException ("wrongy! - learn to use bitset");
             }
             nextSet(pos, i);
         }
-
-        // removed
-        for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0; i = bitSet.nextSetBit(i+1)) {
-            int pos = indexOf(i);
-            bitSet.clear(i);
-            bitSet.set(i - c.getRemovedSize());
-            if (pos != indexOf(i - c.getRemovedSize())) {
-                throw new RuntimeException ("wrongy! - learn to use bitset");
-            }
-            nextRemove(pos, i);
-        }
-      
     }
 
     /**
+     * Update changes are passed-through as are. No real change on the level 
+     * of this list, but listeners might be interested.
+     * 
      * @param c
      */
     private void update(Change<? extends T> c) {
-        // TODO Auto-generated method stub
-        
+        for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
+            int pos = indexOf(i);
+            nextUpdate(pos);
+        }
     }
 
     /**
+     * PENDING: not yet implemented
      * @param c
      */
     private void permutate(Change<? extends T> c) {
-        // TODO Auto-generated method stub
-        
+        // change completely after
+        if (bitSet.nextSetBit(c.getFrom()) < 0) return;
+        if (true)
+            throw new UnsupportedOperationException("permutation not yet implemented");
+        int from = c.getFrom();
+        int to = c.getTo();
+        BitSet oldIndices = (BitSet) bitSet.clone();
+        for (int oldIndex = from; oldIndex < to; oldIndex++) {
+            if (!oldIndices.get(oldIndex)) continue;
+            int newIndex = c.getPermutation(oldIndex);
+//            if (newIndex == oldIndex) continue;
+            int pos = indexOf(oldIndex);
+            bitSet.clear(oldIndex);
+            nextRemove(pos, oldIndex);
+            bitSet.set(newIndex);
+            int newPos = indexOf(newIndex);
+            nextAdd(newPos, newIndex);
+        }
     }
 
     /**
@@ -243,4 +343,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         return bitSet.cardinality();
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(IndicesList.class
+            .getName());
 }
