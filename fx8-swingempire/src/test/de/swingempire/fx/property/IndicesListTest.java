@@ -4,11 +4,15 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableIntegerArray;
 import javafx.collections.ObservableList;
 
 import org.junit.Before;
@@ -25,7 +29,6 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
 import de.swingempire.fx.util.FXUtils.PrintingListChangeListener;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -33,6 +36,7 @@ import static org.junit.Assert.*;
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class IndicesListTest {
 
     @Rule
@@ -206,9 +210,8 @@ public class IndicesListTest {
         int[] indices = new int[] { 2, 4, 5, 8};
         indicesList.addIndices(indices);
         report.clear();
-        new PrintingListChangeListener("Items removed at 3/5", indicesList);
+//        new PrintingListChangeListener("Items removed at 3/5", indicesList);
         items.removeAll(items.get(3), items.get(5));
-        LOG.info("" + indicesList);
         indices = new int[] {2, 3, 6};
         assertEquals(indices.length, indicesList.size());
         for (int i = 0; i < indices.length; i++) {
@@ -306,19 +309,68 @@ public class IndicesListTest {
     }
  
 //---------------- test direct set/clear    
+    
     @Test
-    public void testClearSomeNotification() {
+    public void testSetAllIndices() {
+        indicesList.setAllIndices();
+        assertEquals(items.size(), indicesList.size());
+    }
+    
+    @Test
+    public void testSetIndices() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        int[] setIndices = new int[] {2, 4, 6, 7};
+        indicesList.setIndices(setIndices);
+        assertEquals(setIndices.length, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleReplaced(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
+        
+    }
+    
+    @Test
+    public void testClearAll() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.clearAllIndices();
+        assertEquals(0, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
+    }
+    @Test
+    public void testClearSomeIndicesNotification() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
         int[] clear = new int[] {5, 1};
+//        new PrintingListChangeListener("clearSomeNotification", indicesList);
         indicesList.clearIndices(clear);
         assertEquals(1, indicesList.size());
         assertEquals(1, report.getEventCount());
-        assertEquals("must be single remove", 2, getChangeCount(report.getLastChange()));
+        assertEquals("must be 2 disjoint removes", 2, getChangeCount(report.getLastChange(), ChangeType.REMOVED));
     }
     @Test
-    public void testClearNotification() {
+    public void testClearIndicesNotification() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -326,6 +378,15 @@ public class IndicesListTest {
         assertEquals(0, indicesList.size());
         assertEquals(1, report.getEventCount());
         assertTrue("must be single remove", wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
     }
     
     @Test

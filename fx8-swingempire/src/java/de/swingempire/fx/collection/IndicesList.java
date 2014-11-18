@@ -65,7 +65,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     
     /**
      * Clears the given indices. Does nothing if null or empty.
-     * @param indices
+     * @param indices position in sourceList
      */
     public void clearIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
@@ -85,17 +85,26 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      * Does nothing if null or empty.
      * 
-     * @param indices
+     * @param indices positions in source list
      */
     public void setIndices(int... indices) {
-        
+        beginChange();
+        clearAllIndices();
+        addIndices(indices);
+        endChange();
     }
     
     /**
      * Clears all indices.
      */
     public void clearAllIndices() {
-        
+        beginChange();
+        for (int i = size() -1 ; i >= 0; i--) {
+            int value = get(i);
+            bitSet.clear(value);
+            nextRemove(i, value);
+        }
+        endChange();
     }
     
     /**
@@ -106,8 +115,14 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      */
     public void setAllIndices() {
-        
+        if (getSource().isEmpty()) return;
+        int[] indices = new int[getSource().size()];
+        for (int i = 0; i < indices.length; i++) {
+            indices[i] = i;
+        }
+        setIndices(indices);
     }
+    
     @Override
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();

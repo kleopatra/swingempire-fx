@@ -23,10 +23,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
@@ -36,7 +38,6 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -47,7 +48,23 @@ import static org.junit.Assert.*;
 @RunWith(JUnit4.class)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableListTest {
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
+    @Test
+    public void testSetSameItem() {
+        ObservableList<String> items = createObservableList(true);
+        ListChangeReport report = new ListChangeReport(items);
+        String first = items.get(0);
+        items.set(0, first);
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleReplaced(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        assertSame(first, c.getAddedSubList().get(0));
+        assertSame(first, c.getRemoved().get(0));
+    }
     
     /**
      * Simulate indirect modifications:
@@ -121,7 +138,7 @@ public class ObservableListTest {
         };
 //        selectedIndices.addListener(back);
         list.add(3, "item-added");
-        LOG.info(selectedIndices + "");
+//        LOG.info(selectedIndices + "");
     }
     
     @Test

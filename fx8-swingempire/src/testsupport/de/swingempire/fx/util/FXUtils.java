@@ -7,6 +7,7 @@ package de.swingempire.fx.util;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
@@ -35,6 +36,24 @@ public class FXUtils {
     }
 
 //--------------- list change
+
+    public enum ChangeType {
+        PERMUTATED(Change::wasPermutated),
+        UPDATED(Change::wasUpdated),
+        REPLACED(Change::wasReplaced),
+        ADDED(c -> c.wasAdded() && !c.wasRemoved()),
+        REMOVED(c -> c.wasRemoved() && !c.wasAdded()),;
+        
+        Predicate<Change> predicate;
+        
+        private ChangeType(Predicate<Change> p) {
+            this.predicate = p;
+        }
+        
+        public boolean test(Change c) {
+            return predicate.test(c);
+        }
+    }
     
     public static int getAddedSize(Change c) {
         c.reset();
@@ -60,6 +79,16 @@ public class FXUtils {
         int count = 0;
         while (c.next()) {
             count++;
+        }
+        return count;
+    }
+    
+    public static int getChangeCount(Change c, ChangeType type) {
+        c.reset();
+        int count = 0;
+        while (c.next()) {
+            if (type.test(c))
+                count++;
         }
         return count;
     }
