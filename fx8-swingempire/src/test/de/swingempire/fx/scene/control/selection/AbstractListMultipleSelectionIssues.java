@@ -19,9 +19,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreBehavior;
 import static org.junit.Assert.*;
 
 /**
@@ -56,26 +58,31 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorFocusNextRowIfBefore() throws Exception {
         assertBehaviourFocusMove("focusNextRow", -1, 0);
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorFocusNextRow() throws Exception {
         assertBehaviourFocusMove("focusNextRow", 2, 3);
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorFocusPreviousRow() throws Exception {
         assertBehaviourFocusMove("focusPreviousRow", 2, 1);
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorFocusFirstRow() throws Exception {
         assertBehaviourFocusMove("focusFirstRow", 2, 0);
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorFocusLastRow() throws Exception {
         assertBehaviourFocusMove("focusLastRow", 2, items.size() - 1);
     }
@@ -123,6 +130,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
      * @see #testFocusFirstRemovedItem() 
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectNextRowIfFirstRemoved() throws Exception {
         // select first
         int index = 0;
@@ -133,27 +141,32 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectNextRowIfFirst() throws Exception {
         assertBehaviorSelectionMoved("selectNextRow", -1, 0);
     }
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectNextRow() throws Exception {
         int index = 2;
         assertBehaviorSelectionMoved("selectNextRow", index, index + 1);
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectPreviousRow() throws Exception {
         int index = 2;
         assertBehaviorSelectionMoved("selectPreviousRow", index, index - 1);
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectFirstRow() throws Exception {
         assertBehaviorSelectionMoved("selectFirstRow", 2, 0);
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectLastRow() throws Exception {
         assertBehaviorSelectionMoved("selectLastRow", 2, items.size() - 1);
     }
@@ -187,6 +200,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorAlsoSelectNextRow() throws Exception {
         int index = 2;
         int focus = index + 1;
@@ -195,6 +209,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorAlsoSelectPreviousRow() throws Exception {
         int index = 2;
         int focus = index - 1;
@@ -203,6 +218,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectAllToFirstRow() throws Exception {
         int index = 2;
         int focus = 0;
@@ -211,6 +227,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectAllToLastRow() throws Exception {
         int index = 2;
         int focus = items.size() - 1;
@@ -246,11 +263,13 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectAllToFocusFalse() throws Exception {
         assertBehaviorSelectAllToFocus(false); 
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorSelectAllToFocusTrue() throws Exception {
         assertBehaviorSelectAllToFocus(true); 
     }

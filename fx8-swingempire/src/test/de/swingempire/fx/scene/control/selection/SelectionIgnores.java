@@ -13,7 +13,45 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
  */
 public class SelectionIgnores {
     
-    
+    /**
+     * Condition to ignore tests which involve anchor.Used only while adding a new
+     * SelectionModel - should be enable again when a evolution round is complete.
+     * 
+     */
+    public static class IgnoreAnchor implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return false;
+        }
+        
+    }
+    /**
+     * Condition to ignore tests which involve focus.Used only while adding a new
+     * SelectionModel - should be enable again when a evolution round is complete.
+     * 
+     * hmm .. not helpful, focus is interwoven with selectedIndex in most tests
+     */
+    public static class IgnoreFocus implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return false;
+        }
+        
+    }
+    /** 
+     * Ignore tests for behaviour classes. Used only while adding a new
+     * SelectionModel - should be enable again when a evolution round is complete.
+     */
+    public static class IgnoreBehavior implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
 
     /**
      * Working with static class that doesn't require access to running

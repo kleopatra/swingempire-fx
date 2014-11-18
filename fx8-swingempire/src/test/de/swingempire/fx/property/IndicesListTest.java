@@ -10,9 +10,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.Observable;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableIntegerArray;
 import javafx.collections.ObservableList;
 
 import org.junit.Before;
@@ -27,7 +30,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
-import de.swingempire.fx.util.FXUtils.PrintingListChangeListener;
+import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -46,9 +49,35 @@ public class IndicesListTest {
     ListChangeReport report;
     ObservableList<String> items;
 
-//------------ test modifications of backing list
-    
-    
+    // ------------ test modifications of backing list
+
+    /**
+     * Sanity: quick check that using a ListProperty as source doesn't
+     * interfere.
+     */
+    @Test
+    public void testListPropertyAsItems() {
+        ObjectProperty<ObservableList<String>> itemsProperty = new SimpleObjectProperty(
+                items);
+        ListProperty<String> listItems = new SimpleListProperty<>();
+        listItems.bind(itemsProperty);
+        IndicesList indicesList = new IndicesList(listItems);
+        ListChangeReport report = new ListChangeReport(indicesList);
+        int[] indices = new int[] { 3, 5, 1 };
+        indicesList.addIndices(indices);
+        report.clear();
+        // new PrintingListChangeListener("SetAll Same size", indicesList);
+        ObservableList<String> other = createObservableList(true);
+        // make it not equal
+        other.set(0, "otherItem");
+        items.setAll(other);
+
+        assertEquals("all cleared", 0, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue(
+                "expected single removed, but was " + report.getLastChange(),
+                wasSingleRemoved(report.getLastChange()));
+    }
     
     @Test
     public void testUpdate() {
