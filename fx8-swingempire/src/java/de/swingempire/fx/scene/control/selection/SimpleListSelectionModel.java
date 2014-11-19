@@ -30,7 +30,7 @@ public class SimpleListSelectionModel<T> extends AbstractSelectionModelBase<T> {
         itemsList = new SimpleListProperty<>();
         itemsList.bind(listView.itemsProperty());
         indicesList = new IndicesList<>(itemsList);
-        indexedItems = new IndexMappedList<>(indicesList, itemsList);
+        indexedItems = new IndexMappedList<>(indicesList);
     }
     
     @Override

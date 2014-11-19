@@ -7,9 +7,13 @@ package de.swingempire.fx.scene.control.selection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
@@ -24,6 +28,7 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreBehavior;
+import de.swingempire.fx.util.ListChangeReport;
 import static org.junit.Assert.*;
 
 /**
@@ -40,6 +45,40 @@ import static org.junit.Assert.*;
 public abstract class AbstractListMultipleSelectionIssues<V extends ListView> 
     extends MultipleSelectionIssues<V, MultipleSelectionModel>{
 
+    /**
+     * selectedItems fires incorrect list change on items.clear
+     * 
+     * Introduced while fixing 38884
+     * 
+     * Stand-alone test for report.
+     * 
+     * PENDING JW: wait until fix bubbles up in preview.
+     * 
+     * @see #testNoSuchElementOnClear_38884()
+     * @see #testNoSuchElementOnClear_38884Unfixed()
+     */
+    @Test
+    public void testRegressionIncorrectRemovedSizeOnClear_38884() {
+        ObservableList items = FXCollections.observableArrayList(1, 2, 3, 4, 5);
+        // note: commented line for really stand-alone
+//        ListView view = new ListView(items);
+        ListView view = createView(items);
+        MultipleSelectionModel sm = view.getSelectionModel();
+        sm.select(0);
+        Object item = sm.getSelectedItem();
+        int selectedItemsSize = sm.getSelectedItems().size();
+        assertEquals("sanity: size of selectedItems ", 1, selectedItemsSize);
+        List<Change> changes = new ArrayList();
+        ListChangeListener l = c -> changes.add(c);
+        sm.getSelectedItems().addListener(l);
+        items.clear();
+        Change c = changes.get(0);
+        c.next();
+        assertEquals("removed size", selectedItemsSize, c.getRemovedSize());
+        // next is passing with fix, failing without
+        assertEquals("removed item", item, c.getRemoved().get(0));
+    }
+    
     /**
      * Hack for core ListViewBehavior incomplete separation of 
      * low- vs. semantic level. Doesn't make a difference, though?.

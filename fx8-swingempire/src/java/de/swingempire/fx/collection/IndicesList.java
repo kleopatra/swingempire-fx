@@ -37,6 +37,7 @@ import javafx.collections.transformation.TransformationList;
 public class IndicesList<T> extends TransformationList<Integer, T> {
 
     private BitSet bitSet;
+    Change<? extends T> sourceChange;
     
     /**
      * @param source
@@ -53,6 +54,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      */
     public void addIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
+        sourceChange = null;
         beginChange();
         for (int i : indices) {
             if (bitSet.get(i)) continue;
@@ -69,13 +71,9 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      */
     public void clearIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
+        sourceChange = null;
         beginChange();
-        for (int i : indices) {
-           if (!bitSet.get(i)) continue;
-           int from = indexOf(i);
-           bitSet.clear(i);
-           nextRemove(from, i);
-        }
+        doClearIndices(indices);
         endChange();
     }
     
@@ -98,6 +96,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * Clears all indices.
      */
     public void clearAllIndices() {
+        sourceChange = null;
         beginChange();
         for (int i = size() -1 ; i >= 0; i--) {
             int value = get(i);
@@ -126,6 +125,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     @Override
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();
+        sourceChange = null;
         while (c.next()) {
             if (c.wasPermutated()) {
                 permutate(c);
@@ -137,6 +137,8 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
                 addOrRemove(c);
             }
         }
+        c.reset();
+        sourceChange = c;
         endChange();
     }
 
@@ -227,6 +229,15 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         }
     }
 
+    private void doClearIndices(int... indices) {
+        for (int i : indices) {
+            if (!bitSet.get(i)) continue;
+            int from = indexOf(i);
+            bitSet.clear(i);
+            nextRemove(from, i);
+         }
+    }
+
     private void doRemoveIndices(int from, int removedSize) {
         int[] removedIndices = new int[removedSize];
         int index = from;
@@ -234,7 +245,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
             removedIndices[i] = index++;
         }
         // do step one by delegating to clearIndices
-        clearIndices(removedIndices);
+        doClearIndices(removedIndices);
     }
 
     private void add(Change<? extends T> c) {
@@ -244,7 +255,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         doShiftRight(from, addedSize);
     }
 
-    public void doShiftRight(int from, int addedSize) {
+    private void doShiftRight(int from, int addedSize) {
         for (int i = bitSet.length(); (i = bitSet.previousSetBit(i-1)) >= from; ) {
             // operate on index i here
             int pos = indexOf(i);
@@ -358,6 +369,17 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         return bitSet.cardinality();
     }
 
+    /**
+     * Returns the last change from source that produced a remove, or null if last
+     * change of this resulted from direct modification of indices.
+     *  
+     * For testing only, don't use outside of IndexMappedItems! 
+     * @return
+     */
+    public Change<? extends T> getSourceChange() {
+        return sourceChange;
+    }
+    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(IndicesList.class
             .getName());

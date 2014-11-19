@@ -534,13 +534,57 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertTrue("last must be single removed", wasSingleRemoved(c));
         c.reset();
         c.next();
-        assertEquals("removed size", size, c.getRemovedSize());
+        // PENDING JW: wrong assumption - size of selectedItems has been 1
+        assertEquals("removed size", 1, c.getRemovedSize());
         // this is throwing before fix of 38884 with an NoSuchElementException 
         // actually, it's not throwing an NSEE, but an IOOBE
         // NSEE only if iterating over the list as done f.i. when printing
         // isn't here, get simple assertionError
         assertEquals("must be removed item without NSEE", item, c.getRemoved().get(0));
     }
+    
+    /**
+     * Can't really test before the fix going public - but:
+     * now selectedItems are firing too many removes. 
+     * 
+     * Setup:
+     * - select a single item such that selectedItems.size() = 1
+     * - clear list
+     * - expected: removedSize in selectedItems' change is 1
+     * - actual: removedSize in selectedItems' change is size of items
+     */
+    @Test
+    public void testNoSuchElementOnClear_38884Unfixed() {
+        getSelectionModel().select(0);
+        Object item = getSelectionModel().getSelectedItem();
+        int selectedItemsSize = getSelectionModel().getSelectedItems().size();
+        assertEquals("sanity: selectedItem is item at 0", items.get(0), item);
+        assertTrue("sanity: selectedItem contained in selectedItems", 
+                getSelectionModel().getSelectedItems().contains(item));
+        assertEquals("sanity: selected items size", 1, selectedItemsSize);
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        items.clear();
+        assertEquals("sanity: single event", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        assertNotNull("sanity: the change is not null", c);
+        // here we get a NSEE in tableView- wondering where exactly?
+        // commenting leads to IndexOutOfbounds below
+        // note: if we add the c for printing here, we get an NSEE here
+//        assertTrue("last must be single removed but was " + c, FXUtils.wasSingleRemoved(c));
+        // without printing we get an IndexOutofBounds when accessing the removed list below
+        assertTrue("last must be single removed", wasSingleRemoved(c));
+        c.reset();
+        c.next();
+        // PENDING JW: wrong assumption - size of selectedItems has been 1
+        assertEquals("removed size", selectedItemsSize, c.getRemovedSize());
+        // this is throwing before fix of 38884 with an NoSuchElementException 
+        // actually, it's not throwing an NSEE, but an IOOBE
+        // NSEE only if iterating over the list as done f.i. when printing
+        // isn't here, get simple assertionError
+        assertEquals("must be removed item without NSEE", item, c.getRemoved().get(0));
+    }
+    
+    
     /**
      * Trying to dig into unexpected failure of alsoSelect.
      * Plain model testing: here use selectPrevious

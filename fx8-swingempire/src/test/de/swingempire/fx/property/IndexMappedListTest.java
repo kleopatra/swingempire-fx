@@ -65,7 +65,7 @@ public class IndexMappedListTest {
         ObservableList<Person> base = Person.persons();
         ObservableList<Person> persons = FXCollections.observableList(base, p -> new Observable[] {p.firstNameProperty()});
         IndicesList<Person> indicesList = new IndicesList<>(persons);
-        IndexMappedList<Person> indexedItems = new IndexMappedList<>(indicesList, base);
+        IndexMappedList<Person> indexedItems = new IndexMappedList<>(indicesList);
         int[] indices = new int[] {1, 3, 5};
         indicesList.addIndices(indices);
         ListChangeReport report = new ListChangeReport(indexedItems);
@@ -78,11 +78,18 @@ public class IndexMappedListTest {
     public void testItemsClear() {
         int index = 0;
         indicesList.addIndices(index);
+        Object item = items.get(index);
+        
         report.clear();
         new PrintingListChangeListener("clear", indexedItems);
         items.clear();
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        assertEquals(1, c.getRemovedSize());
+        assertEquals(item, c.getRemoved().get(0));
     }
     
     @Test
@@ -305,7 +312,7 @@ public class IndexMappedListTest {
     public void setup() {
         items = createObservableList(true);
         indicesList = new IndicesList<>(items);
-        indexedItems = new IndexMappedList(indicesList, items);
+        indexedItems = new IndexMappedList(indicesList);
         report = new ListChangeReport(indexedItems);
     }
     

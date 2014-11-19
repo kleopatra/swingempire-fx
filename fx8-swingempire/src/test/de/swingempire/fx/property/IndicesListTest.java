@@ -346,7 +346,126 @@ public class IndicesListTest {
         assertEquals("selectedIndices unchanged", 1, report.getEventCount());
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
- 
+
+//---------- temporary tests: check state of sourceChange
+    
+    @Test
+    public void testChangeNullOnDirectSet() {
+        indicesList.setIndices(0);
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    /**
+     * direct modification -> backingList change -> direct modification must
+     * reset sourceChange to null
+     */
+    @Test
+    public void testChangeNullOnDirectSetAllAfterItemsModified() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        assertEquals("sanity", 1, report.getEventCount());
+        indicesList.setAllIndices();
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeNullOnDirectClearAllAfterItemsModified() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        indicesList.clearAllIndices();
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeNullOnDirectSetAfterItemsModified() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        indicesList.setIndices(6);
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeNullOnDirectClearAfterItemsModified() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        indicesList.clearIndices(1, 2, 3, 4);
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeNullOnDirectAddAfterItemsModified() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        indicesList.addIndices(6);
+        assertEquals(null, indicesList.getSourceChange());
+    }
+    
+    
+    @Test
+    public void testChangeOnAddItems() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.add(2, "newItems");
+        assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeOnRemoveItems() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.remove(0);
+        assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeOnSetItems() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.set(3, "newItem");
+        assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
+    }
+    
+    @Test
+    public void testChangeOnClearItems() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+//        new PrintingListChangeListener("Items removed before", indicesList);
+        items.clear();
+        assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
+    }
+    
+    
 //---------------- test direct set/clear    
     
     @Test
@@ -374,7 +493,6 @@ public class IndicesListTest {
             base.add(indices[i]);
         }
         assertEquals(base, c.getRemoved());
-        
     }
     
     @Test

@@ -27,15 +27,14 @@ import javafx.collections.transformation.TransformationList;
  */
 public class IndexMappedList<T> extends TransformationList<T, Integer> {
 
-    private List<T> backingList;
+    private List<? extends T> backingList;
 
     /**
      * @param source
      */
-    public IndexMappedList(ObservableList<? extends Integer> source, List<T> backingList) {
+    public IndexMappedList(IndicesList<T> source) {
         super(source);
-        this.backingList = Objects.requireNonNull(backingList, "backingList must not be null");
-        // TODO Auto-generated constructor stub
+        this.backingList = source.getSource();
     }
 
     @Override
@@ -87,13 +86,48 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     private void remove(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
         List<T> items = new ArrayList<>();
-        for (Integer index : indices) {
-            items.add(backingList.get(index));
+        if (getIndicesList().sourceChange == null) {
+            // change resulted from direct modification of indices
+            // no change in backingList, so we can access its items 
+            // directly
+            for (Integer index : indices) {
+                items.add(backingList.get(index));
+            }
+        } else { 
+            for (int i = 0 ; i < c.getRemovedSize(); i++) {
+                int removedSourceIndex = c.getRemoved().get(i);
+                // find change in source that covers removedSource
+                Change<? extends T> sourceChange = getIndicesList().sourceChange;
+                sourceChange.reset();
+                int accumulatedRemovedSize = 0;
+                while (sourceChange.next()) {
+                    if (!sourceChange.wasRemoved()) continue;
+                    int fromSource = sourceChange.getFrom() + accumulatedRemovedSize;
+                    if (removedSourceIndex >= fromSource && removedSourceIndex < fromSource + sourceChange.getRemovedSize()) {
+                        // hit - PENDING JW: need to accumulate if we have multiple removes!
+                        int indexInRemoved = removedSourceIndex - fromSource;
+                        items.add(sourceChange.getRemoved().get(indexInRemoved));
+                        break;
+                    }
+                    accumulatedRemovedSize += sourceChange.getRemovedSize();
+                }
+            }
         }
         nextRemove(c.getFrom(), items);
     }
 
+    
     /**
+     * @return
+     */
+    private IndicesList<T> getIndicesList() {
+        return (IndicesList<T>) getSource();
+    }
+
+    /**
+     * PENDING JW: all removes are carying incorrect removes - they access the 
+     * backingList which has them already removed!
+     * 
      * @param c
      */
     private void replace(Change<? extends Integer> c) {

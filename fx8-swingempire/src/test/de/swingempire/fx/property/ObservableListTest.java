@@ -51,6 +51,19 @@ public class ObservableListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
+    /**
+     * Sanity ...
+     */
+    @Test
+    public void testRemovedFrom() {
+        ObservableList<String> items = createObservableList(true);
+        ListChangeReport report = new ListChangeReport(items);
+        int index = 2;
+        items.remove(index);
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(index, c.getFrom());
+    }
     @Test
     public void testSetSameItem() {
         ObservableList<String> items = createObservableList(true);
