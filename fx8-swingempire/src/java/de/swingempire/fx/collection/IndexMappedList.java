@@ -17,6 +17,12 @@ import javafx.collections.transformation.TransformationList;
  * 
  * This is truely unmodifiable, changes mediated by changes to source only.
  * 
+ * PENDING JW:
+ * - removed are firing incorrect removed items (due to direct access of the backing
+ *   list, where the removed is no longer contained). reaching the boundary of chained
+ *   transformation lists? Or doing something wrong in the chain? Can the intermediate
+ *   (here IndicesList) somehow pass-on the removed items from the backing list? 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class IndexMappedList<T> extends TransformationList<T, Integer> {
@@ -72,6 +78,10 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
     
     /**
+     * PENDING JW: here's a problem - the removed has the indices as values, but the
+     * backing list is already removed (that is, access via backingList.get(removedIndex) is 
+     * invalid. Might need to keep a copy instead of direct access?
+     * 
      * @param c
      */
     private void remove(Change<? extends Integer> c) {

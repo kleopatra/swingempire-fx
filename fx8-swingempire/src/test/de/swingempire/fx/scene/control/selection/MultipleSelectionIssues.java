@@ -481,6 +481,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * This is basically 30961 (or so, the one that should define what happens if
      * the selectedIndex is removed). Most implementations move the index to
      * an adjacent index, so this test my fail for custom implemenations.
+     * Unexpected failure for SimpleListSelectionModel.
      */
     @Test
     public void testRemoveSelectedItem_28637() {
@@ -488,12 +489,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object selectedItem = getSelectionModel().getSelectedItem();
         items.remove(selectedItem);
         int selected = getSelectionModel().getSelectedIndex();
-        if (selected > 0) {
+        if (selected >= 0) {
             Object itemAfterRemove = getSelectionModel().getSelectedItem();
-            if (items.contains(itemAfterRemove)) {
                 assertEquals(getSelectionModel().getSelectedItems().get(selected), 
                         itemAfterRemove);
-            }
+//                if (items.contains(itemAfterRemove)) {
+//            }
+        } else {
+            fail("selectedIndex must not be -1 was: " + selected);
         }
     }
     
@@ -506,11 +509,17 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Error slightly different for TableView/ListView:
      * - listView simply doesn't fire the correct event (removed item is null)
      * - tableView throws NoSuchElement
+     * 
+     * PENDING JW:
+     * In AbstractSelectionModelBase: no event fired on clear - why not?
      */
     @Test
     public void testNoSuchElementOnClear_38884() {
         getSelectionModel().select(0);
         Object item = getSelectionModel().getSelectedItem();
+        assertEquals("sanity: selectedItem is item at 0", items.get(0), item);
+        assertTrue("sanity: selectedItem contained in selectedItems", 
+                getSelectionModel().getSelectedItems().contains(item));
         ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
         int size = items.size();
         items.clear();

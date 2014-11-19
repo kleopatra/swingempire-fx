@@ -21,8 +21,10 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -71,7 +73,34 @@ public class IndexMappedListTest {
         persons.get(3).setFirstName("newName");
         assertEquals(1, report.getEventCount());
     }
- 
+
+    @Test
+    public void testItemsClear() {
+        int index = 0;
+        indicesList.addIndices(index);
+        report.clear();
+        new PrintingListChangeListener("clear", indexedItems);
+        items.clear();
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+    }
+    
+    @Test
+    public void testRemoveSingleSelected() {
+        int index = 0;
+        indicesList.addIndices(index);
+        Object selectedItem = items.get(indicesList.get(index));
+        report.clear();
+        new PrintingListChangeListener("RemoveSingleSelected", indexedItems);
+        items.remove(0);
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        assertEquals(selectedItem, c.getRemoved().get(0));
+    }
+
     @Test
     public void testItemRemovedBefore() {
         int[] indices = new int[] { 3, 5, 1};

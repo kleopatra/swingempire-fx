@@ -111,6 +111,16 @@ public class IndicesListTest {
     }
     
     @Test
+    public void testItemsClear() {
+        int index = 0;
+        indicesList.addIndices(index);
+        report.clear();
+//        new PrintingListChangeListener("clear", indicesList);
+        items.clear();
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+    }
+    @Test
     public void testSetAllLargerSize() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);

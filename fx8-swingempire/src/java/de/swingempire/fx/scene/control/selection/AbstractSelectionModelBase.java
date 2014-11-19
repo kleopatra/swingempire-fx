@@ -22,6 +22,13 @@ import de.swingempire.fx.collection.IndicesList;
  * - fully support uncontained selectedItem
  * - implement navigational methods
  * - implement anchored and selectionModelJ 
+ * - even with indicesList, model must listen to items changes to take care of uncontained 
+ *   selection (f.i., there are other parts the indices can't handle for itself, like special
+ *   casing selectedIndex)
+ * - think about eventBus: would it help to make the model first receive the notification itself,
+ *   and then pass it on to the indices? That's more or less the current process in core 
+ *   implementations  (which has all handling hard-coded)
+ *   
  * 
  * @author Jeanette Winzenburg, Berlin
  */
