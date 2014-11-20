@@ -8,6 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
+import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import de.swingempire.fx.collection.IndexMappedList;
@@ -116,8 +117,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * partly reverted: end might be -1 for descending range - is
      * handled correctly by super.
      * 
-     * @param start
-     * @param end
+     * @param start one boundary of the range, must be strictly valid
+     * @param end the other boundary of the range, may be one off range because
+     *    it is exclusiv
      */
     @Override
     public void selectRange(int start, int end) {
@@ -144,7 +146,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 
     @Override
     public void clearAndSelect(int index) {
-//        if (!isSelectable(index)) return;
+        if (!isSelectable(index)) return;
         indicesList.setIndices(index);
         syncSingleSelectionState(index);
     }
@@ -157,9 +159,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         return index > -1 && index < getItemCount();
     }
 
-//    protected void syncSelection(int index, T item) {
-//    }
-    
     @Override
     public void select(int index) {
         if (!isSelectable(index)) return;
@@ -179,7 +178,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         } else {
             setSelectedIndex(-1);
             setSelectedItem(obj);
-            
         }
     }
 
@@ -188,7 +186,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      */
     @Override
     public void clearSelection(int index) {
+//        if (!isSelectable(index));
         indicesList.clearIndices(index);
+        
     }
 
     @Override
@@ -345,6 +345,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         return indicesList.getSource();
     }
     
+    protected abstract FocusModel<T> getFocusModel();
     protected abstract void focus(int index);
     protected abstract int getFocusedIndex();
     

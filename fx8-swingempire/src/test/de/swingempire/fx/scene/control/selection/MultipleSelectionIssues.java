@@ -30,6 +30,7 @@ import static org.junit.Assert.*;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
@@ -1397,6 +1398,22 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals(item, getSelectionModel().getSelectedItem());
     }
 
+    @Test
+    public void testClearSelectionAtInvalidIndex() {
+        int start = 2;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int index = end - 1;
+        int selectionSize = getSelectionModel().getSelectedIndices().size();
+        getSelectionModel().clearSelection(items.size());
+        assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
+        assertEquals("index must still be cleared", 
+                index, getSelectionModel().getSelectedIndex());
+        assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
+        assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
+    }
+
+    
      public MultipleSelectionIssues(boolean multiple) {
         this.multipleMode = multiple;
     }

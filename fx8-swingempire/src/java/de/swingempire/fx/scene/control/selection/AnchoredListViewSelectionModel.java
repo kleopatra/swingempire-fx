@@ -24,15 +24,13 @@ import javafx.util.Callback;
  * @author Jeanette Winzenburg, Berlin
  */
 public class AnchoredListViewSelectionModel<T> extends
-        ListViewBitSetSelectionModel<T> implements AnchoredSelectionModel {
-
+//        ListViewBitSetSelectionModel<T> implements AnchoredSelectionModel {
+        SimpleListSelectionModel<T> implements AnchoredSelectionModel {
     /**
      * @param listView
      */
     public AnchoredListViewSelectionModel(ListView<T> listView) {
         super(listView);
-        // not really working, probably needs hacked skin
-//        installHack15973(listView);
     }
 
 
@@ -138,14 +136,14 @@ public class AnchoredListViewSelectionModel<T> extends
     /**
      * Overridden to update Anchor
      */
-    @Override
-    protected void shiftSelection(int position, int shift,
-            Callback<ShiftParams, Void> callback) {
-        int oldAnchor = getAnchorIndex();
-        super.shiftSelection(position, shift, callback);
-        if (position <= oldAnchor)
-            setAnchorIndex(oldAnchor + shift);
-    }
+//    @Override
+//    protected void shiftSelection(int position, int shift,
+//            Callback<ShiftParams, Void> callback) {
+//        int oldAnchor = getAnchorIndex();
+//        super.shiftSelection(position, shift, callback);
+//        if (position <= oldAnchor)
+//            setAnchorIndex(oldAnchor + shift);
+//    }
 
     
     @SuppressWarnings("unused")

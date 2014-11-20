@@ -271,24 +271,24 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
                 return;
             }
         }
-            c.reset();
-            boolean added = false;
-            boolean removed = false;
-            int addedSize = 0;
-            int removedSize = 0;
-            while (c.next()) {
-                added |= c.wasAdded();
-                removed |= c.wasRemoved();
-                addedSize += c.getAddedSize();
-                removedSize += c.getRemovedSize();
-            }
+        c.reset();
+        boolean added = false;
+        boolean removed = false;
+        int addedSize = 0;
+        int removedSize = 0;
+        while (c.next()) {
+            added |= c.wasAdded();
+            removed |= c.wasRemoved();
+            addedSize += c.getAddedSize();
+            removedSize += c.getRemovedSize();
+        }
 
-            if (added && !removed) {
-                focus(getFocusedIndex() + addedSize);
-            } else if (!added && removed) {
-                // fix of navigation issue on remove focus at 0
-                focus(Math.max(0, getFocusedIndex() - removedSize));
-            }
+        if (added && !removed) {
+            focus(getFocusedIndex() + addedSize);
+        } else if (!added && removed) {
+            // fix of navigation issue on remove focus at 0
+            focus(Math.max(0, getFocusedIndex() - removedSize));
+        }
     }
 
 

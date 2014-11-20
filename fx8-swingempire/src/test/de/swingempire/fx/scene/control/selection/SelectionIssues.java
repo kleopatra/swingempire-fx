@@ -677,6 +677,16 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 -1, getSelectionModel().getSelectedIndex());
     }
 
+    @Test
+    public void testClearSelectAtInvalidIndex() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(items.size());
+        assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
+        assertEquals("index must still be cleared", 
+                index, getSelectionModel().getSelectedIndex());
+        
+    }
     /**
      * Strictly speaking the api doc of select(index) is incorrect: "will not 
      * clear the selection of other indices" - should specify that it certainly
