@@ -278,7 +278,7 @@ public class FXUtils {
         }
         @Override
         public void onChanged(Change change) {
-            System.out.println("Change #" + counter++ + " on " +source + "\nlist = " + change.getList());
+            System.out.println("Change #" + counter++ + " on " + source + "\nlist = " + change.getList());
             prettyPrint(change);
         }
     }

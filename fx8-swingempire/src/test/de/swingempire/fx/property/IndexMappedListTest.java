@@ -7,6 +7,7 @@ package de.swingempire.fx.property;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -21,24 +22,13 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
+import de.swingempire.fx.util.FXUtils.PrintingListChangeListener;
+import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -81,7 +71,7 @@ public class IndexMappedListTest {
         Object item = items.get(index);
         
         report.clear();
-        new PrintingListChangeListener("clear", indexedItems);
+//        new PrintingListChangeListener("clear", indexedItems);
         items.clear();
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
@@ -98,7 +88,7 @@ public class IndexMappedListTest {
         indicesList.addIndices(index);
         Object selectedItem = items.get(indicesList.get(index));
         report.clear();
-        new PrintingListChangeListener("RemoveSingleSelected", indexedItems);
+//        new PrintingListChangeListener("RemoveSingleSelected", indexedItems);
         items.remove(0);
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
@@ -132,11 +122,13 @@ public class IndexMappedListTest {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
-
+//        LOG.info("before set: " + indexedItems);
         items.set(3, "newItem");
+//        LOG.info("after set: " + indexedItems);
         Arrays.sort(indices);
         assertEquals("newItem", indexedItems.get(1));
         assertEquals("selectedIndices unchanged", 1, report.getEventCount());
+//        report.prettyPrint();
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
  
@@ -278,6 +270,7 @@ public class IndexMappedListTest {
         }
         assertEquals(1, report.getEventCount());
         assertTrue("got a single added", wasSingleAdded(report.getLastChange()));
+//        LOG.info("" + indexedItems);
 
     }
     
@@ -325,5 +318,7 @@ public class IndexMappedListTest {
                 : FXCollections.observableArrayList();
     }
 
-
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(IndexMappedListTest.class.getName());
 }

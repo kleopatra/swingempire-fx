@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
+public class ListSimpleSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
 
 
     /**
@@ -54,19 +54,21 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
     /**
      * @param multiple
      */
-    public ListSingleSelectionIssues(boolean multiple) {
+    public ListSimpleSingleSelectionIssues(boolean multiple) {
         super(multiple);
     }
 
     @Override
     protected ListView createView(ObservableList items) {
         ListView table = new ListView(items);
+        table.setSelectionModel(new SimpleListSelectionModel<>(table));
         MultipleSelectionModel model = table.getSelectionModel();
         assertEquals("sanity: test setup assumes that initial mode is single", 
                 SelectionMode.SINGLE, model.getSelectionMode());
-        // done in super
-//        table.getFocusModel().focus(-1);
         checkMode(model);
+        // PENDING JW: here we interfer with initial state! Need to check how 
+        // tests (except those checking initial state) might be affected 
+        table.getFocusModel().focus(table.getSelectionModel().getSelectedIndex());
         // PENDING JW: this is crude ... think of doing it elsewhere
         // the problem is to keep super blissfully unaware of possible modes
         assertEquals(multipleMode, model.getSelectionMode() == SelectionMode.MULTIPLE);
@@ -96,5 +98,5 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ListSingleSelectionIssues.class.getName());
+            .getLogger(ListSimpleSingleSelectionIssues.class.getName());
 }

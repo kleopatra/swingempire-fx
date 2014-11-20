@@ -24,6 +24,7 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
@@ -31,10 +32,8 @@ import static org.junit.Assert.*;
 /**
  * Testing SelectionModel api.
  * 
- * Reported: https://javafx-jira.kenai.com/browse/RT-38494
- * mismatch between spec and implementation
- * 
- * 
+ * Note: as of 8u40b9, table/list autofocus to 0 for not-empty items. This
+ * test reverts to -1!
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -59,7 +58,32 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     protected V view;
 
 //------------  test interplay of selection/focus/anchor 
-//------------ focus    
+
+    @Test
+    public void testSelectedOnClearItems() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.clear();
+        assertTrue("selection must be empty", getSelectionModel().isEmpty());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(null, getSelectionModel().getSelectedItem());
+    }
+    
+    /**
+     * Test that uncontained selectedItem isn't changed when clearing 
+     * out items.
+     */
+    @Test
+    public void testSelectedUncontainedOnClearItems() {
+        Object uncontained = "uncontained";
+        getSelectionModel().select(1);
+        getSelectionModel().select(uncontained);
+        items.clear();
+        assertTrue("selection must be empty", getSelectionModel().isEmpty());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+    }
+    
     
     /**
      * https://javafx-jira.kenai.com/browse/RT-30931
@@ -92,6 +116,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
     
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnRemoveItemAtSelectedFocused() {
         initSkin();
         int index = 2;
@@ -141,6 +166,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Here: test anchor on setItem(getSelectedIndex(), newItem); 
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnSetItemAtSelectedFocused() {
         initSkin();
         int index = 2;
@@ -167,7 +193,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         items.remove(1);
         int expected = index - 1;
-        assertEquals("open 30931 - selected after remove above focused", expected, getSelectionModel().getSelectedIndex());
+        assertEquals("open 30931 - selected after remove above selected", 
+                expected, getSelectionModel().getSelectedIndex());
     }
     
     @Test
@@ -225,6 +252,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Core installs listener twice of items reset, introduces problems with insert
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnInsertItemAtSelected39042() {
         initSkin();
         ObservableList other = FXCollections.observableArrayList(items.subList(0, 5));
@@ -242,6 +270,24 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * @param other
      */
     protected abstract void resetItems(ObservableList other);
+    
+    /**
+     * Undoc'ed but nearly always implemented:
+     * Have a selectedItem that is not part of the underlying list (implies
+     * selectedIndex < 0), then insert that item: selectedIndex must
+     * then be updated to the index of the selectedItem in the list.
+     * 
+     */
+    @Test
+    public void testSelectedUncontainedAfterInsertUncontained() {
+        Object uncontained = "uncontained";
+        getSelectionModel().select(uncontained);
+        int insert = 3;
+        items.add(insert, uncontained);
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex must be updated to position of selectedItem", 
+                insert, getSelectionModel().getSelectedIndex());
+    }
     
     @Test
     public void testFocusOnInsertItemAtSelected() {
@@ -272,6 +318,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Anchor must be at selected.
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnInsertItemAtSelected() {
         initSkin();
         int index = 2;
@@ -456,6 +503,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Anchor must be move after adding/removing items above.
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnInsertItemAbove() {
         initSkin();
         int index = 2;
@@ -470,6 +518,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * Anchor must be move after adding/removing items above.
      */
     @Test
+    @ConditionalIgnore (condition = IgnoreAnchor.class)
     public void testAnchorOnRemoveItemAbove() {
         initSkin();
         int index = 2;
@@ -721,6 +770,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(items.get(index), getSelectionModel().getSelectedItem());
     }
 
+    @Test
+    public void testIsSelectedNegativeIndex() {
+        assertFalse("-1 must not be selected", getSelectionModel().isSelected(-1));
+        assertFalse("-11 must not be selected", getSelectionModel().isSelected(-11));
+    }
 //-------------- initial state
     
     // as of 8u20, the ListView, TableView have the first row selected
@@ -774,6 +828,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         view = createView(items);
+        if (getFocusModel() != null) {
+            getFocusModel().focus(-1);
+        }
     }
     
     protected abstract V createView(ObservableList items);

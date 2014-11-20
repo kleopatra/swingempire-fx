@@ -49,7 +49,8 @@ public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSel
         // disable default selection
         listView.getProperties().put("selectFirstRowByDefault", Boolean.FALSE);
         // initial focus on 0 (as of 8u40b9), force into unfocused
-        listView.getFocusModel().focus(-1);
+        // done in super
+//        listView.getFocusModel().focus(-1);
 
         MultipleSelectionModel model = listView.getSelectionModel();
         assertEquals("sanity: test setup assumes that initial mode is single", 

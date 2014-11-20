@@ -27,6 +27,9 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
@@ -38,6 +41,9 @@ import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
  * Tests behaviour of MultipleSelection api.
+ * 
+ * Note: as of 8u40b9, table/list autofocus to 0 for not-empty items. This
+ * test reverts to -1!
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -262,7 +268,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().clearAndSelect(end - 1);
         assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
-        assertTrue("must be single remove but was " + c, wasSingleRemoved(c));
+        assertTrue("must be single replace but was " + c, wasSingleReplaced(c));
     }
     
 //-------------------- items modification    
@@ -279,7 +285,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      */
     @Test
     public void testSelectedOnInsertUncontainedSingle() {
-        Object uncontained = "uncontained";
+        Object uncontained = "inserted-formerly-uncontained";
         // prepare state
         getSelectionModel().select(uncontained);
         assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
@@ -289,6 +295,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         items.add(insertIndex, uncontained);
         assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
         assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
+        assertTrue("selectedItem must be in selectedItems " + uncontained, getSelectionModel().getSelectedItems().contains(uncontained));
+        assertTrue("selectedIndex must be in selectedIndices " + insertIndex, getSelectionModel().getSelectedIndices().contains(insertIndex));    
     }
     
     /**
@@ -317,12 +325,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * changed to enforce class invariant above. Added setSelectedIndex(-1)
      * if item uncontained.<p>
      * 
+     * In contrast to the xxSingle method, here we select a range: must work as 
+     * expected for both modes.
+     * 
      * @see #testSelectedOnInsertUncontainedSingle()
      */
     @Test
     public void testSelectedOnInsertUncontainedMultiple() {
-        if (!multipleMode)
-            return;
+//        if (!multipleMode)
+//            return;
         Object uncontained = "uncontained";
         // prepare state, select a range
         int start = 3;
@@ -333,8 +344,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(uncontained);
         assertEquals("sanity: having uncontained selectedItem", uncontained,
                 getSelectionModel().getSelectedItem());
-        assertEquals("sanity: selected index removed ", -1, getSelectionModel()
-                .getSelectedIndex());
+        assertEquals("sanity: selected index removed ", -1, 
+                getSelectionModel().getSelectedIndex());
         // make uncontained part of the items
         int insertIndex = 3;
         items.add(insertIndex, uncontained);
@@ -342,6 +353,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
                 getSelectionModel().getSelectedItem());
         assertEquals("selectedIndex updated", insertIndex, getSelectionModel()
                 .getSelectedIndex());
+        assertTrue("selectedItem must be in selectedItems " + uncontained, 
+                getSelectionModel().getSelectedItems().contains(uncontained));
+        assertTrue("selectedIndex must be in selectedIndices " + insertIndex, 
+                getSelectionModel().getSelectedIndices().contains(insertIndex));    
     }
 
     /**
@@ -353,7 +368,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testSelectedItemUncontainedInSelectedItemsSingle() {
         Object uncontained = "uncontained";
         getSelectionModel().select(uncontained);
-        assertFalse("uncontained selectedItem part of selectedItems?", getSelectionModel().getSelectedItems().contains(uncontained));
+        assertFalse("uncontained selectedItem part of selectedItems?", 
+                getSelectionModel().getSelectedItems().contains(uncontained));
     }
     
     /**
@@ -482,24 +498,106 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * the selectedIndex is removed). Most implementations move the index to
      * an adjacent index, so this test my fail for custom implemenations.
      * Unexpected failure for SimpleListSelectionModel.
+     * 
+     * Not quite: whatever the strategy, _if_ selectedIndex > -1 it must be 
+     * part of selectedIndices and selectedItems must be updated along with it.
      */
     @Test
-    public void testRemoveSelectedItem_28637() {
+    public void testRemoveSelectedItemThatIsFirst_28637() {
         getSelectionModel().select(0);
         Object selectedItem = getSelectionModel().getSelectedItem();
         items.remove(selectedItem);
         int selected = getSelectionModel().getSelectedIndex();
+        assertRemoveItemAtSelected_28637(selected);
+    }
+    
+    protected void assertRemoveItemAtSelected_28637(int selected) {
         if (selected >= 0) {
             Object itemAfterRemove = getSelectionModel().getSelectedItem();
-                assertEquals(getSelectionModel().getSelectedItems().get(selected), 
-                        itemAfterRemove);
-//                if (items.contains(itemAfterRemove)) {
-//            }
+            assertEquals("selectedIndices must not be empty if selected index = " + selected, 
+                    1, getSelectionModel().getSelectedIndices().size());
+            assertEquals("index contained for " + selected, 
+                    selected, getSelectionModel().getSelectedIndices().get(0));
+            assertEquals("selectedItems must not be empty if selected index = " + selected, 
+                    1, getSelectionModel().getSelectedItems().size());
+            assertEquals("item contained for " + selected,
+                    itemAfterRemove, 
+                    getSelectionModel().getSelectedItems().get(0)); 
         } else {
             fail("selectedIndex must not be -1 was: " + selected);
         }
     }
     
+    @Test
+    public void testRemoveSelectedItemThatIsLast_28637() {
+        getSelectionModel().select(items.size() - 1);
+        Object selectedItem = getSelectionModel().getSelectedItem();
+        items.remove(selectedItem);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertRemoveItemAtSelected_28637(selected);
+    }
+    
+    @Test
+    public void testRemoveSelectedItemThatIsMiddle_28637() {
+        getSelectionModel().select(3);
+        Object selectedItem = getSelectionModel().getSelectedItem();
+        items.remove(selectedItem);
+        int selected = getSelectionModel().getSelectedIndex();
+        assertRemoveItemAtSelected_28637(selected);
+    }
+
+    /**
+     * Yet another test on clearing the items: test selection state for single
+     * selected item
+     */
+    @Test
+    public void testSelectedOnClearItemsSingle() {
+        int index = 2;
+        getSelectionModel().select(index);
+        items.clear();
+        assertTrue("selection must be empty", getSelectionModel().isEmpty());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(null, getSelectionModel().getSelectedItem());
+        assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
+        assertTrue("", getSelectionModel().getSelectedItems().isEmpty());
+        assertEquals("focus must be cleared", -1, getFocusModel().getFocusedIndex());
+    }
+    
+    /**
+     * Yet another test on clearing the items: test selection state for multiple
+     * selections
+     */
+    @Test
+    public void testSelectedOnClearItemsRange() {
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        items.clear();
+        assertTrue("selection must be empty", getSelectionModel().isEmpty());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(null, getSelectionModel().getSelectedItem());
+        assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
+        assertTrue("", getSelectionModel().getSelectedItems().isEmpty());
+        assertEquals("focus must be cleared", -1, getFocusModel().getFocusedIndex());
+    }
+    
+    /**
+     * Test that uncontained selectedItem isn't changed when clearing 
+     * out items.
+     */
+    @Test
+    public void testSelectedUncontainedOnClearItems() {
+        Object uncontained = "uncontained";
+        getSelectionModel().selectRange(2, 6);
+        getSelectionModel().select(uncontained);
+        items.clear();
+        assertTrue("selection must be empty", getSelectionModel().isEmpty());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+    }
+    
+    
+
     /**
      * Regression testing 
      * https://javafx-jira.kenai.com/browse/RT-38884
@@ -1168,6 +1266,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * 
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testIndicesSelectedIndexIsUpdatedAfterUnselect() {
         if (!multipleMode) return;
         int[] indices = new int[] {2,3};
@@ -1324,6 +1423,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         view = createView(items);
+        // PENDING JW: revert autoFocus!
+        getFocusModel().focus(-1);
     }
     
     protected abstract V createView(ObservableList items);

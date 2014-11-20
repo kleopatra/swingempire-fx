@@ -151,7 +151,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      */
     private void permutate(Change<? extends Integer> c) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("TBD: implement permutation changes");
+//        throw new UnsupportedOperationException("TBD: implement permutation changes");
     }
 
     @Override

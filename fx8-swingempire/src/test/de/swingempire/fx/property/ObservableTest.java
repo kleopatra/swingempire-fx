@@ -41,6 +41,18 @@ import static org.junit.Assert.*;
 public class ObservableTest {
 
     /**
+     * Invalidation not fired on same value.
+     */
+    @Test
+    public void testObjectPropertySameItem() {
+        int index = 10;
+        IntegerProperty p = new SimpleIntegerProperty(index);
+        InvalidationReport report = new InvalidationReport(p);
+        p.set(index);
+        assertEquals(0, report.getEventCount());
+    }
+    
+    /**
      * ObjectProperty fires on !equal only, sanity check here.
      * So why does TableRowSkin gets notified when re-setting
      * item with equals?

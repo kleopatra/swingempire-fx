@@ -38,6 +38,12 @@ public class ListChangeReport implements ListChangeListener {
         return changes.size();
     }
     
+    public void prettyPrint() {
+        Change c = getLastChange();
+        if (c == null) return;
+        FXUtils.prettyPrint(c);
+        c.reset();
+    }
     /**
      * @return
      */

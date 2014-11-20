@@ -337,13 +337,15 @@ public class IndicesListTest {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
-
+        ListChangeReport itemsReport = new ListChangeReport(items);
         items.set(3, "newItem");
+//        itemsReport.prettyPrint();
         Arrays.sort(indices);
         for (int i = 0; i < indices.length; i++) {
             assertEquals("expected value at " + i, indices[i], indicesList.get(i).intValue());
         }
         assertEquals("selectedIndices unchanged", 1, report.getEventCount());
+//        report.prettyPrint();
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
 

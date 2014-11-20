@@ -289,8 +289,8 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     private void permutate(Change<? extends T> c) {
         // change completely after
         if (bitSet.nextSetBit(c.getFrom()) < 0) return;
-        if (true)
-            throw new UnsupportedOperationException("permutation not yet implemented");
+        if (true) return;
+//            throw new UnsupportedOperationException("permutation not yet implemented");
         int from = c.getFrom();
         int to = c.getTo();
         BitSet oldIndices = (BitSet) bitSet.clone();
