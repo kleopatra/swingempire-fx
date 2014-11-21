@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
+public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
     
     
@@ -188,7 +188,7 @@ public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIs
         assertEquals(1, rt_37360_remove_count);
     }
     
-    public ListMultipleSelectionIssues(boolean multiple) {
+    public ListCoreMultipleSelectionIssues(boolean multiple) {
         super(multiple);
     }
  
@@ -214,7 +214,7 @@ public class ListMultipleSelectionIssues extends AbstractListMultipleSelectionIs
 
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ListMultipleSelectionIssues.class
+    private static final Logger LOG = Logger.getLogger(ListCoreMultipleSelectionIssues.class
         .getName());
 
 

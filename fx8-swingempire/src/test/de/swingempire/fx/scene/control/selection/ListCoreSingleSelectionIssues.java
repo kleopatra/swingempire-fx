@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
+public class ListCoreSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
 
 
     /**
@@ -55,7 +55,7 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
     /**
      * @param multiple
      */
-    public ListSingleSelectionIssues(boolean multiple) {
+    public ListCoreSingleSelectionIssues(boolean multiple) {
         super(multiple);
     }
 
@@ -97,5 +97,5 @@ public class ListSingleSelectionIssues extends SingleSelectionIssues<ListView, M
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ListSingleSelectionIssues.class.getName());
+            .getLogger(ListCoreSingleSelectionIssues.class.getName());
 }
