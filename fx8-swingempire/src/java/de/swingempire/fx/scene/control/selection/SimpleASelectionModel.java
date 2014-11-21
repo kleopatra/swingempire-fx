@@ -64,16 +64,18 @@ public class SimpleASelectionModel<T> extends
     }
 
     /**
-     * Note: "Keeps the anchor unchanged" - not so easy: super calls clearSelection
-     * on clearAt last selected index. Could re-set the anchor or maybe add a flag
-     * (dooooh... ) and not clear in clearSelection?
+     * Note: "Keeps the anchor unchanged" - not so easy or unwanted? See super.
+     * 
+     * PENDING JW:
+     * Here we clear if anchor unselected. That's different from AnchoredListSelectionModel:
+     * there we don't due to interference by super.
      */
     @Override
     public void clearSelection(int index) {
         boolean anchorCleared = isAnchor(index);
         super.clearSelection(index);
         if (isEmpty() || anchorCleared) {
-//            clearAnchor();
+            clearAnchor();
         }
     }
     
@@ -108,8 +110,20 @@ public class SimpleASelectionModel<T> extends
     }
     
     
-
-//------------------ TODO overrides of MultipleSelectionModel navigational methods
+// helpers
+    
+    /**
+     * Override intention was to update anchor along with selectedIndex - 
+     * got more failing tests, though. Hmm ... double adjust?
+     * Maybe could remove anchor handling from methods above?
+     * 
+     */
+    @Override
+    protected void syncSingleSelectionState(int selectedIndex) {
+        super.syncSingleSelectionState(selectedIndex);
+//        setAnchorIndex(selectedIndex);
+    }
+    
     
     /**
      * @param index
@@ -120,6 +134,7 @@ public class SimpleASelectionModel<T> extends
         return index == getAnchorIndex();
     }
 
+
     /**
      * 
      */
@@ -127,18 +142,7 @@ public class SimpleASelectionModel<T> extends
         setAnchorIndex(-1);
     }
     
-    /**
-     * Overridden to update Anchor
-     */
-//    @Override
-//    protected void shiftSelection(int position, int shift,
-//            Callback<ShiftParams, Void> callback) {
-//        int oldAnchor = getAnchorIndex();
-//        super.shiftSelection(position, shift, callback);
-//        if (position <= oldAnchor)
-//            setAnchorIndex(oldAnchor + shift);
-//    }
-
+    
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

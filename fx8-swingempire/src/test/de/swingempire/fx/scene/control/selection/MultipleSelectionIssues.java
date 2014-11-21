@@ -95,6 +95,19 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             assertEquals(items.get(index), selectedItems.get(i));
         }
     }
+    @Test
+    public void testSelectedIndicesSize() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {1, 8, 3};
+        getSelectionModel().selectIndices(first, indices);
+        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
+        assertEquals("all indices selected", indices.length + 1, selectedIndices.size());
+        assertTrue("must be contained: " + first, selectedIndices.contains(first));
+        for (int i = 0; i < indices.length; i++) {
+            assertTrue("must be contained: " + indices[i], selectedIndices.contains(indices[i]));
+        }
+    }
     /**
      * Any sort on selectedIndices? Or correlation of position of
      * selectedIndices/items?
@@ -114,6 +127,48 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             assertTrue("sorted but was (prev/ current) " + previous + " / " + current, current > previous);
             previous = current;
         }
+    }
+    
+    @Test
+    public void testSelectedIndicesDuplicate() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {3, 8, 3};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectIndices(first, indices);
+        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+    }
+    
+    @Test
+    public void testSelectedIndicesDuplicateSelectedIndex() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {3, 8, 3};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectIndices(first, indices);
+        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+        assertEquals(indices[indices.length-1] , getSelectionModel().getSelectedIndex());
+    }
+    
+    
+    @Test
+    public void testSelectedIndicesOffRange() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {3, 8, 100};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectIndices(first, indices);
+        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+    }
+    
+    @Test
+    public void testSelectedIndicesOffNegative() {
+        if (!multipleMode) return;
+        int first = 7;
+        int[] indices = new int[] {3, 8, -100};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectIndices(first, indices);
+        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
     }
     /**
      * Why do we get a permutated? How are we supposed to use it?
@@ -1406,6 +1461,21 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int index = end - 1;
         int selectionSize = getSelectionModel().getSelectedIndices().size();
         getSelectionModel().clearSelection(items.size());
+        assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
+        assertEquals("index must still be cleared", 
+                index, getSelectionModel().getSelectedIndex());
+        assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
+        assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
+    }
+    
+    @Test
+    public void testClearSelectionAtUnselectedIndex() {
+        int start = 2;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int index = end - 1;
+        int selectionSize = getSelectionModel().getSelectedIndices().size();
+        getSelectionModel().clearSelection(end);
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
         assertEquals("index must still be cleared", 
                 index, getSelectionModel().getSelectedIndex());

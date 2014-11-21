@@ -4,6 +4,10 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -78,38 +82,46 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 
     /**
      * PENDING JW: need to enforce single mode 
-     * @param index
-     * @param indices
+     * @param index must be valid?
+     * @param indices 
      */
     @Override
     public void selectIndices(int index, int... indices) {
-        int toBeSelectedIndex;
-        int[] all;
-        int indicesSize = indices != null ? indices.length : 0;
-        if (indicesSize == 0) {
-            // PENDING JW: check for allowed
-            toBeSelectedIndex = index;
-        } else {
-            toBeSelectedIndex = indices[indices.length -1];
+        if (indices == null) indices = new int[0];
+        List<Integer> validIndices = new ArrayList<>();
+        if (isSelectable(index)) validIndices.add(index);
+        for (Integer value : indices) {
+            if (isSelectable(value)) validIndices.add(value);
         }
-        
-        if (indicesSize == 0 || getSelectionMode() == SelectionMode.SINGLE) {
-            all = new int[1];
-            all[0] = toBeSelectedIndex;
-        } else {
-            all = new int[indicesSize + 1];
-            all[0] = index;
-            System.arraycopy(indices, 0, all, 1, indicesSize);
-        }   
-        if (getSelectionMode() == SelectionMode.SINGLE) {
-            indicesList.setIndices(all);
-        } else {
-            indicesList.addIndices(all);
+        if (validIndices.isEmpty()) return;
+        // arggghhh ....
+        int[] all = new int[validIndices.size()];
+        for (int i = 0; i < validIndices.size(); i++) {
+            all[i] = validIndices.get(i);
         }
-        syncSingleSelectionState(toBeSelectedIndex);
-//        setSelectedIndex(toBeSelectedIndex);
+        doSelectIndices(true, all);
     }
 
+    /**
+     * Adds/sets the given indices. Enforces selectionMode. Last index in
+     * array will be selectedIndex.
+     * 
+     * @param add flag to control add/set, if true will be added, will 
+     *    be set otherwise.
+     * @param indices the indices to set, must have minimal length of 1 and only
+     *   contain indices that are in-range.
+     */
+    protected void doSelectIndices(boolean add, int... indices) {
+        if (getSelectionMode() == SelectionMode.SINGLE) {
+            add = false;
+        }        
+        if (add) {    
+            indicesList.addIndices(indices);
+        } else {
+            indicesList.setIndices(indices);
+        }
+        syncSingleSelectionState(indices[indices.length - 1]);
+    }
     /**
      * {@inheritDoc} <p>
      * Overridden to do nothing if start or end are off range.
@@ -127,6 +139,19 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         super.selectRange(start, end);
     }
 
+    /**
+     * Updates single selectionState to selectedIndex. Called whenever
+     * selectedIndices are changed, either from directly the modifying method
+     * or on receiving changes from the backing list in itemsContentChanged.
+     * <p>
+     * 
+     * This impl implementation 
+     * <li> sets selectedIndex
+     * <li> sets selectedItem to item at selectedIndex or null if -1
+     * <li> focus to selectedIndex
+     * 
+     * @param selectedIndex
+     */
     protected void syncSingleSelectionState(int selectedIndex) {
         setSelectedIndex(selectedIndex);
         if (selectedIndex > -1) {
@@ -137,6 +162,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         } 
         focus(selectedIndex);
     }
+    
     @Override
     public void selectAll() {
         if (getSelectionMode() == SelectionMode.SINGLE) return;
@@ -147,8 +173,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     @Override
     public void clearAndSelect(int index) {
         if (!isSelectable(index)) return;
-        indicesList.setIndices(index);
-        syncSingleSelectionState(index);
+        doSelectIndices(false, index);
+//        indicesList.setIndices(index);
+//        syncSingleSelectionState(index);
     }
 
     /**
@@ -162,23 +189,28 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     @Override
     public void select(int index) {
         if (!isSelectable(index)) return;
-        if (getSelectionMode() == SelectionMode.SINGLE) {
-            clearAndSelect(index);
-        } else {
-            indicesList.addIndices(index);
-            syncSingleSelectionState(index);
-        }
+        doSelectIndices(true, index);
+//        if (getSelectionMode() == SelectionMode.SINGLE) {
+//            clearAndSelect(index);
+//        } else {
+//            indicesList.addIndices(index);
+//            syncSingleSelectionState(index);
+//        }
     }
 
     @Override
     public void select(T obj) {
-        int index = indicesList.getSource().indexOf(obj);
-        if (index > 0) {
+        int index = getItems().indexOf(obj);
+        if (index > -1) {
             select(index);
         } else {
-            setSelectedIndex(-1);
-            setSelectedItem(obj);
+            selectExternalItem(obj);
         }
+    }
+
+    protected void selectExternalItem(T obj) {
+        setSelectedIndex(-1);
+        setSelectedItem(obj);
     }
 
     /**
@@ -186,9 +218,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      */
     @Override
     public void clearSelection(int index) {
-//        if (!isSelectable(index));
+        if (!isSelected(index)) return;
         indicesList.clearIndices(index);
-        
+        syncSingleSelectionState(-1);
     }
 
     @Override
@@ -350,4 +382,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     protected abstract int getFocusedIndex();
     
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(AbstractSelectionModelBase.class.getName());
 }

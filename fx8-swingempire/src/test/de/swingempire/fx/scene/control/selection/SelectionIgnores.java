@@ -13,6 +13,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
  */
 public class SelectionIgnores {
     
+    
     /**
      * Condition to ignore tests which involve anchor.Used only while adding a new
      * SelectionModel - should be enable again when a evolution round is complete.

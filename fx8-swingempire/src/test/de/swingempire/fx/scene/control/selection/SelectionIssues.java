@@ -178,6 +178,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(index, getAnchorIndex(index));
     }
     
+    /**
+     * Remove above: doesn't sound like RT-30931, no ambiguity if selected/focused
+     * not involved.
+     */
     @Test
     public void testFocusOnRemoveItemAbove() {
         int index = 2;
@@ -360,6 +364,14 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection(index);
         assertEquals("focus must be cleared", -1, getFocusIndex(-1));
     }
+    
+    @Test
+    public void testFocusOnClearSelectionAtUnselected() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index + 1);
+        assertEquals("focus must be unchanged on clear of unselected", index, getFocusIndex(index));
+    }
     @Test
     public void testFocusOnSelectNext() {
         int index = 2;
@@ -460,6 +472,16 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection(index);
         assertEquals("anchor must be cleared", 
                 -1, getAnchorIndex(-1));
+    }
+    
+    @Test
+    public void testAnchorClearSelectionAtUnselected() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index + 1);
+        assertEquals("anchor must be unchanged on clear unselected", 
+                index, getAnchorIndex(index));
     }
     
     @Test
@@ -683,7 +705,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         getSelectionModel().clearSelection(items.size());
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
-        assertEquals("index must still be cleared", 
+        assertEquals("index must still be selected", 
                 index, getSelectionModel().getSelectedIndex());
         
     }

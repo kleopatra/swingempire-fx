@@ -62,7 +62,7 @@ public class SimpleListSelectionModel<T> extends AbstractSelectionModelBase<T> {
     protected void itemsChanged(Change<? extends T> c) {
         super.itemsChanged(c);
         if (listView.getFocusModel() instanceof FocusModelSlave) {
-            updateFocus(c);
+//            updateFocus(c);
         }
     }
 
