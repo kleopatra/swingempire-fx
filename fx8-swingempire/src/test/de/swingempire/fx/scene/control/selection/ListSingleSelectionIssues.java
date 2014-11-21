@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 /**
  * Testing singleselection api in ListViewSelectionModel in both selection modes.
+ * Here we test unchanged core ListView with core selection/focusModel.
  * 
  * @author Jeanette Winzenburg, Berlin
  */

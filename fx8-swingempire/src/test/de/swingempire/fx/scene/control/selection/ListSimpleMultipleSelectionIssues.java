@@ -26,7 +26,10 @@ import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel;
 import static org.junit.Assert.*;
 
 /**
- * Testing core listView configured with SimpleSelectionModel.
+ * Testing MultipleSelection api for both modes.
+ * 
+ * Here we test core ListView configured with SimpleListViewSelectionModel.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

@@ -18,18 +18,25 @@ import org.junit.runners.Parameterized;
 import static org.junit.Assert.*;
 
 /**
- * Testing MultipleSelection api in ListViewSelectionModel in both selection modes.
- * <p>
+ * Test MultipleSelection api for both modes.
  * 
- * Here we test ListViewAnchored which is configured with enhanced (core) 
- * ListViewBitSelectionModel implementing anchored and a slave focusModel.
- * Skin/behaviour rely on selectionModel handling anchor.
+ * Here we test a ListViewAnchored configured with SimpleAListSelectionModel 
+ * (which is using indicesList/indexMappedItems). 
+ * Skin/behaviour relies on the model for anchor handling. <p>
  * 
+ * 
+ * Hierarchy of SM: <p>
+ * AbstractSelectionModel <- SimpleListViewSelectionModel <- SimpleAListViewSelectionModel.
+ * 
+ * Note: failing tests - might be due to focusModel being slave but simpleA
+ * not yet updating correctly.
+ * 
+ *  
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
+public class ListSimpleAMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
     
     
@@ -46,13 +53,14 @@ public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSel
         assertEquals(focus, getAnchorIndex());
     }
     
-    public ListAnchoredMultipleSelectionIssues(boolean multiple) {
+    public ListSimpleAMultipleSelectionIssues(boolean multiple) {
         super(multiple);
     }
  
     @Override
     protected ListViewAnchored createView(ObservableList items) {
         ListViewAnchored listView = new ListViewAnchored(items);
+        listView.setSelectionModel(new SimpleASelectionModel<>(listView));
         // disable default selection
         listView.getProperties().put("selectFirstRowByDefault", Boolean.FALSE);
         // initial focus on 0 (as of 8u40b9), force into unfocused
@@ -78,7 +86,7 @@ public class ListAnchoredMultipleSelectionIssues extends AbstractListMultipleSel
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ListAnchoredMultipleSelectionIssues.class
+    private static final Logger LOG = Logger.getLogger(ListSimpleAMultipleSelectionIssues.class
             .getName());
 
     @Override

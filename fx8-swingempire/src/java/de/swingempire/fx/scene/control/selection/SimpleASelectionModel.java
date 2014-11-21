@@ -6,31 +6,24 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.selection.MultipleSelectionModelBase.ShiftParams;
-import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.util.Callback;
 
 
 /**
- * Subclass of ListViewBitSetSelectionModel (copy! because it's private) that 
- * implements AnchoredSelectionModel.<p>
+ * Subclass of SimpleListSelectionModel that implements AnchoredSelectionModel.<p>
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class AnchoredListViewSelectionModel<T> extends
-        ListViewBitSetSelectionModel<T> implements AnchoredSelectionModel {
-//        SimpleListSelectionModel<T> implements AnchoredSelectionModel {
+public class SimpleASelectionModel<T> extends
+//        ListViewBitSetSelectionModel<T> implements AnchoredSelectionModel {
+        SimpleListSelectionModel<T> implements AnchoredSelectionModel {
     /**
      * @param listView
      */
-    public AnchoredListViewSelectionModel(ListView<T> listView) {
+    public SimpleASelectionModel(ListView<T> listView) {
         super(listView);
     }
 
@@ -137,17 +130,17 @@ public class AnchoredListViewSelectionModel<T> extends
     /**
      * Overridden to update Anchor
      */
-    @Override
-    protected void shiftSelection(int position, int shift,
-            Callback<ShiftParams, Void> callback) {
-        int oldAnchor = getAnchorIndex();
-        super.shiftSelection(position, shift, callback);
-        if (position <= oldAnchor)
-            setAnchorIndex(oldAnchor + shift);
-    }
+//    @Override
+//    protected void shiftSelection(int position, int shift,
+//            Callback<ShiftParams, Void> callback) {
+//        int oldAnchor = getAnchorIndex();
+//        super.shiftSelection(position, shift, callback);
+//        if (position <= oldAnchor)
+//            setAnchorIndex(oldAnchor + shift);
+//    }
 
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(AnchoredListViewSelectionModel.class.getName());
+            .getLogger(SimpleASelectionModel.class.getName());
 }

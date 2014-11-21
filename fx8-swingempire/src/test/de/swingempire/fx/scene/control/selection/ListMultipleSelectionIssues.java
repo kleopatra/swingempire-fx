@@ -23,6 +23,10 @@ import org.junit.runners.Parameterized;
 import static org.junit.Assert.*;
 
 /**
+ * Testing MultipleSelection api in both modes.
+ * 
+ * Here we test unchanged core ListView with core selection/focusModel.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

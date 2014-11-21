@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
 /**
  * Testing singleselection api in ListViewSelectionModel in both selection modes.
  * 
+ * Here we test core ListView configured with SimpleListViewSelectionModel.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -68,7 +70,8 @@ public class ListSimpleSingleSelectionIssues extends SingleSelectionIssues<ListV
         checkMode(model);
         // PENDING JW: here we interfer with initial state! Need to check how 
         // tests (except those checking initial state) might be affected 
-        table.getFocusModel().focus(table.getSelectionModel().getSelectedIndex());
+        // now done in super
+//        table.getFocusModel().focus(table.getSelectionModel().getSelectedIndex());
         // PENDING JW: this is crude ... think of doing it elsewhere
         // the problem is to keep super blissfully unaware of possible modes
         assertEquals(multipleMode, model.getSelectionMode() == SelectionMode.MULTIPLE);
