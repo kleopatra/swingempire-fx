@@ -36,7 +36,6 @@ public class SimpleListSelectionModel<T> extends AbstractSelectionModelBase<T> {
         indexedItems = new IndexMappedList<>(indicesList);
         
         itemsList.addListener(weakItemsContentListener);
-//        itemsList.addListener((ListChangeListener<T>) (c -> itemsChanged(c))); 
     }
     
     @Override
@@ -50,8 +49,6 @@ public class SimpleListSelectionModel<T> extends AbstractSelectionModelBase<T> {
         if (listView.getFocusModel() == null) return -1;
         return listView.getFocusModel().getFocusedIndex();
     }
-
-    
     
     @Override
     protected FocusModel<T> getFocusModel() {

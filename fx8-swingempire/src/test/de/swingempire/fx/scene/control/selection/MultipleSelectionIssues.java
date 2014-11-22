@@ -1385,7 +1385,19 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         
     }
-    
+
+//----------------------- test single selection enforce in singleMode    
+    /**
+     * 
+     */
+    @Test
+    public void testSingleModeIndices() {
+        if (multipleMode) return;
+        int first = 2;
+        int[] indices = new int[] {3, 7, 4};
+        getSelectionModel().selectIndices(first, indices);
+        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+    }
         
     /** 
      * Test select(-1) must do nothing - this differs from the single selection

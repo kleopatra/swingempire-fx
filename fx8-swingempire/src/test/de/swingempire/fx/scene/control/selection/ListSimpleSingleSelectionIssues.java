@@ -22,6 +22,11 @@ import static org.junit.Assert.*;
  * 
  * Here we test core ListView configured with SimpleListViewSelectionModel.
  * 
+ * Note: using focus slave makes all tests for singleSelectionIssuespass 
+ * (except the sort-related, which is not
+ * yet implemented). Doing the same for MultipleSelectionIssues increases the 
+ * failures. WHY?<p>
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -64,6 +69,7 @@ public class ListSimpleSingleSelectionIssues extends SingleSelectionIssues<ListV
     protected ListView createView(ObservableList items) {
         ListView table = new ListView(items);
         table.setSelectionModel(new SimpleListSelectionModel<>(table));
+//        table.setFocusModel(new ListViewAFocusModel<>(table));
         MultipleSelectionModel model = table.getSelectionModel();
         assertEquals("sanity: test setup assumes that initial mode is single", 
                 SelectionMode.SINGLE, model.getSelectionMode());

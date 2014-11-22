@@ -29,6 +29,11 @@ import static org.junit.Assert.*;
  * Testing MultipleSelection api for both modes.
  * 
  * Here we test core ListView configured with SimpleListViewSelectionModel.
+ * <p>
+ * Note: using focus slave makes all tests for singleSelectionIssuespass 
+ * (except the sort-related, which is not
+ * yet implemented). Doing the same for MultipleSelectionIssues increases the 
+ * failures. WHY?
  * 
  * @author Jeanette Winzenburg, Berlin
  */

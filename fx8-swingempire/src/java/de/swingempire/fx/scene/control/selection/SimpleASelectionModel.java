@@ -85,8 +85,6 @@ public class SimpleASelectionModel<T> extends
         clearAnchor();
     }
 
-//------------------ TODO (?) overrides of selectionModel navigational methods   
-    
     
 //------------------ TODO overrides of MultipleSelectionModel base methods
     

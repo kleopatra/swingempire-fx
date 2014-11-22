@@ -211,9 +211,17 @@ public class SelectionAndModification extends Application {
 //        listView.getProperties().put("selectFirstRowByDefault", false);
 
         listView.setItems(createList());
+        
+        ListFacade listSView = new ListFacade<>();
+        listSView.setSelectionModel(new SimpleListSelectionModel<>(listSView));
+        listSView.setItems(createList());
 
         ListXFacade listXView = new ListXFacade();
         listXView.setItems(createList());
+        
+        ListXFacade listXAView = new ListXFacade();
+        listXAView.setSelectionModel(new SimpleASelectionModel<>(listXAView));
+        listXAView.setItems(createList());
         
         Map<String, Consumer<Facade>> actionMap = createActions();
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
@@ -221,6 +229,8 @@ public class SelectionAndModification extends Application {
         configureActions(table, actionMap, inputMap);
         configureActions(listView, actionMap, inputMap);
         configureActions(listXView, actionMap, inputMap);
+        configureActions(listXAView, actionMap, inputMap);
+        configureActions(listSView, actionMap, inputMap);
         
         GridPane info = new GridPane ();
         info.setPadding(new Insets(20));
@@ -230,7 +240,7 @@ public class SelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        Pane content = new HBox(table, listView, listXView, info);
+        Pane content = new HBox(/*table, */ listView, listSView, listXView, listXAView, info);
         CheckBox check = new CheckBox("MultipleMode");
         check.setOnAction(e -> {
             LOG.info("isSelected: " + check.isSelected());
@@ -239,6 +249,8 @@ public class SelectionAndModification extends Application {
             listView.getSelectionModel().setSelectionMode(newMode);
             table.getSelectionModel().setSelectionMode(newMode);
             listXView.getSelectionModel().setSelectionMode(newMode);
+            listSView.getSelectionModel().setSelectionMode(newMode);
+            listXAView.getSelectionModel().setSelectionMode(newMode);
         });
         Pane buttons = new HBox(check);
 //        Pane content = new HBox(table, listView, info);

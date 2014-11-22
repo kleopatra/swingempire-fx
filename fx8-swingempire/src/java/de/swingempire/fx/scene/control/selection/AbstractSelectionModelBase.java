@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javafx.collections.ListChangeListener;
@@ -17,11 +18,13 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
+import de.swingempire.fx.control.SynchScrollBars;
 
 /**
  * Replacement of MultipleSelectionModelBase. Uses TransformLists to handle selectedIndices/-items.
  * 
  * Note: for now, this assumes an observableList as backing items.<p>
+ * 
  * 
  * PENDING JW: 
  * 
@@ -49,6 +52,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     protected IndexMappedList<T> indexedItems;
     /**
      * The default listener installed on backing list to monitor list changes.
+     * Implemented to call itemsChanged.
      */
     protected ListChangeListener<T> itemsContentListener = c -> itemsChanged(c);
     /**
@@ -67,7 +71,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 //            // cases over in MultipleSelectionModel.
 //            setSelectedItem(getModelItem(getSelectedIndex()));
 //        });
-        
     }
     
     @Override
@@ -110,10 +113,13 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      *    be set otherwise.
      * @param indices the indices to set, must have minimal length of 1 and only
      *   contain indices that are in-range.
+     * @throws NullPointerException if indices are null
      */
     protected void doSelectIndices(boolean add, int... indices) {
+        Objects.requireNonNull(indices, "indices must not be null");
         if (getSelectionMode() == SelectionMode.SINGLE) {
             add = false;
+            indices = new int[] {indices[indices.length -1]};
         }        
         if (add) {    
             indicesList.addIndices(indices);
@@ -122,6 +128,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         }
         syncSingleSelectionState(indices[indices.length - 1]);
     }
+    
     /**
      * {@inheritDoc} <p>
      * Overridden to do nothing if start or end are off range.
@@ -141,7 +148,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 
     /**
      * Updates single selectionState to selectedIndex. Called whenever
-     * selectedIndices are changed, either from directly the modifying method
+     * selectedIndices are changed, either directly from the modifying methods
      * or on receiving changes from the backing list in itemsContentChanged.
      * <p>
      * 
@@ -174,8 +181,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     public void clearAndSelect(int index) {
         if (!isSelectable(index)) return;
         doSelectIndices(false, index);
-//        indicesList.setIndices(index);
-//        syncSingleSelectionState(index);
     }
 
     /**
@@ -190,12 +195,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     public void select(int index) {
         if (!isSelectable(index)) return;
         doSelectIndices(true, index);
-//        if (getSelectionMode() == SelectionMode.SINGLE) {
-//            clearAndSelect(index);
-//        } else {
-//            indicesList.addIndices(index);
-//            syncSingleSelectionState(index);
-//        }
     }
 
     @Override
@@ -208,13 +207,20 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         }
     }
 
+    /**
+     * Selects an item that is not contained in the backing list and updates
+     * single selection state as needed.<p>
+     * 
+     * This implementation clears selected index.
+     * 
+     * @param obj
+     */
     protected void selectExternalItem(T obj) {
-        setSelectedIndex(-1);
         setSelectedItem(obj);
+        setSelectedIndex(-1);
     }
 
     /**
-     * PENDING JW: still missing sync of single selection state
      */
     @Override
     public void clearSelection(int index) {
@@ -262,7 +268,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (current < 0 && getItemCount() == 0) return;
         int next = current + 1;
         select(next);
-
     }
 
     @Override
@@ -270,11 +275,13 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (getItemCount() == 0) return;
         select(0);
     }
+    
     @Override
     public void selectLast() {
         if (getItemCount() == 0) return;
         select(getItemCount() - 1);
     }
+    
     /**
      * Returns the number of items in the data model that underpins the control.
      * An example would be that a ListView selection model would likely return
@@ -299,7 +306,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         return indicesList.getSource().get(index);
     };
     
-    
     /**
      * IndicesList/IndexMappedItems have taken care of updating selectedIndices/-items,
      * here we need to update selectedIndex/selectedItem.
@@ -317,9 +323,11 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // the selectedIndex wouldn't be < 0) but now might be
             if (oldSelectedItem != null && getItems().contains(oldSelectedItem)) {
                 int selectedIndex = getItems().indexOf(oldSelectedItem);
+                // need to select vs. sync because can't yet be in selectedIndices
+                if (indicesList.contains(selectedIndex)) 
+                    throw new IllegalStateException("new selectedIndex cannot be in indices " + selectedIndex);
                 select(selectedIndex);
             }
-            
             return;
         }
         // we had selectedItem/index pair that was part of the model
@@ -328,6 +336,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             clearSelection();
             return;
         }
+        
+        // since here: oldSelectedIndex > -1 expected
+        if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
         
         // Note JW: isSelected tests whether the given index is part of selectedIndices
         // (even doc'ed as such - invalidly in SelectionModel)
@@ -344,7 +355,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // indices/items simply remove - we might need to do better
             // f.i. on set of single element or remove at selected 
             // latter is RT-30931
-//            syncSingleSelectionState(-1);
+            // syncSingleSelectionState(-1);
         }
         
         // test if item at selectedIndex had been replaced
@@ -358,18 +369,28 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
                 }
             }
             if (newSelectedIndex > -1) {
+                // the assumption is that the item at oldindex had been replaced, need
+                // implies that oldIndex == newIndex
+                if (newSelectedIndex != oldSelectedIndex) 
+                    throw new IllegalStateException("same old/new index expected but were " 
+                            + oldSelectedIndex + "/" +newSelectedIndex);
+                // index-related state unchanged, update item only
+//                setSelectedItem(getModelItem(newSelectedIndex));
+//                syncSingleSelectionState(newSelectedIndex);
                 select(newSelectedIndex);
                 return;
             }
         }
+        
         // index still valid
         if (oldSelectedIndex < getItems().size() 
             && !indicesList.contains(oldSelectedIndex)) {
+            // PENDING JW: when do we get here? 
+            // get here on set/remove/insertAt selectedIndex
             T newSelectedItem = getItems().get(oldSelectedIndex);
             String msg = "old/new/setSelectedItem: " + getSelectedItem() + "/" + newSelectedItem;
             select(oldSelectedIndex);
 //            LOG.info(msg + " / " + getSelectedItem());
-            
         }
     }
 
