@@ -361,6 +361,8 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         // test if item at selectedIndex had been replaced
         if (indicesList.contains(oldSelectedIndex)) {
             int newSelectedIndex = -1;
+            // JW: reset, just to be on the safe side, if it were accessed above
+            c.reset();
             while (c.next()) {
                 // PENDING JW: this is not good enough for multiple subchanges
                 if (c.wasReplaced() && c.getRemoved().contains(oldSelectedItem)) {
@@ -369,15 +371,15 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
                 }
             }
             if (newSelectedIndex > -1) {
-                // the assumption is that the item at oldindex had been replaced, need
+                // the assumption is that the item at oldindex had been replaced 
                 // implies that oldIndex == newIndex
                 if (newSelectedIndex != oldSelectedIndex) 
                     throw new IllegalStateException("same old/new index expected but were " 
                             + oldSelectedIndex + "/" +newSelectedIndex);
                 // index-related state unchanged, update item only
 //                setSelectedItem(getModelItem(newSelectedIndex));
-//                syncSingleSelectionState(newSelectedIndex);
-                select(newSelectedIndex);
+                syncSingleSelectionState(newSelectedIndex);
+//                select(newSelectedIndex);
                 return;
             }
         }
@@ -386,12 +388,15 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (oldSelectedIndex < getItems().size() 
             && !indicesList.contains(oldSelectedIndex)) {
             // PENDING JW: when do we get here? 
-            // get here on set/remove/insertAt selectedIndex
+            // get here on remove at selectedIndex, also multiple removes
             T newSelectedItem = getItems().get(oldSelectedIndex);
             String msg = "old/new/setSelectedItem: " + getSelectedItem() + "/" + newSelectedItem;
             select(oldSelectedIndex);
 //            LOG.info(msg + " / " + getSelectedItem());
+            return;
         }
+        // Permutation, remove (where?)
+        LOG.info("missed anything? " + c);
     }
 
     protected ObservableList<? extends T> getItems() {

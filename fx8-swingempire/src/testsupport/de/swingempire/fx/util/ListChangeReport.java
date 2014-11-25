@@ -44,16 +44,32 @@ public class ListChangeReport implements ListChangeListener {
         FXUtils.prettyPrint(c);
         c.reset();
     }
+    
     /**
-     * @return
+     * @return the last change, reset if available
      */
     public Change getLastChange() {
-        return hasChanges() ? changes.get(0) : null;
+        return getLastChange(true);
     }
     
+    /**
+     * Returns the last change that was received. Resets the change if reset == true,
+     * returns it unchanged otherwise.
+     * 
+     * @param reset
+     * @return
+     */
+    public Change getLastChange(boolean reset) {
+        Change c = hasChanges() ? changes.get(0) : null;
+        if (c != null && reset) {
+            c.reset();
+        }
+        return c;
+    }
     public ObservableList getLastValue() {
         return hasChanges() ? getLastChange().getList() : null;
     }
+    
     public boolean hasChanges() {
         return getEventCount() > 0;
     }

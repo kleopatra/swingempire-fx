@@ -14,9 +14,12 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.TransformationList;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,13 +28,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.sun.javafx.collections.SortHelper;
 
 import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -56,7 +60,7 @@ public class IndicesListTest {
      * interfere.
      */
     @Test
-    public void testListPropertyAsItems() {
+    public void testItemsIsListProperty() {
         ObjectProperty<ObservableList<String>> itemsProperty = new SimpleObjectProperty(
                 items);
         ListProperty<String> listItems = new SimpleListProperty<>();
@@ -80,7 +84,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testUpdate() {
+    public void testItemsUpdate() {
         ObservableList<Person> base = Person.persons();
         ObservableList<Person> persons = FXCollections.observableList(base, p -> new Observable[] {p.firstNameProperty()});
         IndicesList<Person> indicesList = new IndicesList<>(persons);
@@ -92,22 +96,98 @@ public class IndicesListTest {
         assertEquals(1, report.getEventCount());
     }
     
+    public static class TestIndicesList<F> extends TransformationList<Integer, F> {
+
+        SortHelper helper = new SortHelper();
+        List<Integer> indices;
+        /**
+         * @param source
+         */
+        public TestIndicesList(ObservableList<? extends F> source, int... initial) {
+            super(source);
+            indices = new ArrayList();
+            for (int i = 0; i < initial.length; i++) {
+                indices.add(initial[i]);
+            }
+        }
+
+        @Override
+        protected void sourceChanged(Change<? extends F> c) {
+            c.next();
+            if (!c.wasPermutated()) throw new IllegalStateException("permutations accepted, only");
+            beginChange();
+            List<Integer> copy = new ArrayList(indices);
+            for (int i = 0; i < copy.size(); i++) {
+                int newValue = c.getPermutation(copy.get(i));
+                indices.set(i, newValue);
+            }
+            int[] reverse = helper.sort(indices);
+            for (int i = 0; i < indices.size(); i++) {
+                nextSet(i, copy.get(reverse[i]));
+            }
+            endChange();
+        }
+
+        @Override
+        public int getSourceIndex(int index) {
+            return get(index);
+        }
+
+        @Override
+        public Integer get(int index) {
+            return indices.get(index);
+        }
+
+        @Override
+        public int size() {
+            return indices.size();
+        }
+
+    }
+    
+    @Test
+    public void testItemsPermutateSimulation() {
+        ObservableList<Integer> indices = new TestIndicesList(items, 1, 3, 5);
+        String msg = "indices before/after: " + indices + " / "; 
+        ListChangeReport report = new ListChangeReport(indices);
+        ListChangeReport itemsReport = new ListChangeReport(items);
+        items.sort(null);
+//        itemsReport.prettyPrint();
+//        report.prettyPrint();
+//        LOG.info(msg + indices);
+        
+    }
     /**
      * 
      */
     @Test
-    @ConditionalIgnore (condition = IgnoreNotYetImplemented.class)
-    public void testPermutate() {
-        fail("permutation not yet implemented");
-        int[] indices = new int[] { 3, 5, 1};
+    public void testItemsPermutate() {
+        int[] indices = new int[] { 1, 3, 5};
         indicesList.addIndices(indices);
         report.clear();
         ListChangeReport itemsReport = new ListChangeReport(items);
+        // permutation on items
+        // [0->8, 1->7, 2->6, 3->5, 4->4, 5->3, 6->2, 7->1, 8->0]
         items.sort(null);
+//        itemsReport.prettyPrint();
+        int[] permutated = new int[] {3, 5, 7};
 //        LOG.info("sortedItems" + itemsReport.getLastChange());
-        LOG.info("sorted: " + report.getLastChange());
+//        LOG.info("sorted: " + report.getLastChange());
+//        report.prettyPrint();
         assertEquals(1, report.getEventCount());
-        LOG.info("" + indicesList);
+        assertEquals(1, getChangeCount(report.getLastChange(), ChangeType.REPLACED));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        assertEquals("added size same", permutated.length, c.getAddedSize());
+        for (int i = 0; i < permutated.length; i++) {
+            assertEquals("added at " + i, permutated[i], c.getAddedSubList().get(i));
+        }
+        assertEquals("removed size same", indices.length, c.getRemovedSize());
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("removed at" + i, indices[i], c.getRemoved().get(i));
+        }
+//        LOG.info("" + indicesList);
     }
     
     @Test
@@ -121,7 +201,7 @@ public class IndicesListTest {
         assertTrue(wasSingleRemoved(report.getLastChange()));
     }
     @Test
-    public void testSetAllLargerSize() {
+    public void testItemsSetAllLargerSize() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -138,7 +218,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testSetAllSmallerSize() {
+    public void testItemsSetAllSmallerSize() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -154,7 +234,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testSetAllSameSize() {
+    public void testItemsSetAllSameSize() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -171,7 +251,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testSetAll() {
+    public void testItemsSetAll() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -187,7 +267,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemAddedBefore() {
+    public void testItemsAddedBefore() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -206,7 +286,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemRemovedBeforeAndWithFirst() {
+    public void testItemsRemovedBeforeAndWithFirst() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -226,14 +306,40 @@ public class IndicesListTest {
                 wasSingleReplaced(report.getLastChange()));
     }
     
-    
-    
     @Test
-    public void testItemRemovedBetweenReally() {
+    public void testItemsRemoveRange() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        // items we expect to appear in removed
+        List removedItems = new ArrayList();
+        removedItems.add(3);
+        removedItems.add(5);
+        report.clear();
+        // remove items at 3...5, inclusive
+        items.remove(3, 6);
+        assertEquals(1, indicesList.size());
+//        report.prettyPrint();
+        indices = new int[] {1};
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, indices[i], indicesList.get(i).intValue());
+        }
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single replaced but was" + report.getLastChange(), 
+                wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(2, c.getRemovedSize());
+        assertEquals(removedItems, c.getRemoved());
+        
+    }
+    /**
+     * Remove items in between selected.
+     */
+    @Test
+    public void testItemsRemovedBetweenReally() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
-//        new PrintingListChangeListener("Items removed at 2/4", indicesList);
         items.removeAll(items.get(2), items.get(4));
         assertEquals(indices.length, indicesList.size());
         indices = new int[] {1, 2, 3};
@@ -243,9 +349,15 @@ public class IndicesListTest {
         assertEquals(1, report.getEventCount());
         assertTrue("expected single replaced but was" + report.getLastChange(), 
                 wasSingleReplaced(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(2, c.getAddedSize());
+        assertEquals(c.getAddedSize(), c.getRemovedSize());
+//        report.prettyPrint();
     }
+    
     @Test
-    public void testItemRemovedSOAnswer() {
+    public void testItemsRemovedSOAnswer() {
         int[] indices = new int[] { 2, 4, 5, 8};
         indicesList.addIndices(indices);
         report.clear();
@@ -262,7 +374,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemRemovedAtAndBetween() {
+    public void testItemsRemovedAtAndBetween() {
         int[] indices = new int[] { 1, 3, 5, 7};
         indicesList.addIndices(indices);
         report.clear();
@@ -279,16 +391,16 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemRemovedAtFirst() {
+    public void testItemsRemovedAtFirst() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
         
-//        new PrintingListChangeListener("Items removed at 1", indicesList);
         items.remove(1);
         assertEquals(indices.length -1, indicesList.size());
         Arrays.sort(indices);
         indices = Arrays.copyOfRange(indices, 1, 3);
+        // note: since here, the indices are "shortend" at start!
         for (int i = 0; i < indices.length; i++) {
             indices[i] = indices[i] - 1;
         }
@@ -301,12 +413,10 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemRemovedBefore() {
+    public void testItemsRemovedBefore() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
-        
-//        new PrintingListChangeListener("Items removed before", indicesList);
         items.remove(0);
         for (int i = 0; i < indices.length; i++) {
             indices[i] = indices[i] - 1;
@@ -319,7 +429,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemReplacedBefore() {
+    public void testItemsReplacedBefore() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -333,7 +443,7 @@ public class IndicesListTest {
     }
     
     @Test
-    public void testItemReplacedAt() {
+    public void testItemsReplacedAt() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
@@ -349,7 +459,44 @@ public class IndicesListTest {
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
 
-//---------- temporary tests: check state of sourceChange
+//---------- tests: check state of sourceChange
+    
+    /**
+     * Try to let indexMappedItems handle their own cleanup on changes to items:
+     * make sourceChange a property and test if we can force notification order.
+     * 
+     */
+    @Test
+    public void testSourceChangeProperty() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ChangeReport cr = new ChangeReport(indicesList.sourceChangeProperty());
+        items.add(0, "something");
+        assertEquals(1, cr.getEventCount());
+        Change c = (Change) cr.getLastNewValue();
+        // PENDING JW: really? there might be several listeners (theoretically)
+        // with no responsibility to reset the change - such that each
+        // interested party has to reset before usage anyway
+        assertTrue("expect change reset", c.next());
+    }
+    
+    @Test
+    public void testSourceChangeNotificationSequence() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        List<Object> changes = new ArrayList();
+        ChangeListener cpl = (source, old, value) -> changes.add(value);
+        indicesList.sourceChangeProperty().addListener(cpl);
+        ListChangeListener lcl = c -> changes.add(c);
+        indicesList.addListener(lcl);
+        ChangeReport cr = new ChangeReport(indicesList.sourceChangeProperty());
+        items.add(0, "something");
+        assertEquals(2, changes.size());
+        assertEquals(cr.getLastNewValue(), changes.get(0));
+        assertEquals(report.getLastChange(), changes.get(1));
+    }
     
     @Test
     public void testChangeNullOnDirectSet() {
@@ -507,6 +654,7 @@ public class IndicesListTest {
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
         Change c = report.getLastChange();
+//        report.prettyPrint();
         c.reset();
         c.next();
         Arrays.sort(indices);

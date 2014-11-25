@@ -4,9 +4,14 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
@@ -37,7 +42,11 @@ import javafx.collections.transformation.TransformationList;
 public class IndicesList<T> extends TransformationList<Integer, T> {
 
     private BitSet bitSet;
-    Change<? extends T> sourceChange;
+//    private Change<? extends T> sourceChange;
+    private ObjectProperty<Change<? extends T>> sourceChangeP = new SimpleObjectProperty<>(this, "sourceChange");
+    // PENDING JW: wonky - this is the state when receiving a change from source
+    // do better!
+    List<Integer> oldIndices;
     
     /**
      * @param source
@@ -54,15 +63,19 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      */
     public void addIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        sourceChange = null;
+        setSourceChange(null);;
         beginChange();
+        doAddIndices(indices);
+        endChange();
+    }
+
+    protected void doAddIndices(int... indices) {
         for (int i : indices) {
             if (bitSet.get(i)) continue;
             bitSet.set(i);
             int from = indexOf(i);
             nextAdd(from, from + 1);
         }
-        endChange();
     }
     
     /**
@@ -71,7 +84,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      */
     public void clearIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        sourceChange = null;
+        setSourceChange(null);
         beginChange();
         doClearIndices(indices);
         endChange();
@@ -96,7 +109,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * Clears all indices.
      */
     public void clearAllIndices() {
-        sourceChange = null;
+        setSourceChange(null);
         beginChange();
         for (int i = size() -1 ; i >= 0; i--) {
             int value = get(i);
@@ -125,20 +138,25 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     @Override
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();
-        sourceChange = null;
+        // doooh .... need old state for the sake of IndexedItems
+        oldIndices = new ArrayList<>();
+        for (int i = 0; i < size(); i++) {
+            oldIndices.add(get(i));
+        }
+        setSourceChange(null); 
         while (c.next()) {
             if (c.wasPermutated()) {
-                permutate(c);
+                permutated(c);
             } else if (c.wasUpdated()) {
-                update(c);
+                updated(c);
             } else if (c.wasReplaced()) {
-                replace(c);
+                replaced(c);
             } else {
-                addOrRemove(c);
+                addedOrRemoved(c);
             }
         }
-        c.reset();
-        sourceChange = c;
+//        c.reset();
+        setSourceChange(c);
         endChange();
     }
 
@@ -155,7 +173,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      * @param c
      */
-    private void replace(Change<? extends T> c) {
+    private void replaced(Change<? extends T> c) {
         // need to replace even if unchanged, listeners to selectedItems
         // depend on it
         // handle special case of "real" replaced, often size == 1
@@ -182,7 +200,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      * @param c
      */
-    private void addOrRemove(Change<? extends T> c) {
+    private void addedOrRemoved(Change<? extends T> c) {
         // change completely after
         if (bitSet.nextSetBit(c.getFrom()) < 0) return;
 
@@ -238,6 +256,13 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
          }
     }
 
+    /**
+     * Remove all indices in the given range. Indices are coordinates in 
+     * backing list.
+     * 
+     * @param from
+     * @param removedSize
+     */
     private void doRemoveIndices(int from, int removedSize) {
         int[] removedIndices = new int[removedSize];
         int index = from;
@@ -256,11 +281,13 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     private void doShiftRight(int from, int addedSize) {
+        // loop bitset from back to from
         for (int i = bitSet.length(); (i = bitSet.previousSetBit(i-1)) >= from; ) {
-            // operate on index i here
+            // find position in this list
             int pos = indexOf(i);
-            // operate on index i here
+            // clear old in bitset
             bitSet.clear(i);
+            // set increased
             bitSet.set(i + addedSize);
             if (pos != indexOf(i + addedSize)) {
                 throw new RuntimeException ("wrongy! - learn to use bitset");
@@ -275,7 +302,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      * @param c
      */
-    private void update(Change<? extends T> c) {
+    private void updated(Change<? extends T> c) {
         for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
             int pos = indexOf(i);
             nextUpdate(pos);
@@ -283,28 +310,30 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     /**
-     * PENDING: not yet implemented
+     * A permutation in the backing list is a replaced on the indices (nearly always: one
+     * example for a permutation here as well would be if all indices are selected)
      * @param c
      */
-    private void permutate(Change<? extends T> c) {
+    private void permutated(Change<? extends T> c) {
         // change completely after
         if (bitSet.nextSetBit(c.getFrom()) < 0) return;
-        if (true) return;
-//            throw new UnsupportedOperationException("permutation not yet implemented");
         int from = c.getFrom();
         int to = c.getTo();
-        BitSet oldIndices = (BitSet) bitSet.clone();
-        for (int oldIndex = from; oldIndex < to; oldIndex++) {
-            if (!oldIndices.get(oldIndex)) continue;
-            int newIndex = c.getPermutation(oldIndex);
-//            if (newIndex == oldIndex) continue;
-            int pos = indexOf(oldIndex);
-            bitSet.clear(oldIndex);
-            nextRemove(pos, oldIndex);
-            bitSet.set(newIndex);
-            int newPos = indexOf(newIndex);
-            nextAdd(newPos, newIndex);
+        BitSet copy = (BitSet) bitSet.clone();
+        // argghh .. second parameter is the _size_
+        doRemoveIndices(from, to - from);
+        int addSize = 0;
+        for (int i = from; i < to; i++) {
+            if (copy.get(i)) addSize++;
         }
+        int[] permutated = new int[addSize];
+        int current = 0;
+        for (int oldIndex = from; oldIndex < to; oldIndex++) {
+            if (copy.get(oldIndex)) {
+                permutated[current++] = c.getPermutation(oldIndex);
+            }
+        }
+        doAddIndices(permutated);
     }
 
     /**
@@ -377,9 +406,26 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * @return
      */
     public Change<? extends T> getSourceChange() {
-        return sourceChange;
+        return sourceChangeP.get();
+    }
+   
+    public Property<Change<? extends T>> sourceChangeProperty() {
+        return sourceChangeP;
     }
     
+    /**
+     * Sets the sourceChange, resets if != null.
+     * @param sc
+     */
+    protected void setSourceChange(Change<? extends T> sc) {
+        // PENDING JW: really? there might be several listeners (theoretically)
+        // with no responsibility to reset the change - such that each
+        // interested party has to reset before usage anyway
+        if (sc != null) {
+            sc.reset();
+        }
+        sourceChangeP.set(sc);
+    }
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(IndicesList.class
             .getName());

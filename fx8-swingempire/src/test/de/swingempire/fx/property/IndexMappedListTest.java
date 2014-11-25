@@ -22,13 +22,25 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.FXUtils.PrintingListChangeListener;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -51,7 +63,7 @@ public class IndexMappedListTest {
     
 //----------------- test change in indexMapped after change in items    
     @Test
-    public void testUpdate() {
+    public void testItemsUpdate() {
         ObservableList<Person> base = Person.persons();
         ObservableList<Person> persons = FXCollections.observableList(base, p -> new Observable[] {p.firstNameProperty()});
         IndicesList<Person> indicesList = new IndicesList<>(persons);
@@ -76,45 +88,260 @@ public class IndexMappedListTest {
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
         Change c = report.getLastChange();
-        c.reset();
         c.next();
         assertEquals(1, c.getRemovedSize());
         assertEquals(item, c.getRemoved().get(0));
     }
     
     @Test
-    public void testRemoveSingleSelected() {
+    public void testItemsSetAllSameSize() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        ObservableList<String> other = createObservableList(true);
+        // make it not equal
+        other.set(0, "otherItem");
+        items.setAll(other);
+//        report.prettyPrint();
+        assertEquals("all cleared", 0, indexedItems.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed, but was " + report.getLastChange(), 
+                wasSingleRemoved(report.getLastChange()));
+    }
+
+    @Test
+    public void testItemsRemoveSingleSelected() {
         int index = 0;
         indicesList.addIndices(index);
         Object selectedItem = items.get(indicesList.get(index));
         report.clear();
-//        new PrintingListChangeListener("RemoveSingleSelected", indexedItems);
         items.remove(0);
+//        report.prettyPrint();
         assertEquals(1, report.getEventCount());
         assertTrue(wasSingleRemoved(report.getLastChange()));
         Change c = report.getLastChange();
-        c.reset();
         c.next();
         assertEquals(selectedItem, c.getRemoved().get(0));
     }
 
+    /**
+     * items are unchanged if removed above ... only the indices are replaced
+     * by new values! At the very least (if we really want to pass-on the replaced),
+     * addedSubList.equals(removed)
+     */
     @Test
-    public void testItemRemovedBefore() {
+    public void testItemsRemovedBefore() {
+        assertAddRemoveBefore(true);
+    }
+
+    /**
+     * Nothing changed in indexedItems!.
+     * 
+     */
+    @Test
+    public void testItemAddedBefore() {
+        assertAddRemoveBefore(false);
+    }
+
+    protected void assertAddRemoveBefore(boolean remove) {
+            int[] indices = new int[] { 3, 5, 1};
+            indicesList.addIndices(indices);
+    //        report.prettyPrint();
+            report.clear();
+            if (remove) {
+                items.remove(0);
+                for (int i = 0; i < indices.length; i++) {
+                    indices[i] = indices[i] - 1;
+                }
+            } else {
+                items.add(0, "something");
+                for (int i = 0; i < indices.length; i++) {
+                    indices[i] = indices[i] + 1;
+                }
+            }
+    //        report.prettyPrint();
+            Arrays.sort(indices);
+            for (int i = 0; i < indices.length; i++) {
+                assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
+            }
+            if (report.getEventCount() > 0) {
+                assertEquals(1, getChangeCount(report.getLastChange(), ChangeType.REPLACED));
+                Change c = report.getLastChange();
+                c.next();
+                assertEquals(c.getAddedSize(), c.getRemovedSize());
+                assertEquals("added/removed must be equal", c.getAddedSubList(), c.getRemoved());
+                fail("fail anyway: we should not get notification if selectedItems didn't change");
+            }
+        }
+
+    @Test
+    public void testItemsRemoveRangeStart() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
+        // items we expect to appear in removed
+        List removedItems = new ArrayList();
+        removedItems.add(items.get(1));
+        removedItems.add(items.get(3));
         report.clear();
-        
-//        new PrintingListChangeListener("Items removed before", indexedItems);
-        items.remove(0);
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = indices[i] - 1;
-        }
-        Arrays.sort(indices);
+        // remove items at 1...3, inclusive
+        items.remove(1, 4);
+        assertEquals(1, indexedItems.size());
+//        report.prettyPrint();
+        indices = new int[] {2};
         for (int i = 0; i < indices.length; i++) {
             assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
         }
         assertEquals(1, report.getEventCount());
-        assertEquals(1, getChangeCount(report.getLastChange(), ChangeType.REPLACED));
+        assertTrue("expected single removed but was" + report.getLastChange(), 
+                wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(2, c.getRemovedSize());
+        assertEquals(removedItems, c.getRemoved());
+        
+    }
+    
+    @Test
+    public void testItemsRemoveRangeEnd() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        // items we expect to appear in removed
+        List removedItems = new ArrayList();
+        removedItems.add(items.get(3));
+        removedItems.add(items.get(5));
+        report.clear();
+        // remove items at 3...5, inclusive
+        items.remove(3, 6);
+        assertEquals(1, indexedItems.size());
+//        report.prettyPrint();
+        indices = new int[] {1};
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
+        }
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed but was" + report.getLastChange(), 
+                wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(2, c.getRemovedSize());
+        assertEquals(removedItems, c.getRemoved());
+        
+    }
+
+    
+    @Test
+    public void testItemsRemovedBetweenReally() {
+        int[] indices = new int[] { 3, 5, 1 };
+        indicesList.addIndices(indices);
+        report.clear();
+        items.removeAll(items.get(2), items.get(4));
+        assertEquals(indices.length, indexedItems.size());
+        indices = new int[] { 1, 2, 3 };
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, items.get(indices[i]),
+                    indexedItems.get(i));
+        }
+        if (report.getEventCount() > 0) {
+            assertEquals(1, report.getEventCount());
+            assertTrue("expected single replaced but was" + report.getLastChange(),
+                    wasSingleReplaced(report.getLastChange()));
+//             report.prettyPrint();
+            Change c = report.getLastChange();
+            c.next();
+            assertEquals(2, c.getAddedSize());
+            assertEquals(c.getAddedSize(), c.getRemovedSize());
+            assertEquals("added/removed must be equal", c.getAddedSubList(), c.getRemoved());
+            fail("fail anyway: we should not get notification if selectedItems didn't change");
+        } 
+    }
+
+    /**
+     * Single real remove of selected item, expect a change fired from 
+     * indexedItems.
+     */
+    @Test
+    public void testItemsRemovedAtLast() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        Arrays.sort(indices);
+        report.clear();
+        Object removedItem = items.get(indices[2]);
+//        LOG.info("indexed before" + indexedItems);
+        items.remove(removedItem);
+        assertEquals(indices.length -1, indexedItems.size());
+        // expected indices when removing the middle
+        indices = new int[] {1, 3};
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
+        }
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed but was" + report.getLastChange(),
+                wasSingleRemoved(report.getLastChange()));
+//        report.prettyPrint();
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(1, c.getRemovedSize());
+        assertEquals(removedItem, c.getRemoved().get(0));
+    }
+    
+    /**
+     * Single real remove of selected item, expect a change fired from 
+     * indexedItems.
+     */
+    @Test
+    public void testItemsRemovedAtMiddle() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        Arrays.sort(indices);
+        report.clear();
+        Object removedItem = items.get(indices[1]);
+//        LOG.info("indexed before" + indexedItems);
+        items.remove(removedItem);
+        assertEquals(indices.length -1, indexedItems.size());
+        // expected indices when removing the middle
+        indices = new int[] {1, 4};
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
+        }
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed but was" + report.getLastChange(),
+                wasSingleRemoved(report.getLastChange()));
+//        report.prettyPrint();
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(1, c.getRemovedSize());
+        assertEquals(removedItem, c.getRemoved().get(0));
+    }
+    
+    /**
+     * Single real remove of selected item, expect a change fired from 
+     * indexedItems.
+     */
+    @Test
+    public void testItemsRemovedAtFirst() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        Arrays.sort(indices);
+        report.clear();
+        Object removedItem = items.get(indices[0]);
+//        LOG.info("indexed before" + indexedItems);
+        items.remove(removedItem);
+        assertEquals(indices.length -1, indexedItems.size());
+        indices = Arrays.copyOfRange(indices, 1, 3);
+        for (int i = 0; i < indices.length; i++) {
+            indices[i] = indices[i] - 1;
+        }
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, items.get(indices[i]), indexedItems.get(i));
+        }
+        assertEquals(1, report.getEventCount());
+//        report.prettyPrint();
+        assertTrue("expected single removed but was" + report.getLastChange(),
+                wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(1, c.getRemovedSize());
+        assertEquals(removedItem, c.getRemoved().get(0));
     }
 
     @Test
@@ -122,14 +349,15 @@ public class IndexMappedListTest {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
-//        LOG.info("before set: " + indexedItems);
         items.set(3, "newItem");
-//        LOG.info("after set: " + indexedItems);
         Arrays.sort(indices);
         assertEquals("newItem", indexedItems.get(1));
         assertEquals("selectedIndices unchanged", 1, report.getEventCount());
 //        report.prettyPrint();
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals("newItem", c.getAddedSubList().get(0));
     }
  
     

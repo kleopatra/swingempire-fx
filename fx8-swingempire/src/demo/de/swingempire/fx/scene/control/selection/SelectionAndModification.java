@@ -127,7 +127,7 @@ public class SelectionAndModification extends Application {
         actions.put("insertAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
             f.getItems().add(f.getSelectedIndex(), createItem(f.getSelectedIndex()));
-            printSelectionState("insertAtSelected", f);
+//            printSelectionState("insertAtSelected", f);
         });
         actions.put("removeAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
@@ -136,7 +136,7 @@ public class SelectionAndModification extends Application {
         actions.put("setAtSelectedIndex", f -> {
             if (f.getSelectedIndex() < 0) return;
             f.getItems().set(f.getSelectedIndex(), createItem(f.getSelectedIndex()));
-            printSelectionState("setAtSelected", f);
+//            printSelectionState("setAtSelected", f);
         });
         actions.put("removeAll(3, 5, 7)", f -> {
             f.getItems().removeAll(f.getItems().get(3), f.getItems().get(5), f.getItems().get(7));

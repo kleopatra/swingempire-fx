@@ -218,7 +218,7 @@ public class FXUtils {
 //---------------------- end copy
     
     public static <T> void prettyPrint(Change<? extends T> change) {
-        StringBuilder sb = new StringBuilder("\tChange event data:\n");
+        StringBuilder sb = new StringBuilder("Change event data on list: " + change.getList());
         sb.append("\n " + change.getClass() + "\n " + change);
         int i = 0;
         change.reset();
