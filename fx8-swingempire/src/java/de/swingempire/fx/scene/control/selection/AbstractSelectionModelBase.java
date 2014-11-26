@@ -330,21 +330,30 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             }
             return;
         }
+        
+        // since here: oldSelectedIndex > -1 expected and oldSelectedItem != null
+        if (oldSelectedItem == null) 
+            throw new IllegalStateException("selectedItem must not be null for index: " + oldSelectedIndex);
+        if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
+
         // we had selectedItem/index pair that was part of the model
-        // first handle empty list
+        // first handle empty items
         if (getItems().isEmpty()) {
             clearSelection();
             return;
         }
-        
-        // since here: oldSelectedIndex > -1 expected
-        if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
-        
+        // sanity: selectedIndex had been in indicesList (cough ..)
+        List<Integer> oldIndices = indicesList.getOldIndices();
+        if (!oldIndices.contains(oldSelectedIndex))
+            throw new IllegalStateException("oldSelectedIndex: " + oldSelectedIndex + 
+                    " expected in oldIndices, but was not: " + oldIndices);
         // Note JW: isSelected tests whether the given index is part of selectedIndices
         // (even doc'ed as such - invalidly in SelectionModel)
         // vs. testing against -1 (which might or not be an option)
 
         // oldSelectedItem still in selectedItems
+        // happens if anything removed above the selectedIndex,
+        // quick way to update index
         if (indexedItems.contains(oldSelectedItem)) {
             int indexedIndex = indexedItems.indexOf(oldSelectedItem);
             int itemsIndex = indicesList.getSourceIndex(indexedIndex);
@@ -359,6 +368,10 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         }
         
         // test if item at selectedIndex had been replaced
+        // PENDING JW: is this the correct logic to test for a replaced?
+        // doesn't look so .. might want to do it the other way round: 
+        // test for a replaced, then look for the index?
+        // anyway, verified that we reach it on items.set(selectedIndex, newItem);
         if (indicesList.contains(oldSelectedIndex)) {
             int newSelectedIndex = -1;
             // JW: reset, just to be on the safe side, if it were accessed above
@@ -377,26 +390,52 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
                     throw new IllegalStateException("same old/new index expected but were " 
                             + oldSelectedIndex + "/" +newSelectedIndex);
                 // index-related state unchanged, update item only
-//                setSelectedItem(getModelItem(newSelectedIndex));
                 syncSingleSelectionState(newSelectedIndex);
-//                select(newSelectedIndex);
                 return;
             }
+            LOG.info("do we get here? " + c);
+        }
+        // check empty selectedItems/indices: selectedIndex/item was removed
+        // need to adjust the selectedIndex by the removed items and decide
+        // what to do with the result (??)
+        // not good enough, anyway: selectedIndex might be removed, other selection
+        // not removed - empty most probably is a special case of remove?
+        if (indicesList.isEmpty()) {
+            c.reset();
         }
         
-        // index still valid
-        if (oldSelectedIndex < getItems().size() 
-            && !indicesList.contains(oldSelectedIndex)) {
-            // PENDING JW: when do we get here? 
-            // get here on remove at selectedIndex, also multiple removes
-            T newSelectedItem = getItems().get(oldSelectedIndex);
-            String msg = "old/new/setSelectedItem: " + getSelectedItem() + "/" + newSelectedItem;
-            select(oldSelectedIndex);
-//            LOG.info(msg + " / " + getSelectedItem());
-            return;
-        }
+        
+        // index still valid - no meaning in itself, though...
+//        if (oldSelectedIndex < getItems().size() 
+//            && !indicesList.contains(oldSelectedIndex)) {
+//            // PENDING JW: when do we get here? 
+//            // get here on remove at selectedIndex, also multiple removes
+//            T newSelectedItem = getItems().get(oldSelectedIndex);
+//            String msg = "old/new/setSelectedItem: " + getSelectedItem() + "/" + newSelectedItem;
+//            select(oldSelectedIndex);
+////            LOG.info(msg + " / " + getSelectedItem());
+//            return;
+//        }
+
+        // wrong expectation: selectedIndex/item might have been removed
+        // but other selections not!
+//        if (!indicesList.isEmpty()) 
+//            throw new IllegalStateException("expected empty indices, but was: " + indicesList);
+//        if (!indexedItems.isEmpty()) 
+//            throw new IllegalStateException("expected empty items, but was: " + indexedItems);
+        
+        // before the change in items, both selectedIndex and selectedItem have been
+        // part of the list, the change removed them
+        c.reset();
+        
         // Permutation, remove (where?)
-        LOG.info("missed anything? " + c);
+//        LOG.info("missed anything? " + c);
+        // oldSelectedIndex >= getItemCount()
+        if (getItemCount() > 0) {
+            select(getItemCount() - 1);
+        } else {
+            syncSingleSelectionState(-1);
+        }
     }
 
     protected ObservableList<? extends T> getItems() {

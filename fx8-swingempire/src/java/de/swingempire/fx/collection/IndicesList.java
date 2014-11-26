@@ -6,6 +6,7 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -426,6 +427,17 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         }
         sourceChangeP.set(sc);
     }
+    
+    /**
+     * Testing only: the selectedIndices at the moment at receiving a list change
+     * from items.
+     * 
+     * @return
+     */
+    public List<Integer> getOldIndices() {
+        return Collections.unmodifiableList(oldIndices);
+    }
+    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(IndicesList.class
             .getName());

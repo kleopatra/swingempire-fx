@@ -35,6 +35,8 @@ import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
@@ -62,6 +64,34 @@ public class IndexMappedListTest {
 
     
 //----------------- test change in indexMapped after change in items    
+
+    @Test
+    public void testItemsPermutate() {
+        int[] indices = new int[] { 1, 3, 5};
+        indicesList.addIndices(indices);
+        report.clear();
+        ListChangeReport itemsReport = new ListChangeReport(items);
+        // permutation on items
+        // [0->8, 1->7, 2->6, 3->5, 4->4, 5->3, 6->2, 7->1, 8->0]
+        items.sort(null);
+//        itemsReport.prettyPrint();
+        int[] permutated = new int[] {3, 5, 7};
+        Object[] permItems = new Object[] {items.get(3), items.get(5), items.get(7)}; 
+//        LOG.info("sortedItems" + itemsReport.getLastChange());
+//        LOG.info("sorted: " + report.getLastChange());
+        for (int i = 0; i < permutated.length; i++) {
+            assertEquals("permutated at" + i, permItems[i], indexedItems.get(i));
+        }
+//        report.prettyPrint();
+        assertEquals(1, report.getEventCount());
+        assertEquals(1, getChangeCount(report.getLastChange(), ChangeType.PERMUTATED));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        assertEquals("permutated all", permutated.length, c.getTo() - c.getFrom());
+//        LOG.info("" + indicesList);
+    }
+
     @Test
     public void testItemsUpdate() {
         ObservableList<Person> base = Person.persons();

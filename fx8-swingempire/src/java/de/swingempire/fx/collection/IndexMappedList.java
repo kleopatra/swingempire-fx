@@ -7,6 +7,8 @@ package de.swingempire.fx.collection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.javafx.collections.SortHelper;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -189,13 +191,21 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         } 
     }
 
+    protected SortHelper sortHelper = new SortHelper();
 
     /**
      * @param c
      */
     private void permutatedItems(Change<? extends T> c) {
         // TODO Auto-generated method stub
-        
+//        throw new IllegalStateException("not yet implemented");
+        List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
+        int[] permA = new int[size()];
+        for (int i = 0; i < getIndicesList().oldIndices.size(); i++) {
+            perm.set(i, c.getPermutation(getIndicesList().oldIndices.get(i)));
+        }
+        int[] permutation = sortHelper.sort(perm);
+        nextPermutation(0, perm.size(), permutation);
     }
 
 
@@ -320,8 +330,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * @param c
      */
     private void permutated(Change<? extends Integer> c) {
-        // TODO Auto-generated method stub
-//        throw new UnsupportedOperationException("TBD: implement permutation changes");
+        throw new IllegalStateException("don't expect permutation changes from indices " + c);
     }
 
     @Override

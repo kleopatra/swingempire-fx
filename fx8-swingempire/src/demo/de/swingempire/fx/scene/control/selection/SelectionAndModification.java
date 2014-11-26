@@ -243,7 +243,6 @@ public class SelectionAndModification extends Application {
         Pane content = new HBox(/*table, */ listView, listSView, listXView, listXAView, info);
         CheckBox check = new CheckBox("MultipleMode");
         check.setOnAction(e -> {
-            LOG.info("isSelected: " + check.isSelected());
             SelectionMode old = listView.getSelectionModel().getSelectionMode();
             SelectionMode newMode = check.isSelected() ? SelectionMode.MULTIPLE : SelectionMode.MULTIPLE;
             listView.getSelectionModel().setSelectionMode(newMode);
