@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
@@ -23,9 +24,12 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.StageLoader;
 import static org.junit.Assert.*;
 
@@ -57,6 +61,67 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     protected ObservableList items;
     protected V view;
 
+    
+    /**
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncItemToIndexSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        getSelectionModel().selectedIndexProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+    }
+    
+    /**
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncIndexToItemSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectionModel().getSelectedIndex());
+        getSelectionModel().selectedItemProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+    }
+    
+    /**
+     * Principal problem with correlated properties: they are hard to sync.
+     * While they should fire only after all internal state of the bean is
+     * updated, they do fire individually. This implies that the other is
+     * not yet update when the first fires.
+     * <p>
+     * 
+     * Core tries to sync them via a InvalidationListener on selectedIndex:
+     * the item is updated on a change to the index. This leads to two
+     * misbehaviours:<p>
+     * 
+     * 2 events fired on selecting uncontained item: one is due to the internal
+     * sync (InvalidationListener), the other to real setting.
+     * Done in MultipleSelectionModelBase.
+     * <p>
+     * 
+     * accessing the item during listening to index changes returns intermediate
+     * value (vs. the finally set)
+     */
+    @Test
+    public void testSyncItemNotificationSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getSelectionModel().select(uncontained);
+        assertEquals("expected single event", 1, report.getEventCount());
+    }
+    
+    
+    
 //------------  test interplay of selection/focus/anchor 
 
     @Test

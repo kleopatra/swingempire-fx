@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -26,11 +27,6 @@ import org.junit.runners.Parameterized;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
@@ -38,6 +34,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -328,6 +325,217 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
     
 //-------------------- items modification    
+    
+    /**
+     * Bunch of tests that verify no change of uncontained selectedItem if it isn't
+     * "inserted" by the modification.
+     */
+    @Test
+    public void testUncontainedOnClearSingle() {
+        Object uncontained = "permanently-uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.setAll();
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnClearMultiple() {
+        Object uncontained = "permanently-uncontained";
+        getSelectionModel().selectRange(2, 6);
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.setAll();
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnSetAllSingle() {
+        Object uncontained = "permanently-uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.setAll("newItem", "other");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnSetAllMultiple() {
+        Object uncontained = "permanently-uncontained";
+        getSelectionModel().selectRange(2, 6);
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.setAll("newItem", "other");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnSetItemSingle() {
+        Object uncontained = "permanently-uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.set(0, "newItem");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnSetItemMultiple() {
+        Object uncontained = "permanently-uncontained";
+        getSelectionModel().selectRange(2, 6);
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.set(4, "newItem");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnRemoveItemSingle() {
+        Object uncontained = "permanently-uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.remove(0);
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+    }
+    
+    @Test
+    public void testUncontainedOnRemoveItemMultiple() {
+        Object uncontained = "permanently-uncontained";
+        getSelectionModel().selectRange(2, 6);
+        // prepare state
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: ", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: ", -1, getSelectionModel().getSelectedIndex());
+        items.remove(4);
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
+    public void testUncontainedOnInsertItemSingle() {
+        Object uncontained = "permanently-uncontained";
+        // prepare state
+        getSelectionModel().select(uncontained);
+        items.add(4, "newItem");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+    }
+    
+    @Test
+    public void testUncontainedOnInsertItemMultiple() {
+        Object uncontained = "permanently-uncontained";
+        getSelectionModel().selectRange(2, 6);
+        // prepare state
+        getSelectionModel().select(uncontained);
+        assertEquals("sanity: ", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: ", -1, getSelectionModel().getSelectedIndex());
+        items.add(4, "newItem");
+        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
+    }
+
+    /**
+     * Multiple selection,
+     * listen to selectedIndexProperty and access selectedItem.
+     * 
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncItemToIndexMultiple() {
+        Object uncontained = "uncontained";
+        // prepare state, single Multiple
+        int start = 3;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        getSelectionModel().selectedIndexProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+    }
+
+    /**
+     * Single selection,
+     * listen to selectedIndexProperty and access selectedItem.
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncItemToIndexSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        getSelectionModel().selectedIndexProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+    }
+    
+    /**
+     * Single selection,
+     * listen to selectedItemProperty and access selectedIndex. Passes because index
+     * is updated before item (implementation detail, of course!)
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncIndexToItemSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectionModel().getSelectedIndex());
+        getSelectionModel().selectedItemProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+    }
+    
+    /**
+     * Principal problem with correlated properties: they are hard to sync.
+     * While they should fire only after all internal state of the bean is
+     * updated, they do fire individually. This implies that the other is
+     * not yet update when the first fires.
+     * <p>
+     * 
+     * Core tries to sync them via a InvalidationListener on selectedIndex:
+     * the item is updated on a change to the index. This leads to two
+     * misbehaviours:<p>
+     * 
+     * 2 events fired on selecting uncontained item: first is due to the internal
+     * sync (InvalidationListener), second to real setting. 
+     * Done in MultipleSelectionModelBase.
+     * <p>
+     * 
+     * accessing the item during listening to index-changes returns intermediate
+     * value (vs. the finally set)
+     * 
+     * Multiple selection,
+     * listen to selectedItemProperty and access selectedItem.
+     */
+    @Test
+    public void testSyncItemNotificationSingle() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getSelectionModel().select(uncontained);
+        assertEquals("expected single event", 1, report.getEventCount());
+    }
+    
+    /**
+     * @see #testSelectedItemUncontainedNotificationSingle
+     */
+    @Test
+    public void testSyncItemNotificationMultiple() {
+        Object uncontained = "uncontained";
+        // prepare state, select a range
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getSelectionModel().select(uncontained);
+        assertEquals("expected single event", 1, report.getEventCount());
+    }
+    
     
     /**
      * Here's one branch of listening to items' change:
