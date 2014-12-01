@@ -17,9 +17,14 @@ import de.swingempire.fx.collection.IndicesList;
 /**
  * Concrete SelectionModel using indicesList/indexedItems for ListView.
  *   
+ * Note: this can extend AbstractSelectionModelBase/-React as needed - functionally
+ * equivalent except for handling correlated selectedIndex/Item in the latter.
+ *   
  * @author Jeanette Winzenburg, Berlin
  */
-public class SimpleListSelectionModel<T> extends AbstractSelectionModelBase<T> {
+public class SimpleListSelectionModel<T> 
+    extends AbstractSelectionModelBase<T> {
+//    extends AbstractSelectionModelReact<T> {
 
     private ListView<T> listView;
     private ListProperty<T> itemsList;

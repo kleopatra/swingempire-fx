@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,12 +16,6 @@ import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SelectionModel;
-
-import org.reactfx.Guard;
-import org.reactfx.inhibeans.property.ReadOnlyIntegerWrapper;
-import org.reactfx.inhibeans.property.ReadOnlyObjectWrapper;
-
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
 
@@ -30,9 +23,6 @@ import de.swingempire.fx.collection.IndicesList;
  * Replacement of MultipleSelectionModelBase. Uses TransformLists to handle selectedIndices/-items.
  * 
  * NOTE: for now, this assumes an observableList as backing items.<p>
- * NOTE: poc for fixing problem with correlated properties, requires reactFX 
- *  https://github.com/TomasMikula/ReactFX/wiki/InhiBeans - without that lib, simply comment
- *  the field replacement and access to guards.
  * 
  * PENDING JW: 
  * 
@@ -69,9 +59,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     protected WeakListChangeListener<T> weakItemsContentListener = 
             new WeakListChangeListener<T>(itemsContentListener);
     
-    private ReadOnlyObjectWrapper<T> itemReplacement;
-    private ReadOnlyIntegerWrapper indexReplacement;
-    
     public AbstractSelectionModelBase() {
         // PENDING JW: better not, need to special case re-setting same 
         // selectedIndex anyway
@@ -83,26 +70,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 //            setSelectedItem(getModelItem(getSelectedIndex()));
 //        });
         
-        // going dirty: replace super's selectedItem/Index property 
-        // with guarded cousins 
-        itemReplacement = new ReadOnlyObjectWrapper<>(this, "selectedItem");
-        replaceField("selectedItem", itemReplacement);
-        indexReplacement = new ReadOnlyIntegerWrapper(this, "selectedIndex", -1);
-        replaceField("selectedIndex", indexReplacement);
-    }
-    
-    protected void replaceField(String name, Object replacement) {
-        Class<?> clazz = SelectionModel.class;
-        try {
-            Field field = clazz.getDeclaredField(name);
-            field.setAccessible(true);
-            field.set(this, replacement);
-        } catch (NoSuchFieldException | SecurityException 
-                | IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
     }
     
     @Override
@@ -116,7 +83,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * PENDING JW: need to enforce single mode 
      * @param index must be valid?
      * @param indices 
      */
@@ -192,7 +158,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * @param selectedIndex
      */
     protected void syncSingleSelectionState(int selectedIndex) {
-        Guard guard = Guard.multi(itemReplacement.guard(), indexReplacement.guard());
         setSelectedIndex(selectedIndex);
         if (selectedIndex > -1) {
             setSelectedItem(getModelItem(selectedIndex));
@@ -200,7 +165,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // PENDING JW: do better? can be uncontained item
             setSelectedItem(null);
         } 
-        guard.close();
         focus(selectedIndex);
     }
     
@@ -250,10 +214,8 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * @param obj
      */
     protected void selectExternalItem(T obj) {
-        Guard guard = Guard.multi(itemReplacement.guard(), indexReplacement.guard());
         setSelectedItem(obj);
         setSelectedIndex(-1);
-        guard.close();
     }
 
     /**
