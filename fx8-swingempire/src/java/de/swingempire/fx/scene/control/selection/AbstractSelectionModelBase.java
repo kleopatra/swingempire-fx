@@ -72,6 +72,8 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         
     }
     
+//-------------- MultipleSelectionModel api
+    
     @Override
     public ObservableList<Integer> getSelectedIndices() {
         return indicesList;
@@ -104,30 +106,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * Adds/sets the given indices. Enforces selectionMode. Last index in
-     * array will be selectedIndex.
-     * 
-     * @param add flag to control add/set, if true will be added, will 
-     *    be set otherwise.
-     * @param indices the indices to set, must have minimal length of 1 and only
-     *   contain indices that are in-range.
-     * @throws NullPointerException if indices are null
-     */
-    protected void doSelectIndices(boolean add, int... indices) {
-        Objects.requireNonNull(indices, "indices must not be null");
-        if (getSelectionMode() == SelectionMode.SINGLE) {
-            add = false;
-            indices = new int[] {indices[indices.length -1]};
-        }        
-        if (add) {    
-            indicesList.addIndices(indices);
-        } else {
-            indicesList.setIndices(indices);
-        }
-        syncSingleSelectionState(indices[indices.length - 1]);
-    }
-    
-    /**
      * {@inheritDoc} <p>
      * Overridden to do nothing if start or end are off range.
      * 
@@ -144,30 +122,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         super.selectRange(start, end);
     }
 
-    /**
-     * Updates single selectionState to selectedIndex. Called whenever
-     * selectedIndices are changed, either directly from the modifying methods
-     * or on receiving changes from the backing list in itemsContentChanged.
-     * <p>
-     * 
-     * This impl implementation 
-     * <li> sets selectedIndex
-     * <li> sets selectedItem to item at selectedIndex or null if -1
-     * <li> focus to selectedIndex
-     * 
-     * @param selectedIndex
-     */
-    protected void syncSingleSelectionState(int selectedIndex) {
-        setSelectedIndex(selectedIndex);
-        if (selectedIndex > -1) {
-            setSelectedItem(getModelItem(selectedIndex));
-        } else {
-            // PENDING JW: do better? can be uncontained item
-            setSelectedItem(null);
-        } 
-        focus(selectedIndex);
-    }
-    
     @Override
     public void selectAll() {
         if (getSelectionMode() == SelectionMode.SINGLE) return;
@@ -175,18 +129,12 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         syncSingleSelectionState(getItemCount() - 1);
     }
 
+//------------------- SelectionModel api
+    
     @Override
     public void clearAndSelect(int index) {
         if (!isSelectable(index)) return;
         doSelectIndices(false, index);
-    }
-
-    /**
-     * @param index
-     * @return
-     */
-    protected boolean isSelectable(int index) {
-        return index > -1 && index < getItemCount();
     }
 
     @Override
@@ -206,19 +154,11 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * Selects an item that is not contained in the backing list and updates
-     * single selection state as needed.<p>
+     * PENDING JW: this incorrectly clears the selectedIndex/Item even if != index.
+     * Need to check what really should happen, similar to remove selectedItem in 
+     * list? Unsolved in core as well .. though core doesn't touch focus/selectedIndex
      * 
-     * This implementation clears selected index.
-     * 
-     * @param obj
-     */
-    protected void selectExternalItem(T obj) {
-        setSelectedItem(obj);
-        setSelectedIndex(-1);
-    }
-
-    /**
+     * @see MultipleSelectionIssues#testIndicesSelectedIndexIsUpdatedAfterUnselect()
      */
     @Override
     public void clearSelection(int index) {
@@ -243,21 +183,13 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         return indicesList.isEmpty();
     }
 
+//------------------- navigational methods    
     @Override
     public void selectPrevious() {
         int previous = getCurrentIndex() - 1;
         if (previous < 0) previous = getItemCount() - 1;
         if (previous < 0) return;
         select(previous);
-    }
-
-    /**
-     * @return
-     */
-    private int getCurrentIndex() {
-        int current = getFocusedIndex();
-        if (current < -1) current = getSelectedIndex();
-        return current;
     }
 
     @Override
@@ -273,13 +205,93 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (getItemCount() == 0) return;
         select(0);
     }
-    
+
     @Override
     public void selectLast() {
         if (getItemCount() == 0) return;
         select(getItemCount() - 1);
     }
+
+//--------------------- workhorsesd 
     
+    /**
+     * Adds/sets the given indices. Enforces selectionMode. Last index in
+     * array will be selectedIndex.
+     * 
+     * @param add flag to control add/set, if true will be added, will 
+     *    be set otherwise.
+     * @param indices the indices to set, must have minimal length of 1 and only
+     *   contain indices that are in-range.
+     * @throws NullPointerException if indices are null
+     */
+    protected void doSelectIndices(boolean add, int... indices) {
+        Objects.requireNonNull(indices, "indices must not be null");
+        if (getSelectionMode() == SelectionMode.SINGLE) {
+            add = false;
+            indices = new int[] {indices[indices.length -1]};
+        }        
+        if (add) {    
+            indicesList.addIndices(indices);
+        } else {
+            indicesList.setIndices(indices);
+        }
+        syncSingleSelectionState(indices[indices.length - 1]);
+    }
+    
+    /**
+     * Updates single selectionState to selectedIndex. Called whenever
+     * selectedIndices are changed, either directly from the modifying methods
+     * or on receiving changes from the backing list in itemsContentChanged.
+     * <p>
+     * 
+     * This impl implementation 
+     * <li> sets selectedIndex
+     * <li> sets selectedItem to item at selectedIndex or null if -1
+     * <li> focus to selectedIndex
+     * 
+     * @param selectedIndex
+     */
+    protected void syncSingleSelectionState(int selectedIndex) {
+        setSelectedIndex(selectedIndex);
+        if (selectedIndex > -1) {
+            setSelectedItem(getModelItem(selectedIndex));
+        } else {
+            // PENDING JW: do better? can be uncontained item
+            setSelectedItem(null);
+        } 
+        focus(selectedIndex);
+    }
+    
+    /**
+     * @param index
+     * @return
+     */
+    protected boolean isSelectable(int index) {
+        return index > -1 && index < getItemCount();
+    }
+
+    /**
+     * Selects an item that is not contained in the backing list and updates
+     * single selection state as needed.<p>
+     * 
+     * This implementation clears selected index.
+     * 
+     * @param obj
+     */
+    protected void selectExternalItem(T obj) {
+        setSelectedItem(obj);
+        setSelectedIndex(-1);
+    }
+
+    /**
+     * @return
+     */
+    private int getCurrentIndex() {
+        int current = getFocusedIndex();
+        if (current < -1) current = getSelectedIndex();
+        return current;
+    }
+
     /**
      * Returns the number of items in the data model that underpins the control.
      * An example would be that a ListView selection model would likely return

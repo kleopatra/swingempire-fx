@@ -1682,7 +1682,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int selectionSize = getSelectionModel().getSelectedIndices().size();
         getSelectionModel().clearSelection(items.size());
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
-        assertEquals("index must still be cleared", 
+        assertEquals("selectedIndex must be unchanged", 
                 index, getSelectionModel().getSelectedIndex());
         assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
         assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
@@ -1697,7 +1697,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int selectionSize = getSelectionModel().getSelectedIndices().size();
         getSelectionModel().clearSelection(end);
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
-        assertEquals("index must still be cleared", 
+        assertEquals("selectedIndex must be unchanged", 
                 index, getSelectionModel().getSelectedIndex());
         assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
         assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());

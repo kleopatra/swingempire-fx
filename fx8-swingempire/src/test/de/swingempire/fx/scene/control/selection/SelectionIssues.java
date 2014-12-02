@@ -765,6 +765,15 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
 
     @Test
+    public void testClearSelectionAtUnselected() {
+        int index = 2;
+        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index + 1);
+        assertEquals("selectedIndex must be unchanged after clearing unselected index",
+                index, getSelectionModel().getSelectedIndex());
+    }
+    
+    @Test
     public void testClearSelectAtInvalidIndex() {
         int index = 2;
         getSelectionModel().select(index);

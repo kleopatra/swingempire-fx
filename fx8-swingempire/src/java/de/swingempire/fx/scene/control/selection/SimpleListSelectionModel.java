@@ -60,15 +60,23 @@ public class SimpleListSelectionModel<T>
         return listView.getFocusModel();
     }
 
+    /**
+     * Overridden to call updateFocus if focusModel is slave.
+     */
     @Override
     protected void itemsChanged(Change<? extends T> c) {
         super.itemsChanged(c);
         if (listView.getFocusModel() instanceof FocusModelSlave) {
-//            updateFocus(c);
+            updateFocus(c);
         }
     }
 
+    /**
+     * Just copied (and fixed nested lookup) from ListViewFocusModel. Unused for now.
+     * @param c
+     */
     protected void updateFocus(Change<? extends T> c) {
+        if (true) return;
         c.reset();
         while (c.next()) {
             // looking at the first change
