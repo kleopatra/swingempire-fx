@@ -13,6 +13,20 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
  */
 public class SelectionIgnores {
     
+    /**
+     * Ignore notification issues due to correlated properties.
+     * https://javafx-jira.kenai.com/browse/RT-39552
+     * http://stackoverflow.com/q/27186755/203657):
+     * 
+     */
+    public static class IgnoreCorrelated implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
     
     /**
      * Condition to ignore tests which involve anchor.Used only while adding a new
@@ -140,5 +154,4 @@ public class SelectionIgnores {
 //    }
 //
 
-    private SelectionIgnores() {};
 }

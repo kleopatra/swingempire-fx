@@ -3,12 +3,15 @@
  *
  */
 package de.swingempire.fx.scene.control.selection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
@@ -29,12 +32,12 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -444,6 +447,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemToIndexMultiple() {
         Object uncontained = "uncontained";
         // prepare state, single Multiple
@@ -461,12 +465,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemToIndexSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, 
+                getSelectionModel().getSelectedItem());
         getSelectionModel().selectedIndexProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -478,6 +484,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncIndexToItemSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
@@ -511,6 +518,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * listen to selectedItemProperty and access selectedItem.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
@@ -520,11 +528,31 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(uncontained);
         assertEquals("expected single event", 1, report.getEventCount());
     }
-    
+
+    /**
+     * Stand-alone version for bug report
+     * https://javafx-jira.kenai.com/browse/RT-39552
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
+    public void testSyncItemNotificationCount() {
+        Object uncontained = "uncontained";
+        // prepare state, single select
+        int start = 3;
+        getSelectionModel().select(start);
+        List values = new ArrayList();
+        ChangeListener l = (p, old, value) -> values.add(value);
+        getSelectionModel().selectedItemProperty().addListener(l);
+        getSelectionModel().select(uncontained);
+        assertEquals("expected single event", 1, values.size());
+        assertEquals("expected newvalue is uncontained", uncontained, values.get(0));
+        
+    }
     /**
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationMultiple() {
         Object uncontained = "uncontained";
         // prepare state, select a range
@@ -946,7 +974,22 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals("must be removed item without NSEE", item, c.getRemoved().get(0));
     }
     
-    
+    /**
+     * Stand-alone for report
+     * Change contains all items, should contain only formerly selected items.
+     * https://javafx-jira.kenai.com/browse/RT-39553
+     */
+    @Test
+    public void testSelectedItemsInvalidChange_38884() {
+        getSelectionModel().select(3);
+        int removedSize = getSelectionModel().getSelectedItems().size();
+        ListChangeListener l = (Change c) -> {
+            c.next();
+            assertEquals(removedSize, c.getRemovedSize());
+        };
+        getSelectionModel().getSelectedItems().addListener(l);
+        items.clear();
+    }
     /**
      * Trying to dig into unexpected failure of alsoSelect.
      * Plain model testing: here use selectPrevious
