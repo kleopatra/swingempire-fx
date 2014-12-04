@@ -12,8 +12,11 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import de.swingempire.fx.scene.control.selection.SelectionUtils.TestMultipleSelectionModel;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +30,45 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListCoreSingleSelectionIssues extends SingleSelectionIssues<ListView, MultipleSelectionModel> {
 
+    /**
+     *  Old models still hanging around and regarding themselves as still
+     *  attached to the listView.
+     */
+    @Test
+    public void testFocusModelReleased() {
+        ListView listView = new ListView(items);
+        FocusModel oldFocus = listView.getFocusModel();
+        int initialFocus = 0;
+        assertEquals(initialFocus , oldFocus.getFocusedIndex());
+        FocusModel focusModel = new ListViewAFocusModel<>(listView);
+        listView.setFocusModel(focusModel);
+        items.add(0, "newItem");
+        assertEquals(initialFocus, oldFocus.getFocusedIndex());
+    }
+    
+    @Test
+    public void testSelectionModelReleased() {
+        ListView listView = new ListView(items);
+        int index = 3;
+        listView.getSelectionModel().select(index);
+        listView.setSelectionModel(new TestMultipleSelectionModel());
+        items.add(0, "newItem");
+        assertEquals(listView.getSelectionModel().getSelectedIndex(), listView.getFocusModel().getFocusedIndex());
+    }
+    
+    @Test
+    public void testSelectionModelReleasedNoEffect() {
+        ListView listView = new ListView(items);
+        int index = 3;
+        MultipleSelectionModel old = listView.getSelectionModel();
+        listView.setSelectionModel(new TestMultipleSelectionModel());
+        old.select(index);
+        items.add(0, "newItem");
+        assertEquals(listView.getSelectionModel().getSelectedIndex(), listView.getFocusModel().getFocusedIndex());
+    }
 
+    
+    
     /**
      * PENDING JW: unexpected failure on inserting items
      * (ListViewBehaviour _is_ listening to selection changes)

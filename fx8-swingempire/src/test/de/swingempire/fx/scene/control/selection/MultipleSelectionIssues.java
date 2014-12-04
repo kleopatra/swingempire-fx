@@ -30,6 +30,10 @@ import org.junit.runners.Parameterized;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
@@ -718,8 +722,51 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals("selectedIndex unchanged", -1, getSelectionModel().getSelectedIndex());
     }
     
+    @Test
+    public void testSelectedOnSetAllOldContained() {
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        items.setAll("one", "two", "three", selected);
+        assertEmptySelection();
+    }
     
-//------------ focus on modifying list    
+    @Test
+    public void testSelectedOnSetAll() {
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        items.setAll("one", "two", "three", selected + "XX");
+        assertEmptySelection();
+    }
+    
+    private void assertEmptySelection() {
+        assertEquals("selectedItems must be empty", 0, getSelectionModel().getSelectedItems().size());
+        assertEquals("selectedIndices must be empty", 0, getSelectionModel().getSelectedIndices().size());
+        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be null", null, getSelectionModel().getSelectedItem());
+    }
+
+    // ------------ focus on modifying list
+
+    /**
+     * Test having focusedIndex != selectedIndex (?)
+     */
+    @Test
+    public void testFocusNotSelectedIndexOnInsertAbove() {
+        int select = 5;
+        int focus = 3;
+        getSelectionModel().select(select);
+        getFocusModel().focus(focus);
+//        LOG.info("models: " + getSelectionModel().getClass() + getFocusModel().getClass());
+        assertEquals("sanity selectedIndex", select, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity focusedIndex ", focus, getFocusModel().getFocusedIndex());
+        items.add(0, "new item");
+        assertEquals("selected increased by one", select + 1, getSelectionModel().getSelectedIndex());
+        assertEquals("focused increased by one (selected = " + getSelectionModel().getSelectedIndex() + ")", 
+                focus + 1, getFocusModel().getFocusedIndex());
+    } 
+    
     @Test
     public void testFocusUnselectedUpdateOnInsertAbove() {
         int index = 2;
@@ -1442,6 +1489,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         int last = end - 1;
+        assertEquals("sanity: focus after selectRange", last, getFocusIndex());
         getSelectionModel().clearSelection(last);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
@@ -1584,7 +1632,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // clear the last selected
         getSelectionModel().clearSelection(lastSelected);
         int selectedIndex = getSelectionModel().getSelectedIndex();
-        assertEquals("selected index must be .. selected", selectedIndex >= 0, 
+        assertEquals("selected index must be .. selected " + selectedIndex, selectedIndex >= 0, 
                 getSelectionModel().isSelected(selectedIndex));
         // JW: what exactly happens is unspecified, my expectation would be to
         // move it to one of the still selected 
@@ -1593,7 +1641,26 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
 
     
-
+    /**
+     * Same as above, only the other way round: check that selectedIndex/item is 
+     * consistently unchanged on clearing the index.
+     * 
+     * @see #testIndicesSelectedIndexIsUpdatedAfterUnselect()
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
+    public void testClearSelectionAtSelectedItem() {
+        int start = 2;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int index = end - 1;
+        Object selectedItem = items.get(index);
+        int selectionSize = getSelectionModel().getSelectedIndices().size();
+//        getSelectionModel().select(index);
+        getSelectionModel().clearSelection(index);
+        assertEquals(index, getSelectionModel().getSelectedIndex());
+        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+    }
     /**
      * Sanity test: select several indices, unselect them one-by-one -
      * selection must be empty and unselected removed from selected
@@ -1746,8 +1813,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
     }
 
-    
-     public MultipleSelectionIssues(boolean multiple) {
+    public MultipleSelectionIssues(boolean multiple) {
         this.multipleMode = multiple;
     }
 

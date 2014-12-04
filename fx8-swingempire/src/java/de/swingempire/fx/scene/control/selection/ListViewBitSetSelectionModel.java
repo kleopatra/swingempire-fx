@@ -10,19 +10,16 @@ import java.util.List;
 
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.ListView;
-import de.swingempire.fx.property.BugPropertyAdapters;
+import javafx.scene.control.MultipleSelectionModel;
 
 /**
- * 
- * 
  * Plain copy of core, for playing with extensions.
- * 
- * Except: 
- * - widened access to updateItemsObserver (hacking around 15973)
  * 
  * Changed in 8u40b9:
  * - with a better understanding of what's happening around 15793, changed
@@ -34,12 +31,18 @@ import de.swingempire.fx.property.BugPropertyAdapters;
  *   update here  
  * - copied patch for RT-38884   
  * 
+ * Changed unrelated to particular update release
+ * - registered changeListener to listView's selectionModelProperty implemented to 
+ *   release this on being replaced
+ * 
  */ 
 public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<T> {
 
 
     private ListProperty<T> listProperty;
 
+    private ChangeListener<MultipleSelectionModel<T>> releaseListener;
+    private WeakChangeListener<MultipleSelectionModel<T>> weakReleaseListener;
     /***********************************************************************
      *                                                                     *
      * Constructors                                                        *
@@ -73,8 +76,27 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
 //        }
 //        
         updateItemCount();
+        
+        releaseListener = (p, old, value) -> {
+            release(value);
+        };
+        weakReleaseListener = new WeakChangeListener<>(releaseListener);
+        listView.selectionModelProperty().addListener(weakReleaseListener);
     }
     
+    /**
+     * Removes all listeners that were installed by this model.
+     * Called when this SelectionModel is replaced by another on the listView,
+     * must not be used afterwards. 
+     * @param value the new value of listView's selectionModel
+     */
+    protected void release(MultipleSelectionModel<T> value) {
+        if (value == this) return;
+        listProperty.removeListener(weakItemsContentObserver);
+        listProperty.unbind();
+        listProperty = null;
+    }
+
     // watching for changes to the items list content
     private final ListChangeListener<T> itemsContentObserver = new ListChangeListener<T>() {
         @Override public void onChanged(Change<? extends T> c) {

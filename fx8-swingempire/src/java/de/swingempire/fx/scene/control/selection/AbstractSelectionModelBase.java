@@ -18,6 +18,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * Replacement of MultipleSelectionModelBase. Uses TransformLists to handle selectedIndices/-items.
@@ -154,9 +155,12 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * PENDING JW: this incorrectly clears the selectedIndex/Item even if != index.
+     * PENDING JW: this incorrectly used to clear the selectedIndex/Item even if != index.
      * Need to check what really should happen, similar to remove selectedItem in 
-     * list? Unsolved in core as well .. though core doesn't touch focus/selectedIndex
+     * list? Unsolved in core as well .. though core doesn't touch focus/selectedIndex.
+     * <p>
+     * For now, doing similar: clear out single selection state (but leaving focus untouched) 
+     * if index was last selected, do nothing otherwise.
      * 
      * @see MultipleSelectionIssues#testIndicesSelectedIndexIsUpdatedAfterUnselect()
      */
@@ -164,7 +168,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     public void clearSelection(int index) {
         if (!isSelected(index)) return;
         indicesList.clearIndices(index);
-        syncSingleSelectionState(-1);
+        if (isEmpty()) {
+            syncSingleSelectionState(-1, false);
+        }    
     }
 
     @Override
@@ -239,19 +245,31 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
     
     /**
+     * Updates single selectionState (including focus) to selectedIndex. 
+     * @param selectedIndex the new selectedIndex
+     * 
+     * @see #syncSingleSelectionState(int, boolean)
+     */
+    protected void syncSingleSelectionState(int selectedIndex) {
+        syncSingleSelectionState(selectedIndex, true);
+    }
+
+    /**
      * Updates single selectionState to selectedIndex. Called whenever
      * selectedIndices are changed, either directly from the modifying methods
      * or on receiving changes from the backing list in itemsContentChanged.
      * <p>
      * 
-     * This impl implementation 
+     * This implementation 
      * <li> sets selectedIndex
      * <li> sets selectedItem to item at selectedIndex or null if -1
      * <li> focus to selectedIndex
      * 
-     * @param selectedIndex
+     * @param selectedIndex the new selectedIndex
+     * @param withFocus a boolean indicating whether focus should be synced to the index 
+     *   as well
      */
-    protected void syncSingleSelectionState(int selectedIndex) {
+    protected void syncSingleSelectionState(int selectedIndex, boolean withFocus) {
         setSelectedIndex(selectedIndex);
         if (selectedIndex > -1) {
             setSelectedItem(getModelItem(selectedIndex));
@@ -259,9 +277,11 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // PENDING JW: do better? can be uncontained item
             setSelectedItem(null);
         } 
-        focus(selectedIndex);
+        if (withFocus) {
+            focus(selectedIndex);
+        }
     }
-    
+
     /**
      * @param index
      * @return
@@ -319,6 +339,10 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     /**
      * IndicesList/IndexMappedItems have taken care of updating selectedIndices/-items,
      * here we need to update selectedIndex/selectedItem.
+     * <p>
+     * 
+     * PENDING JW: focus handling incorrect - if focus != selected before the change,
+     * the focus has to be treated separately
      *  
      * @param c the change received from the backing items list
      */
@@ -327,10 +351,13 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             throw new IllegalStateException("expected internal update to be done!");
         int oldSelectedIndex = getSelectedIndex();
         T oldSelectedItem = getSelectedItem();
+        int oldFocus = getFocusedIndex();
+        boolean sameFocus = oldFocus == oldSelectedIndex;
         
+                
         // ------- handle short-cuts ----------------
         // short-cut 1: no selectedIndex
-        // can't be changed to selected by items change
+        // can't be changed to selected by changes of items so there is
         // basically nothing to do, except checking  
         // if we had an external selected item that's now contained
         // if so select, otherwise do nothing
@@ -340,10 +367,12 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // the selectedIndex wouldn't be < 0) but now might be
             if (oldSelectedItem != null && getItems().contains(oldSelectedItem)) {
                 int selectedIndex = getItems().indexOf(oldSelectedItem);
-                // need to select vs. sync because can't yet be in selectedIndices
                 if (indicesList.contains(selectedIndex)) 
                     throw new IllegalStateException("new selectedIndex cannot be in indices " + selectedIndex);
+                // need to select vs. sync because can't yet be in selectedIndices
                 select(selectedIndex);
+            } else if (!sameFocus){ // unselected but focused
+                updateFocus(c);
             }
             return;
         }
@@ -376,83 +405,17 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (indexedItems.contains(oldSelectedItem)) {
             int indexedIndex = indexedItems.indexOf(oldSelectedItem);
             int itemsIndex = indicesList.getSourceIndex(indexedIndex);
-            syncSingleSelectionState(itemsIndex);
+            syncSingleSelectionState(itemsIndex, sameFocus);
+            if (!sameFocus) {
+               updateFocus(c); 
+            }
             return;
         } 
         
         //-------------- end of short-cuts
         // selectedItem was removed: could have been a "true" remove
         // or a replace
-        selectedItemRemovedOrReplaced(c);
-//        // test if item at selectedIndex had been replaced
-//        // PENDING JW: is this the correct logic to test for a replaced?
-//        // doesn't look so .. might want to do it the other way round: 
-//        // test for a replaced, then look for the index?
-//        // anyway, verified that we reach it on items.set(selectedIndex, newItem);
-//        if (indicesList.contains(oldSelectedIndex)) {
-//            int newSelectedIndex = -1;
-//            // JW: reset, just to be on the safe side, if it were accessed above
-//            c.reset();
-//            while (c.next()) {
-//                // PENDING JW: this is not good enough for multiple subchanges
-//                if (c.wasReplaced() && c.getRemoved().contains(oldSelectedItem)) {
-//                   newSelectedIndex = c.getFrom() + c.getRemoved().indexOf(oldSelectedItem);
-//                   break;
-//                }
-//            }
-//            if (newSelectedIndex > -1) {
-//                // the assumption is that the item at oldindex had been replaced 
-//                // implies that oldIndex == newIndex
-//                if (newSelectedIndex != oldSelectedIndex) 
-//                    throw new IllegalStateException("same old/new index expected but were " 
-//                            + oldSelectedIndex + "/" +newSelectedIndex);
-//                // index-related state unchanged, update item only
-//                syncSingleSelectionState(newSelectedIndex);
-//                return;
-//            }
-//            LOG.info("do we get here? " + c);
-//        }
-//        // check empty selectedItems/indices: selectedIndex/item was removed
-//        // need to adjust the selectedIndex by the removed items and decide
-//        // what to do with the result (??)
-//        // not good enough, anyway: selectedIndex might be removed, other selection
-//        // not removed - empty most probably is a special case of remove?
-//        if (indicesList.isEmpty()) {
-//            c.reset();
-//        }
-//        
-//        
-//        // index still valid - no meaning in itself, though...
-////        if (oldSelectedIndex < getItems().size() 
-////            && !indicesList.contains(oldSelectedIndex)) {
-////            // PENDING JW: when do we get here? 
-////            // get here on remove at selectedIndex, also multiple removes
-////            T newSelectedItem = getItems().get(oldSelectedIndex);
-////            String msg = "old/new/setSelectedItem: " + getSelectedItem() + "/" + newSelectedItem;
-////            select(oldSelectedIndex);
-//////            LOG.info(msg + " / " + getSelectedItem());
-////            return;
-////        }
-//
-//        // wrong expectation: selectedIndex/item might have been removed
-//        // but other selections not!
-////        if (!indicesList.isEmpty()) 
-////            throw new IllegalStateException("expected empty indices, but was: " + indicesList);
-////        if (!indexedItems.isEmpty()) 
-////            throw new IllegalStateException("expected empty items, but was: " + indexedItems);
-//        
-//        // before the change in items, both selectedIndex and selectedItem have been
-//        // part of the list, the change removed them
-//        c.reset();
-//        
-//        // Permutation, remove (where?)
-////        LOG.info("missed anything? " + c);
-//        // oldSelectedIndex >= getItemCount()
-//        if (getItemCount() > 0) {
-//            select(getItemCount() - 1);
-//        } else {
-//            syncSingleSelectionState(-1);
-//        }
+        selectedItemChanged(c);
     }
 
     /**
@@ -469,15 +432,23 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * <li> item was bulk-replaced, by items.setAll(..), setItems(newItems), ?,
      *      need to clear selection (?)
      * 
-     * <p>     
-     * Implementation note: the selectedItem can only be in one getRemoved sublist,
-     * once we found it we can break out!            
+     * <p>  
+     *    
+     * Implementation note: the assumption here is that all change types except
+     * removes/replaced which might contain the selectedItem are handled. For testing,
+     * we are throwing IllegalStateException for all others. Also note that 
+     * the selectedItem can only be in one getRemoved sublist,
+     * once we found it we could break out, for now don't though, instead throwing 
+     * again on the second time around!            
+     * 
+     * <p>
      * 
      * @param c
      */
-    protected void selectedItemRemovedOrReplaced(Change<? extends T> c) {
-        int oldSelectedIndex = getSelectedIndex();
+    protected void selectedItemChanged(Change<? extends T> c) {
+//        FXUtils.prettyPrint(c);
         T oldSelectedItem = getSelectedItem();
+        boolean found = false;
         c.reset();
         while(c.next()) {
             if (c.wasPermutated()) {
@@ -486,18 +457,17 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
                 throw new IllegalStateException("expected removed/replaced but was " + c);
             } else if (c.wasReplaced()) {
                 if (c.getRemoved().contains(oldSelectedItem)) {
-                    if (c.getRemovedSize() == 1 && c.getAddedSize() == 1) {
-                        // single replace (not entirely safe, could be a 
-                        // setAll with a single new element
-                        select(c.getFrom());
-                        break;
-                    }
+                    if (found) 
+                        throw new IllegalStateException("old item found in more than one subchange " + c);
+                    found = true;
+                    selectedItemReplaced(c);
                 }
             } else if (c.wasRemoved()) {
-                // selected item was removed
                 if (c.getRemoved().contains(oldSelectedItem)) {
-                    selectedItemRemovedFrom(c.getFrom());
-                    break;
+                    if (found) 
+                        throw new IllegalStateException("old item found in more than one subchange " + c);
+                    found = true;
+                    selectedItemRemoved(c);
                 }
             } else if (c.wasAdded()) {
                 throw new IllegalStateException("expected removed/replaced but was " + c);
@@ -506,16 +476,65 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * Called when selectedItem had been really removed and in a removedList starting at from. 
+     * @param c the change that contains the old selectedItem in its removedList, guaranteed
+     *   to be of type replaced.
+     */
+    protected void selectedItemReplaced(Change<? extends T> c) {
+        if (c.getRemovedSize() == 1 && c.getAddedSize() == 1) {
+            // single replace (not entirely safe, could be a 
+            // setAll with a single new element
+            select(c.getFrom());
+        } else if (c.getAddedSize() == c.getList().size()) {
+            // all changed
+            clearSelection();
+        }
+    }
+    
+    /**
+     * Called when selectedItem had been really removed and in the removedList of the 
+     * given change. The change is iterated to the subchange of the remove.
+     *  
      * Subclasses can implement a strategy (see RT-??) for updating selectedIndex.
      * here.
-     * <p>
-     * This implementation selects from.
-     *  
-     * @param from
+     * @param c the change that contains the old selectedItem in its removedList, guaranteed
+     *    to be of type removed.
      */
-    protected void selectedItemRemovedFrom(int from) {
-        select(Math.min(getItemCount() - 1, from));
+    protected void selectedItemRemoved(Change<? extends T> c) {
+        select(Math.min(getItemCount() - 1, c.getFrom()));
+    }
+    
+    /**
+     * Just copied (and fixed nested lookup) from ListViewFocusModel. Unused for now.
+     * @param c
+     */
+    protected void updateFocus(Change<? extends T> c) {
+        if (!(getFocusModel() instanceof FocusModelSlave)) return;
+        c.reset();
+        while (c.next()) {
+            // looking at the first change
+            int from = c.getFrom();
+            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
+                return;
+            }
+        }
+        c.reset();
+        boolean added = false;
+        boolean removed = false;
+        int addedSize = 0;
+        int removedSize = 0;
+        while (c.next()) {
+            added |= c.wasAdded();
+            removed |= c.wasRemoved();
+            addedSize += c.getAddedSize();
+            removedSize += c.getRemovedSize();
+        }
+    
+        if (added && !removed) {
+            focus(getFocusedIndex() + addedSize);
+        } else if (!added && removed) {
+            // fix of navigation issue on remove focus at 0
+            focus(Math.max(0, getFocusedIndex() - removedSize));
+        }
     }
 
     protected ObservableList<? extends T> getItems() {

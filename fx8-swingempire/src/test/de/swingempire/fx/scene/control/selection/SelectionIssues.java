@@ -25,9 +25,9 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.StageLoader;
@@ -66,6 +66,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemToIndexSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
@@ -80,6 +81,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * @see #testSelectedItemUncontainedNotificationSingle
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncIndexToItemSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
@@ -110,6 +112,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * value (vs. the finally set)
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationSingle() {
         Object uncontained = "uncontained";
         // prepare state, single select
@@ -119,8 +122,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(uncontained);
         assertEquals("expected single event", 1, report.getEventCount());
     }
-    
-    
     
 //------------  test interplay of selection/focus/anchor 
 

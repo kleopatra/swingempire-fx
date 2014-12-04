@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import javafx.collections.ListChangeListener.Change;
 
 /**
  * Hack around competing responsibilities of MultipleSelectionModel and

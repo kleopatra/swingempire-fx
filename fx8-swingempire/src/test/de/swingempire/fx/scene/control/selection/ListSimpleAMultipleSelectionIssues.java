@@ -61,6 +61,7 @@ public class ListSimpleAMultipleSelectionIssues extends AbstractListMultipleSele
     protected ListViewAnchored createView(ObservableList items) {
         ListViewAnchored listView = new ListViewAnchored(items);
         listView.setSelectionModel(new SimpleASelectionModel<>(listView));
+        listView.setFocusModel(new ListViewAFocusModel<>(listView));
         // disable default selection
         listView.getProperties().put("selectFirstRowByDefault", Boolean.FALSE);
         // initial focus on 0 (as of 8u40b9), force into unfocused
