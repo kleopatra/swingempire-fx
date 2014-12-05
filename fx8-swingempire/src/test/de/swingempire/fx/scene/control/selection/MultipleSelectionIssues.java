@@ -139,22 +139,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int first = 7;
         int[] indices = new int[] {3, 8, 3};
         ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        // here we select 3 unique indices (the 4th is a duplicate)
         getSelectionModel().selectIndices(first, indices);
-        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
-    }
-    
-    @Test
-    public void testSelectedIndicesDuplicateSelectedIndex() {
-        if (!multipleMode) return;
-        int first = 7;
-        int[] indices = new int[] {3, 8, 3};
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
-        getSelectionModel().selectIndices(first, indices);
-        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+        assertEquals("selected indices must not have any duplicates", 
+                indices.length, getSelectionModel().getSelectedIndices().size());
         assertEquals(indices[indices.length-1] , getSelectionModel().getSelectedIndex());
     }
     
-    
+  
     @Test
     public void testSelectedIndicesOffRange() {
         if (!multipleMode) return;
@@ -163,6 +155,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
         getSelectionModel().selectIndices(first, indices);
         assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+        assertEquals(8 , getSelectionModel().getSelectedIndex());
     }
     
     @Test
@@ -748,6 +741,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
 
     // ------------ focus on modifying list
+    
+    @Test
+    public void testFocusMultipleRemoves() {
+        int focus = 5;
+        getFocusModel().focus(focus);
+        // remove one above, one below
+        items.removeAll(items.get(3), items.get(6));
+        assertEquals("focus must be decreased by one", focus -1, getFocusIndex());
+    }
 
     /**
      * Test having focusedIndex != selectedIndex (?)
@@ -793,7 +795,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Navigation disabled if first is selected/focused and removed
      * https://javafx-jira.kenai.com/browse/RT-38785
      * 
-     * (fixed for TableView, not for ListView 8u40b12)
+     * (fixed for TableView, not for ListView 8u40b12/b15)
      */
     @Test
     public void testFocusFirstRemovedItem() {

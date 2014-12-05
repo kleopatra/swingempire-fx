@@ -380,8 +380,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         // happens on all changes except a remove of the selected,
         // need to update index
         if (getSelectedItems().contains(oldSelectedItem)) {
-//            int indexedIndex = indexedItems.indexOf(oldSelectedItem);
-//            int itemsIndex = indicesList.getSourceIndex(indexedIndex);
             int itemsIndex = controller.sourceIndexOf(oldSelectedItem);
             syncSingleSelectionState(itemsIndex, sameFocus);
             if (!sameFocus) {
@@ -482,37 +480,105 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
     
     /**
-     * Just copied (and fixed nested lookup) from ListViewFocusModel. Unused for now.
+     * Called if focus wasn't adjusted along with selection. 
+     * 
+     * Implemented to do nothing on permutated/updated/replaced and
+     * adjust focus on added/removed. Doesn't expect mixtures of the
+     * former type with the latter types. Revisit if needed.
+     * 
+     * <p>
+     * PENDING JW: 
+     * <li> unselected permutation not yet handled.
+     * <li> focus on setAll (aka: block replaced)? With auto-focus
+     *      enabled, that should be handled ... where?
+     * 
+     * <p>
+     * Note: commented block was  
+     * just copied (and fixed nested lookup) from ListViewFocusModel. 
+     * which always adds sum of all added/removed! Now replaced by
+     * doing so only until index reached.
+     * 
      * @param c
      */
     protected void updateFocus(Change<? extends T> c) {
+        // no slave, backout
         if (!(getFocusModel() instanceof FocusModelSlave)) return;
+        // no focus, nothing to do
+        if (getFocusedIndex() < 0) return;
         c.reset();
+        c.next();
+        // first change after index, return
+        if (c.getFrom() > getFocusedIndex()) return;
+        
+        c.reset();
+        int accumulatedIndex = 0;
+        int accumulatedDelta = 0;
+        boolean hit = false;
         while (c.next()) {
-            // looking at the first change
-            int from = c.getFrom();
-            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
-                return;
+            // PENDING JW: revisit when better understanding
+            // possible mixtures of notifications
+            // the overall assumption here is:
+            // single permutated 
+            // replaced with addedSize == removedSize
+            // multiple add/removes
+            if (c.wasPermutated()) {
+                // handled by select? or not?
+                hit = true;
+            } else if (c.wasUpdated()) {
+                // nothing to do: updating the item doesn't 
+                // effect the index
+            } else if (c.wasReplaced()) {
+                hit = true;
+                // PENDING JW: don't really know which modifications
+                // may fire a replaced (except single/bulk sets)
+                // do nothing for now ... might have to
+            } else if (c.wasRemoved()) {
+                if (hit) 
+                    throw new IllegalStateException("expected removed/added only but was: " + c);
+                accumulatedIndex += c.getFrom();
+                if (getFocusedIndex() < accumulatedIndex) break;
+                accumulatedDelta -= c.getRemovedSize();
+            } else if (c.wasAdded()) {
+                if (hit) 
+                    throw new IllegalStateException("expected removed/added only but was: " + c);
+                accumulatedIndex += c.getFrom();
+                if (getFocusedIndex() < accumulatedIndex) break;
+                accumulatedDelta += c.getAddedSize();
+                
             }
         }
-        c.reset();
-        boolean added = false;
-        boolean removed = false;
-        int addedSize = 0;
-        int removedSize = 0;
-        while (c.next()) {
-            added |= c.wasAdded();
-            removed |= c.wasRemoved();
-            addedSize += c.getAddedSize();
-            removedSize += c.getRemovedSize();
-        }
-    
-        if (added && !removed) {
-            focus(getFocusedIndex() + addedSize);
-        } else if (!added && removed) {
-            // fix of navigation issue on remove focus at 0
-            focus(Math.max(0, getFocusedIndex() - removedSize));
-        }
+        
+        if (accumulatedDelta == 0) return;
+        focus(getFocusedIndex() + accumulatedDelta);
+        
+        // JW: below is compy from original (removed nested while, though)
+//        while (c.next()) {
+//            // looking at the first change
+//            int from = c.getFrom();
+//            if (getFocusedIndex() == -1 || from > getFocusedIndex()) {
+//                return;
+//            }
+//        }
+//        boolean added = false;
+//        boolean removed = false;
+//        int addedSize = 0;
+//        int removedSize = 0;
+//        // PENDING JW: checking against from doesn't help
+//        // because it's the coordinate of the _current_ list state
+//        // while focus is _old_ list state
+//        while (c.next()) { // && c.getFrom() <= getFocusedIndex()) {
+//            added |= c.wasAdded();
+//            removed |= c.wasRemoved();
+//            addedSize += c.getAddedSize();
+//            removedSize += c.getRemovedSize();
+//        }
+//    
+//        if (added && !removed) {
+//            focus(getFocusedIndex() + addedSize);
+//        } else if (!added && removed) {
+//            // fix of navigation issue on remove focus at 0
+//            focus(Math.max(0, getFocusedIndex() - removedSize));
+//        }
     }
 
     protected ObservableList<? extends T> getItems() {
