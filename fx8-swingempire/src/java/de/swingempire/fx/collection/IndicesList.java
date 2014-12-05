@@ -58,40 +58,6 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     /**
-     * Adds the given indices. Does nothing if null or empty.
-     * 
-     * @param indices
-     */
-    public void addIndices(int... indices) {
-        if (indices == null || indices.length == 0) return;
-        setSourceChange(null);;
-        beginChange();
-        doAddIndices(indices);
-        endChange();
-    }
-
-    protected void doAddIndices(int... indices) {
-        for (int i : indices) {
-            if (bitSet.get(i)) continue;
-            bitSet.set(i);
-            int from = indexOf(i);
-            nextAdd(from, from + 1);
-        }
-    }
-    
-    /**
-     * Clears the given indices. Does nothing if null or empty.
-     * @param indices position in sourceList
-     */
-    public void clearIndices(int... indices) {
-        if (indices == null || indices.length == 0) return;
-        setSourceChange(null);
-        beginChange();
-        doClearIndices(indices);
-        endChange();
-    }
-    
-    /**
      * Sets the given indices. All previously set indices are
      * cleared.
      * 
@@ -105,21 +71,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         addIndices(indices);
         endChange();
     }
-    
-    /**
-     * Clears all indices.
-     */
-    public void clearAllIndices() {
-        setSourceChange(null);
-        beginChange();
-        for (int i = size() -1 ; i >= 0; i--) {
-            int value = get(i);
-            bitSet.clear(value);
-            nextRemove(i, value);
-        }
-        endChange();
-    }
-    
+
     /**
      * Sets all indices. 
      * 
@@ -134,6 +86,54 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
             indices[i] = i;
         }
         setIndices(indices);
+    }
+
+    /**
+     * Adds the given indices. Does nothing if null or empty.
+     * 
+     * @param indices
+     */
+    public void addIndices(int... indices) {
+        if (indices == null || indices.length == 0) return;
+        setSourceChange(null);;
+        beginChange();
+        doAddIndices(indices);
+        endChange();
+    }
+
+    /**
+     * Clears the given indices. Does nothing if null or empty.
+     * @param indices position in sourceList
+     */
+    public void clearIndices(int... indices) {
+        if (indices == null || indices.length == 0) return;
+        setSourceChange(null);
+        beginChange();
+        doClearIndices(indices);
+        endChange();
+    }
+
+    /**
+     * Clears all indices.
+     */
+    public void clearAllIndices() {
+        setSourceChange(null);
+        beginChange();
+        for (int i = size() -1 ; i >= 0; i--) {
+            int value = get(i);
+            bitSet.clear(value);
+            nextRemove(i, value);
+        }
+        endChange();
+    }
+
+    protected void doAddIndices(int... indices) {
+        for (int i : indices) {
+            if (bitSet.get(i)) continue;
+            bitSet.set(i);
+            int from = indexOf(i);
+            nextAdd(from, from + 1);
+        }
     }
     
     @Override

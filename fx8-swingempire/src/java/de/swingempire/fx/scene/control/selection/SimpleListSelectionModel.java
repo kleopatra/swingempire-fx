@@ -36,16 +36,15 @@ public class SimpleListSelectionModel<T>
         this.listView = listView;
         itemsList = new SimpleListProperty<>();
         itemsList.bind(listView.itemsProperty());
-        indicesList = new IndicesList<>(itemsList);
-        indexedItems = new IndexMappedList<>(indicesList);
-        
+        controller = new MultipleSelectionController<>(itemsList);
+        // PENDING JW: this is brittle: need to register _after_ controller!
         itemsList.addListener(weakItemsContentListener);
     }
     
     @Override
     protected void focus(int index) {
         if (getFocusModel() == null) return;
-        listView.getFocusModel().focus(index);
+        getFocusModel().focus(index);
     }
     
     @Override
@@ -58,7 +57,6 @@ public class SimpleListSelectionModel<T>
     protected FocusModel<T> getFocusModel() {
         return listView.getFocusModel();
     }
-
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

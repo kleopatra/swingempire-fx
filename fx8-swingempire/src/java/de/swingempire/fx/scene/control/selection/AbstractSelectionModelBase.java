@@ -16,14 +16,17 @@ import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
-import de.swingempire.fx.collection.IndexMappedList;
-import de.swingempire.fx.collection.IndicesList;
-import de.swingempire.fx.util.FXUtils;
 
 /**
- * Replacement of MultipleSelectionModelBase. Uses TransformLists to handle selectedIndices/-items.
+ * Replacement of MultipleSelectionModelBase. Lets IndexedItemsController manage 
+ * the technicalities of selectedIndices/-Items lists. Handles semantics of 
+ * multiple selection and sync to single selection state.  
  * 
- * NOTE: for now, this assumes an observableList as backing items.<p>
+ * <p> 
+ * 
+ * NOTE: for now, this assumes an ObservableList as backing items. Most probably
+ * extendable to not (need another implementation of IndexedItems) such that
+ * applicable for tree structures as well. <p>
  * 
  * PENDING JW: 
  * 
@@ -47,8 +50,9 @@ import de.swingempire.fx.util.FXUtils;
  */
 public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionModel<T> {
 
-    protected IndicesList<T> indicesList;
-    protected IndexMappedList<T> indexedItems;
+    protected IndexedItemsController<T> controller;
+//    protected IndicesList<T> indicesList;
+//    protected IndexMappedList<T> indexedItems;
     /**
      * The default listener installed on backing list to monitor list changes.
      * Implemented to call itemsChanged.
@@ -77,12 +81,12 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     
     @Override
     public ObservableList<Integer> getSelectedIndices() {
-        return indicesList;
+        return controller.getIndices();
     }
 
     @Override
     public ObservableList<T> getSelectedItems() {
-        return indexedItems;
+        return controller.getIndexedItems();
     }
 
     /**
@@ -126,7 +130,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     @Override
     public void selectAll() {
         if (getSelectionMode() == SelectionMode.SINGLE) return;
-        indicesList.setAllIndices();
+        controller.setAllIndices();
         syncSingleSelectionState(getItemCount() - 1);
     }
 
@@ -146,6 +150,8 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 
     @Override
     public void select(T obj) {
+        // PENDING JW: here we assume the backing data 
+        // being a list!
         int index = getItems().indexOf(obj);
         if (index > -1) {
             select(index);
@@ -167,7 +173,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     @Override
     public void clearSelection(int index) {
         if (!isSelected(index)) return;
-        indicesList.clearIndices(index);
+        controller.clearIndices(index);
         if (isEmpty()) {
             syncSingleSelectionState(-1, false);
         }    
@@ -175,18 +181,18 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 
     @Override
     public void clearSelection() {
-        indicesList.clearAllIndices();
+        controller.clearAllIndices();
         syncSingleSelectionState(-1);
     }
 
     @Override
     public boolean isSelected(int index) {
-        return indicesList.contains(index);
+        return getSelectedIndices().contains(index);
     }
 
     @Override
     public boolean isEmpty() {
-        return indicesList.isEmpty();
+        return getSelectedIndices().isEmpty();
     }
 
 //------------------- navigational methods    
@@ -237,9 +243,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             indices = new int[] {indices[indices.length -1]};
         }        
         if (add) {    
-            indicesList.addIndices(indices);
+            controller.addIndices(indices);
         } else {
-            indicesList.setIndices(indices);
+            controller.setIndices(indices);
         }
         syncSingleSelectionState(indices[indices.length - 1]);
     }
@@ -283,6 +289,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
+     * Returns a boolean indicating whether the given index can be selected.
+     * This implementations returns true if in valid range -1 < index < getItemCount.
+     * 
      * @param index
      * @return
      */
@@ -313,30 +322,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     /**
-     * Returns the number of items in the data model that underpins the control.
-     * An example would be that a ListView selection model would likely return
-     * <code>listView.getItems().size()</code>. The valid range of selectable
-     * indices is between 0 and whatever is returned by this method.
-     */
-    protected int getItemCount() {
-        return indicesList.getSource().size();
-    };
-    
-    /**
-     * Returns the item at the given index. An example using ListView would be
-     * <code>listView.getItems().get(index)</code>.
-     * 
-     * @param index The index of the item that is requested from the underlying
-     *      data model.
-     * @return Returns null if the index is out of bounds, or an element of type
-     *      T that is related to the given index.
-     */
-    protected T getModelItem(int index) {
-        if (index < 0 || index >= getItemCount()) return null;
-        return indicesList.getSource().get(index);
-    };
-    
-    /**
      * IndicesList/IndexMappedItems have taken care of updating selectedIndices/-items,
      * here we need to update selectedIndex/selectedItem.
      * <p>
@@ -347,8 +332,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * @param c the change received from the backing items list
      */
     protected void itemsChanged(Change<? extends T> c) {
-        if (indicesList.size() != indexedItems.size()) 
-            throw new IllegalStateException("expected internal update to be done!");
         int oldSelectedIndex = getSelectedIndex();
         T oldSelectedItem = getSelectedItem();
         int oldFocus = getFocusedIndex();
@@ -367,11 +350,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // the selectedIndex wouldn't be < 0) but now might be
             if (oldSelectedItem != null && getItems().contains(oldSelectedItem)) {
                 int selectedIndex = getItems().indexOf(oldSelectedItem);
-                if (indicesList.contains(selectedIndex)) 
-                    throw new IllegalStateException("new selectedIndex cannot be in indices " + selectedIndex);
                 // need to select vs. sync because can't yet be in selectedIndices
                 select(selectedIndex);
-            } else if (!sameFocus){ // unselected but focused
+            } else if (!sameFocus){ // still unselected but need to handle focus
                 updateFocus(c);
             }
             return;
@@ -383,10 +364,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (oldSelectedItem == null) 
             throw new IllegalStateException("selectedItem must not be null for index: " + oldSelectedIndex);
         if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
-        List<Integer> oldIndices = indicesList.getOldIndices();
-        if (!oldIndices.contains(oldSelectedIndex))
-            throw new IllegalStateException("oldSelectedIndex: " + oldSelectedIndex + 
-                    " expected in oldIndices, but was not: " + oldIndices);
 
         // short-cut 2: empty items - clear selection
         if (getItems().isEmpty()) {
@@ -402,9 +379,10 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         // short-cut 3: oldSelectedItem still in selectedItems
         // happens on all changes except a remove of the selected,
         // need to update index
-        if (indexedItems.contains(oldSelectedItem)) {
-            int indexedIndex = indexedItems.indexOf(oldSelectedItem);
-            int itemsIndex = indicesList.getSourceIndex(indexedIndex);
+        if (getSelectedItems().contains(oldSelectedItem)) {
+//            int indexedIndex = indexedItems.indexOf(oldSelectedItem);
+//            int itemsIndex = indicesList.getSourceIndex(indexedIndex);
+            int itemsIndex = controller.sourceIndexOf(oldSelectedItem);
             syncSingleSelectionState(itemsIndex, sameFocus);
             if (!sameFocus) {
                updateFocus(c); 
@@ -538,9 +516,34 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     }
 
     protected ObservableList<? extends T> getItems() {
-        return indicesList.getSource();
+        return controller.getSource();
     }
+
+    /**
+     * Returns the number of items in the data model that underpins the control.
+     * An example would be that a ListView selection model would likely return
+     * <code>listView.getItems().size()</code>. The valid range of selectable
+     * indices is between 0 and whatever is returned by this method.
+     */
+    protected int getItemCount() {
+        return controller.getSourceSize();
+    };
     
+    /**
+     * Returns the item at the given index. An example using ListView would be
+     * <code>listView.getItems().get(index)</code>.
+     * 
+     * @param index The index of the item that is requested from the underlying
+     *      data model.
+     * @return Returns null if the index is out of bounds, or an element of type
+     *      T that is related to the given index.
+     */
+    protected T getModelItem(int index) {
+        if (index < 0 || index >= getItemCount()) return null;
+        return controller.getSource().get(index);
+    };
+    
+
     protected abstract FocusModel<T> getFocusModel();
     protected abstract void focus(int index);
     protected abstract int getFocusedIndex();
