@@ -61,8 +61,9 @@ public class MultipleSelectionController<T> implements IndexedItemsController<T>
 
     @Override
     public int sourceIndexOf(T item) {
-        int index = indexedItems.indexOf(item);
-        return index < 0 ? -1 : indicesList.getSourceIndex(index);
+//        int index = indexedItems.indexOf(item);
+//        return index < 0 ? -1 : indicesList.getSourceIndex(index);
+        return getSource().indexOf(item);
     }
 
     @Override
@@ -70,10 +71,15 @@ public class MultipleSelectionController<T> implements IndexedItemsController<T>
         return getSource().size();
     }
 
+    
+    @Override
+    public T getSourceItem(int index) {
+        return getSource().get(index);
+    }
+
     @Override
     public ObservableList<? extends T> getSource() {
         return indicesList.getSource();
     }
-
     
 }

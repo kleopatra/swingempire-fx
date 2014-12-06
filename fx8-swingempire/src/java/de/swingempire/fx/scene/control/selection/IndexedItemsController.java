@@ -61,8 +61,7 @@ public interface IndexedItemsController<T> {
     void clearAllIndices();
     
     /**
-     * Returns the index of the item in the backing list if it is indexed 
-     * or -1 if not.
+     * Returns the index of the item in the backing list.
      * 
      * @param item
      * @return
@@ -71,6 +70,8 @@ public interface IndexedItemsController<T> {
     
     // PENDING JW: really want to expose backing properties?
     int getSourceSize();
+    
+    T getSourceItem(int index);
     
     // PENDING JW: really want to expose backing properties?
     ObservableList<? extends T> getSource();

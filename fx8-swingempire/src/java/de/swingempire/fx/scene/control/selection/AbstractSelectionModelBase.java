@@ -152,7 +152,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
     public void select(T obj) {
         // PENDING JW: here we assume the backing data 
         // being a list!
-        int index = getItems().indexOf(obj);
+        int index = controller.sourceIndexOf(obj);
         if (index > -1) {
             select(index);
         } else {
@@ -348,8 +348,8 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
             // no selected index, check selectedItem:
             // it had not been part of the items before the change (if it had
             // the selectedIndex wouldn't be < 0) but now might be
-            if (oldSelectedItem != null && getItems().contains(oldSelectedItem)) {
-                int selectedIndex = getItems().indexOf(oldSelectedItem);
+            if (oldSelectedItem != null && c.getList().contains(oldSelectedItem)) {
+                int selectedIndex = c.getList().indexOf(oldSelectedItem);
                 // need to select vs. sync because can't yet be in selectedIndices
                 select(selectedIndex);
             } else if (!sameFocus){ // still unselected but need to handle focus
@@ -366,7 +366,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
 
         // short-cut 2: empty items - clear selection
-        if (getItems().isEmpty()) {
+        if (c.getList().isEmpty()) {
             clearSelection();
             return;
         }
@@ -380,8 +380,12 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
         // happens on all changes except a remove of the selected,
         // need to update index
         if (getSelectedItems().contains(oldSelectedItem)) {
-            int itemsIndex = controller.sourceIndexOf(oldSelectedItem);
-            syncSingleSelectionState(itemsIndex, sameFocus);
+            int indexInIndices = getSelectedItems().indexOf(oldSelectedItem);
+            int sourceIndex = getSelectedIndices().get(indexInIndices);
+//            int itemsIndex = controller.sourceIndexOf(oldSelectedItem);
+//            if (sourceIndex != itemsIndex) 
+//                throw new IllegalStateException("index calc wrong!");
+            syncSingleSelectionState(sourceIndex, sameFocus);
             if (!sameFocus) {
                updateFocus(c); 
             }
@@ -422,7 +426,6 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      * @param c
      */
     protected void selectedItemChanged(Change<? extends T> c) {
-//        FXUtils.prettyPrint(c);
         T oldSelectedItem = getSelectedItem();
         boolean found = false;
         c.reset();
@@ -581,9 +584,9 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
 //        }
     }
 
-    protected ObservableList<? extends T> getItems() {
-        return controller.getSource();
-    }
+//    protected ObservableList<? extends T> getItems() {
+//        return controller.getSource();
+//    }
 
     /**
      * Returns the number of items in the data model that underpins the control.
@@ -606,7 +609,7 @@ public abstract class AbstractSelectionModelBase<T> extends MultipleSelectionMod
      */
     protected T getModelItem(int index) {
         if (index < 0 || index >= getItemCount()) return null;
-        return controller.getSource().get(index);
+        return controller.getSourceItem(index);
     };
     
 

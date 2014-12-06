@@ -1161,6 +1161,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         for (int i = first+ 1; i <= last; i++) {
             getSelectionModel().selectNext();
         }
+        assertEquals("sanity: anchor on first", first, getAnchorIndex());
         getSelectionModel().clearSelection(first);
         assertEquals(2, getSelectionModel().getSelectedIndices().size());
         assertEquals("anchor must be unchanged on clearing its selection", first, getAnchorIndex());
