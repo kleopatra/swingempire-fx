@@ -25,6 +25,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -121,6 +122,15 @@ public class DebugUtils {
     }
     
     public static void printSelectionState(ListView<?> choice) {
+        String choiceClass = choice.getClass().getSimpleName();
+        LOG.info(choiceClass + ": index/selectedItem/focus/focusItem "
+                + choice.getSelectionModel().getSelectedIndex() + " / "
+                + choice.getSelectionModel().getSelectedItem() + " / "
+                + choice.getFocusModel().getFocusedIndex() + " / "
+                + choice.getFocusModel().getFocusedItem());
+    }
+    
+    public static void printSelectionState(TreeView<?> choice) {
         String choiceClass = choice.getClass().getSimpleName();
         LOG.info(choiceClass + ": index/selectedItem/focus/focusItem "
                 + choice.getSelectionModel().getSelectedIndex() + " / "

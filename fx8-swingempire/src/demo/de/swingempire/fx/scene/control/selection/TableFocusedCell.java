@@ -90,6 +90,9 @@ public class TableFocusedCell extends Application {
         table.setItems(data);
         table.getColumns().addAll(language, country);
 
+        // quick check: http://stackoverflow.com/q/27354085/203657
+        // sorting table will null selectionModel throws NPE
+//        table.setSelectionModel(null);
 
         // https://javafx-jira.kenai.com/browse/RT-38491
         // incorrect extend selection after inserting item

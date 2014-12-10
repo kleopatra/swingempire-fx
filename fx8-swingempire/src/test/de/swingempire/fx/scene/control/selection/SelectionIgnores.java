@@ -14,6 +14,45 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 public class SelectionIgnores {
     
     /**
+     * Ignore tests related to uncontained selectedItems in treeView selection. 
+     * Seems unsupported, no idea how much sense it would make
+     * 
+     */
+    public static class IgnoreTreeUncontained implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
+     * Ignore tests that need a second thought, due to tree specifics.
+     * 
+     */
+    public static class IgnoreTreeDeferredIssue implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
+     * Ignore focus-related tests in treeView selection: TreeFocusModel sets its
+     * focus in a Platform.runLater, even wrapping the test in a runLater as well
+     * is unreliable.
+     * 
+     */
+    public static class IgnoreTreeFocus implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
      * Ignore notification issues due to correlated properties.
      * https://javafx-jira.kenai.com/browse/RT-39552
      * http://stackoverflow.com/q/27186755/203657):

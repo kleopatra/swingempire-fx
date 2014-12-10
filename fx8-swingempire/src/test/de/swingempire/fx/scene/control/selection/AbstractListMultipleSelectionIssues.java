@@ -389,7 +389,15 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
     
     protected abstract ListView createEmptyView();
-    
+
+    /**
+     * Implemented to call list.setItems.
+     */
+    @Override
+    protected void setItems(ObservableList other) {
+        getView().setItems(other);
+    }
+
     @Override
     protected MultipleSelectionModel getSelectionModel() {
         return getView().getSelectionModel();

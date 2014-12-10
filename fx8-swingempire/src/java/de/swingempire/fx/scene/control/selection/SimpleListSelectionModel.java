@@ -27,7 +27,8 @@ public class SimpleListSelectionModel<T>
 
     private ListView<T> listView;
     private ListProperty<T> itemsList;
-
+    private ListBasedSelectionHelper<T> helper;
+    
     /**
      * Live with coupling to view for now, will be removed!
      * @param listView
@@ -38,7 +39,8 @@ public class SimpleListSelectionModel<T>
         itemsList.bind(listView.itemsProperty());
         controller = new MultipleSelectionController<>(itemsList);
         // PENDING JW: this is brittle: need to register _after_ controller!
-        itemsList.addListener(weakItemsContentListener);
+        helper = new ListBasedSelectionHelper(this, itemsList);
+//        itemsList.addListener(weakItemsContentListener);
     }
     
     @Override

@@ -92,6 +92,7 @@ public class ListViewBitSetSelectionModel<T> extends MultipleSelectionModelBase<
      */
     protected void release(MultipleSelectionModel<T> value) {
         if (value == this) return;
+        listView.selectionModelProperty().removeListener(weakReleaseListener);
         listProperty.removeListener(weakItemsContentObserver);
         listProperty.unbind();
         listProperty = null;

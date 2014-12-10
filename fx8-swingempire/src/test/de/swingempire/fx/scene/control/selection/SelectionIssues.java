@@ -129,10 +129,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedOnClearItems() {
         int index = 2;
         getSelectionModel().select(index);
-        items.clear();
+//        items.clear();
+        clearItems();
+        assertEquals("selectedIndex must be cleared on removeAll", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedItem must be cleared on removeAll", null, getSelectionModel().getSelectedItem());
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(null, getSelectionModel().getSelectedItem());
     }
     
     /**
@@ -141,10 +142,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testSelectedUncontainedOnClearItems() {
-        Object uncontained = "uncontained";
+        Object uncontained = createItem("uncontained");
         getSelectionModel().select(1);
         getSelectionModel().select(uncontained);
-        items.clear();
+        clearItems();
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
         assertEquals(-1, getSelectionModel().getSelectedIndex());
         assertEquals(uncontained, getSelectionModel().getSelectedItem());
@@ -203,9 +204,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         Object selected = items.get(index);
-        Object modified = selected + "xx";
-        items.set(index, modified);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
+        Object modified = modifyItem(selected, "xx");
+//        items.set(index, modified);
+        setItem(index, modified);
+        assertEquals("selected index must be unchanged on setItem", 
+                index, getSelectionModel().getSelectedIndex());
         assertEquals(modified, getSelectionModel().getSelectedItem());
     }
     
@@ -252,7 +255,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testFocusOnRemoveItemAbove() {
         int index = 2;
         getSelectionModel().select(index);
-        items.remove(1);
+        assertEquals("sanity: focus set along with selected index", index, getFocusIndex(index));
+//        items.remove(1);
+        removeItem(1);
         int expected = index -1;
         assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
     }
@@ -261,7 +266,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedOnRemoveItemAbove() {
         int index = 2;
         getSelectionModel().select(index);
-        items.remove(1);
+//        items.remove(1);
+        removeItem(1);
         int expected = index - 1;
         assertEquals("open 30931 - selected after remove above selected", 
                 expected, getSelectionModel().getSelectedIndex());
@@ -271,7 +277,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedOnInsertItemAbove() {
         int index = 2;
         getSelectionModel().select(index);
-        items.add(0, "6-item");
+//        items.add(0, "6-item");
+        addItem(0, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
                 expected, getSelectionModel().getSelectedIndex());
@@ -282,7 +289,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         initSkin();
         int index = 2;
         getSelectionModel().select(index);
-        items.add(0, "6-item");
+//        items.add(0, "6-item");
+        addItem(0, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
                 expected, getFocusIndex(expected));
@@ -336,12 +344,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     }
     
     /**
-     * Re-configures the view with new items via view.setItems(other)
-     * @param other
-     */
-    protected abstract void resetItems(ObservableList other);
-    
-    /**
      * Undoc'ed but nearly always implemented:
      * Have a selectedItem that is not part of the underlying list (implies
      * selectedIndex < 0), then insert that item: selectedIndex must
@@ -350,15 +352,16 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      */
     @Test
     public void testSelectedUncontainedAfterInsertUncontained() {
-        Object uncontained = "uncontained";
+        Object uncontained = createItem("uncontained");
         getSelectionModel().select(uncontained);
         int insert = 3;
-        items.add(insert, uncontained);
+//        items.add(insert, uncontained);
+        addItem(insert, uncontained);
         assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
         assertEquals("selectedIndex must be updated to position of selectedItem", 
                 insert, getSelectionModel().getSelectedIndex());
     }
-    
+
     @Test
     public void testFocusOnInsertItemAtSelected() {
         initSkin();
@@ -376,7 +379,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         Object selectedItem = getSelectionModel().getSelectedItem();
-        items.add(index, "6-item");
+//        items.add(index, "6-item");
+        addItem(index, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
                 expected, getSelectionModel().getSelectedIndex());
@@ -667,7 +671,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectUncontainedIfNotEmptySelection() {
         int index = 2;
         getSelectionModel().select(index);
-        Object item = "uncontained";
+        Object item = createItem("uncontained");
         getSelectionModel().select(item);
         if (getSelectionModel().getSelectedIndex() >= 0) {
             assertEquals("selectedItem must be model item at selectedIndex", 
@@ -853,9 +857,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectOffRange() {
         int index = 2;
         getSelectionModel().select(index);
-        getSelectionModel().select(items.size());
-        assertEquals("selecting off-range (here: size) must have no effect on selectedIndex", index, getSelectionModel().getSelectedIndex());
-        assertEquals("selecting off-range (here: size) must have no effect on selectedItem", items.get(index), getSelectionModel().getSelectedItem());
+        getSelectionModel().select(items.size() + 3);
+        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedIndex", index, getSelectionModel().getSelectedIndex());
+        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedItem", items.get(index), getSelectionModel().getSelectedItem());
     }
 
     @Test
@@ -942,14 +946,57 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     protected abstract V createView(ObservableList items);
     
-    protected abstract T getSelectionModel();
-
-    protected abstract void setSelectionModel(T model);
+    /**
+     * Trying to open up the test for trees. Might work at least for very basic
+     * state testing, but maybe not...
+     * 
+     * <p>
+     * 
+     * This implementation returns the given item.
+     * 
+     * @param item
+     * @return
+     */
+    protected Object createItem(Object item) {
+        return item;
+    }
     
+    protected Object modifyItem(Object old, String mod) {
+        return old + mod;
+    }
+
+    /**
+     * @param i
+     */
+    protected void removeItem(int i) {
+        items.remove(i);
+    }
+
+    /**
+     * Re-configures the view with new items via view.setItems(other)
+     * @param other
+     */
+    protected abstract void resetItems(ObservableList other);
+
+    protected void addItem(int pos, Object item) {
+        items.add(pos, item);
+    }
+
+    protected void setItem(int pos, Object item) {
+        items.set(pos, item);
+    }
+
+    protected void clearItems() {
+        items.clear();
+    }
     protected V getView() {
         return view;
     }
     
+    protected abstract T getSelectionModel();
+
+    protected abstract void setSelectionModel(T model);
+
     /**
      * Returns the index of the anchor value. Note that subclasses which store a
      * compound value need to override and extract the index.
