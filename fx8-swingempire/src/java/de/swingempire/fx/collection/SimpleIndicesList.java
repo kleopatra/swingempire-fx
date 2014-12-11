@@ -14,6 +14,8 @@ import javafx.collections.transformation.TransformationList;
 import com.sun.javafx.collections.SortHelper;
 
 /**
+ * Unused, will be removed ...
+ * 
  * TransformationList that maps positions of the source. 
  * 
  * This implementation uses a simple list as storage of the indices, 
