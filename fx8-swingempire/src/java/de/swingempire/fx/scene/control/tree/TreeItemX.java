@@ -74,12 +74,12 @@ public class TreeItemX<T> extends TreeItem<T> {
      * Returns the number of expandedDescendants, will be updated
      * to account for any pending changes.
      * <p>
-     * Note that this item itself is included dinto the count, that is the
+     * Note that this item itself is included into the count, that is the
      * minimal value is 1.
      * @return
      */
-    public int getExpandedDescendentCount() {
-        return invokeGetExpandedDescendentCount();
+    public int getExpandedDescendantCount() {
+        return invokeGetExpandedDescendantCount();
     }
     
     /**
@@ -87,7 +87,7 @@ public class TreeItemX<T> extends TreeItem<T> {
      * count will be updated to account for any pending changes, it returns
      * the count _before_ the update (aka: previousExpandedDescendentCount.
      * <p>
-     * Note that this item itself is included dinto the count, that is the
+     * Note that this item itself is included into the count, that is the
      * minimal value is 1.
      * 
      * <p>
@@ -97,20 +97,37 @@ public class TreeItemX<T> extends TreeItem<T> {
      * Next access to getCount will update the count, if either the flag
      * or the parameter is true. 
      * 
+     * <p>
+     * DONT USE THIS! Make private asap.
+     * 
+     * <p>
+     * Not really good to rely on stale state ... the general process is to
+     * fire only if internal state is updated (or as done here, each access
+     * will update internal state before returning the value).   
+     * <p>
+     * Clients interested in the old value should
+     * loop through the children, call getExpandedDescendentCount on each
+     * and sum them up (it the item was collapsed) or assume a 1 if visible
+     * and expanded. 
+     * 
      * @return
+     * 
+     * @see #getExpandedDescendantCount()
      */
-    public int getCurrentExpandedDescendentCount() {
-        invokeGetExpandedDescendentCount();
-        return invokePreviousExpandedDescendentCount();
+    public int getPreviousExpandedDescendantCount() {
+        invokeGetExpandedDescendantCount();
+        return invokePreviousExpandedDescendantCount();
     }
 
     
 //----------- going dirty: reflective access of super
 
     /**
+     * NOTE the typo "descendents" vs. "descendants" - reflective access
+     * will break if fixed...
      * @return
      */
-    private int invokePreviousExpandedDescendentCount() {
+    private int invokePreviousExpandedDescendantCount() {
         Class clazz = TreeItem.class;
         try {
             Field field = clazz.getDeclaredField("previousExpandedDescendentCount");
@@ -122,7 +139,13 @@ public class TreeItemX<T> extends TreeItem<T> {
         return 0;
     }
 
-    private int invokeGetExpandedDescendentCount() {
+    /**
+     * NOTE the typo in super "descendent" vs. "descendant" - reflective access
+     * will break if fixed...
+     * 
+     * @return
+     */
+    private int invokeGetExpandedDescendantCount() {
         Class clazz = TreeItem.class;
         try {
             Method method = clazz.getDeclaredMethod("getExpandedDescendentCount", boolean.class);

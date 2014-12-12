@@ -22,6 +22,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.*;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.TreeModificationReport;
 import static org.junit.Assert.*;
@@ -62,6 +66,30 @@ public class TreeItemTest {
         }
     }
     
+    @Test
+    public void testChildDiscontinousRemoved() {
+        TreeModificationReport report = new TreeModificationReport(treeItem);
+        children.removeAll(children.get(2), children.get(5));
+        assertEquals("got single event", 1, report.getEventCount());
+        assertTrue("got removed", report.getLastEvent().wasRemoved());
+    }
+    @Test
+    public void testChildEventRemoved() {
+        TreeModificationReport report = new TreeModificationReport(treeItem);
+        treeItem.getChildren().remove(4);
+        assertEquals("got single event", 1, report.getEventCount());
+        assertTrue("got removed", report.getLastEvent().wasRemoved());
+        
+    }
+    
+    @Test
+    public void testChildEventAdded() {
+        TreeModificationReport report = new TreeModificationReport(treeItem);
+        treeItem.getChildren().add(createItem("newItem"));
+        assertEquals("single event", 1, report.getEventCount());
+        assertTrue("was added", report.getLastEvent().wasAdded());
+    }
+    
     @Test @Ignore
     public void testChildEventSubChangesReport() {
         // simulate external storage of last index
@@ -77,14 +105,7 @@ public class TreeItemTest {
         treeItem.addEventHandler(TreeItem.childrenModificationEvent(), l);
         children.removeAll(children.get(2), children.get(5));
     }
-    
-    @Test
-    public void testChildDiscontinousRemoved() {
-        TreeModificationReport report = new TreeModificationReport(treeItem);
-        children.removeAll(children.get(2), children.get(5));
-        assertEquals("got single event", 1, report.getEventCount());
-        assertTrue("got removed", report.getLastEvent().wasRemoved());
-    }
+
     @Test @Ignore
     public void testChildEventDiscontinousRemovedReport() {
         IntegerProperty p = new SimpleIntegerProperty(0);
@@ -96,16 +117,7 @@ public class TreeItemTest {
         children.removeAll(children.get(2), children.get(5));
         assertEquals("received singe removed", 1, p.get());
     }
-    
-    @Test
-    public void testChildEventRemoved() {
-        TreeModificationReport report = new TreeModificationReport(treeItem);
-        treeItem.getChildren().remove(4);
-        assertEquals("got single event", 1, report.getEventCount());
-        assertTrue("got removed", report.getLastEvent().wasRemoved());
-        
-    }
-    
+
     @Test @Ignore
     public void testChildEventRemovedReport() {
         IntegerProperty p = new SimpleIntegerProperty(0);
@@ -118,16 +130,7 @@ public class TreeItemTest {
         treeItem.getChildren().remove(4);
         assertEquals("received single removed", 1, p.get());
     }
-    
-    
-    @Test
-    public void testChildEventAdded() {
-        TreeModificationReport report = new TreeModificationReport(treeItem);
-        treeItem.getChildren().add(createItem("newItem"));
-        assertEquals("single event", 1, report.getEventCount());
-        assertTrue("was added", report.getLastEvent().wasAdded());
-    }
-    
+
     @Test @Ignore
     public void testChildEventAddedReport() {
         IntegerProperty p = new SimpleIntegerProperty(0);

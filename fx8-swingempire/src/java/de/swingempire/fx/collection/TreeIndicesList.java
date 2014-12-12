@@ -4,8 +4,6 @@
  */
 package de.swingempire.fx.collection;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -15,6 +13,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableListBase;
 import javafx.event.EventHandler;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
@@ -181,7 +180,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         if (from < 0 || bitSet.nextSetBit(from) < 0) return;
         // account for the item itself
         from++;
-        int removedSize = source.getCurrentExpandedDescendentCount() - 1;
+        int removedSize = source.getPreviousExpandedDescendantCount() - 1;
         // step one: remove the indices inside the range
         doRemoveIndices(from, removedSize);
         // step two: shift indices below the range
@@ -189,6 +188,14 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
     }
 
 
+    /**
+     * PENDING JW: not good enough 
+     * - need source TreeItem for adjusting from to pos in tree
+     * - in implementing methods with change of count must use
+     *   descendantCount vs bare added/removedSize
+     * 
+     * @param c
+     */
     protected void childrenChanged(Change<? extends TreeItem<T>> c) {
         while (c.next()) {
             if (c.wasPermutated()) {
