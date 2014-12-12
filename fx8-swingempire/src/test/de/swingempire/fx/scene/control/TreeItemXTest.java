@@ -4,11 +4,15 @@
  */
 package de.swingempire.fx.scene.control;
 
+import javafx.scene.control.TreeItem;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.scene.control.tree.TreeItemX;
+
+import static de.swingempire.fx.scene.control.tree.TreeItemX.*;
 import static org.junit.Assert.*;
 
 /**
@@ -18,6 +22,27 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class TreeItemXTest extends TreeItemTest {
 
+    /**
+     * Testing utility method.
+     */
+    @Test
+    public void testIsVisible() {
+        assertFalse("null must not be visible", isVisible(null));
+        assertTrue("root must be visible " + treeItem, isVisible(treeItem));
+        treeItem.setExpanded(true);
+        TreeItem child = (TreeItem) treeItem.getChildren().get(0);
+        assertTrue("child of expanded item must be visible " + child, isVisible(child));
+        TreeItem branch = createBranch("branch");
+        TreeItem grandChild = (TreeItem) branch.getChildren().get(0);
+        treeItem.getChildren().add(branch);
+        assertTrue("branch must be visible " + branch, isVisible(branch));
+        assertFalse("grandChild in collapsed branch must not be visible " + grandChild, 
+                isVisible(grandChild));
+        branch.setExpanded(true);
+        assertTrue("expanding parent makes grandChild visible", isVisible(grandChild));
+        treeItem.setExpanded(false);
+        assertFalse("collapsing root makes grandChilkd invisible", isVisible(grandChild));
+    }
     /**
      * Testing expanded count of collapsed/expanded root after adding
      * collapsed/expanded root. 

@@ -18,7 +18,10 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
 /**
- * Extended to fire extended TreeModificationEvent.
+ * Extended to fire extended TreeModificationEvent that exposes the 
+ * change received from its children list as-is.
+ * 
+ * https://javafx-jira.kenai.com/browse/RT-39644
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -64,12 +67,33 @@ public class TreeItemX<T> extends TreeItem<T> {
 //                CHILDREN_MODIFICATION_EVENT, this, added, removed, c));
     }
 
+    /**
+     * Overridden to sneak in our own listener to the children.
+     */
     @Override
     public ObservableList<TreeItem<T>> getChildren() {
         if (!wasCheckedChildren) checkChildren();
         return super.getChildren();
     }
 
+    /**
+     * Returns true if the value identified by path is currently viewable,
+     * which means it is either the root or all of its parents are expanded.
+     * Otherwise, this method returns false.
+     * 
+     * @param treeItem
+     * @return
+     */
+    public static boolean isVisible(TreeItem<?> treeItem) {
+        if (treeItem == null) return false;
+        if (treeItem.getParent() == null) {
+            return true;
+        } else if (!treeItem.getParent().isExpanded()) {
+            return false;
+        }
+        return isVisible(treeItem.getParent());
+        
+    }
     /**
      * Returns the number of expandedDescendants, will be updated
      * to account for any pending changes.
