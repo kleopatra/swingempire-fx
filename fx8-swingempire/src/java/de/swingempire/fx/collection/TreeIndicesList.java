@@ -237,6 +237,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      * Implements internal update for separate add/remove from backing list.
      * PENDING JW: think about set (aka: replace) 
      * 
+     * PENDING JW: need to use expandedDescendentCount vs. bare added/removedSize
      * @param c
      */
     private void addedOrRemoved(Change<? extends TreeItem<T>> c) {
@@ -254,6 +255,10 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         }
     }
 
+    /**
+     * PENDING JW: need to use expandedDescendentCount vs. bare addedSize
+     * @param c
+     */
     private void add(Change<? extends TreeItem<T>> c) {
         // added: values that are after the added index must be increased by addedSize
         int from = c.getFrom();
@@ -277,7 +282,10 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         }
     }
 
-
+    /**
+     * PENDING JW: need to use expandedDescendentCount vs. bare removedSize
+     * @param c
+     */
     private void remove(Change<? extends TreeItem<T>> c) {
         // removed is two-step:
         // if any of the values that are mapped to indices, is removed remove the index
