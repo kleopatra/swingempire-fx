@@ -13,6 +13,18 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 public class PropertyIgnores {
 
     /**
+     * Ignore tests around TreeView.getRow() 
+     * Reported as https://javafx-jira.kenai.com/browse/RT-39661
+     */
+    public static class IgnoreTreeGetRow implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
      * Administrative: ignore not yet implemented.
      */
     public static class IgnoreNotYetImplemented implements IgnoreCondition {

@@ -138,7 +138,7 @@ public class TreeItemX<T> extends TreeItem<T> {
      * 
      * @see #getExpandedDescendantCount()
      */
-    public int getPreviousExpandedDescendantCount() {
+    private int getPreviousExpandedDescendantCount() {
         invokeGetExpandedDescendantCount();
         return invokePreviousExpandedDescendantCount();
     }

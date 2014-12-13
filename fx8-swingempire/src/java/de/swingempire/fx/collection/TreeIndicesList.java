@@ -175,18 +175,41 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      */
     protected void collapsed(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
+        // need to chech if visible because tree.getRow behaves unexpectedly
+        if (!TreeItemX.isVisible(source)) return;
+        // getRow returns expected result only for visible items
         int from = tree.getRow(source);
         // source hidden anyway or change completely after, nothing to do
+        if (from < 0) {
+            throw new IllegalStateException("weeded out hidden items before, "
+                    + "something wrong if we get a negativ from " + event);
+        }
         if (from < 0 || bitSet.nextSetBit(from) < 0) return;
         // account for the item itself
         from++;
-        int removedSize = source.getPreviousExpandedDescendantCount() - 1;
+        int removedSize = getExpandedChildCount(source);
+//                source.getPreviousExpandedDescendantCount() - 1;
         // step one: remove the indices inside the range
         doRemoveIndices(from, removedSize);
         // step two: shift indices below the range
         doShiftLeft(from, removedSize);
     }
 
+    /**
+     * Returns the sum of the expandedDescandantCount of the item's children.
+     * We loop its children
+     * and sum up their expandedItemCount.
+     * Called after receiving a collapsed from parent. 
+     * @param parent
+     * @return
+     */
+    protected int getExpandedChildCount(TreeItemX<T> parent) {
+        int result = 0;
+        for (TreeItem<T> child : parent.getChildren()) {
+            result += ((TreeItemX<T>) child).getExpandedDescendantCount();
+        }
+        return result;
+    }
 
     /**
      * PENDING JW: not good enough 

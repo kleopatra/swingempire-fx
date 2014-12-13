@@ -19,9 +19,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.TreeModificationReport;
 
@@ -47,12 +49,15 @@ public class TreeIndicesListTest {
 
     private TreeView tree;
 
-//--------------------------- tree.getRow    
+//--------------------------- tree.getRow  
+//-----------  Reported as https://javafx-jira.kenai.com/browse/RT-39661
+    
     /**
      * Quick test of tree.getRow(treeItem) semantics: 
      * seems to return the row if all expanded, not the actual?
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
     public void testTreeRowInvisibleInitialExpanded() {
         TreeItemX child = createBranch("child 1");
         int grandIndex = 3;
@@ -73,6 +78,7 @@ public class TreeIndicesListTest {
      * collapsed, result always as if it were expanded.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
     public void testTreeRowInvisibleInitialCollapsed() {
         TreeItemX child = createBranch("child 1");
         int grandIndex = 3;
@@ -118,6 +124,7 @@ public class TreeIndicesListTest {
      * same misbehaviour as custom - so go ahead with custom testing
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
     public void testTreeRowInvisibleInitialCollapsedCore() { 
         // create a tree with expanded root
         TreeItem root = createSubTree("root");
@@ -153,6 +160,7 @@ public class TreeIndicesListTest {
      * Effect of unexpected tree.getRow on selection: behaves as expected.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
     public void testTreeSelectRowInvisible() {
         TreeItemX child = createBranch("child 1");
         int grandIndex = 3;
@@ -169,6 +177,26 @@ public class TreeIndicesListTest {
     }
  
  //----------------------------------
+    
+    /**
+     * no change if hidden item is collapsed.
+     */
+    @Test
+    public void testModificationHiddenItemsCollapse() {
+        TreeItemX childBranch = createBranch("collapsedChild");
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        TreeItemX grandChildBranch = createBranch("expandedGrandChild");
+        grandChildBranch.setExpanded(true);
+        childBranch.getChildren().add(0, grandChildBranch);
+        assertEquals("sanity: expandedCount unchanged by adding expanded child", 
+                childExpanded, childBranch.getExpandedDescendantCount());
+        rootChildren.add(0, childBranch);
+        int index = 6;
+        indicesList.setIndices(index);
+        grandChildBranch.setExpanded(false);
+        assertEquals("index unchanged on modification of hidden grandChild", 
+                index, indicesList.get(0).intValue());
+    }
     
     @Test
     public void testCollapseRoot() {
