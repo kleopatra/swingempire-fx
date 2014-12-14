@@ -37,6 +37,8 @@ import javafx.collections.transformation.TransformationList;
  *      in underlying model, the net effect on value here would be unchanged, 
  *      actual removal of value unwanted     
  * 
+ * @see IndicesBase
+ * @see TreeIndicesList
  * 
  * @author Jeanette Winzenburg, Berlin
  */

@@ -182,7 +182,7 @@ public class TreeIndicesListTest {
      * no change if hidden item is collapsed.
      */
     @Test
-    public void testModificationHiddenItemsCollapse() {
+    public void testCollapseHiddenChild() {
         TreeItemX childBranch = createBranch("collapsedChild");
         int childExpanded = childBranch.getExpandedDescendantCount();
         TreeItemX grandChildBranch = createBranch("expandedGrandChild");
@@ -194,8 +194,27 @@ public class TreeIndicesListTest {
         int index = 6;
         indicesList.setIndices(index);
         grandChildBranch.setExpanded(false);
-        assertEquals("index unchanged on modification of hidden grandChild", 
+        assertEquals("index unchanged on collapse of hidden grandChild", 
                 index, indicesList.get(0).intValue());
+    }
+
+    @Test
+    public void testCollapseChild() {
+        TreeItemX childBranch = createBranch("expandedChild");
+        childBranch.setExpanded(true);
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        rootChildren.add(0, childBranch);
+        int rootExpanded = root.getExpandedDescendantCount();
+        // test branch has same length
+        assertEquals("expanded", 2 * childExpanded, rootExpanded);
+        // select last of root
+        int last = rootExpanded - 1;
+        indicesList.setIndices(last);
+        childBranch.setExpanded(false);
+        // Note: expandedCount includes the item itself, a collapsed
+        // item has a count of 1!
+        int collapsedLast = last - childExpanded + childBranch.getExpandedDescendantCount();
+        assertEquals("index after collapse ", collapsedLast, indicesList.get(0).intValue());
     }
     
     @Test
@@ -206,12 +225,103 @@ public class TreeIndicesListTest {
         root.setExpanded(false);
         assertEquals("indices after collapse must be empty", 0, indicesList.size());
     }
+
+    /**
+     * no change if hidden item is collapsed.
+     */
+    @Test
+    public void testExpandHiddenChild() {
+        TreeItemX childBranch = createBranch("collapsedChild");
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        TreeItemX grandChildBranch = createBranch("expandedGrandChild");
+        childBranch.getChildren().add(0, grandChildBranch);
+        assertEquals("sanity: expandedCount unchanged by adding expanded child", 
+                childExpanded, childBranch.getExpandedDescendantCount());
+        rootChildren.add(0, childBranch);
+        int index = 6;
+        indicesList.setIndices(index);
+        grandChildBranch.setExpanded(true);
+        assertEquals("index unchanged on expand of hidden grandChild", 
+                index, indicesList.get(0).intValue());
+    }
+
+
+    @Test
+    public void testExpandChild() {
+        TreeItemX childBranch = createBranch("expandedChild");
+        rootChildren.add(0, childBranch);
+        // index > child index
+        int index = 3;
+        indicesList.setIndices(index);
+        childBranch.setExpanded(true);
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        int expandedIndex = index + childExpanded -1;
+        assertEquals("index unchanged", expandedIndex, indicesList.get(0).intValue());
+    }
+    
+    @Test
+    public void testExpandRoot() {
+        root.setExpanded(false);
+        int index = 0;
+        indicesList.setIndices(index);
+        root.setExpanded(true);
+        assertEquals("index unchanged", index, indicesList.get(0).intValue());
+    }
+    
+    @Test
+    public void testRemoveExpandedChild() {
+        TreeItemX child = createBranch("expandedChild");
+        child.setExpanded(true);
+        int expandedCount = child.getExpandedDescendantCount();
+        rootChildren.add(0, child);
+        int index = expandedCount + 4;
+        indicesList.setIndices(index);
+        int expected = index - expandedCount;
+        rootChildren.remove(child);
+        assertEquals("index decreased by child's expanded size", expected, indicesList.get(0).intValue());
+    }
+    
     @Test
     public void testRemoveChild() {
         int index = 2;
         indicesList.setIndices(index);
         rootChildren.remove(0);
         assertEquals("index increased by one", index -1, indicesList.get(0).intValue());
+    }
+    
+    @Test
+    public void testAddToHiddenChild() {
+        TreeItemX child = createBranch("collapsedChild");
+        rootChildren.add(0, child);
+        int index = 4;
+        indicesList.setIndices(index);
+        child.getChildren().add(0, createItem("added grandChild"));
+        assertEquals("index unchanged", index, indicesList.get(0).intValue());
+    }
+    
+    @Test
+    public void testAddToHiddenExpandedGrandChild() {
+        TreeItemX child = createBranch("collapsedChild");
+        rootChildren.add(0, child);
+        TreeItemX grand = createBranch("expandedGrandChild");
+        child.getChildren().add(0, grand);
+        grand.setExpanded(true);
+        int index = 4;
+        indicesList.setIndices(index);
+        grand.getChildren().add(0, createItem("added grandChild"));
+        assertEquals("index unchanged", index, indicesList.get(0).intValue());
+    }
+    
+    @Test
+    public void testAddExpandedChild() {
+        TreeItemX child = createBranch("expandedChild");
+        child.setExpanded(true);
+        int expandedCount = child.getExpandedDescendantCount();
+        int index = 4;
+        indicesList.setIndices(index);
+        rootChildren.add(0, child);
+        int expected = index + expandedCount;
+        assertEquals("index increased by child's expanded size", expected, indicesList.get(0).intValue());
     }
     
     @Test
