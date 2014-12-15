@@ -233,6 +233,19 @@ public class TransformationListTest {
         assertTrue("expected single update but was: " + report.getLastChange(), 
                 wasSingleUpdated(report.getLastChange()));
     }
+
+    /**
+     * Sanity: transform should throw IIOB if paramenter passed into
+     * getSourceIndex is offRange - does but isn't documented.
+     */
+    @Test(expected=IndexOutOfBoundsException.class)
+    public void testFilteredGetSourceIndexOffRange() {
+        ObservableList<Person> persons = createPersons();
+        FilteredList<Person> filtered = persons.filtered(p -> true);
+        Predicate<Person> predicate = p -> p.getLastName().startsWith("J");
+        filtered.setPredicate(predicate);
+        filtered.getSourceIndex(filtered.size());
+    }
     
     protected ObservableList<Person> createPersons(Callback<Person, Observable[]> extractor) {
         return FXCollections.observableList(createPersons(), extractor);

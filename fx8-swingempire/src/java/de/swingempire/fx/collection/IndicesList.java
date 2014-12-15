@@ -177,8 +177,10 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * @param c
      */
     private void replaced(Change<? extends T> c) {
+        // PENDING JW: no longer true, might decide to do nothing for the
+        // special case?
         // need to replace even if unchanged, listeners to selectedItems
-        // depend on it
+        // depend on it 
         // handle special case of "real" replaced, often size == 1
         if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
             for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
@@ -210,15 +212,15 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         if (c.wasAdded() && c.wasRemoved()) 
             throw new IllegalStateException("expected real add/remove but was: " + c);
         if (c.wasAdded()) {
-            add(c);
+            added(c);
         } else if (c.wasRemoved()) {
-            remove(c);
+            removed(c);
         } else {
             throw new IllegalStateException("what have we got here? " + c);
         }
     }
 
-    private void remove(Change<? extends T> c) {
+    private void removed(Change<? extends T> c) {
         // removed is two-step:
         // if any of the values that are mapped to indices, is removed remove the index
         // for all left over indices after the remove, decrease the value by removedSize (?)
@@ -276,7 +278,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         doClearIndices(removedIndices);
     }
 
-    private void add(Change<? extends T> c) {
+    private void added(Change<? extends T> c) {
         // added: values that are after the added index must be increased by addedSize
         int from = c.getFrom();
         int addedSize = c.getAddedSize();
@@ -340,8 +342,8 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     /**
-     * Returns the source index if given index is in valide range or -1
-     * if out off range.
+     * {@inheritDoc} <p>
+     * Returns the source index if given index is in valid.
      * <p>
      * 
      * Note:
@@ -362,15 +364,20 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
     }
 
     /**
-     * @return the value of this if index in valid range, or -1 if given
-     * index out of range.
+     * {@inheritDoc} <p>
+     * access with off range index is programming error, better
+     * throw
+     * 
+     * @return the value of this if index in valid range
+     *  @throws IndexOutOfBoundsException if index off range
      */
     @Override
     public Integer get(int index) {
         // PENDING JW: it is wrong to use size of source list as upper boundary
         // get() defined only on _our_ size!
-        if (index < 0 || index >= size()) return -1;
-
+        if (index < 0 || index >= size()) // return -1;
+            throw new IndexOutOfBoundsException("index must be not negative "
+                    + "and less than size " + size() + ", but was: " + index);
         // PENDING JW: following lines simply copied from MultipleSelectionModelBase
         // we are looking for the nth bit set
         // double check needed because guard of valid range was incorrect

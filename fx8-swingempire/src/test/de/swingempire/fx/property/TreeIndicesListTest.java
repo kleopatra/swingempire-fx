@@ -4,8 +4,11 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.List;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -24,6 +27,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.TreeModificationReport;
 
@@ -43,141 +47,34 @@ public class TreeIndicesListTest {
 
     private TreeIndicesList indicesList;
     private TreeModificationReport report;
+    // root is expanded
     private TreeItemX root;
+    // tree with isShowRoot true
+    private TreeView tree;
     private ObservableList rawItems;
     private ObservableList<TreeItem> rootChildren;
 
-    private TreeView tree;
 
-//--------------------------- tree.getRow  
-//-----------  Reported as https://javafx-jira.kenai.com/browse/RT-39661
+ //---------------------------------- test TreeModifications
     
-    /**
-     * Quick test of tree.getRow(treeItem) semantics: 
-     * seems to return the row if all expanded, not the actual?
-     */
     @Test
-    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
-    public void testTreeRowInvisibleInitialExpanded() {
-        TreeItemX child = createBranch("child 1");
-        int grandIndex = 3;
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        child.setExpanded(true);
+    public void testValueChangedRootChild() {
         int childIndex = 2;
-        rootChildren.add(childIndex, child);
-        int row = tree.getRow(grandChild);
-        assertEquals("sanity: row of grandChild", (1 + childIndex) + (1 + grandIndex), row);
-        child.setExpanded(false);
-        assertEquals("grandChild not visible", -1, tree.getRow(grandChild));
+        TreeItem item = rootChildren.get(childIndex);
+        int indexInIndices = childIndex + 1;
+        indicesList.setIndices(indexInIndices);
+        item.setValue("other value");
+        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
     }
-    
-    /**
-     * Here we insert a collapsed child and query the row of a grandchild 
-     * (which isn't visible)
-     * Doesn't matter whether parent was initially expanded or
-     * collapsed, result always as if it were expanded.
-     */
     @Test
-    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
-    public void testTreeRowInvisibleInitialCollapsed() {
-        TreeItemX child = createBranch("child 1");
-        int grandIndex = 3;
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        child.setExpanded(false);
+    public void testGraphicChangedRootChild() {
         int childIndex = 2;
-        rootChildren.add(childIndex, child);
-        int row = tree.getRow(grandChild);
-        assertEquals("grandChild not visible", -1, row);
+        TreeItem item = rootChildren.get(childIndex);
+        int indexInIndices = childIndex + 1;
+        indicesList.setIndices(indexInIndices);
+        item.setGraphic(new CheckBox("dummy"));
+        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
     }
-    
-    /**
-     * Here we insert a several collapsed children, 
-     *  and query the row of a grandchild in the last.
-     *  
-     * WRONG test: inserted at same absolute index, doesn't
-     *  matter whether we inserted something above or not.
-     *  
-     * Keep for not repeating 
-     *   
-     * (which isn't visible)
-     * Doesn't matter whether parent was initially expanded or
-     * collapsed, result always as if it were expanded.
-     */
-    @Test @Ignore
-    public void testTreeRowInvisibleInitialCollapsedMultiple() {
-        TreeItemX childAbove = createBranch("above-collapsed");
-//        childAbove.setExpanded(true);
-//        rootChildren.add(1, childAbove);
-        TreeItemX child = createBranch("child 1");
-        int grandIndex = 3;
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        int childIndex = 5;
-        rootChildren.add(childIndex, child);
-        int row = tree.getRow(grandChild);
-        assertEquals("grandChild not visible", -1, row);
-    }
-    
-    /**
-     * Sanity test: use core TreeItem, stand-alone test
-     * for report.
-     * 
-     * same misbehaviour as custom - so go ahead with custom testing
-     */
-    @Test
-    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
-    public void testTreeRowInvisibleInitialCollapsedCore() { 
-        // create a tree with expanded root
-        TreeItem root = createSubTree("root");
-        root.setExpanded(true);
-        TreeView tree = new TreeView(root);
-        int initialRowCount = tree.getExpandedItemCount();
-        assertEquals("sanity: itemcount before addition", 
-                root.getChildren().size() + 1, initialRowCount);
-        // create a collapsed new child to insert into the root
-        TreeItem newChild = createSubTree("added-child");
-        TreeItem grandChild = (TreeItem) newChild.getChildren().get(2);
-        root.getChildren().add(6, newChild);
-        assertEquals("sanity: row count of tree increased by one", initialRowCount +1, 
-                tree.getExpandedItemCount());
-        // query the row of a grand-child
-        int row = tree.getRow(grandChild);
-        // grandChild not visible, row coordinate in tree is not available
-        assertEquals("grandChild not visible", -1, row);
-        // the other way round: if we get a row, expect the item at the row be the grandChild
-        assertEquals(grandChild, tree.getTreeItem(row));
-    }
-
-    protected TreeItem createSubTree(String name) {
-        ObservableList rawItems = FXCollections.observableArrayList(
-                "9-item", "8-item", "7-item", "6-item", 
-                "5-item", "4-item", "3-item", "2-item", "1-item");
-        TreeItem root = new TreeItem(name);
-        rawItems.stream().forEach(item -> root.getChildren().add(new TreeItem(item)));
-        return root;
-    }
-    
-    /**
-     * Effect of unexpected tree.getRow on selection: behaves as expected.
-     */
-    @Test
-    @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
-    public void testTreeSelectRowInvisible() {
-        TreeItemX child = createBranch("child 1");
-        int grandIndex = 3;
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        child.setExpanded(true);
-        int childIndex = 2;
-        rootChildren.add(childIndex, child);
-        int row = tree.getRow(grandChild);
-        assertEquals("sanity: row of grandChild", (1 + childIndex) + (1 + grandIndex), row);
-        child.setExpanded(false);
-        tree.getSelectionModel().select(row);
-        assertEquals("what do we get?", row, tree.getSelectionModel().getSelectedIndex());
-        assertEquals(grandChild, tree.getSelectionModel().getSelectedItem());
-    }
- 
- //----------------------------------
-    
     /**
      * no change if hidden item is collapsed.
      */
@@ -267,7 +164,100 @@ public class TreeIndicesListTest {
         root.setExpanded(true);
         assertEquals("index unchanged", index, indicesList.get(0).intValue());
     }
+
+//------------------------------ modifications to children
+
     
+    @Test
+    public void testSetAllRootIndexed() {
+        indicesList.setIndices(0);
+        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
+        assertEquals("index unchanged on replacing children of indexed items", 
+                0, indicesList.get(0).intValue());
+    }
+    @Test
+    public void testSetAllRootChildIndexed() {
+        int index = 1;
+        indicesList.setIndices(index);
+        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
+        assertEquals("indices on replaced children must be cleared", 0, indicesList.size());
+    }
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a collapsed child
+     */
+    @Test
+    public void testSetCollapsedChildBefore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(0, child);
+        assertEquals(index, indicesList.get(0).intValue());
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a expanded child
+     */
+    @Test
+    public void testSetExpandedChildBefore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int expandedCount = child.getExpandedDescendantCount();
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(0, child);
+        int expected = index + expandedCount -1;
+        assertEquals(expected, indicesList.get(0).intValue());
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a collapsed child
+     */
+    @Test
+    public void testSetCollapsedChildAt() {
+        TreeItemX child = createBranch("single-replaced-child");
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(index -1, child);
+        assertEquals(index, indicesList.get(0).intValue());
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a expanded child
+     */
+    @Test 
+    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
+    public void testSetExpandedChildAt() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(index -1, child);
+        if (!indicesList.isEmpty()) {
+            int intValue = indicesList.get(0).intValue();
+            assertTrue("index must not be negative, was " , intValue >= 0);
+            assertEquals("index must be unchanged", index, intValue);
+        }
+        fail("TBD: need to specify what to do on setChildAt");
+    }
+    
+    @Test
+    public void testRemoveFromCollapsedChild() {
+        TreeItemX child = createBranch("expandedChild");
+        rootChildren.add(0, child);
+        int index = 4;
+        indicesList.setIndices(index);
+        child.getChildren().remove(0);
+        assertEquals("index unchanged", index, indicesList.get(0).intValue());
+    }
+
     @Test
     public void testRemoveExpandedChild() {
         TreeItemX child = createBranch("expandedChild");
@@ -332,6 +322,8 @@ public class TreeIndicesListTest {
         assertEquals("index increased by one", index + 1, indicesList.get(0).intValue());
     }
     
+//--------------------- indicesList api
+    
     @Test
     public void testSetIndices() {
         int index = 2;
@@ -362,9 +354,9 @@ public class TreeIndicesListTest {
         return new TreeItemX(item);
     }
 
-    protected ObservableList<TreeItem> createItems(ObservableList other) {
+    protected ObservableList<TreeItemX> createItems(List list) {
         ObservableList items = FXCollections.observableArrayList();
-        other.stream().forEach(item -> items.add(createItem(item)));
+        list.stream().forEach(item -> items.add(createItem(item)));
         return items;
     }
     
@@ -373,5 +365,133 @@ public class TreeIndicesListTest {
         child.getChildren().setAll(createItems(rawItems));
         return child;
     }
+
+  //--------------------------- tree.getRow  
+  //-----------  Reported as https://javafx-jira.kenai.com/browse/RT-39661
+      
+      /**
+       * Quick test of tree.getRow(treeItem) semantics: 
+       * seems to return the row if all expanded, not the actual?
+       */
+      @Test
+      @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
+      public void testTreeRowInvisibleInitialExpanded() {
+          TreeItemX child = createBranch("child 1");
+          int grandIndex = 3;
+          TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
+          child.setExpanded(true);
+          int childIndex = 2;
+          rootChildren.add(childIndex, child);
+          int row = tree.getRow(grandChild);
+          assertEquals("sanity: row of grandChild", (1 + childIndex) + (1 + grandIndex), row);
+          child.setExpanded(false);
+          assertEquals("grandChild not visible", -1, tree.getRow(grandChild));
+      }
+      
+      /**
+       * Here we insert a collapsed child and query the row of a grandchild 
+       * (which isn't visible)
+       * Doesn't matter whether parent was initially expanded or
+       * collapsed, result always as if it were expanded.
+       */
+      @Test
+      @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
+      public void testTreeRowInvisibleInitialCollapsed() {
+          TreeItemX child = createBranch("child 1");
+          int grandIndex = 3;
+          TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
+          child.setExpanded(false);
+          int childIndex = 2;
+          rootChildren.add(childIndex, child);
+          int row = tree.getRow(grandChild);
+          assertEquals("grandChild not visible", -1, row);
+      }
+      
+      /**
+       * Here we insert a several collapsed children, 
+       *  and query the row of a grandchild in the last.
+       *  
+       * WRONG test: inserted at same absolute index, doesn't
+       *  matter whether we inserted something above or not.
+       *  
+       * Keep for not repeating 
+       *   
+       * (which isn't visible)
+       * Doesn't matter whether parent was initially expanded or
+       * collapsed, result always as if it were expanded.
+       */
+      @Test @Ignore
+      public void testTreeRowInvisibleInitialCollapsedMultiple() {
+          TreeItemX childAbove = createBranch("above-collapsed");
+//          childAbove.setExpanded(true);
+//          rootChildren.add(1, childAbove);
+          TreeItemX child = createBranch("child 1");
+          int grandIndex = 3;
+          TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
+          int childIndex = 5;
+          rootChildren.add(childIndex, child);
+          int row = tree.getRow(grandChild);
+          assertEquals("grandChild not visible", -1, row);
+      }
+      
+      /**
+       * Sanity test: use core TreeItem, stand-alone test
+       * for report.
+       * 
+       * same misbehaviour as custom - so go ahead with custom testing
+       */
+      @Test
+      @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
+      public void testTreeRowInvisibleInitialCollapsedCore() { 
+          // create a tree with expanded root
+          TreeItem root = createSubTree("root");
+          root.setExpanded(true);
+          TreeView tree = new TreeView(root);
+          int initialRowCount = tree.getExpandedItemCount();
+          assertEquals("sanity: itemcount before addition", 
+                  root.getChildren().size() + 1, initialRowCount);
+          // create a collapsed new child to insert into the root
+          TreeItem newChild = createSubTree("added-child");
+          TreeItem grandChild = (TreeItem) newChild.getChildren().get(2);
+          root.getChildren().add(6, newChild);
+          assertEquals("sanity: row count of tree increased by one", initialRowCount +1, 
+                  tree.getExpandedItemCount());
+          // query the row of a grand-child
+          int row = tree.getRow(grandChild);
+          // grandChild not visible, row coordinate in tree is not available
+          assertEquals("grandChild not visible", -1, row);
+          // the other way round: if we get a row, expect the item at the row be the grandChild
+          assertEquals(grandChild, tree.getTreeItem(row));
+      }
+
+      protected TreeItem createSubTree(String name) {
+          ObservableList rawItems = FXCollections.observableArrayList(
+                  "9-item", "8-item", "7-item", "6-item", 
+                  "5-item", "4-item", "3-item", "2-item", "1-item");
+          TreeItem root = new TreeItem(name);
+          rawItems.stream().forEach(item -> root.getChildren().add(new TreeItem(item)));
+          return root;
+      }
+      
+      /**
+       * Effect of unexpected tree.getRow on selection: behaves as expected.
+       */
+      @Test
+      @ConditionalIgnore(condition = IgnoreTreeGetRow.class)
+      public void testTreeSelectRowInvisible() {
+          TreeItemX child = createBranch("child 1");
+          int grandIndex = 3;
+          TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
+          child.setExpanded(true);
+          int childIndex = 2;
+          rootChildren.add(childIndex, child);
+          int row = tree.getRow(grandChild);
+          assertEquals("sanity: row of grandChild", (1 + childIndex) + (1 + grandIndex), row);
+          child.setExpanded(false);
+          tree.getSelectionModel().select(row);
+          assertEquals("what do we get?", row, tree.getSelectionModel().getSelectedIndex());
+          assertEquals(grandChild, tree.getSelectionModel().getSelectedItem());
+      }
+   
 
 }

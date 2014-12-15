@@ -764,8 +764,10 @@ public class IndicesListTest {
     }
     /**
      * Test sourceIndex if index off range.
+     * Changed implementation to throw IndexOOB 
+     * (off range access is always a programming error)
      */
-    @Test
+    @Test (expected = IndexOutOfBoundsException.class)
     public void testSourceIndexOffRange() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
@@ -776,8 +778,10 @@ public class IndicesListTest {
     
     /**
      * Test get if index off range.
+     * Changed implementation to throw IndexOOB 
+     * (off range access is always a programming error)
      */
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void testGetOffRange() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);

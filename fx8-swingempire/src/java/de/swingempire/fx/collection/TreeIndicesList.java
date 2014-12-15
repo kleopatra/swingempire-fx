@@ -165,9 +165,11 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         } else if (event.wasExpanded()) {
             expanded(event);
         } else if (event.getEventType() == TreeItem.valueChangedEvent()) {
-            throw new UnsupportedOperationException("TBD - valueChanged " + event);
+            // nothing to do for indices, the index is unchanged
+            // throw new UnsupportedOperationException("TBD - valueChanged " + event);
         } else if (event.getEventType() == TreeItem.graphicChangedEvent()) {
-            throw new UnsupportedOperationException("TBD - graphicChanged " + event);
+            // nothing to do for indices, the index is unchanged
+            // throw new UnsupportedOperationException("TBD - valueChanged " + event);
         }
     }
 
@@ -247,11 +249,16 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         if (!source.isExpanded() || !TreeItemX.isVisible(source)) return;
         while (c.next()) {
             if (c.wasPermutated()) {
+                throw new UnsupportedOperationException("TBD - permutation " + c);
 //                permutated(c);
             } else if (c.wasUpdated()) {
+                // don't expect a modification on the TreeItem itself, should
+                // be notified via TreeModification.value/graphicChanged?
+                throw new UnsupportedOperationException("unexpected update on children of treeItem: " 
+                        + source + " / " + c);
 //                updated(c);
             } else if (c.wasReplaced()) {
-//                replaced(c);
+                replaced(source, c);
             } else {
                 addedOrRemoved(source, c);
             }
@@ -276,9 +283,9 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         if (c.wasAdded() && c.wasRemoved()) 
             throw new IllegalStateException("expected real add/remove but was: " + c);
         if (c.wasAdded()) {
-            add(source, c);
+            added(source, c);
         } else if (c.wasRemoved()) {
-            remove(source, c);
+            removed(source, c);
         } else {
             throw new IllegalStateException("what have we got here? " + c);
         }
@@ -291,7 +298,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      * @param source 
      * @param c
      */
-    private void add(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+    private void added(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         int from = tree.getRow(source) + 1 + c.getFrom();
         // added: values that are after the added index must be increased by addedSize
         // need to calculate the added size from the expandedCount of all
@@ -301,6 +308,59 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
             addedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
         }
         doShiftRight(from, addedSize);
+    }
+
+    /**
+     * Updates indices after receiving children have been added to the given
+     * treeItem. The source is expanded and visible.
+     * 
+     * @param source 
+     * @param c
+     */
+    private void removed(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+        int from = tree.getRow(source) + 1 + c.getFrom();
+        // removed is two-step:
+        // if any of the values that are mapped to indices, is removed remove the index
+        // for all left over indices after the remove, decrease the value by removedSize (?)
+        int removedSize = 0;
+        for (TreeItem<T> item : c.getRemoved()) {
+            removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
+        }
+        doRemoveIndices(from, removedSize);
+        // step 2
+        doShiftLeft(from, removedSize);
+    }
+
+    private void replaced(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+        int treeFrom = tree.getRow(source) + 1 + c.getFrom();
+        int removedSize = 0;
+        for (TreeItem<T> item : c.getRemoved()) {
+            removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
+        }
+        int addedSize = 0;
+        for (TreeItem<T> item : c.getAddedSubList()) {
+            addedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
+        }
+        // handle special case of "real" replaced, often size == 1
+        if (removedSize == 1 && addedSize == 1) {
+            // single replace nothing to do, assume
+            return;
+        }
+//        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
+//            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
+//                int pos = indexOf(i);
+//                nextSet(pos, i);
+//            }
+//            return;
+//        }
+
+        doRemoveIndices(treeFrom, removedSize);
+        int diff = addedSize - removedSize;
+        if (diff < 0) {
+            doShiftLeft(treeFrom, diff);
+        } else {
+            doShiftRight(treeFrom, diff);
+        }
     }
 
     private void doShiftRight(int from, int addedSize) {
@@ -317,27 +377,6 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
             }
             nextSet(pos, i);
         }
-    }
-
-    /**
-     * Updates indices after receiving children have been added to the given
-     * treeItem. The source is expanded and visible.
-     * 
-     * @param source 
-     * @param c
-     */
-    private void remove(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
-        int from = tree.getRow(source) + 1 + c.getFrom();
-        // removed is two-step:
-        // if any of the values that are mapped to indices, is removed remove the index
-        // for all left over indices after the remove, decrease the value by removedSize (?)
-        int removedSize = 0;
-        for (TreeItem<T> item : c.getRemoved()) {
-            removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
-        }
-        doRemoveIndices(from, removedSize);
-        // step 2
-        doShiftLeft(from, removedSize);
     }
 
     private void doShiftLeft(int from, int removedSize) {
@@ -403,8 +442,9 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
     public Integer get(int index) {
         // PENDING JW: it is wrong to use size of source list as upper boundary
         // get() defined only on _our_ size!
-        if (index < 0 || index >= size()) return -1;
-
+        if (index < 0 || index >= size()) // return -1;
+            throw new IndexOutOfBoundsException("index must be not negative "
+                    + "and less than size " + size() + ", but was: " + index);
         // PENDING JW: following lines simply copied from MultipleSelectionModelBase
         // we are looking for the nth bit set
         // double check needed because guard of valid range was incorrect

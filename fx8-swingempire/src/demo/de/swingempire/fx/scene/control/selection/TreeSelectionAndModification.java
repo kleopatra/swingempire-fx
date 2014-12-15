@@ -56,17 +56,20 @@ public class TreeSelectionAndModification extends Application {
         actions.put("insertAtSelectedIndex", f -> {
             int index = f.getSelectionModel().getSelectedIndex();
             if (index < 0) return;
+            if (f.isShowRoot()) index--;
             f.getRoot().getChildren().add(index, createItem(index));
 //            printSelectionState("insertAtSelected", f);
         });
         actions.put("removeAtSelectedIndex", f -> {
             int index = f.getSelectionModel().getSelectedIndex();
             if (index < 0) return;
+            if (f.isShowRoot()) index--;
             f.getRoot().getChildren().remove(index);
         });
         actions.put("setAtSelectedIndex", f -> {
             int index = f.getSelectionModel().getSelectedIndex();
             if (index < 0) return;
+            if (f.isShowRoot()) index--;
             f.getRoot().getChildren().set(index, createItem(index));
 //            printSelectionState("setAtSelected", f);
         });
