@@ -24,13 +24,16 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
-
 import static org.junit.Assert.*;
 
 /**
@@ -46,7 +49,7 @@ public class TreeIndicesListTest {
     public static TestRule classRule = new JavaFXThreadingRule();
 
     private TreeIndicesList indicesList;
-    private TreeModificationReport report;
+    private ListChangeReport report;
     // root is expanded
     private TreeItemX root;
     // tree with isShowRoot true
@@ -266,17 +269,32 @@ public class TreeIndicesListTest {
         rootChildren.add(0, child);
         int index = expandedCount + 4;
         indicesList.setIndices(index);
+        report.clear();
         int expected = index - expandedCount;
         rootChildren.remove(child);
         assertEquals("index decreased by child's expanded size", expected, indicesList.get(0).intValue());
+        assertEquals("eventCount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
     
     @Test
-    public void testRemoveChild() {
+    public void testRemoveChildAbove() {
         int index = 2;
         indicesList.setIndices(index);
+        report.clear();
         rootChildren.remove(0);
-        assertEquals("index increased by one", index -1, indicesList.get(0).intValue());
+        assertEquals("index decreased by one", index -1, indicesList.get(0).intValue());
+        assertEquals("eventCount", 1, report.getEventCount());
+    }
+    
+    @Test
+    public void testRemoveChildAt() {
+        int index = 2;
+        indicesList.setIndices(index);
+        report.clear();
+        rootChildren.remove(tree.getTreeItem(index));
+        assertEquals(0, indicesList.size());
+        assertEquals("eventCount", 1, report.getEventCount());
     }
     
     @Test
@@ -285,8 +303,10 @@ public class TreeIndicesListTest {
         rootChildren.add(0, child);
         int index = 4;
         indicesList.setIndices(index);
+        report.clear();
         child.getChildren().add(0, createItem("added grandChild"));
         assertEquals("index unchanged", index, indicesList.get(0).intValue());
+        assertEquals("eventCount", 0, report.getEventCount());
     }
     
     @Test
@@ -298,8 +318,10 @@ public class TreeIndicesListTest {
         grand.setExpanded(true);
         int index = 4;
         indicesList.setIndices(index);
+        report.clear();
         grand.getChildren().add(0, createItem("added grandChild"));
         assertEquals("index unchanged", index, indicesList.get(0).intValue());
+        assertEquals("eventCount", 0, report.getEventCount());
     }
     
     @Test
@@ -309,17 +331,21 @@ public class TreeIndicesListTest {
         int expandedCount = child.getExpandedDescendantCount();
         int index = 4;
         indicesList.setIndices(index);
+        report.clear();
         rootChildren.add(0, child);
         int expected = index + expandedCount;
         assertEquals("index increased by child's expanded size", expected, indicesList.get(0).intValue());
+        assertEquals("eventCount", 1, report.getEventCount());
     }
     
     @Test
     public void testAddChild() {
         int index = 2;
         indicesList.setIndices(index);
+        report.clear();
         rootChildren.add(0, createItem("newItemAt-0"));
         assertEquals("index increased by one", index + 1, indicesList.get(0).intValue());
+        assertEquals("eventCount", 1, report.getEventCount());
     }
     
 //--------------------- indicesList api
@@ -330,6 +356,7 @@ public class TreeIndicesListTest {
         indicesList.setIndices(index);
         assertEquals("size after setting index", 1, indicesList.size());
         assertEquals("index stored", index, indicesList.get(0).intValue());
+        assertEquals("eventCount", 1, report.getEventCount());
     }
     
     @Test
@@ -348,6 +375,7 @@ public class TreeIndicesListTest {
         root.setExpanded(true);
         tree = new TreeView(root);
         indicesList = new TreeIndicesList(tree);
+        report = new ListChangeReport(indicesList);
     }
     
     protected TreeItemX createItem(Object item) {

@@ -4,7 +4,9 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectProperty;
@@ -34,15 +36,19 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 public class TreeIndicesList<T> extends ObservableListBase<Integer> {
 
     private BitSet bitSet;
-    private ObjectProperty<TreeModificationEvent<T>> sourceChangeP = 
-            new SimpleObjectProperty<>(this, "sourceChange");
     // needed for getRow because all utility methods are package private
     private TreeView<T> tree;
     // the tree's root item
     private TreeItemX<T> root;
     
     private EventHandler<TreeModificationEvent<T>> modificationListener = e -> treeModified(e);
-    
+
+    private ObjectProperty<TreeModificationEvent<T>> sourceChangeP = 
+            new SimpleObjectProperty<>(this, "sourceChange");
+    // PENDING JW: wonky - this is the state when receiving a change from source
+    // do better!
+    List<Integer> oldIndices;
+
     /**
      * TreeView must treeItems of type TreeItemX. That's the only one firing an
      * extended TreeModificationEventX: without access to the children's change, 
@@ -142,6 +148,11 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
                 (TreeModificationEventX<T>) event : null;
         beginChange();
         setSourceChange(null);
+        // doooh .... need old state for the sake of IndexedItems
+        oldIndices = new ArrayList<>();
+        for (int i = 0; i < size(); i++) {
+            oldIndices.add(get(i));
+        }
         if (ex != null && ex.getChange() != null) {
             childrenChanged((TreeItemX<T>) event.getTreeItem(), ex.getChange());
         } else {
@@ -149,7 +160,6 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         }
         setSourceChange(ex);
         endChange();
-        
     }
     
     /**
@@ -490,6 +500,16 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         return sourceChangeP;
     }
     
+    /**
+     * PENDING JW:
+     * Temporary exposure - can we get away without? This is what the 
+     * TreeIndexMappedList needs to update itself.
+     * 
+     * @return
+     */
+    public TreeView<T> getSource() {
+        return tree;
+    }
     /**
      * Sets the sourceChange, resets if != null.
      * @param sc

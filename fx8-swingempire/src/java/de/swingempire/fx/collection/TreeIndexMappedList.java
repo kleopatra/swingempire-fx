@@ -7,87 +7,128 @@ package de.swingempire.fx.collection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.javafx.collections.SortHelper;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.TransformationList;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeItem.TreeModificationEvent;
+import javafx.scene.control.TreeView;
+
+import com.sun.javafx.collections.SortHelper;
+
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
- * Helper for selectedItems. Source contains the selectedIndices, backingList the items.
- * 
- * This is truely unmodifiable, changes mediated by changes to source only.
- * 
- * PENDING JW:
- * - removed are firing incorrect removed items (due to direct access of the backing
- *   list, where the removed is no longer contained). reaching the boundary of chained
- *   transformation lists? Or doing something wrong in the chain? Can the intermediate
- *   (here IndicesList) somehow pass-on the removed items from the backing list? 
- *   
- * Really need to separate changes from "real" setting of indices in source from 
- * changes that were induced by backingList changes. Without, all changes envolving
- * a remove are plain incorrect!
+ * Helper for selectedItems in tree-based controls. 
+ * Source contains the selectedIndices, "backingList" is the tree with its visible
+ * treeItems.
  * <p>
  * 
- * Trying to separate out by 
- * <li> not reacting to source changes if its sourceChange != null
- * <li> listen to change of sourceChangeProperty and handle changes in
- *    backingList - note that the assumption here is that indicesList
- *    has updated itself completely before firing
- *    fires null -> change notification 
+ * Similar to IndexMappedList, we are _not_ listening directly to tree modifications,
+ * but to changes in the sourceChanged property of the treeIndicesList. Get them
+ * when the treeIndicesList has updated itself to the modification but not yet 
+ * broadcasted. 
  * 
+ * @see TreeIndicesList
+ * @see IndexMappedList
  * @author Jeanette Winzenburg, Berlin
  */
-public class IndexMappedList<T> extends TransformationList<T, Integer> {
+public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Integer> {
 
-    private List<? extends T> backingList;
-    private ChangeListener<Change<? extends T>> sourceChangeListener;
-    private WeakChangeListener<Change<? extends T>> weakSourceChangeListener;
+//    private List<? extends T> backingList;
+    private TreeView<T> backingTree;
+    private ChangeListener<TreeModificationEvent<T>> sourceChangeListener;
+    private WeakChangeListener<TreeModificationEvent<T>> weakSourceChangeListener;
     
     /**
      * @param source
      */
-    public IndexMappedList(IndicesList<T> source) {
+    public TreeIndexMappedList(TreeIndicesList<T> source) {
         super(source);
-        this.backingList = source.getSource();
-        sourceChangeListener = (p, old, value) -> backingListChanged(value);
+        this.backingTree = source.getSource();
+        sourceChangeListener = (p, old, value) -> backingTreeModified(value);
         weakSourceChangeListener = new WeakChangeListener<>(sourceChangeListener);
         source.sourceChangeProperty().addListener(weakSourceChangeListener);
     }
 
-    
-    protected void backingListChanged(Change<? extends T> c) {
-        // nothing to do
-        if (c == null) return;
-        c.reset();
+    /**
+     * Called when a treeModificationevent from the indicesList is passed on to
+     * this.
+     * 
+     * @param c
+     */
+    protected void backingTreeModified(TreeModificationEvent<T> event) {
+        // nothing to do, event was reset by indicesList
+        if (event == null)
+            return;
+        if (!(event.getTreeItem() instanceof TreeItemX)) {
+            throw new IllegalStateException(
+                    "all treeItems must be of type TreeItemX but was "
+                            + event.getTreeItem());
+        }
+        TreeModificationEventX<T> ex = event instanceof TreeModificationEventX ? 
+                (TreeModificationEventX<T>) event : null;
         beginChange();
-        while (c.next()) {
-            if (c.wasPermutated()) {
-                permutatedItems(c);
-            } else if (c.wasUpdated()) {
-                updatedItems(c);
-            } else if (c.wasReplaced()) {
-                replacedItems(c);
-            } else {
-                addedOrRemovedItems(c);
-            }
+        if (ex != null && ex.getChange() != null) {
+            childrenChanged((TreeItemX<T>) event.getTreeItem(), ex.getChange());
+        } else {
+            treeItemModified(event);
         }
         endChange();
+
     }
     
     
     
     /**
+     * Handles TreeModificationEvents that are not list changes.
+     * @param event
+     */
+    protected void treeItemModified(TreeModificationEvent<T> event) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /**
+     * Handles TreeModificationEvents that are list changes. 
+     * @param treeItem
+     * @param change
+     */
+    protected void childrenChanged(TreeItemX<T> source,
+            Change<? extends TreeItem<T>> c) {
+        
+        c.reset();
+        beginChange();
+        while (c.next()) {
+            if (c.wasPermutated()) {
+                throw new UnsupportedOperationException("TBD - permutation " + c);
+//               permutatedItems(c);
+            } else if (c.wasUpdated()) {
+                throw new UnsupportedOperationException("TBD - updated " + c);
+//                updatedItems(c);
+            } else if (c.wasReplaced()) {
+                throw new UnsupportedOperationException("TBD - replaced " + c);
+//                replacedItems(c);
+            } else {
+//                throw new UnsupportedOperationException("TBD - addedOrRemoved " + c);
+                addedOrRemovedItems(source, c);
+            }
+        }
+        endChange();
+    }
+
+    /**
      * @param c
      */
-    private void addedOrRemovedItems(Change<? extends T> c) {
+    private void addedOrRemovedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         if (c.wasAdded() && c.wasRemoved()) 
             throw new IllegalStateException("expected real add/remove but was: " + c);
         if (c.wasAdded()) {
             addedItems(c);
         } else if (c.wasRemoved()){
-            removedItems(c);
+            removedItems(source, c);
         } else {
             throw new IllegalStateException("shouldn't be here: " + c);
         }
@@ -102,7 +143,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * 
      * @param c
      */
-    private void addedItems(Change<? extends T> c) {
+    private void addedItems(Change<? extends TreeItem<T>> c) {
         // no-op
     }
 
@@ -111,21 +152,24 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * 
      * @param c
      */
-    private void removedItems(Change<? extends T> c) {
+    private void removedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+        int treeFrom = backingTree.getRow(source) + 1 + c.getFrom();
+
         // fromIndex is startIndex of our own change - that doesn't change
         // as a subChange is about a single interval!
-        int fromIndex = findIndex(c.getFrom(), c.getRemovedSize());
+        int fromIndex = findIndex(treeFrom, c.getRemovedSize());
         if (fromIndex < 0) return;
-        for (int i = c.getFrom(); i < c.getFrom() + c.getRemovedSize(); i++) {
+        for (int i = treeFrom; i < treeFrom + c.getRemovedSize(); i++) {
             // have to fire if the item had been selected before and
             // no longer is now - how to detect the "before" part? we 
             // have no real state, only indirectly accessed
             int oldIndex = getIndicesList().oldIndices.indexOf(i);
+//            int oldIndex = -1;
             if(oldIndex > -1) {
                 // was selected, check if still is
                 int index = getIndicesList().indexOf(i);
                 if (index < 0) {
-                    T oldItem = c.getRemoved().get(i - c.getFrom());
+                    TreeItem<T> oldItem = c.getRemoved().get(i - treeFrom);
                     nextRemove(fromIndex, oldItem);
                 }
             }
@@ -153,7 +197,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     /**
      * @param c
      */
-    private void replacedItems(Change<? extends T> c) {
+    private void replacedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         // need to replace even if unchanged, listeners to selectedItems
         // depend on it
         // handle special case of "real" replaced, often size == 1
@@ -171,7 +215,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         // actual relative sizes of removed/added: all (?) old indices are invalid
         // PENDING JW: when can we get a replaced on a subrange?
         if (size() == 0) {
-            removedItems(c);
+            removedItems(source, c);
         } else {
             throw new IllegalStateException("unexpected replaced: " + c);
         }
@@ -182,7 +226,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * Called when list change in backing list is of type update.
      * @param c
      */
-    private void updatedItems(Change<? extends T> c) {
+    private void updatedItems(Change<? extends TreeItem<T>> c) {
         for (int i = c.getFrom(); i < c.getTo(); i++) {
             int index = getIndicesList().indexOf(i);
             if (index > -1) {
@@ -197,15 +241,14 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * @param c
      */
     private void permutatedItems(Change<? extends T> c) {
-        // TODO Auto-generated method stub
-//        throw new IllegalStateException("not yet implemented");
-        List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
-        int[] permA = new int[size()];
-        for (int i = 0; i < getIndicesList().oldIndices.size(); i++) {
-            perm.set(i, c.getPermutation(getIndicesList().oldIndices.get(i)));
-        }
-        int[] permutation = sortHelper.sort(perm);
-        nextPermutation(0, perm.size(), permutation);
+        throw new IllegalStateException("not yet implemented");
+//        List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
+//        int[] permA = new int[size()];
+//        for (int i = 0; i < getIndicesList().oldIndices.size(); i++) {
+//            perm.set(i, c.getPermutation(getIndicesList().oldIndices.get(i)));
+//        }
+//        int[] permutation = sortHelper.sort(perm);
+//        nextPermutation(0, perm.size(), permutation);
     }
 
 
@@ -263,13 +306,13 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      */
     private void removed(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
-        List<T> items = new ArrayList<>();
+        List<TreeItem<T>> items = new ArrayList<>();
         if (getIndicesList().getSourceChange() == null) {
             // change resulted from direct modification of indices
             // no change in backingList, so we can access its items 
             // directly
             for (Integer index : indices) {
-                items.add(backingList.get(index));
+                items.add(backingTree.getTreeItem(index));
             }
         } else { 
 //            if (true)
@@ -300,8 +343,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     /**
      * @return
      */
-    private IndicesList<T> getIndicesList() {
-        return (IndicesList<T>) getSource();
+    private TreeIndicesList<T> getIndicesList() {
+        return (TreeIndicesList<T>) getSource();
     }
 
     /**
@@ -312,9 +355,9 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      */
     private void replaced(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
-        List<T> items = new ArrayList<>();
+        List<TreeItem<T>> items = new ArrayList<>();
         for (Integer index : indices) {
-            items.add(backingList.get(index));
+            items.add(backingTree.getTreeItem(index));
         }
         nextReplace(c.getFrom(), c.getTo(), items);
     }
@@ -339,9 +382,9 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
 
     @Override
-    public T get(int index) {
+    public TreeItem<T> get(int index) {
         int realIndex = getSource().get(index);
-        return backingList.get(realIndex);
+        return backingTree.getTreeItem(realIndex);
     }
 
     @Override

@@ -459,6 +459,16 @@ public class IndicesListTest {
         assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
 
+    /**
+     * Sanity: single remove at index removes indexed
+     */
+    @Test
+    public void testItemRemovedAt() {
+        indicesList.setIndices(3);
+        items.remove(3);
+        assertEquals(0, indicesList.size());
+    }
+    
 //---------- tests: check state of sourceChange
     
     /**
