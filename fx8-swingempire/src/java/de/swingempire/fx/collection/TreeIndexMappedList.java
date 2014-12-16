@@ -50,7 +50,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         this.backingTree = source.getSource();
         sourceChangeListener = (p, old, value) -> backingTreeModified(value);
         weakSourceChangeListener = new WeakChangeListener<>(sourceChangeListener);
-        source.sourceChangeProperty().addListener(weakSourceChangeListener);
+        source.treeModificationProperty().addListener(weakSourceChangeListener);
     }
 
     /**
@@ -87,9 +87,57 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param event
      */
     protected void treeItemModified(TreeModificationEvent<T> event) {
-        // TODO Auto-generated method stub
+        if (event.getEventType() == TreeItem.childrenModificationEvent()) {
+            throw new IllegalStateException("events of type childrenModified must be handled elsewhere " + event);
+        }
+        if (event.wasCollapsed()) {
+            collapsed(event);
+        } else if (event.wasExpanded()) {
+            // no-op for indexedItems, only indices might have changed
+//            throw new UnsupportedOperationException("TBD - expanded " + event);
+        } else if (event.getEventType() == TreeItem.valueChangedEvent()) {
+             throw new UnsupportedOperationException("TBD - valueChanged " + event);
+        } else if (event.getEventType() == TreeItem.graphicChangedEvent()) {
+             throw new UnsupportedOperationException("TBD - graphicChanged " + event);
+        }
         
     }
+
+    /**
+     * @param event
+     */
+    private void collapsed(TreeModificationEvent<T> event) {
+        TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
+        int treeFrom = backingTree.getRow(source) + 1;
+        int collapsedSize = getExpandedChildCount(source);
+        // find the first coordinate in our own that had been included
+        // that's the from in the change we need to fire, if any
+        int fromIndex = findIndex(treeFrom, collapsedSize);
+        // not in range, nothing to do
+        if (fromIndex < 0) return;
+        // find the indices that had been indexed and add them to the removed change
+        // PENDING JW: brute force looping, do better
+        for(int treeIndex = treeFrom; treeIndex < treeFrom + collapsedSize; treeIndex++) {
+            
+        }
+        
+    }
+    /**
+     * Returns the sum of the expandedDescandantCount of the item's children.
+     * We loop its children
+     * and sum up their expandedItemCount.
+     * Called after receiving a collapsed from parent. 
+     * @param parent
+     * @return
+     */
+    protected int getExpandedChildCount(TreeItemX<T> parent) {
+        int result = 0;
+        for (TreeItem<T> child : parent.getChildren()) {
+            result += ((TreeItemX<T>) child).getExpandedDescendantCount();
+        }
+        return result;
+    }
+
 
     /**
      * Handles TreeModificationEvents that are list changes. 
@@ -98,7 +146,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      */
     protected void childrenChanged(TreeItemX<T> source,
             Change<? extends TreeItem<T>> c) {
-        
+        // PENDING JW: changes from items that are not visible?
         c.reset();
         beginChange();
         while (c.next()) {
@@ -109,8 +157,8 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
                 throw new UnsupportedOperationException("TBD - updated " + c);
 //                updatedItems(c);
             } else if (c.wasReplaced()) {
-                throw new UnsupportedOperationException("TBD - replaced " + c);
-//                replacedItems(c);
+//                throw new UnsupportedOperationException("TBD - replaced " + c);
+                replacedItems(source, c);
             } else {
 //                throw new UnsupportedOperationException("TBD - addedOrRemoved " + c);
                 addedOrRemovedItems(source, c);
@@ -157,6 +205,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
 
         // fromIndex is startIndex of our own change - that doesn't change
         // as a subChange is about a single interval!
+        // PENDING JW: really c.removedSize? What removing removed children?
         int fromIndex = findIndex(treeFrom, c.getRemovedSize());
         if (fromIndex < 0) return;
         for (int i = treeFrom; i < treeFrom + c.getRemovedSize(); i++) {
@@ -198,27 +247,40 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param c
      */
     private void replacedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+        int treeFrom = backingTree.getRow(source) + 1 + c.getFrom();
+        int removedSize = 0;
+        for (TreeItem<T> item : c.getRemoved()) {
+            removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
+        }
+        int addedSize = 0;
+        for (TreeItem<T> item : c.getAddedSubList()) {
+            addedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
+        }
         // need to replace even if unchanged, listeners to selectedItems
         // depend on it
         // handle special case of "real" replaced, often size == 1
-        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
-            for (int i = c.getFrom(); i < c.getTo(); i++) {
-                int index = getIndicesList().indexOf(i);
-                if (index > -1) {
-                    nextSet(index, c.getRemoved().get(i - c.getFrom()));
-                }
-            } 
+        // PENDING JW: for a tree, a set(index) may have a added/removedsize > 1
+        // if one or both are expanded
+        if (addedSize == 1 && removedSize == 1) {
+            int index = getIndicesList().indexOf(treeFrom);
+            if (index > -1) {
+                nextSet(index, c.getRemoved().get(0));
+            }
+//            for (int i = treeFrom; i < treeFrom+1; i++) {
+//            } 
             return;
         }
         // here we most (?) likely received a setAll/setItems
         // that results in a removed on the indicesList, independent on the 
         // actual relative sizes of removed/added: all (?) old indices are invalid
-        // PENDING JW: when can we get a replaced on a subrange?
-        if (size() == 0) {
-            removedItems(source, c);
-        } else {
-            throw new IllegalStateException("unexpected replaced: " + c);
-        }
+        // PENDING JW: a setAll on one child or a treeItem might still leave 
+        // indices that are mapped from other treeItems - taking the size
+        // as indicator is not good enough!, do it for all
+        removedItems(source, c);
+//        if (size() == 0) {
+//        } else {
+//            throw new IllegalStateException("unexpected replaced: " + c);
+//        }
     }
 
 
@@ -259,7 +321,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      */
     @Override
     protected void sourceChanged(Change<? extends Integer> c) {
-        if (getIndicesList().getSourceChange() != null) return;
+        if (getIndicesList().getTreeModification() != null) return;
         beginChange();
         while (c.next()) {
             if (c.wasPermutated()) {
@@ -307,7 +369,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     private void removed(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
         List<TreeItem<T>> items = new ArrayList<>();
-        if (getIndicesList().getSourceChange() == null) {
+        if (getIndicesList().getTreeModification() == null) {
             // change resulted from direct modification of indices
             // no change in backingList, so we can access its items 
             // directly

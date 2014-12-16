@@ -155,6 +155,30 @@ public class IndexMappedListTest {
     }
 
     /**
+     * Trying to test remove of a range where and old item is removed but
+     * the new index of another is accidentally the old index.
+     */
+    @Test
+    public void testItemsRemoveRange() {
+        int[] indices = new int[] {1, 3, 8};
+        Object removedIndexed = items.get(3);
+        indicesList.setIndices(indices);
+        report.clear();
+        // removing such that old 8 -> new 3
+        items.remove(2, 7);
+//        report.prettyPrint();
+        int[] expected = new int[] {1, 3};
+        for (int i = 0; i < expected.length; i++) {
+            assertTrue(indicesList.contains(expected[i]));
+        }
+        assertEquals("single event", 1, report.getEventCount());
+        assertTrue("expected single remove but was: " + report.getLastChange(), wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals("removed size", 1, c.getRemovedSize());
+        assertEquals("removed indexedItem", removedIndexed, c.getRemoved().get(0));
+    }
+    /**
      * items are unchanged if removed above ... only the indices are replaced
      * by new values! At the very least (if we really want to pass-on the replaced),
      * addedSubList.equals(removed)
@@ -272,10 +296,10 @@ public class IndexMappedListTest {
                     indexedItems.get(i));
         }
         if (report.getEventCount() > 0) {
+//             report.prettyPrint();
             assertEquals(1, report.getEventCount());
             assertTrue("expected single replaced but was" + report.getLastChange(),
                     wasSingleReplaced(report.getLastChange()));
-//             report.prettyPrint();
             Change c = report.getLastChange();
             c.next();
             assertEquals(2, c.getAddedSize());

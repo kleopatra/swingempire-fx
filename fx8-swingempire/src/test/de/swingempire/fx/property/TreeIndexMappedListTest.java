@@ -20,16 +20,16 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
-
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.collection.TreeIndexMappedList;
 import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ListChangeReport;
-import de.swingempire.fx.util.TreeModificationReport;
+
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -122,140 +122,151 @@ public class TreeIndexMappedListTest {
 //        assertEquals("index after collapse ", collapsedLast, indicesList.get(0).intValue());
 //    }
 //    
-//    @Test
-//    public void testCollapseRoot() {
-//        int index = 2;
-//        indicesList.setIndices(index);
-//        assertEquals("sanity: expandedDescendents", rawItems.size() + 1, root.getExpandedDescendantCount());
-//        root.setExpanded(false);
-//        assertEquals("indices after collapse must be empty", 0, indicesList.size());
-//    }
-//
-//    /**
-//     * no change if hidden item is collapsed.
-//     */
-//    @Test
-//    public void testExpandHiddenChild() {
-//        TreeItemX childBranch = createBranch("collapsedChild");
-//        int childExpanded = childBranch.getExpandedDescendantCount();
-//        TreeItemX grandChildBranch = createBranch("expandedGrandChild");
-//        childBranch.getChildren().add(0, grandChildBranch);
-//        assertEquals("sanity: expandedCount unchanged by adding expanded child", 
-//                childExpanded, childBranch.getExpandedDescendantCount());
-//        rootChildren.add(0, childBranch);
-//        int index = 6;
-//        indicesList.setIndices(index);
-//        grandChildBranch.setExpanded(true);
-//        assertEquals("index unchanged on expand of hidden grandChild", 
-//                index, indicesList.get(0).intValue());
-//    }
-//
-//
-//    @Test
-//    public void testExpandChild() {
-//        TreeItemX childBranch = createBranch("expandedChild");
-//        rootChildren.add(0, childBranch);
-//        // index > child index
-//        int index = 3;
-//        indicesList.setIndices(index);
-//        childBranch.setExpanded(true);
-//        int childExpanded = childBranch.getExpandedDescendantCount();
-//        int expandedIndex = index + childExpanded -1;
-//        assertEquals("index unchanged", expandedIndex, indicesList.get(0).intValue());
-//    }
-//    
-//    @Test
-//    public void testExpandRoot() {
-//        root.setExpanded(false);
-//        int index = 0;
-//        indicesList.setIndices(index);
-//        root.setExpanded(true);
-//        assertEquals("index unchanged", index, indicesList.get(0).intValue());
-//    }
+    @Test
+    public void testCollapseRoot() {
+        int index = 2;
+        indicesList.setIndices(index);
+        report.clear();
+        root.setExpanded(false);
+        assertEquals("indices after collapse must be empty", 0, indicesList.size());
+        assertEquals("indexedItems empty", 0, indexedItems.size());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
+    }
+    
+    @Test
+    public void testExpandChild() {
+        TreeItemX childBranch = createBranch("expandedChild");
+        rootChildren.add(0, childBranch);
+        // index > child index
+        int index = 3;
+        indicesList.setIndices(index);
+        TreeItem indexedItem = indexedItems.get(0);
+        report.clear();
+        childBranch.setExpanded(true);
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        int expandedIndex = index + childExpanded -1;
+        assertEquals("index increased by child count", expandedIndex, indicesList.get(0).intValue());
+        assertEquals("eventcount " + report.getLastChange(), 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
+    }
+    
+    @Test
+    public void testExpandRoot() {
+        root.setExpanded(false);
+        int index = 0;
+        indicesList.setIndices(index);
+        report.clear();
+        root.setExpanded(true);
+        assertEquals("index unchanged", index, indicesList.get(0).intValue());
+        assertEquals("eventcount", 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", root, indexedItems.get(0));
+    }
 
 //------------------------------ modifications to children
 //
-//    
-//    @Test
-//    public void testSetAllRootIndexed() {
-//        indicesList.setIndices(0);
-//        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
-//        assertEquals("index unchanged on replacing children of indexed items", 
-//                0, indicesList.get(0).intValue());
-//    }
-//    @Test
-//    public void testSetAllRootChildIndexed() {
-//        int index = 1;
-//        indicesList.setIndices(index);
-//        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
-//        assertEquals("indices on replaced children must be cleared", 0, indicesList.size());
-//    }
-//    /**
-//     * PENDING JW:
-//     * Single child replaced ... what should happen?
-//     * Here we replace with a collapsed child
-//     */
-//    @Test
-//    public void testSetCollapsedChildBefore() {
-//        TreeItemX child = createBranch("single-replaced-child");
-//        int index = 3;
-//        indicesList.setIndices(index);
-//        rootChildren.set(0, child);
-//        assertEquals(index, indicesList.get(0).intValue());
-//    }
-//    
-//    /**
-//     * PENDING JW:
-//     * Single child replaced ... what should happen?
-//     * Here we replace with a expanded child
-//     */
-//    @Test
-//    public void testSetExpandedChildBefore() {
-//        TreeItemX child = createBranch("single-replaced-child");
-//        child.setExpanded(true);
-//        int expandedCount = child.getExpandedDescendantCount();
-//        int index = 3;
-//        indicesList.setIndices(index);
-//        rootChildren.set(0, child);
-//        int expected = index + expandedCount -1;
-//        assertEquals(expected, indicesList.get(0).intValue());
-//    }
-//    
-//    /**
-//     * PENDING JW:
-//     * Single child replaced ... what should happen?
-//     * Here we replace with a collapsed child
-//     */
-//    @Test
-//    public void testSetCollapsedChildAt() {
-//        TreeItemX child = createBranch("single-replaced-child");
-//        int index = 3;
-//        indicesList.setIndices(index);
-//        rootChildren.set(index -1, child);
-//        assertEquals(index, indicesList.get(0).intValue());
-//    }
-//    
-//    /**
-//     * PENDING JW:
-//     * Single child replaced ... what should happen?
-//     * Here we replace with a expanded child
-//     */
-//    @Test 
-//    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
-//    public void testSetExpandedChildAt() {
-//        TreeItemX child = createBranch("single-replaced-child");
-//        child.setExpanded(true);
-//        int index = 3;
-//        indicesList.setIndices(index);
-//        rootChildren.set(index -1, child);
-//        if (!indicesList.isEmpty()) {
-//            int intValue = indicesList.get(0).intValue();
-//            assertTrue("index must not be negative, was " , intValue >= 0);
-//            assertEquals("index must be unchanged", index, intValue);
-//        }
-//        fail("TBD: need to specify what to do on setChildAt");
-//    }
-//    
+    
+    @Test
+    public void testSetAllRootIndexed() {
+        indicesList.setIndices(0);
+        TreeItem indexedItem = indexedItems.get(0);
+        report.clear();
+        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
+        assertEquals("index unchanged on replacing children of indexed items", 
+                0, indicesList.get(0).intValue());
+        assertEquals("eventcount", 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
+    }
+    @Test
+    public void testSetAllRootChildIndexed() {
+        int index = 1;
+        indicesList.setIndices(index);
+        report.clear();
+        rootChildren.setAll(createItems(rawItems.subList(3, 6)));
+        assertEquals("indices on replaced children must be cleared", 0, indicesList.size());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
+        
+    }
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a collapsed child
+     */
+    @Test
+    public void testSetCollapsedChildBefore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        int index = 3;
+        indicesList.setIndices(index);
+        TreeItem indexedItem = indexedItems.get(0);
+        rootChildren.set(0, child);
+        report.clear();
+        assertEquals(index, indicesList.get(0).intValue());
+        assertEquals("eventcount on indexedItems", 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a expanded child
+     */
+    @Test
+    public void testSetExpandedChildBefore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int expandedCount = child.getExpandedDescendantCount();
+        int index = 3;
+        indicesList.setIndices(index);
+        TreeItem indexedItem = indexedItems.get(0);
+        report.clear();
+        rootChildren.set(0, child);
+        int expected = index + expandedCount -1;
+        assertEquals(expected, indicesList.get(0).intValue());
+        assertEquals("eventcount", 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a collapsed child
+     */
+    @Test
+    public void testSetCollapsedChildAt() {
+        TreeItemX child = createBranch("single-replaced-child");
+        int index = 3;
+        indicesList.setIndices(index);
+        report.clear();
+        rootChildren.set(index -1, child);
+        assertEquals(index, indicesList.get(0).intValue());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleRemoved ", wasSingleReplaced(report.getLastChange()));
+    }
+    
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * Here we replace with a expanded child
+     */
+    @Test 
+    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
+    public void testSetExpandedChildAt() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        indicesList.setIndices(index);
+        report.clear();
+        rootChildren.set(index -1, child);
+        if (!indicesList.isEmpty()) {
+            int intValue = indicesList.get(0).intValue();
+            assertTrue("index must not be negative, was " , intValue >= 0);
+            assertEquals("index must be unchanged", index, intValue);
+            assertEquals("eventcount", 0, report.getEventCount());
+        }
+        fail("TBD: need to specify what to do on setChildAt");
+    }
+    
     @Test
     public void testRemoveFromCollapsedChild() {
         TreeItemX child = createBranch("expandedChild");

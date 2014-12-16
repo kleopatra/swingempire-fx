@@ -44,6 +44,9 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     private List<? extends T> backingList;
     private ChangeListener<Change<? extends T>> sourceChangeListener;
     private WeakChangeListener<Change<? extends T>> weakSourceChangeListener;
+    // trying to support discontinous removes from backing list
+    // this is meant to be the actual old index of c.getFrom
+    private int accumulatedRemoved;
     
     /**
      * @param source
@@ -59,6 +62,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     
     protected void backingListChanged(Change<? extends T> c) {
         // nothing to do
+        accumulatedRemoved = 0;
         if (c == null) return;
         c.reset();
         beginChange();
@@ -69,8 +73,12 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
                 updatedItems(c);
             } else if (c.wasReplaced()) {
                 replacedItems(c);
+                // PENDING JW: need to update accumulatedRemoved?
+                // only if we have to expect a mixture of change types?
+                // do we?
             } else {
                 addedOrRemovedItems(c);
+                accumulatedRemoved += c.getRemovedSize();
             }
         }
         endChange();
@@ -109,27 +117,55 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     /**
      * This is called for a removed or replaced change in the backingList.
      * 
+     * PENDING JW: can't handle discontinous removes? We are computing
+     * indices in the old state, need to accumulate the reomvedSizes ...
      * @param c
      */
     private void removedItems(Change<? extends T> c) {
         // fromIndex is startIndex of our own change - that doesn't change
         // as a subChange is about a single interval!
-        int fromIndex = findIndex(c.getFrom(), c.getRemovedSize());
+        int realFrom = c.getFrom() + accumulatedRemoved;
+        int fromIndex = findIndex(realFrom, c.getRemovedSize());
+//        accumulatedRemoved += c.getRemovedSize();
         if (fromIndex < 0) return;
-        for (int i = c.getFrom(); i < c.getFrom() + c.getRemovedSize(); i++) {
-            // have to fire if the item had been selected before and
-            // no longer is now - how to detect the "before" part? we 
-            // have no real state, only indirectly accessed
-            int oldIndex = getIndicesList().oldIndices.indexOf(i);
-            if(oldIndex > -1) {
-                // was selected, check if still is
-                int index = getIndicesList().indexOf(i);
-                if (index < 0) {
-                    T oldItem = c.getRemoved().get(i - c.getFrom());
-                    nextRemove(fromIndex, oldItem);
-                }
+        // PENDING JW: thi index isn't good enough? the index might be
+        // changed due to the remove, so accidentally still in list?
+//        int lastRealOld = realFrom + c.getRemovedSize();
+
+        // here we loop over the indices of the removed items
+        for (int index = 0; index < c.getRemovedSize(); index++) {
+            int oldIndex = realFrom + index;
+            if (getIndicesList().oldIndices.contains(oldIndex)) {
+                T oldItem = c.getRemoved().get(index);
+                nextRemove(fromIndex, oldItem);
             }
         }
+        
+        // the index of the loop is in coordinates of the list _before_ the remove
+//        for (int index = realFrom; index < lastRealOld; index++) {
+//            // have to fire if the item had been selected before and
+//            // no longer is now - how to detect the "before" part? we 
+//            // have no real state, only indirectly accessed
+//            // this is wrong - need to use findIndex because we want those
+//            // contained in the range 
+//            // anyway do better: f.i. get all the indices that had been indexed?
+////            int oldIndex = getIndicesList().oldIndices.indexOf(index);
+////            // with this block, testItemsRemovedBetweenReally is failing
+////            if (oldIndex > -1) {
+////              T oldItem = c.getRemoved().get(index - realFrom);
+////              nextRemove(fromIndex, oldItem);
+////            }
+//            // with this block we get an IOOB when printing the change
+//            // in testItemsRemoveRange
+////            if(oldIndex > -1) {
+////                // was selected, check if still is
+////                int index = getIndicesList().indexOf(i);
+////                if (index < 0) {
+////                    T oldItem = c.getRemoved().get(i - c.getFrom());
+////                    nextRemove(fromIndex, oldItem);
+////                }
+////            }
+//        }
     }
 
     /**

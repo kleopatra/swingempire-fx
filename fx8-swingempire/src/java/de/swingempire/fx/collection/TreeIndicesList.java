@@ -106,7 +106,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      */
     public void addIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        setSourceChange(null);;
+        setTreeModification(null);;
         beginChange();
         doAddIndices(indices);
         endChange();
@@ -118,7 +118,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      */
     public void clearIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        setSourceChange(null);
+        setTreeModification(null);
         beginChange();
         doClearIndices(indices);
         endChange();
@@ -128,7 +128,7 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      * Clears all indices.
      */
     public void clearAllIndices() {
-        setSourceChange(null);
+        setTreeModification(null);
         beginChange();
         for (int i = size() -1 ; i >= 0; i--) {
             int value = get(i);
@@ -140,25 +140,42 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
 
 //------------------- internal update on tree modification
     
+    /**
+     * Implementation notes: 
+     * 
+     * Does nothing if the sending treeItem isn't visible.
+     * 
+     * Delegates the event either to childrenChanged or treeItemModified for
+     * further processing. 
+     * 
+     * Guarantees to reset treeModification: either null if event not handled,
+     * or the event as received.
+     * 
+     * 
+     * @param event
+     * @throws IllegalStateException if source of event not of type TreeItemX. 
+     */
     protected void treeModified(TreeModificationEvent<T> event) {
         if (!(event.getTreeItem() instanceof TreeItemX)) {
             throw new IllegalStateException("all treeItems must be of type TreeItemX but was " + event.getTreeItem());
         }
+        setTreeModification(null);
         TreeModificationEventX<T> ex = event instanceof TreeModificationEventX ? 
                 (TreeModificationEventX<T>) event : null;
+        TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem(); 
+        if (!TreeItemX.isVisible(source)) return;
         beginChange();
-        setSourceChange(null);
         // doooh .... need old state for the sake of IndexedItems
         oldIndices = new ArrayList<>();
         for (int i = 0; i < size(); i++) {
             oldIndices.add(get(i));
         }
         if (ex != null && ex.getChange() != null) {
-            childrenChanged((TreeItemX<T>) event.getTreeItem(), ex.getChange());
+            childrenChanged(source, ex.getChange());
         } else {
             treeItemModified(event);
         }
-        setSourceChange(ex);
+        setTreeModification(event);
         endChange();
     }
     
@@ -188,8 +205,6 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      */
     protected void expanded(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
-        // need to chech if visible because tree.getRow behaves unexpectedly
-        if (!TreeItemX.isVisible(source)) return;
         // getRow returns expected result only for visible items
         int from = tree.getRow(source);
         // source hidden anyway or change completely after, nothing to do
@@ -212,8 +227,8 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
      */
     protected void collapsed(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
-        // need to chech if visible because tree.getRow behaves unexpectedly
-        if (!TreeItemX.isVisible(source)) return;
+//        // need to chech if visible because tree.getRow behaves unexpectedly
+//        if (!TreeItemX.isVisible(source)) return;
         // getRow returns expected result only for visible items
         int from = tree.getRow(source);
         // source hidden anyway or change completely after, nothing to do
@@ -226,6 +241,9 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
         from++;
         int removedSize = getExpandedChildCount(source);
         // step one: remove the indices inside the range
+        // PENDING JW: decrease removed by one? maybe not, as we query the
+        // children (vs. the source), such that the source itself is not 
+        // counted
         doRemoveIndices(from, removedSize);
         // step two: shift indices below the range
         doShiftLeft(from, removedSize);
@@ -486,17 +504,17 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
     }
 
     /**
-     * Returns the last change from source that produced a remove, or null if last
-     * change of this resulted from direct modification of indices.
+     * Returns the last treeModication from souroe. Guaranteed to be null
+     * if the firing treeItem isn't visible. 
      *  
      * For testing only, don't use outside of IndexMappedItems! 
      * @return
      */
-    public TreeModificationEvent<T> getSourceChange() {
+    public TreeModificationEvent<T> getTreeModification() {
         return sourceChangeP.get();
     }
    
-    public Property<TreeModificationEvent<T>> sourceChangeProperty() {
+    public Property<TreeModificationEvent<T>> treeModificationProperty() {
         return sourceChangeP;
     }
     
@@ -512,9 +530,9 @@ public class TreeIndicesList<T> extends ObservableListBase<Integer> {
     }
     /**
      * Sets the sourceChange, resets if != null.
-     * @param sc
+     * @param sc<
      */
-    protected void setSourceChange(TreeModificationEvent<T> sc) {
+    protected void setTreeModification(TreeModificationEvent<T> sc) {
         // PENDING JW: really? there might be several listeners (theoretically)
         // with no responsibility to reset the change - such that each
         // interested party has to reset before usage anyway
