@@ -4,10 +4,10 @@
  */
 package de.swingempire.fx.collection;
 
-import java.util.Enumeration;
 import java.util.List;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -23,12 +23,11 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import de.swingempire.fx.collection.TreeIndexMappedList;
-import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -126,12 +125,16 @@ public class TreeIndexMappedListTest {
     public void testCollapseRoot() {
         int index = 2;
         indicesList.setIndices(index);
+        TreeItem indexedItem = indexedItems.get(0);
         report.clear();
         root.setExpanded(false);
         assertEquals("indices after collapse must be empty", 0, indicesList.size());
         assertEquals("indexedItems empty", 0, indexedItems.size());
         assertEquals("eventcount", 1, report.getEventCount());
         assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals("old indexed must be removed", indexedItem, c.getRemoved().get(0));
     }
     
     @Test

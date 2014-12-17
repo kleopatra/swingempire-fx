@@ -19,6 +19,7 @@ import javafx.scene.control.TreeView;
 import com.sun.javafx.collections.SortHelper;
 
 import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
 import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
@@ -38,7 +39,6 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  */
 public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Integer> {
 
-//    private List<? extends T> backingList;
     private TreeView<T> backingTree;
     private ChangeListener<TreeModificationEvent<T>> sourceChangeListener;
     private WeakChangeListener<TreeModificationEvent<T>> weakSourceChangeListener;
@@ -80,8 +80,6 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         endChange();
 
     }
-    
-    
     
     /**
      * Handles TreeModificationEvents that are not list changes.
@@ -128,18 +126,18 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         if (oldIndexed.size() == 0) 
             throw new IllegalStateException("expected at least one indexed item");
         // need to walk the subtree of source as if it were expanded
-        // PENDING JW: this is awefully inefficient  - not even working
-        // need a custom iterator that includes only the children of expanded
-        // treeItems
-//        Enumeration<TreeItem> preOrder = new TreeItemX.PreorderTreeItemEnumeration<>(source);
-//        preOrder.nextElement();
-//        int visibleCount = treeFrom;
-//        while(preOrder.hasMoreElements()) {
-//            TreeItem next = preOrder.nextElement();
-//            if (TreeItemX.isVisible(next)) {
-//                System.out.println("next visible " + next + visibleCount++); 
-//            }
-//        }
+        ExpandedDescendants<TreeItem<T>> descendants = new ExpandedDescendants<TreeItem<T>>(source);
+        // step over source
+        descendants.next();
+        int treeIndex = treeFrom;
+        while (descendants.hasNext()) {
+            TreeItem<T> item = descendants.next();
+            if (oldIndexed.contains(treeIndex)) {
+                nextRemove(fromIndex, item);
+            }
+            treeIndex++;
+            // PENDING JW: break if > size of oldIndexed
+        }
     }
     /**
      * Returns the sum of the expandedDescandantCount of the item's children.
