@@ -7,7 +7,13 @@ package de.swingempire.fx.scene.control.tree;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -274,5 +280,145 @@ public class TreeItemX<T> extends TreeItem<T> {
         super(value);
     }
 
+//------------- enum across visible child nodes
+ 
     
+    /**
+     * Implementation of a preorder traversal of a subtree with nodes of type TreeNode.
+     * <p>
+     * PENDING JW: change to Iterator.
+     */
+    public static class PreorderTreeItemEnumeration<M extends TreeItem> implements Enumeration<M> {
+        protected Deque<Enumeration<M>> stack;
+        
+        public PreorderTreeItemEnumeration(M rootNode) {
+            // Vector is just used for getting an Enumeration easily
+            Vector<M> v = new Vector<M>(1);
+            v.addElement(rootNode);     
+            stack = new ArrayDeque<Enumeration<M>>();
+            stack.push(v.elements());
+        }
+        
+        @Override
+        public boolean hasMoreElements() {
+            return (!stack.isEmpty() &&
+                    stack.peek().hasMoreElements());
+        }
+        
+        @Override
+        public M nextElement() {
+            Enumeration<M> enumer = stack.peek();
+            M node = enumer.nextElement();
+            Enumeration<M> children = getChildren(node);
+            
+            if (!enumer.hasMoreElements()) {
+                stack.pop();
+            }
+            if (children.hasMoreElements()) {
+                stack.push(children);
+            }
+            return node;
+        }
+        
+        protected Enumeration<M> getChildren(M node) {
+            Enumeration<M> children = Collections.enumeration(node.getChildren());
+            return children;
+        }
+        
+    }  // End of class PreorderEnumeration
+    
+    /**
+     * Implementation of a preorder traversal across the expanded descendants
+     * of a TreeItem. The direct children of the item are always included.
+     * 
+     * <p>
+     * 
+     * PENDING JW: change to Iterator.
+     */
+    public static class ExpandedDescendantEnumeration<M extends TreeItem> implements Enumeration<M> {
+        protected Deque<Enumeration<M>> stack;
+        protected M root; 
+        
+        public ExpandedDescendantEnumeration(M rootNode) {
+            this.root = rootNode;
+            // Vector is just used for getting an Enumeration easily
+            Vector<M> v = new Vector<M>(1);
+            v.addElement(rootNode);     
+            stack = new ArrayDeque<Enumeration<M>>();
+            stack.push(v.elements());
+        }
+        
+        @Override
+        public boolean hasMoreElements() {
+            return (!stack.isEmpty() &&
+                    stack.peek().hasMoreElements());
+        }
+        
+        @Override
+        public M nextElement() {
+            Enumeration<M> enumer = stack.peek();
+            M node = enumer.nextElement();
+            Enumeration<M> children = getChildren(node);
+            
+            if (!enumer.hasMoreElements()) {
+                stack.pop();
+            }
+            if (children.hasMoreElements()) {
+                stack.push(children);
+            }
+            return node;
+        }
+        
+        protected Enumeration<M> getChildren(M node) {
+            if (node != root && (node.isLeaf() || !node.isExpanded())) return Collections.emptyEnumeration();
+            Enumeration<M> children = Collections.enumeration(node.getChildren());
+            return children;
+        }
+        
+    }  // End of class PreorderEnumeration
+    
+    /**
+     * Implementation of a preorder traversal across the expanded descendants
+     * of a TreeItem. The direct children of the root are always included.
+     */
+    public static class ExpandedDescendants<M extends TreeItem> implements Iterator<M> {
+        protected Iterator<M> EMPTY = Collections.emptyIterator(); 
+        protected Deque<Iterator<M>> stack;
+        protected M root; 
+        
+        public ExpandedDescendants(M rootNode) {
+            this.root = rootNode;
+            stack = new ArrayDeque<Iterator<M>>();
+            stack.push(Collections.singletonList(rootNode).iterator());
+        }
+
+        @Override
+        public boolean hasNext() {
+            return (!stack.isEmpty() &&
+                    stack.peek().hasNext());
+        }
+
+        @Override
+        public M next() {
+            Iterator<M> enumer = stack.peek();
+            M node = enumer.next();
+            Iterator<M> children = getChildren(node);
+
+            if (!enumer.hasNext()) {
+                stack.pop();
+            }
+            if (children.hasNext()) {
+                stack.push(children);
+            }
+            return node;
+        }
+
+        protected Iterator<M> getChildren(M node) {
+            if (node != root && (node.isLeaf() || !node.isExpanded())) return EMPTY;
+            Iterator<M> children = node.getChildren().iterator();
+            return children;
+        }
+
+    }  // End of class PreorderEnumeration
+
 }

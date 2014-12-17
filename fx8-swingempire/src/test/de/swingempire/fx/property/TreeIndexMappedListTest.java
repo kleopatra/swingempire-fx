@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.property;
 
+import java.util.Enumeration;
 import java.util.List;
 
 import javafx.collections.FXCollections;
@@ -28,7 +29,6 @@ import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -103,25 +103,25 @@ public class TreeIndexMappedListTest {
 //                index, indicesList.get(0).intValue());
 //    }
 //
-//    @Test
-//    public void testCollapseChild() {
-//        TreeItemX childBranch = createBranch("expandedChild");
-//        childBranch.setExpanded(true);
-//        int childExpanded = childBranch.getExpandedDescendantCount();
-//        rootChildren.add(0, childBranch);
-//        int rootExpanded = root.getExpandedDescendantCount();
-//        // test branch has same length
-//        assertEquals("expanded", 2 * childExpanded, rootExpanded);
-//        // select last of root
-//        int last = rootExpanded - 1;
-//        indicesList.setIndices(last);
-//        childBranch.setExpanded(false);
-//        // Note: expandedCount includes the item itself, a collapsed
-//        // item has a count of 1!
-//        int collapsedLast = last - childExpanded + childBranch.getExpandedDescendantCount();
-//        assertEquals("index after collapse ", collapsedLast, indicesList.get(0).intValue());
-//    }
-//    
+    @Test
+    public void testCollapseChild() {
+        TreeItemX childBranch = createBranch("expandedChild");
+        childBranch.setExpanded(true);
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        rootChildren.add(0, childBranch);
+        int rootExpanded = root.getExpandedDescendantCount();
+        // test branch has same length
+        assertEquals("expanded", 2 * childExpanded, rootExpanded);
+        // select last of root
+        int last = rootExpanded - 1;
+        indicesList.setIndices(last);
+        childBranch.setExpanded(false);
+        // Note: expandedCount includes the item itself, a collapsed
+        // item has a count of 1!
+        int collapsedLast = last - childExpanded + childBranch.getExpandedDescendantCount();
+        assertEquals("index after collapse ", collapsedLast, indicesList.get(0).intValue());
+    }
+    
     @Test
     public void testCollapseRoot() {
         int index = 2;

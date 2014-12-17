@@ -5,6 +5,7 @@
 package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javafx.beans.value.ChangeListener;
@@ -109,7 +110,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     private void collapsed(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
         int treeFrom = backingTree.getRow(source) + 1;
-        int collapsedSize = getExpandedChildCount(source);
+        int collapsedSize = getExpandedItemCountFromChildren(source);
         // find the first coordinate in our own that had been included
         // that's the from in the change we need to fire, if any
         int fromIndex = findIndex(treeFrom, collapsedSize);
@@ -117,10 +118,28 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         if (fromIndex < 0) return;
         // find the indices that had been indexed and add them to the removed change
         // PENDING JW: brute force looping, do better
+        List<Integer> oldIndexed = new ArrayList<>();
         for(int treeIndex = treeFrom; treeIndex < treeFrom + collapsedSize; treeIndex++) {
-            
+            if (getIndicesList().oldIndices.contains(treeIndex)) {
+                // was indexed, need to find item at that old position
+                oldIndexed.add(treeIndex);
+            }
         }
-        
+        if (oldIndexed.size() == 0) 
+            throw new IllegalStateException("expected at least one indexed item");
+        // need to walk the subtree of source as if it were expanded
+        // PENDING JW: this is awefully inefficient  - not even working
+        // need a custom iterator that includes only the children of expanded
+        // treeItems
+//        Enumeration<TreeItem> preOrder = new TreeItemX.PreorderTreeItemEnumeration<>(source);
+//        preOrder.nextElement();
+//        int visibleCount = treeFrom;
+//        while(preOrder.hasMoreElements()) {
+//            TreeItem next = preOrder.nextElement();
+//            if (TreeItemX.isVisible(next)) {
+//                System.out.println("next visible " + next + visibleCount++); 
+//            }
+//        }
     }
     /**
      * Returns the sum of the expandedDescandantCount of the item's children.
@@ -130,7 +149,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param parent
      * @return
      */
-    protected int getExpandedChildCount(TreeItemX<T> parent) {
+    protected int getExpandedItemCountFromChildren(TreeItemX<T> parent) {
         int result = 0;
         for (TreeItem<T> child : parent.getChildren()) {
             result += ((TreeItemX<T>) child).getExpandedDescendantCount();
@@ -197,8 +216,13 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
 
     /**
      * This is called for a removed or replaced change in the backingList.
+     * <p>
+     * PENDING this is more or less a copy of the _old_ (incorrect)
+     * implementation in IndexMappedList - review! Probably can't handle
+     * discontinous removes.
      * 
-     * @param c
+     * @param source the treeItem that send the change
+     * @param c the change
      */
     private void removedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         int treeFrom = backingTree.getRow(source) + 1 + c.getFrom();

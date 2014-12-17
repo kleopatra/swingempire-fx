@@ -145,6 +145,17 @@ public class TreeItemTest {
     }
     
     @Test
+    public void testLeafExpanded() {
+        TreeItem item = createItem("some");
+        assertTrue("isLeaf", item.isLeaf());
+        item.setExpanded(true);
+        assertTrue("isExpanded", item.isExpanded());
+        item.setExpanded(false);
+        assertFalse("isExpanded", item.isExpanded());
+    }
+    
+    
+    @Test
     public void testInitial() {
         assertEquals(rawItems.size(), treeItem.getChildren().size());
     }
@@ -163,6 +174,12 @@ public class TreeItemTest {
         return new TreeItem(item);
     }
 
+    protected TreeItem createBranch(Object value) {
+        TreeItem item = createItem(value);
+        item.getChildren().setAll(createItems(rawItems));
+        return item;
+    }
+    
     protected ObservableList<TreeItem> createItems(ObservableList other) {
         ObservableList items = FXCollections.observableArrayList();
         other.stream().forEach(item -> items.add(createItem(item)));

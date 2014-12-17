@@ -17,15 +17,9 @@ import javafx.collections.transformation.TransformationList;
 /**
  * Helper for selectedItems. Source contains the selectedIndices, backingList the items.
  * 
- * This is truely unmodifiable, changes mediated by changes to source only.
- * 
- * PENDING JW:
- * - removed are firing incorrect removed items (due to direct access of the backing
- *   list, where the removed is no longer contained). reaching the boundary of chained
- *   transformation lists? Or doing something wrong in the chain? Can the intermediate
- *   (here IndicesList) somehow pass-on the removed items from the backing list? 
- *   
- * Really need to separate changes from "real" setting of indices in source from 
+ * This is truely unmodifiable, changes mediated by changes to source and backing list.
+ * <p>
+ * Really needed to separate changes from "real" setting of indices in source from 
  * changes that were induced by backingList changes. Without, all changes envolving
  * a remove are plain incorrect!
  * <p>
@@ -58,7 +52,6 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         weakSourceChangeListener = new WeakChangeListener<>(sourceChangeListener);
         source.sourceChangeProperty().addListener(weakSourceChangeListener);
     }
-
     
     protected void backingListChanged(Change<? extends T> c) {
         // nothing to do
@@ -84,8 +77,6 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         endChange();
     }
     
-    
-    
     /**
      * @param c
      */
@@ -93,7 +84,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         if (c.wasAdded() && c.wasRemoved()) 
             throw new IllegalStateException("expected real add/remove but was: " + c);
         if (c.wasAdded()) {
-            addedItems(c);
+            // nothing to do: real additions to the backing list
+            // don't change our state
         } else if (c.wasRemoved()){
             removedItems(c);
         } else {
@@ -101,71 +93,29 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         }
     }
 
-
-    /**
-     * Called on real additions to the backing list.
-     * 
-     * Implemented to do nothing: real addition to the backinglist don't change the
-     * state of this.
-     * 
-     * @param c
-     */
-    private void addedItems(Change<? extends T> c) {
-        // no-op
-    }
-
     /**
      * This is called for a removed or replaced change in the backingList.
      * 
-     * PENDING JW: can't handle discontinous removes? We are computing
-     * indices in the old state, need to accumulate the reomvedSizes ...
      * @param c
      */
     private void removedItems(Change<? extends T> c) {
+        // from in coordinate of list before the remove
+        int realFrom = c.getFrom() + accumulatedRemoved;
         // fromIndex is startIndex of our own change - that doesn't change
         // as a subChange is about a single interval!
-        int realFrom = c.getFrom() + accumulatedRemoved;
         int fromIndex = findIndex(realFrom, c.getRemovedSize());
-//        accumulatedRemoved += c.getRemovedSize();
         if (fromIndex < 0) return;
-        // PENDING JW: thi index isn't good enough? the index might be
-        // changed due to the remove, so accidentally still in list?
-//        int lastRealOld = realFrom + c.getRemovedSize();
 
         // here we loop over the indices of the removed items
         for (int index = 0; index < c.getRemovedSize(); index++) {
             int oldIndex = realFrom + index;
+            // check if the old index was contained
             if (getIndicesList().oldIndices.contains(oldIndex)) {
+                // add a remove if so
                 T oldItem = c.getRemoved().get(index);
                 nextRemove(fromIndex, oldItem);
             }
         }
-        
-        // the index of the loop is in coordinates of the list _before_ the remove
-//        for (int index = realFrom; index < lastRealOld; index++) {
-//            // have to fire if the item had been selected before and
-//            // no longer is now - how to detect the "before" part? we 
-//            // have no real state, only indirectly accessed
-//            // this is wrong - need to use findIndex because we want those
-//            // contained in the range 
-//            // anyway do better: f.i. get all the indices that had been indexed?
-////            int oldIndex = getIndicesList().oldIndices.indexOf(index);
-////            // with this block, testItemsRemovedBetweenReally is failing
-////            if (oldIndex > -1) {
-////              T oldItem = c.getRemoved().get(index - realFrom);
-////              nextRemove(fromIndex, oldItem);
-////            }
-//            // with this block we get an IOOB when printing the change
-//            // in testItemsRemoveRange
-////            if(oldIndex > -1) {
-////                // was selected, check if still is
-////                int index = getIndicesList().indexOf(i);
-////                if (index < 0) {
-////                    T oldItem = c.getRemoved().get(i - c.getFrom());
-////                    nextRemove(fromIndex, oldItem);
-////                }
-////            }
-//        }
     }
 
     /**
@@ -233,7 +183,6 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * @param c
      */
     private void permutatedItems(Change<? extends T> c) {
-        // TODO Auto-generated method stub
 //        throw new IllegalStateException("not yet implemented");
         List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
         int[] permA = new int[size()];
@@ -307,27 +256,6 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
             for (Integer index : indices) {
                 items.add(backingList.get(index));
             }
-        } else { 
-//            if (true)
-//                throw new IllegalStateException("shouldn't be here - separated out indirect changes");
-//            for (int i = 0 ; i < c.getRemovedSize(); i++) {
-//                int removedSourceIndex = c.getRemoved().get(i);
-//                // find change in source that covers removedSource
-//                Change<? extends T> sourceChange = getIndicesList().getSourceChange();
-//                sourceChange.reset();
-//                int accumulatedRemovedSize = 0;
-//                while (sourceChange.next()) {
-//                    if (!sourceChange.wasRemoved()) continue;
-//                    int fromSource = sourceChange.getFrom() + accumulatedRemovedSize;
-//                    if (removedSourceIndex >= fromSource && removedSourceIndex < fromSource + sourceChange.getRemovedSize()) {
-//                        // hit - PENDING JW: need to accumulate if we have multiple removes!
-//                        int indexInRemoved = removedSourceIndex - fromSource;
-//                        items.add(sourceChange.getRemoved().get(indexInRemoved));
-//                        break;
-//                    }
-//                    accumulatedRemovedSize += sourceChange.getRemovedSize();
-//                }
-//            }
         }
         nextRemove(c.getFrom(), items);
     }
