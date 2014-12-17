@@ -2,7 +2,7 @@
  * Created on 11.12.2014
  *
  */
-package de.swingempire.fx.property;
+package de.swingempire.fx.collection;
 
 import java.util.Enumeration;
 import java.util.List;

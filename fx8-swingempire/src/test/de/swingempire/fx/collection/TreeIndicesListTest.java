@@ -2,7 +2,7 @@
  * Created on 11.12.2014
  *
  */
-package de.swingempire.fx.property;
+package de.swingempire.fx.collection;
 
 import java.util.List;
 
@@ -26,9 +26,9 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-
 import de.swingempire.fx.collection.TreeIndicesList;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;

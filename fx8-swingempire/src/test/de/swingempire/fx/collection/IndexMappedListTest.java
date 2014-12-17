@@ -2,7 +2,7 @@
  * Created on 18.11.2014
  *
  */
-package de.swingempire.fx.property;
+package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.Arrays;

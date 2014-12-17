@@ -2,7 +2,7 @@
  * Created on 05.11.2014
  *
  */
-package de.swingempire.fx.property;
+package de.swingempire.fx.collection;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -30,9 +30,9 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.collection.FilteredListX;
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
