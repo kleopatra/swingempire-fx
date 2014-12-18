@@ -77,8 +77,8 @@ public class MultipleSelectionController<T> implements IndexedItemsController<T>
         return getSource().get(index);
     }
 
-    @Override
-    public ObservableList<? extends T> getSource() {
+//    @Override
+    private ObservableList<? extends T> getSource() {
         return indicesList.getSource();
     }
     

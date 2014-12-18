@@ -95,11 +95,21 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
             // no-op for indexedItems, only indices might have changed
 //            throw new UnsupportedOperationException("TBD - expanded " + event);
         } else if (event.getEventType() == TreeItem.valueChangedEvent()) {
-             throw new UnsupportedOperationException("TBD - valueChanged " + event);
+            contentChanged(event);
         } else if (event.getEventType() == TreeItem.graphicChangedEvent()) {
-             throw new UnsupportedOperationException("TBD - graphicChanged " + event);
+            contentChanged(event);
         }
         
+    }
+
+    /**
+     * @param event
+     */
+    private void contentChanged(TreeModificationEvent<T> event) {
+        int index = indexOf(event.getSource());
+        if (index > -1) {
+            nextUpdate(index);
+        }
     }
 
     /**
@@ -325,7 +335,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param c
      */
     private void permutatedItems(Change<? extends T> c) {
-        throw new IllegalStateException("not yet implemented");
+        throw new IllegalStateException("TBD permutation - not yet implemented");
 //        List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
 //        int[] permA = new int[size()];
 //        for (int i = 0; i < getIndicesList().oldIndices.size(); i++) {

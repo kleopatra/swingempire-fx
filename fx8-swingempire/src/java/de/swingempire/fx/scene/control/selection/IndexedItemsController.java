@@ -74,6 +74,6 @@ public interface IndexedItemsController<T> {
     T getSourceItem(int index);
     
     // PENDING JW: really want to expose backing properties?
-    ObservableList<? extends T> getSource();
+//    ObservableList<? extends T> getSource();
     
 }

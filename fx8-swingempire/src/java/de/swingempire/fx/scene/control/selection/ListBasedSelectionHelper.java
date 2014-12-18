@@ -8,6 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
+import javafx.scene.control.TreeItem;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -191,6 +192,8 @@ public class ListBasedSelectionHelper<T> {
      *    to be of type removed.
      */
     protected void selectedItemRemoved(Change<? extends T> c) {
+        // PENDING JW: think about discontinous removes - c.getFrom
+        // really the position that we need?
         selectionModel.select(Math.min(selectionModel.getItemCount() - 1, c.getFrom()));
     }
     

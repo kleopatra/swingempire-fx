@@ -9,6 +9,7 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -64,44 +65,53 @@ public class TreeIndexMappedListTest {
 
  //---------------------------------- test TreeModifications
     
-//    @Test
-//    public void testValueChangedRootChild() {
-//        int childIndex = 2;
-//        TreeItem item = rootChildren.get(childIndex);
-//        int indexInIndices = childIndex + 1;
-//        indicesList.setIndices(indexInIndices);
-//        item.setValue("other value");
-//        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
-//    }
-//    @Test
-//    public void testGraphicChangedRootChild() {
-//        int childIndex = 2;
-//        TreeItem item = rootChildren.get(childIndex);
-//        int indexInIndices = childIndex + 1;
-//        indicesList.setIndices(indexInIndices);
-//        item.setGraphic(new CheckBox("dummy"));
-//        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
-//    }
-//    /**
-//     * no change if hidden item is collapsed.
-//     */
-//    @Test
-//    public void testCollapseHiddenChild() {
-//        TreeItemX childBranch = createBranch("collapsedChild");
-//        int childExpanded = childBranch.getExpandedDescendantCount();
-//        TreeItemX grandChildBranch = createBranch("expandedGrandChild");
-//        grandChildBranch.setExpanded(true);
-//        childBranch.getChildren().add(0, grandChildBranch);
-//        assertEquals("sanity: expandedCount unchanged by adding expanded child", 
-//                childExpanded, childBranch.getExpandedDescendantCount());
-//        rootChildren.add(0, childBranch);
-//        int index = 6;
-//        indicesList.setIndices(index);
-//        grandChildBranch.setExpanded(false);
-//        assertEquals("index unchanged on collapse of hidden grandChild", 
-//                index, indicesList.get(0).intValue());
-//    }
-//
+    @Test
+    public void testValueChangedRootChild() {
+        int childIndex = 2;
+        TreeItem item = rootChildren.get(childIndex);
+        int indexInIndices = childIndex + 1;
+        indicesList.setIndices(indexInIndices);
+        report.clear();
+        item.setValue("other value");
+        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
+        assertEquals("event count after setValue", 1, report.getEventCount());
+    }
+    
+    @Test
+    public void testGraphicChangedRootChild() {
+        int childIndex = 2;
+        TreeItem item = rootChildren.get(childIndex);
+        int indexInIndices = childIndex + 1;
+        indicesList.setIndices(indexInIndices);
+        report.clear();
+        item.setGraphic(new CheckBox("dummy"));
+        assertEquals("index unchanged", indexInIndices, indicesList.get(0).intValue());
+        assertEquals("event count after setGraphic", 1, report.getEventCount());
+    }
+    /**
+     * no change if hidden item is collapsed.
+     */
+    @Test
+    public void testCollapseHiddenChild() {
+        TreeItemX childBranch = createBranch("collapsedChild");
+        int childExpanded = childBranch.getExpandedDescendantCount();
+        TreeItemX grandChildBranch = createBranch("expandedGrandChild");
+        grandChildBranch.setExpanded(true);
+        childBranch.getChildren().add(0, grandChildBranch);
+        assertEquals("sanity: expandedCount unchanged by adding expanded child", 
+                childExpanded, childBranch.getExpandedDescendantCount());
+        rootChildren.add(0, childBranch);
+        int index = 6;
+        indicesList.setIndices(index);
+        report.clear();
+        TreeItem indexedItem = indexedItems.get(0);
+        grandChildBranch.setExpanded(false);
+        assertEquals("index unchanged on collapse of hidden grandChild", 
+                index, indicesList.get(0).intValue());
+        assertEquals("eventcount " + report.getLastChange(), 0, report.getEventCount());
+        assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
+    }
+
     @Test
     public void testCollapseChild() {
         TreeItemX childBranch = createBranch("expandedChild");

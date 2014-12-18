@@ -39,8 +39,7 @@ public class SimpleListSelectionModel<T>
         itemsList.bind(listView.itemsProperty());
         controller = new MultipleSelectionController<>(itemsList);
         // PENDING JW: this is brittle: need to register _after_ controller!
-        helper = new ListBasedSelectionHelper(this, itemsList);
-//        itemsList.addListener(weakItemsContentListener);
+        helper = new ListBasedSelectionHelper<>(this, itemsList);
     }
     
     @Override
