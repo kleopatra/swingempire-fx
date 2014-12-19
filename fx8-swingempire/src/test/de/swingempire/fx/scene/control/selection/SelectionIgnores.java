@@ -45,13 +45,27 @@ public class SelectionIgnores {
      * 
      */
     public static class IgnoreTreeFocus implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+    }
+    
+    /**
+     * Ignore anchor-related tests in treeView selection: TreeFocusModel sets its
+     * focus in a Platform.runLater, even wrapping the test in a runLater as well
+     * is unreliable. Anchor might be tightly coupled?
+     * 
+     */
+    public static class IgnoreTreeAnchor implements IgnoreCondition {
 
         @Override
         public boolean isSatisfied() {
             return true;
         }
-        
     }
+    
     /**
      * Ignore notification issues due to correlated properties.
      * https://javafx-jira.kenai.com/browse/RT-39552
@@ -76,7 +90,7 @@ public class SelectionIgnores {
         
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }

@@ -244,7 +244,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
             // have to fire if the item had been selected before and
             // no longer is now - how to detect the "before" part? we 
             // have no real state, only indirectly accessed
-            int oldIndex = getIndicesList().oldIndices.indexOf(i);
+            int oldIndex = getIndicesList().getOldIndices().indexOf(i);
 //            int oldIndex = -1;
             if(oldIndex > -1) {
                 // was selected, check if still is

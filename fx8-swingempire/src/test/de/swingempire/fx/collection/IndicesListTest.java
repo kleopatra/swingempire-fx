@@ -65,7 +65,7 @@ public class IndicesListTest {
                 items);
         ListProperty<String> listItems = new SimpleListProperty<>();
         listItems.bind(itemsProperty);
-        IndicesList indicesList = new IndicesList(listItems);
+        IndicesBase indicesList = new IndicesList(listItems);
         ListChangeReport report = new ListChangeReport(indicesList);
         int[] indices = new int[] { 3, 5, 1 };
         indicesList.addIndices(indices);
@@ -87,7 +87,7 @@ public class IndicesListTest {
     public void testItemsUpdate() {
         ObservableList<Person> base = Person.persons();
         ObservableList<Person> persons = FXCollections.observableList(base, p -> new Observable[] {p.firstNameProperty()});
-        IndicesList<Person> indicesList = new IndicesList<>(persons);
+        IndicesBase<Person> indicesList = new IndicesList<>(persons);
         int[] indices = new int[] {1, 3, 5};
         indicesList.addIndices(indices);
         ListChangeReport report = new ListChangeReport(indicesList);

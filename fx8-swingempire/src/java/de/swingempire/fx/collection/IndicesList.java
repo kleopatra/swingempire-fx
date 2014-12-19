@@ -6,16 +6,17 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableListBase;
+import javafx.collections.WeakListChangeListener;
 
 /**
  * Experimenting with BitSet backed List for selectedIndices of
@@ -42,103 +43,46 @@ import javafx.collections.transformation.TransformationList;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class IndicesList<T> extends TransformationList<Integer, T> {
+public class IndicesList<T> extends IndicesBase<T> {
+//    extends ObservableListBase<Integer> {
+//    TransformationList<Integer, T> {
 
-    private BitSet bitSet;
-//    private Change<? extends T> sourceChange;
+    //    private Change<? extends T> sourceChange;
     private ObjectProperty<Change<? extends T>> sourceChangeP = new SimpleObjectProperty<>(this, "sourceChange");
-    // PENDING JW: wonky - this is the state when receiving a change from source
-    // do better!
-    List<Integer> oldIndices;
-    
+    /**
+     * Contains the source list of this transformation list.
+     * This is never null and should be used to directly access source list content
+     */
+    private ObservableList<T> source;
+    /**
+     * This field contains the result of expression "source instanceof {@link javafx.collections.ObservableList}".
+     * If this is true, it is possible to do transforms online.
+     */
+    private ListChangeListener<T> sourceListener;
+
     /**
      * @param source
      */
-    public IndicesList(ObservableList<? extends T> source) {
-        super(source);
+    public IndicesList(ObservableList<T> source) {
         bitSet = new BitSet();
+        this.source = source;
+        source.addListener(new WeakListChangeListener<>(getListener()));
     }
 
-    /**
-     * Sets the given indices. All previously set indices are
-     * cleared.
-     * 
-     * Does nothing if null or empty.
-     * 
-     * @param indices positions in source list
-     */
-    public void setIndices(int... indices) {
-        beginChange();
-        clearAllIndices();
-        addIndices(indices);
-        endChange();
-    }
-
-    /**
-     * Sets all indices. 
-     * 
-     * PENDING JW: notification on already set?
-     * 
-     * 
-     */
-    public void setAllIndices() {
-        if (getSource().isEmpty()) return;
-        int[] indices = new int[getSource().size()];
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = i;
-        }
-        setIndices(indices);
-    }
-
-    /**
-     * Adds the given indices. Does nothing if null or empty.
-     * 
-     * @param indices
-     */
-    public void addIndices(int... indices) {
-        if (indices == null || indices.length == 0) return;
-        setSourceChange(null);;
-        beginChange();
-        doAddIndices(indices);
-        endChange();
-    }
-
-    /**
-     * Clears the given indices. Does nothing if null or empty.
-     * @param indices position in sourceList
-     */
-    public void clearIndices(int... indices) {
-        if (indices == null || indices.length == 0) return;
-        setSourceChange(null);
-        beginChange();
-        doClearIndices(indices);
-        endChange();
-    }
-
-    /**
-     * Clears all indices.
-     */
-    public void clearAllIndices() {
-        setSourceChange(null);
-        beginChange();
-        for (int i = size() -1 ; i >= 0; i--) {
-            int value = get(i);
-            bitSet.clear(value);
-            nextRemove(i, value);
-        }
-        endChange();
-    }
-
-    protected void doAddIndices(int... indices) {
-        for (int i : indices) {
-            if (bitSet.get(i)) continue;
-            bitSet.set(i);
-            int from = indexOf(i);
-            nextAdd(from, from + 1);
-        }
+    public ObservableList<T> getSource() {
+        return source;
     }
     
-    @Override
+    private ListChangeListener<T> getListener() {
+        if (sourceListener == null) {
+            sourceListener = c -> {
+                sourceChanged(c);
+            };
+        }
+        return sourceListener;
+    }
+
+    //    @Override
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();
         // doooh .... need old state for the sake of IndexedItems
@@ -161,6 +105,7 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
 //        c.reset();
         setSourceChange(c);
         endChange();
+        resetSourceChange();
     }
 
     /**
@@ -231,74 +176,11 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         doShiftLeft(from, removedSize);
     }
 
-    private void doShiftLeft(int from, int removedSize) {
-        for (int i = bitSet.nextSetBit(from); i >= 0; i = bitSet.nextSetBit(i+1)) {
-            int pos = indexOf(i);
-            bitSet.clear(i);
-            int bitIndex = i - removedSize;
-            if (bitIndex < 0) {
-                // PENDING JW: really still needed? Should be removed in step 1?
-//                LOG.info("Really remove again? " + i + "/" + bitIndex);
-//                nextRemove(pos, i);
-                throw new IllegalStateException("remove should have happened in first step at " 
-                        + "bit: " + i + " value: " + pos );
-            } else {
-                bitSet.set(bitIndex);
-                if (pos != indexOf(i - removedSize)) {
-                    throw new IllegalStateException ("wrongy! - learn to use bitset");
-                }
-                nextSet(pos, i);
-            }
-        }
-    }
-
-    private void doClearIndices(int... indices) {
-        for (int i : indices) {
-            if (!bitSet.get(i)) continue;
-            int from = indexOf(i);
-            bitSet.clear(i);
-            nextRemove(from, i);
-         }
-    }
-
-    /**
-     * Remove all indices in the given range. Indices are coordinates in 
-     * backing list.
-     * 
-     * @param from
-     * @param removedSize
-     */
-    private void doRemoveIndices(int from, int removedSize) {
-        int[] removedIndices = new int[removedSize];
-        int index = from;
-        for (int i = 0; i < removedIndices.length; i++) {
-            removedIndices[i] = index++;
-        }
-        // do step one by delegating to clearIndices
-        doClearIndices(removedIndices);
-    }
-
     private void added(Change<? extends T> c) {
         // added: values that are after the added index must be increased by addedSize
         int from = c.getFrom();
         int addedSize = c.getAddedSize();
         doShiftRight(from, addedSize);
-    }
-
-    private void doShiftRight(int from, int addedSize) {
-        // loop bitset from back to from
-        for (int i = bitSet.length(); (i = bitSet.previousSetBit(i-1)) >= from; ) {
-            // find position in this list
-            int pos = indexOf(i);
-            // clear old in bitset
-            bitSet.clear(i);
-            // set increased
-            bitSet.set(i + addedSize);
-            if (pos != indexOf(i + addedSize)) {
-                throw new RuntimeException ("wrongy! - learn to use bitset");
-            }
-            nextSet(pos, i);
-        }
     }
 
     /**
@@ -358,54 +240,18 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
      * 
      *    
      */
-    @Override
+//    @Override
     public int getSourceIndex(int index) {
         return get(index);
     }
-
-    /**
-     * {@inheritDoc} <p>
-     * access with off range index is programming error, better
-     * throw
-     * 
-     * @return the value of this if index in valid range
-     *  @throws IndexOutOfBoundsException if index off range
-     */
     @Override
-    public Integer get(int index) {
-        // PENDING JW: it is wrong to use size of source list as upper boundary
-        // get() defined only on _our_ size!
-        if (index < 0 || index >= size()) // return -1;
-            throw new IndexOutOfBoundsException("index must be not negative "
-                    + "and less than size " + size() + ", but was: " + index);
-        // PENDING JW: following lines simply copied from MultipleSelectionModelBase
-        // we are looking for the nth bit set
-        // double check needed because guard of valid range was incorrect
-        // (checked against itemsSize instead of our size)
-//        for (int pos = 0, val = bitSet.nextSetBit(0);
-//             val >= 0 || pos == index;
-//             pos++, val = bitSet.nextSetBit(val+1)) {
-//            if (pos == index) return val;
-//        }
-        // this is functionally equivalent to the above, except for
-        // throwing if we don't find the value - must succeed if the index
-        // is valid
-        int pos = 0;
-        int val = bitSet.nextSetBit(0);
-        while (pos < index) {
-            pos++;
-            val = bitSet.nextSetBit(val + 1);
-        }
-        if (val <0) {
-            throw new IllegalStateException("wrongy! learn to use BitSet "
-                    + "- must find set bit for valid index: " + index);
-        }
-        return val;
+    protected int getSourceSize() {
+        return getSource().size();
     }
-
-    @Override
-    public int size() {
-        return bitSet.cardinality();
+    
+//    @Override
+    protected void resetSourceChange() {
+        setSourceChange(null);
     }
 
     /**
@@ -437,17 +283,8 @@ public class IndicesList<T> extends TransformationList<Integer, T> {
         sourceChangeP.set(sc);
     }
     
-    /**
-     * Testing only: the selectedIndices at the moment at receiving a list change
-     * from items.
-     * 
-     * @return
-     */
-    public List<Integer> getOldIndices() {
-        return Collections.unmodifiableList(oldIndices);
-    }
-    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(IndicesList.class
             .getName());
+
 }
