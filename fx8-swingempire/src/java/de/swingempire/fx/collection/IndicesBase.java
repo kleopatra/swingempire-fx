@@ -89,7 +89,6 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      */
     public void addIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        resetSourceChange();
         beginChange();
         doAddIndices(indices);
         endChange();
@@ -104,7 +103,6 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      */
     public void clearIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
-        resetSourceChange();
         beginChange();
         doClearIndices(indices);
         endChange();
@@ -114,7 +112,6 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * Clears all indices.
      */
     public void clearAllIndices() {
-        resetSourceChange();
         beginChange();
         for (int i = size() -1 ; i >= 0; i--) {
             int value = get(i);
@@ -169,7 +166,7 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * @param from
      * @param removedSize
      */
-    protected void doRemoveIndices(int from, int removedSize) {
+    protected void doClearIndices(int from, int removedSize) {
         int[] removedIndices = new int[removedSize];
         int index = from;
         for (int i = 0; i < removedIndices.length; i++) {
@@ -183,7 +180,16 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * Shifts all bits above from by removedSize to the left. 
      * The index is a coordinates in 
      * backing list. The operation is
-     * equivalent to decreasing the index values.
+     * equivalent to decreasing the index values.<p>
+     * 
+     * This implementation assumes that there are no selected indices
+     * in the range we are shifting up. That is, using code must first 
+     * clear all indices in the range:
+     * 
+     * <pre><code>
+     * doClearIndices(from, removedSize);
+     * doShiftLeft(from, removedSize);
+     * </code></pre>
      *  
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
      * @param from
@@ -255,12 +261,7 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      */
     protected abstract int getSourceSize();
     
-    /**
-     * Resets the stored modification that we received from the source.
-     * 
-     * PENDING JW: remove - should be completely controlled by subclasses!
-     */
-    protected abstract void resetSourceChange();
+//-------------------------- implementing List api
     
     /**
      * {@inheritDoc} <p>

@@ -26,24 +26,25 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * 
  * <p> 
  * 
+ * PENDING JW: 
+ * <li> root changes 
+ * <li> weakEventHandler?
  * @see IndicesList
+ * @see TreeIndexMappedList
  * @see IndicesBase
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TreeIndicesList<T> extends IndicesBase<T> {
 
-//    extends ObservableListBase<Integer> {
-
-    // needed for getRow because all utility methods are package private
     private TreeView<T> tree;
     // the tree's root item
     private TreeItemX<T> root;
     
     private EventHandler<TreeModificationEvent<T>> modificationListener = e -> treeModified(e);
 
-    private ObjectProperty<TreeModificationEvent<T>> sourceChangeP = 
-            new SimpleObjectProperty<>(this, "sourceChange");
+    private ObjectProperty<TreeModificationEvent<T>> treeModificationP = 
+            new SimpleObjectProperty<>(this, "treeModification");
     /**
      * TreeView must treeItems of type TreeItemX. That's the only one firing an
      * extended TreeModificationEventX: without access to the children's change, 
@@ -86,7 +87,6 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         if (!(event.getTreeItem() instanceof TreeItemX)) {
             throw new IllegalStateException("all treeItems must be of type TreeItemX but was " + event.getTreeItem());
         }
-        setTreeModification(null);
         TreeModificationEventX<T> ex = event instanceof TreeModificationEventX ? 
                 (TreeModificationEventX<T>) event : null;
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem(); 
@@ -104,6 +104,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         }
         setTreeModification(event);
         endChange();
+        setTreeModification(null);
     }
     
     /**
@@ -171,7 +172,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         // PENDING JW: decrease removed by one? maybe not, as we query the
         // children (vs. the source), such that the source itself is not 
         // counted
-        doRemoveIndices(from, removedSize);
+        doClearIndices(from, removedSize);
         // step two: shift indices below the range
         doShiftLeft(from, removedSize);
     }
@@ -281,7 +282,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         for (TreeItem<T> item : c.getRemoved()) {
             removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
         }
-        doRemoveIndices(from, removedSize);
+        doClearIndices(from, removedSize);
         // step 2
         doShiftLeft(from, removedSize);
     }
@@ -309,7 +310,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 //            return;
 //        }
 
-        doRemoveIndices(treeFrom, removedSize);
+        doClearIndices(treeFrom, removedSize);
         int diff = addedSize - removedSize;
         if (diff < 0) {
             doShiftLeft(treeFrom, diff);
@@ -326,11 +327,19 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
      * @return
      */
     public TreeModificationEvent<T> getTreeModification() {
-        return sourceChangeP.get();
+        return treeModificationP.get();
     }
    
     public Property<TreeModificationEvent<T>> treeModificationProperty() {
-        return sourceChangeP;
+        return treeModificationP;
+    }
+    
+    /**
+     * Sets the sourceChange, resets if != null.
+     * @param sc<
+     */
+    protected void setTreeModification(TreeModificationEvent<T> sc) {
+        treeModificationP.set(sc);
     }
     
     /**
@@ -343,22 +352,10 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     public TreeView<T> getSource() {
         return tree;
     }
-    /**
-     * Sets the sourceChange, resets if != null.
-     * @param sc<
-     */
-    protected void setTreeModification(TreeModificationEvent<T> sc) {
-        sourceChangeP.set(sc);
-    }
 
     @Override
     protected int getSourceSize() {
         return getSource().getExpandedItemCount();
     }
 
-//    @Override
-    protected void resetSourceChange() {
-        setTreeModification(null);
-    }
-    
 }

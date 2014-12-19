@@ -11,20 +11,15 @@ import java.util.logging.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.transformation.TransformationList;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableListBase;
 import javafx.collections.WeakListChangeListener;
 
 /**
- * Experimenting with BitSet backed List for selectedIndices of
- * MultipleSelectionModel. The basic idea is to let super handle the
- * tricky change notifications.<p>
- * 
- * Note that TransformList might not be the correct starter, it's just
- * convenient for now.<p>
+ * An implementation of IndicesBase that is backed by a ObservableList. 
+ * Must update internal state when receiving change notification from 
+ * the backing structure. 
  * 
  * Tentative Rules:
  * 
@@ -36,18 +31,28 @@ import javafx.collections.WeakListChangeListener;
  * <li> permutated: replaced on range (?)
  * <li> replaced: technically a mix of added/removed but THINK - 1:1 might be "set"
  *      in underlying model, the net effect on value here would be unchanged, 
- *      actual removal of value unwanted     
+ *      actual removal of value unwanted   
+ *      
+ * <p>
+ * 
+ * Note: this has a property sourceChange that is set to the change received from the
+ * backing structure after this has been updated but before the our own change has been
+ * broadcasted. It is reset again after nofication of our listeners. So intimately
+ * coupled users like IndexMappedList can differentiate changes due to direct modification of
+ * the indices (sourceChange == null) from those that were  induced by changes 
+ * in the backing list (sourceChange != null).
+ * <p>
+ * 
+ * PENDING JW: check if/how ReactFx might help instead of the brittle sourceChange.
  * 
  * @see IndicesBase
+ * @see IndexMappedList
  * @see TreeIndicesList
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class IndicesList<T> extends IndicesBase<T> {
-//    extends ObservableListBase<Integer> {
-//    TransformationList<Integer, T> {
 
-    //    private Change<? extends T> sourceChange;
     private ObjectProperty<Change<? extends T>> sourceChangeP = new SimpleObjectProperty<>(this, "sourceChange");
     /**
      * Contains the source list of this transformation list.
@@ -82,7 +87,6 @@ public class IndicesList<T> extends IndicesBase<T> {
         return sourceListener;
     }
 
-    //    @Override
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();
         // doooh .... need old state for the sake of IndexedItems
@@ -90,7 +94,6 @@ public class IndicesList<T> extends IndicesBase<T> {
         for (int i = 0; i < size(); i++) {
             oldIndices.add(get(i));
         }
-        setSourceChange(null); 
         while (c.next()) {
             if (c.wasPermutated()) {
                 permutated(c);
@@ -102,10 +105,9 @@ public class IndicesList<T> extends IndicesBase<T> {
                 addedOrRemoved(c);
             }
         }
-//        c.reset();
         setSourceChange(c);
         endChange();
-        resetSourceChange();
+        setSourceChange(null); 
     }
 
     /**
@@ -135,7 +137,7 @@ public class IndicesList<T> extends IndicesBase<T> {
             return;
         }
 
-        doRemoveIndices(c.getFrom(), c.getRemovedSize());
+        doClearIndices(c.getFrom(), c.getRemovedSize());
         int diff = c.getAddedSize() - c.getRemovedSize();
         if (diff < 0) {
             doShiftLeft(c.getFrom(), diff);
@@ -171,7 +173,7 @@ public class IndicesList<T> extends IndicesBase<T> {
         // for all left over indices after the remove, decrease the value by removedSize (?)
         int removedSize = c.getRemovedSize();
         int from = c.getFrom();
-        doRemoveIndices(from, removedSize);
+        doClearIndices(from, removedSize);
         // step 2
         doShiftLeft(from, removedSize);
     }
@@ -208,7 +210,7 @@ public class IndicesList<T> extends IndicesBase<T> {
         int to = c.getTo();
         BitSet copy = (BitSet) bitSet.clone();
         // argghh .. second parameter is the _size_
-        doRemoveIndices(from, to - from);
+        doClearIndices(from, to - from);
         int addSize = 0;
         for (int i = from; i < to; i++) {
             if (copy.get(i)) addSize++;
@@ -244,16 +246,12 @@ public class IndicesList<T> extends IndicesBase<T> {
     public int getSourceIndex(int index) {
         return get(index);
     }
+    
     @Override
     protected int getSourceSize() {
         return getSource().size();
     }
     
-//    @Override
-    protected void resetSourceChange() {
-        setSourceChange(null);
-    }
-
     /**
      * Returns the last change from source that produced a remove, or null if last
      * change of this resulted from direct modification of indices.

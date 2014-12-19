@@ -22,6 +22,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +36,6 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -475,23 +475,30 @@ public class IndicesListTest {
      * Try to let indexMappedItems handle their own cleanup on changes to items:
      * make sourceChange a property and test if we can force notification order.
      * 
+     * Changed implementation: the sourceChange is != only from before endChange to
+     * after endChange, so we get 2 notifications, the last with a null.
      */
-    @Test
+    @Test 
     public void testSourceChangeProperty() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
         report.clear();
         ChangeReport cr = new ChangeReport(indicesList.sourceChangeProperty());
         items.add(0, "something");
-        assertEquals(1, cr.getEventCount());
-        Change c = (Change) cr.getLastNewValue();
-        // PENDING JW: really? there might be several listeners (theoretically)
-        // with no responsibility to reset the change - such that each
-        // interested party has to reset before usage anyway
-        assertTrue("expect change reset", c.next());
+        assertEquals(2, cr.getEventCount());
+//        Change c = (Change) cr.getLastOldValue(0);
+//        // PENDING JW: really? there might be several listeners (theoretically)
+//        // with no responsibility to reset the change - such that each
+//        // interested party has to reset before usage anyway
+//        assertTrue("expect change reset", c.next());
     }
     
-    @Test
+    /**
+     * Since extraction of IndicesBase 
+     * Changed behaviour of sourceChange: valid only from before endChange to after
+     * endChange!
+     */
+    @Test @Ignore
     public void testSourceChangeNotificationSequence() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
@@ -580,7 +587,12 @@ public class IndicesListTest {
     }
     
     
-    @Test
+    /**
+     * Since extraction of IndicesBase 
+     * Changed behaviour of sourceChange: valid only from before endChange to after
+     * endChange!
+     */
+    @Test @Ignore
     public void testChangeOnAddItems() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
@@ -591,7 +603,12 @@ public class IndicesListTest {
         assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
     }
     
-    @Test
+    /**
+     * Since extraction of IndicesBase 
+     * Changed behaviour of sourceChange: valid only from before endChange to after
+     * endChange!
+     */
+    @Test @Ignore
     public void testChangeOnRemoveItems() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
@@ -602,7 +619,12 @@ public class IndicesListTest {
         assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
     }
     
-    @Test
+    /**
+     * Since extraction of IndicesBase 
+     * Changed behaviour of sourceChange: valid only from before endChange to after
+     * endChange!
+     */
+    @Test @Ignore
     public void testChangeOnSetItems() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
@@ -613,7 +635,12 @@ public class IndicesListTest {
         assertEquals(itemsReport.getLastChange(), indicesList.getSourceChange());
     }
     
-    @Test
+    /**
+     * Since extraction of IndicesBase 
+     * Changed behaviour of sourceChange: valid only from before endChange to after
+     * endChange!
+     */
+    @Test @Ignore
     public void testChangeOnClearItems() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
