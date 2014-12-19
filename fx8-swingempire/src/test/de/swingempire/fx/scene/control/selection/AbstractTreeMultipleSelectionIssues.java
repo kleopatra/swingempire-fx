@@ -39,7 +39,9 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * the children might result in selecting the parent if any of the children
      * had been selected.
      * 
-     * 
+     * Note: base test has the root not shown (to align with list tests)
+     * so this should work as base test! Overridden anyway to comment focus
+     * test (still no use, as we use core focusModel)
      */
     @Override
     @Test
@@ -55,12 +57,30 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
             assertEquals("selectedItems must be empty", 0, getSelectionModel()
                     .getSelectedItems().size());
             assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
-            assertEquals("focus must be cleared", -1, getFocusModel()
-                    .getFocusedIndex());
+//            assertEquals("focus must be cleared", -1, getFocusModel()
+//                    .getFocusedIndex());
         } else {
             assertEquals(0, getSelectionModel().getSelectedItems().indexOf(parent));
             assertEquals("parent selected after clearing children", parent,
-                getSelectionModel().getSelectedItem());
+                    getSelectionModel().getSelectedItem());
+        }
+    }
+    
+    @Test
+    @ConditionalIgnore (condition = IgnoreTreeFocus.class)
+    public void testFocusOnClearItemsRange() {
+        int start = 2;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        TreeItem parent = getSelectionModel().getSelectedItem().getParent();
+        clearItems();
+        if (getSelectionModel().isEmpty()) {
+            assertEquals("focus must be cleared", -1, getFocusModel()
+                    .getFocusedIndex());
+        } else {
+            assertEquals("focus is where?", 0, getFocusIndex());
+            assertEquals("parent focused after clearing children", parent,
+                getFocusModel().getFocusedItem());
         }
     }
 
@@ -81,8 +101,8 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
             assertEquals(null, getSelectionModel().getSelectedItem());
             assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
             assertTrue("", getSelectionModel().getSelectedItems().isEmpty());
-            assertEquals("focus must be cleared", -1, getFocusModel()
-                    .getFocusedIndex());
+//            assertEquals("focus must be cleared", -1, getFocusModel()
+//                    .getFocusedIndex());
         } else {
             assertEquals("selectedIndex at parentIndex", parentIndex, getSelectionModel().getSelectedIndex());
             assertEquals("parent must be selected after clearing ", parent, 

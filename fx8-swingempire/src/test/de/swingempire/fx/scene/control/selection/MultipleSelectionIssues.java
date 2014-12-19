@@ -1031,7 +1031,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
                 getSelectionModel().getSelectedItems().contains(item));
         ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
         int size = items.size();
-        items.clear();
+//        items.clear();
+        clearItems();
         assertEquals("sanity: single event", 1, report.getEventCount());
         Change c = report.getLastChange();
         assertNotNull("sanity: the change is not null", c);

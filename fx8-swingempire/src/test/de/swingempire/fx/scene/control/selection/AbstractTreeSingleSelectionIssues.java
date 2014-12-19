@@ -13,6 +13,8 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
 import static org.junit.Assert.*;
@@ -85,22 +87,49 @@ public abstract class AbstractTreeSingleSelectionIssues extends
     }
 
     /**
-     * Core installs listener twice of items reset, introduces problems with insert
+     * Core installs listener twice of items reset, introduces problems with
+     * insert
      */
     @Override
     @Test
     @ConditionalIgnore(condition = IgnoreTreeFocus.class)
     public void testFocusOnInsertItemAtSelected39042() {
-            ObservableList other = FXCollections.observableArrayList(items.subList(0, 5));
-            resetItems(other);
-            int index = 2;
-            getSelectionModel().select(index);
-    //        other.add(index, "6-item");
-            addItem(index, createItem("6-item"));
-            int expected = index +1;
-            assertEquals("focused moved by one after inserting item", 
-                    expected, getFocusIndex(expected));
-        }
+        ObservableList other = FXCollections.observableArrayList(items.subList(
+                0, 5));
+        resetItems(other);
+        int index = 2;
+        getSelectionModel().select(index);
+        // other.add(index, "6-item");
+        addItem(index, createItem("6-item"));
+        int expected = index + 1;
+        assertEquals("focused moved by one after inserting item", expected,
+                getFocusIndex(expected));
+    }
+    /**
+     * For a tree, the requirement is unclear.
+     */
+    @Override
+    @Test
+    @ConditionalIgnore (condition = IgnoreTreeDeferredIssue.class)
+    public void testSelectedOnSetItemAtSelectedFocused() {
+        initSkin();
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = items.get(index);
+        Object modified = modifyItem(selected, "xx");
+//        items.set(index, modified);
+        setItem(index, modified);
+        assertEquals("selected index must be unchanged on setItem", 
+                index, getSelectionModel().getSelectedIndex());
+        assertEquals(modified, getSelectionModel().getSelectedItem());
+    }
+    
+    @Test
+    @Override
+    @ConditionalIgnore (condition = IgnoreTreeFocus.class)
+    public void testFocusOnClearSelectionAt() {
+        super.testFocusOnClearSelectionAt();
+    }
 
     /**
      * Remove above: doesn't sound like RT-30931, no ambiguity if selected/focused
