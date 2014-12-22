@@ -6,6 +6,8 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
@@ -55,15 +57,20 @@ public class IndicesList<T> extends IndicesBase<T> {
 
     private ObjectProperty<Change<? extends T>> sourceChangeP = new SimpleObjectProperty<>(this, "sourceChange");
     /**
-     * Contains the source list of this transformation list.
+     * Contains the backing list for which we store indices.
      * This is never null and should be used to directly access source list content
      */
     private ObservableList<T> source;
-    /**
-     * This field contains the result of expression "source instanceof {@link javafx.collections.ObservableList}".
-     * If this is true, it is possible to do transforms online.
-     */
     private ListChangeListener<T> sourceListener;
+
+    /**
+     * The state of this before handling changes received from our backing structure.
+     * We seem to need this because the using indexMappedList receives the
+     * change from the backing structure after this has updated itself.
+     * Wheezy ... need to do better
+     */
+    protected List<Integer> oldIndices;
+
 
     /**
      * @param source
@@ -87,6 +94,16 @@ public class IndicesList<T> extends IndicesBase<T> {
         return sourceListener;
     }
 
+    /**
+     * Implemented to update itself on changes to the backing list. This handles
+     * permutated, replaced and real added/removed. Does nothing on updated. <p>
+     * 
+     * Stores its own old state in oldIndices before changing anything (brittle!) and
+     * routes the received change as-is via its sourceChange property after updating
+     * itself but before notifying listeners (brittle again ..).
+     * 
+     * @param c
+     */
     protected void sourceChanged(Change<? extends T> c) {
         beginChange();
         // doooh .... need old state for the sake of IndexedItems
@@ -98,7 +115,7 @@ public class IndicesList<T> extends IndicesBase<T> {
             if (c.wasPermutated()) {
                 permutated(c);
             } else if (c.wasUpdated()) {
-                updated(c);
+                // no-op, the state of this list isn't changed on updates of backing list
             } else if (c.wasReplaced()) {
                 replaced(c);
             } else {
@@ -186,19 +203,6 @@ public class IndicesList<T> extends IndicesBase<T> {
     }
 
     /**
-     * Update changes are passed-through as are. No real change on the level 
-     * of this list, but listeners might be interested.
-     * 
-     * @param c
-     */
-    private void updated(Change<? extends T> c) {
-        for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
-            int pos = indexOf(i);
-            nextUpdate(pos);
-        }
-    }
-
-    /**
      * A permutation in the backing list is a replaced on the indices (nearly always: one
      * example for a permutation here as well would be if all indices are selected)
      * @param c
@@ -280,7 +284,18 @@ public class IndicesList<T> extends IndicesBase<T> {
         }
         sourceChangeP.set(sc);
     }
-    
+
+    /**
+     * Testing only: the selectedIndices at the moment at receiving a list change
+     * from items.
+     * 
+     * @return
+     */
+    public List<Integer> getOldIndices() {
+        return Collections.unmodifiableList(oldIndices);
+    }
+
+
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(IndicesList.class
             .getName());

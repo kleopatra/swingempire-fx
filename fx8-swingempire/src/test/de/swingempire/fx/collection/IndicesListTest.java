@@ -83,7 +83,18 @@ public class IndicesListTest {
                 wasSingleRemoved(report.getLastChange()));
     }
     
-    @Test
+    /**
+     * Incorrect test assumption: updates to the items don't change the 
+     * indices, no event to fire from the indices. They are immutable,
+     * anyway.
+     * 
+     * The assumption had some meaning as long as IndexMappedList didn't
+     * get the real change from the backing list - now it doesn't and
+     * can fire on its own as needed.
+     * 
+     * @see IndexMappedListTest#testItemsUpdate()
+     */
+    @Test @Ignore
     public void testItemsUpdate() {
         ObservableList<Person> base = Person.persons();
         ObservableList<Person> persons = FXCollections.observableList(base, p -> new Observable[] {p.firstNameProperty()});

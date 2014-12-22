@@ -6,6 +6,8 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import javafx.beans.property.ObjectProperty;
@@ -45,6 +47,16 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 
     private ObjectProperty<TreeModificationEvent<T>> treeModificationP = 
             new SimpleObjectProperty<>(this, "treeModification");
+
+    /**
+     * The state of this before handling changes received from our backing structure.
+     * We seem to need this because the using indexMappedList receives the
+     * change from the backing structure after this has updated itself.
+     * Wheezy ... need to do better
+     */
+    protected List<Integer> oldIndices;
+
+
     /**
      * TreeView must treeItems of type TreeItemX. That's the only one firing an
      * extended TreeModificationEventX: without access to the children's change, 
@@ -267,7 +279,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     }
 
     /**
-     * Updates indices after receiving children have been added to the given
+     * Updates indices after receiving children have been removed from the given
      * treeItem. The source is expanded and visible.
      * 
      * @param source 
@@ -298,10 +310,12 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
             addedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
         }
         // handle special case of "real" replaced, often size == 1
-        if (removedSize == 1 && addedSize == 1) {
-            // single replace nothing to do, assume
-            return;
-        }
+        // PENDING JW: no special handling of single replaced for a tree?
+        // might effect a complete subtree 
+//        if (removedSize == 1 && addedSize == 1) {
+//            // single replace nothing to do, assume
+//            return;
+//        }
 //        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
 //            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
 //                int pos = indexOf(i);
@@ -341,7 +355,17 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     protected void setTreeModification(TreeModificationEvent<T> sc) {
         treeModificationP.set(sc);
     }
-    
+
+    /**
+     * Testing only: the selectedIndices at the moment at receiving a list change
+     * from items.
+     * 
+     * @return
+     */
+    public List<Integer> getOldIndices() {
+        return Collections.unmodifiableList(oldIndices);
+    }
+
     /**
      * PENDING JW:
      * Temporary exposure - can we get away without? This is what the 

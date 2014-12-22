@@ -42,14 +42,6 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
 
     protected BitSet bitSet;
     /**
-     * The state of this before handling changes received from our backing structure.
-     * We seem to need this because the using indexMappedList receives the
-     * change from the backing structure after this has updated itself.
-     * Wheezy ... need to do better
-     */
-    protected List<Integer> oldIndices;
-
-    /**
      * Sets the given indices. All previously set indices are
      * cleared. Does nothing if null or empty.
      * 
@@ -243,16 +235,6 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
             }
             nextSet(pos, i);
         }
-    }
-
-    /**
-     * Testing only: the selectedIndices at the moment at receiving a list change
-     * from items.
-     * 
-     * @return
-     */
-    public List<Integer> getOldIndices() {
-        return Collections.unmodifiableList(oldIndices);
     }
 
     /**
