@@ -31,6 +31,12 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * PENDING JW: 
  * <li> root changes 
  * <li> weakEventHandler?
+ * <li> core (OS) behaviour is to select the parent if a child has been selected
+ *      when the branch is collapsed - implement here? More than the usual 
+ *      bitSet-only behaviour, but feels natural enough? But can't without
+ *      knowing whether to add (multiple mode) or set (single mode) the index
+ *      
+ * 
  * @see IndicesList
  * @see TreeIndexMappedList
  * @see IndicesBase
@@ -167,8 +173,6 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
      */
     protected void collapsed(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
-//        // need to chech if visible because tree.getRow behaves unexpectedly
-//        if (!TreeItemX.isVisible(source)) return;
         // getRow returns expected result only for visible items
         int from = tree.getRow(source);
         // source hidden anyway or change completely after, nothing to do
@@ -176,7 +180,8 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
             throw new IllegalStateException("weeded out hidden items before, "
                     + "something wrong if we get a negativ from " + event);
         }
-        if (from < 0 || bitSet.nextSetBit(from) < 0) return;
+        if (bitSet.nextSetBit(from) < 0) return;
+        int row = from;
         // account for the item itself
         from++;
         int removedSize = getExpandedChildCount(source);
@@ -184,9 +189,10 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         // PENDING JW: decrease removed by one? maybe not, as we query the
         // children (vs. the source), such that the source itself is not 
         // counted
-        doClearIndices(from, removedSize);
+        boolean hadSetBits = doClearIndices(from, removedSize);
         // step two: shift indices below the range
         doShiftLeft(from, removedSize);
+//        if (hadSetBits) doAddIndices(row);
     }
 
     /**

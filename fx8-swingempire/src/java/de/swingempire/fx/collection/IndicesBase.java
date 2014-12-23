@@ -136,18 +136,23 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
      * / {@code endChange()} block.
      * @param indices positions in source list, must be valid.
+     * @return true if at least one of the indices had been cleared, false
+     *    otherwise (== none had been set)
      * @throws IndexOutOfBoundsException if any of the indices < 0
      *     or >= getSourceSize
      * @throws NullPointerException if indices are null.    
      */
-    protected void doClearIndices(int... indices) {
+    protected boolean doClearIndices(int... indices) {
+        boolean removed = false;
         for (int i : indices) {
             if (!bitSet.get(i))
                 continue;
             int from = indexOf(i);
             bitSet.clear(i);
             nextRemove(from, i);
+            removed = true;
         }
+        return removed;
     }
 
     /**
@@ -158,14 +163,14 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * @param from
      * @param removedSize
      */
-    protected void doClearIndices(int from, int removedSize) {
+    protected boolean doClearIndices(int from, int removedSize) {
         int[] removedIndices = new int[removedSize];
         int index = from;
         for (int i = 0; i < removedIndices.length; i++) {
             removedIndices[i] = index++;
         }
         // do step one by delegating to clearIndices
-        doClearIndices(removedIndices);
+        return doClearIndices(removedIndices);
     }
 
     /**

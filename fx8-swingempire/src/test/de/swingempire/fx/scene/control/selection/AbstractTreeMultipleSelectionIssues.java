@@ -32,7 +32,46 @@ import static org.junit.Assert.*;
 public abstract class AbstractTreeMultipleSelectionIssues extends
     MultipleSelectionIssues<TreeView, MultipleSelectionModel<TreeItem>> {
 
+
+    private ObservableList<String> rawItems;
     
+    @Test
+    public void testSelectedOnExpandedGrandBranchCollapsed() {
+        TreeItem childBranch = createBranch("expandedChild", true);
+        TreeItem grandChildBranch = createBranch("expandedGrandChild", true);
+        childBranch.getChildren().add(0, grandChildBranch);
+        TreeItem selected = (TreeItem) grandChildBranch.getChildren().get(rawItems.size() - 1);
+        getView().getRoot().getChildren().add(0, childBranch);
+        getSelectionModel().select(selected);
+        TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
+        assertEquals(selectedItem, getSelectionModel().getSelectedItems().get(0));
+        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        grandChildBranch.setExpanded(false);
+        assertEquals("selected items size", 1, getSelectionModel().getSelectedItems().size());
+        assertEquals(grandChildBranch, getSelectionModel().getSelectedItem());
+//        assertEquals(index, getSelectionModel().getSelectedIndex());
+//        assertEquals(index, getSelectionModel().getSelectedIndices().get(0).intValue());
+    }
+    
+    @Test
+    public void testCollapsedBranch() {
+        TreeItem childBranch = createBranch("collapsedChild");
+        TreeItem grandChildBranch = createBranch("expandedGrandChild");
+        grandChildBranch.setExpanded(true);
+        childBranch.getChildren().add(0, grandChildBranch);
+        getView().getRoot().getChildren().add(0, childBranch);
+        int index = 6;
+        getSelectionModel().select(index);
+        TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
+        grandChildBranch.setExpanded(false);
+        assertEquals(index, getSelectionModel().getSelectedIndex());
+        assertEquals(index, getSelectionModel().getSelectedIndices().get(0).intValue());
+        assertEquals(selectedItem, getSelectionModel().getSelectedItems().get(0));
+        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+    }
+    
+//---------------- super adjusted to tree-specifics: 
+// root not shown, expanded, no subtrees    
     /**
      * Yet another test on clearing the items: test selection state for multiple
      * selections. This assumptions is (? maybe) wrong for trees: clearing out
@@ -228,7 +267,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     @Test
     @ConditionalIgnore(condition = IgnoreTreeAnchor.class)
     public void testAlsoSelectPreviousAscending() {
-//        super.testAlsoSelectPreviousAscending();
+        super.testAlsoSelectPreviousAscending();
     }
 
     @Override
@@ -272,10 +311,10 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     @Override
     public void setUp() throws Exception {
         // JW: need more items for multipleSelection
-        ObservableList content = FXCollections.observableArrayList(
+        rawItems = FXCollections.observableArrayList(
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
-        items = createItems(content);
+        items = createItems(rawItems);
         view = createView(items);
         // complete override, need to handle focus here as well
         if (getFocusModel() != null) {
@@ -301,9 +340,9 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     }
 
     @Override
-    protected void removeAllItems(Object... object) {
-        getView().getRoot().getChildren().removeAll(object);
-        items.removeAll(object);
+    protected void removeAllItems(Object... treeItem) {
+        getView().getRoot().getChildren().removeAll(treeItem);
+        items.removeAll(treeItem);
     }
 
     @Override
@@ -313,18 +352,18 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     }
 
     @Override
-    protected void addItem(int pos, Object item) {
-        getView().getRoot().getChildren().add(pos, item);
+    protected void addItem(int pos, Object treeItem) {
+        getView().getRoot().getChildren().add(pos, treeItem);
     }
 
     @Override
-    protected void setItem(int pos, Object item) {
-        getView().getRoot().getChildren().set(pos, item);
+    protected void setItem(int pos, Object treeItem) {
+        getView().getRoot().getChildren().set(pos, treeItem);
     }
 
     @Override
-    protected Object modifyItem(Object item, String mod) {
-        TreeItem old = (TreeItem) item;
+    protected TreeItem modifyItem(Object treeItem, String mod) {
+        TreeItem old = (TreeItem) treeItem;
         return createItem(old.getValue() + mod);
     }
 
@@ -339,13 +378,21 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         return new TreeItem(item);
     }
 
-    protected ObservableList createItems(ObservableList other) {
+    protected ObservableList<TreeItem> createItems(ObservableList other) {
         ObservableList items = FXCollections.observableArrayList();
         other.stream().forEach(value -> items.add(createItem(value)));
         return items;
     }
 
-
+    protected TreeItem createBranch(Object value) {
+        return createBranch(value, false);
+    }
+    protected TreeItem createBranch(Object value, boolean expanded) {
+        TreeItem item = createItem(value);
+        item.getChildren().setAll(createItems(rawItems));
+        item.setExpanded(expanded);
+        return item;
+    }
     /**
      * @param multiple
      */

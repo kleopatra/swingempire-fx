@@ -17,6 +17,11 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * PENDING JW
  * <li> weak eventHandler?
  * <li> listen to root changes
+ * <li> partly done: specify/implement behaviour of selection on collapsed node 
+ *    selectedItem/Index is moved to the collapsing parent if somewhere under its
+ *    subtree. 
+ * <li> code cleanup: duplication of short-cuts for childrenChanged and treeModified
+ *     extract 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -181,10 +186,104 @@ public class TreeBasedSelectionHelper<T> {
     }
 
     /**
+     * Called if the modification is a modification of the item itself. Does
+     * nothing for valueChanged/graphicChanged, updates selectedIndex/item
+     * on collapsed/expanded. The sending item is guaranteed to be visible.
+     * 
      * @param event
      */
-    private void treeItemModified(TreeModificationEvent<T> event) {
-        // TODO Auto-generated method stub
+    protected void treeItemModified(TreeModificationEvent<T> event) {
+        if (event.getEventType() == TreeItem.childrenModificationEvent()) {
+            throw new IllegalStateException("events of type childrenModified must be handled elsewhere " + event);
+        }
+        // nothing to do for valueChanged/graphicChanged ?
+        if (event.getEventType() == TreeItem.valueChangedEvent() 
+                || event.getEventType() == TreeItem.graphicChangedEvent()) return;
+        
+        TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
+        // getRow returns expected result only for visible items
+        int from = treeView.getRow(source);
+        // source hidden anyway or change completely after, nothing to do
+        if (from < 0) {
+            throw new IllegalStateException("weeded out hidden items before, "
+                    + "something wrong if we get a negativ from " + event);
+        }
+        
+        // similar short-cuts than for children modifications
+        int oldSelectedIndex = selectionModel.getSelectedIndex();
+        TreeItem<T> oldSelectedItem = selectionModel.getSelectedItem();
+        int oldFocus = selectionModel.getFocusedIndex();
+        boolean sameFocus = oldFocus == oldSelectedIndex;
+        
+        // short-cut 1
+        if (oldSelectedIndex < 0) {
+            // no old selection, tree modifications couldn't have changed this
+            // PENDING JW: handle uncontained selected (how probable is it?)
+            // PENDING JW: handle focus
+            if (!sameFocus) {
+//                updateFocus(source, change);
+            }
+            return;
+        }
+        
+        // since here we had a selectedIndex/item pair that was contained in the list
+        // oldSelectedIndex > -1 expected and oldSelectedItem != null
+        // temporarily throw for sanity
+        if (oldSelectedItem == null) 
+            throw new IllegalStateException("selectedItem must not be null for index: " + oldSelectedIndex);
+        if (oldSelectedIndex < 0) throw new IllegalStateException("expected positive selectedIndex");
+        
+        // short-cut 2: all empty (?)
+        
+        // short-cut 3: oldSelectedItem still in selectedItems
+        // happens on all changes except a remove of the selected,
+        // need to update index
+        if (selectionModel.getSelectedItems().contains(oldSelectedItem)) {
+            int indexInIndices = selectionModel.getSelectedItems().indexOf(oldSelectedItem);
+            int sourceIndex = selectionModel.getSelectedIndices().get(indexInIndices);
+            // PENDING JW: here's the only place where the listener
+            // accesses private api - can do anything to remove?
+            // wouldn't matter to use select, except for focus
+            selectionModel.syncSingleSelectionState(sourceIndex, sameFocus);
+            if (!sameFocus) {
+//               updateFocus(source, change); 
+            }
+//            select(sourceIndex);
+            return;
+        } 
+        
+        // nothing to do, collapse/expand was below
+        if (selectionModel.getSelectedIndex() <= from) return;
+        
+        if (event.wasCollapsed()) {
+            collapsed(event);
+        } else if (event.wasExpanded()) {
+            throw new IllegalStateException("unexpected expanded - should have been handled in short-cuts " + event);
+//            expanded(event);
+        } 
+    }
+
+
+    /** 
+     * Updates selectedIndex/item after a collapse. This is called only if
+     * the selectedItem/Index was in a subtree of the sending treeItem.
+     * Moves selection to the parent.
+     * 
+     * @param event
+     */
+    private void collapsed(TreeModificationEvent<T> event) {
+        TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
+        // getRow returns expected result only for visible items
+        int from = treeView.getRow(source);
+        // source hidden anyway or change completely after, nothing to do
+        if (from < 0) {
+            throw new IllegalStateException("weeded out hidden items before, "
+                    + "something wrong if we get a negativ from " + event);
+        }
+        selectionModel.select(from);
+//        DebugUtils.printSelectionState(treeView);
+        // nothing to do, expansion was below
+//        if (selectionModel.getSelectedIndex() <= from) return;
         
     }
 

@@ -229,7 +229,7 @@ public class TreeIndicesListTest {
         indicesList.setIndices(index);
         rootChildren.set(index -1, child);
         if (!indicesList.isEmpty())
-        assertEquals(index, indicesList.get(0).intValue());
+            assertEquals(index, indicesList.get(0).intValue());
     }
     
     /**

@@ -32,6 +32,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.DebugUtils;
 
 /**
@@ -42,39 +43,44 @@ public class TreeSelectionAndModification extends Application {
     
     
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
-            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", "clear", "resetInitial"};
+            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", 
+            "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected"};
     // PENDING - how to unify KeyCode and KeyCombination?
     KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
-            KeyCode.F6, KeyCode.F7, KeyCode.F8};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null, null};
+            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null, null, null, null};
+    private int count;
     
     protected Map<String, Consumer<TreeView>> createActions() {
         Map<String, Consumer<TreeView>> actions = new HashMap<>();
         actions.put("insertAt0", f -> {
-            f.getRoot().getChildren().add(0, createItem(0));
+            f.getRoot().getChildren().add(0, createItem(count++ + "-newItem", f));
         });
         actions.put("insertAtSelectedIndex", f -> {
-            int index = f.getSelectionModel().getSelectedIndex();
-            if (index < 0) return;
-            if (f.isShowRoot()) index--;
-            f.getRoot().getChildren().add(index, createItem(index));
+//            int index = f.getSelectionModel().getSelectedIndex();
+//            if (index < 0) return;
+            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+            if (node == null || node.getParent() == null) return;
+            TreeItem child = createItem(count++ + "insert-newItem", f);
+            int index = node.getParent().getChildren().indexOf(node);
+            node.getParent().getChildren().add(index, child);
 //            printSelectionState("insertAtSelected", f);
         });
         actions.put("removeAtSelectedIndex", f -> {
-            int index = f.getSelectionModel().getSelectedIndex();
-            if (index < 0) return;
-            if (f.isShowRoot()) index--;
-            f.getRoot().getChildren().remove(index);
+            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+            if (node == null || node.getParent() == null) return;
+            node.getParent().getChildren().remove(node);
         });
         actions.put("setAtSelectedIndex", f -> {
-            int index = f.getSelectionModel().getSelectedIndex();
-            if (index < 0) return;
-            if (f.isShowRoot()) index--;
-            f.getRoot().getChildren().set(index, createItem(index));
+            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+            if (node == null || node.getParent() == null) return;
+            int index = node.getParent().getChildren().indexOf(node);
+            node.getParent().getChildren().set(index, createItem(count++ +"set-newItem", f));
 //            printSelectionState("setAtSelected", f);
         });
         actions.put("removeAll(3, 5, 7)", f -> {
             ObservableList children = f.getRoot().getChildren();
+            if (children.size() < 8) return;
             children.removeAll(children.get(3), children.get(5), children.get(7));
         });
         actions.put("removeAt0", f -> {
@@ -86,7 +92,7 @@ public class TreeSelectionAndModification extends Application {
             });
 //            LOG.info("focus: " + f.getSelectionModel().getSelectedIndex());
         });
-        actions.put("clear", f -> {
+        actions.put("clearRoot", f -> {
             if (f.getRoot().getChildren().size() == 0) return;
             f.getRoot().getChildren().clear();
             Platform.runLater(() -> {
@@ -95,9 +101,26 @@ public class TreeSelectionAndModification extends Application {
             
         });
         actions.put("resetInitial", f -> {
-            f.getRoot().getChildren().setAll(createRootChildren());
+            f.getRoot().getChildren().setAll(createRootChildren(f.getRoot() instanceof TreeItemX));
         });
         
+        actions.put("insertBranchAtSelected", f -> {
+//          int index = f.getSelectionModel().getSelectedIndex();
+//          if (index < 0) return;
+          TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+          if (node == null || node.getParent() == null) return;
+          TreeItem child = createBranch(count++ + "insert-Branch", f);
+          int index = node.getParent().getChildren().indexOf(node);
+          node.getParent().getChildren().add(index, child);
+//          printSelectionState("insertAtSelected", f);
+      });
+      actions.put("setBranchAtSelected", f -> {
+          TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+          if (node == null || node.getParent() == null) return;
+          int index = node.getParent().getChildren().indexOf(node);
+          node.getParent().getChildren().set(index, createBranch(count++ +"set-Branch", f));
+//          DebugUtils.printSelectionState(f);
+      });
         
         return actions ;
     }
@@ -133,7 +156,7 @@ public class TreeSelectionAndModification extends Application {
     @SuppressWarnings("rawtypes")
     protected Parent getContent() {
         
-        TreeView tree = new TreeView(createRoot());
+        TreeView tree = new TreeView(createBranch("Root"));
         tree.getRoot().setExpanded(true);
 //        tree.setShowRoot(false);
 
@@ -141,6 +164,12 @@ public class TreeSelectionAndModification extends Application {
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
         Map<String, KeyCodeCombination> inversInputMap = invertMap(inputMap);
         configureActions(tree, actionMap, inputMap);
+        
+        TreeView treeX = new TreeView(createBranch("RootX", true));
+        treeX.getRoot().setExpanded(true);
+        treeX.setSelectionModel(new SimpleTreeSelectionModel<>(treeX));
+        configureActions(treeX, actionMap, inputMap);
+        
         GridPane info = new GridPane ();
         info.setPadding(new Insets(20));
         info.setVgap(10);
@@ -149,15 +178,16 @@ public class TreeSelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        Pane content = new HBox(tree, info);
+        Pane content = new HBox(tree, treeX, info);
         CheckBox check = new CheckBox("MultipleMode");
         check.setOnAction(e -> {
             SelectionMode old = tree.getSelectionModel().getSelectionMode();
             SelectionMode newMode = check.isSelected() ? SelectionMode.MULTIPLE : SelectionMode.MULTIPLE;
             tree.getSelectionModel().setSelectionMode(newMode);
+            treeX.getSelectionModel().setSelectionMode(newMode);
         });
         Pane buttons = new HBox(check);
-//        Pane content = new HBox(table, listView, info);
+//        Pane content = new HBox(tree, treeX, info);
 //        Pane content = new HBox(table, info);
         BorderPane borderPane = new BorderPane(content);
         borderPane.setBottom(buttons);
@@ -177,35 +207,41 @@ public class TreeSelectionAndModification extends Application {
         return invers;
     }
 
-    /**
-     * @return
-     */
-    private TreeItem createRoot() {
-//        ObservableList content = FXCollections.observableArrayList(
-//                "9-item", "8-item", "7-item", "6-item", 
-//                "5-item", "4-item", "3-item", "2-item", "1-item");
-//        for (Object object : content) {
-//            root.getChildren().add(createItem(object));
-//        }
-        TreeItem root = createItem("root");
-        root.getChildren().setAll(createRootChildren());
+    protected TreeItem createBranch(String value) {
+        return createBranch(value, false);
+    }
+    
+    protected TreeItem createBranch(String value, TreeView view) {
+        return createBranch(value, view != null && view.getRoot() instanceof TreeItemX);
+    }
+    protected TreeItem createBranch(String value, boolean xItem) {
+        TreeItem root = createItem(value, xItem);
+        root.getChildren().setAll(createRootChildren(xItem));
         return root;
     }
     
-    private List<TreeItem> createRootChildren() {
+    private List<TreeItem> createRootChildren(boolean xItem) {
         ObservableList content = FXCollections.observableArrayList(
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         List<TreeItem> root = new ArrayList<>();
-        content.forEach(item -> root.add(createItem(item)));
+        content.forEach(item -> root.add(createItem(item, xItem)));
         return root;
     }
     
     protected TreeItem createItem(Object item) {
-        return new TreeItem(item);
+        return createItem(item, false);
     }
 
-
+    protected TreeItem createItem(Object value, TreeView view) {
+        TreeItem root = view.getRoot();
+        return createItem(value, root != null && root instanceof TreeItemX);
+//        return root instanceof TreeItemX ? new TreeItemX(value) : new TreeItem(value);
+    }
+    
+    protected TreeItem createItem(Object value, boolean xItem) {
+        return xItem ? new TreeItemX(value) : new TreeItem(value);
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
