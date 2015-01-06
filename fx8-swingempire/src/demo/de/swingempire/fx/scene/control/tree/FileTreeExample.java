@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control.tree;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -17,16 +18,37 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
+ * Example from api doc TreeItem.
+ * 
+ * Inconsistent isLeaf vs. leafProperty.get()
+ * Reported: https://javafx-jira.kenai.com/browse/RT-39762
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class FileTreeExample extends Application {
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(FileTreeExample.class
+            .getName());
     
     /**
      * @return
      */
     private Parent getContent() {
-        TreeView tree = buildFileSystemBrowser();
+        TreeView<File> tree = buildFileSystemBrowser();
+        tree.getRoot().setExpanded(true);
+        for (TreeItem child : tree.getRoot().getChildren()) {
+            if (child.isLeaf() != child.leafProperty().get()) {
+//                throw new IllegalStateException("inconsistent leaf state " + child);
+            }
+        }
+        tree.getSelectionModel().selectedItemProperty().addListener((p, old, item) -> {
+            if (item == null) return;
+            // invalid implementation of isLeaf: propery and getter out off synch
+            // initially for folders, all correct after first expansion
+            String leafs = "getter: " + item.isLeaf() + " property: " + item.leafProperty().get(); 
+            LOG.info("" + leafs);
+        });
         BorderPane pane = new BorderPane(tree);
         return pane;
     }
@@ -74,6 +96,11 @@ public class FileTreeExample extends Application {
                     isFirstTimeLeaf = false;
                     File f = (File) getValue();
                     isLeaf = f.isFile();
+                    // dirty trick, doesn't work for root
+                    if (!isLeaf) {
+                        setExpanded(true);
+                        setExpanded(false);
+                    }
                 }
 
                 return isLeaf;

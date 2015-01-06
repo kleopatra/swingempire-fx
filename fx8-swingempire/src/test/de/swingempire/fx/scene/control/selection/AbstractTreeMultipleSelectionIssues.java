@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.logging.Logger;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
@@ -35,13 +37,65 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
 
     private ObservableList<String> rawItems;
     
+    /**
+     * Regression testing: 
+     * SelectedItems contains null after removing unselected grandParent of 
+     * selectedItem
+     * https://javafx-jira.kenai.com/browse/RT-38334
+     * 
+     * This is the exact replication of the bug report: grandParent is last
+     * 
+     */
+    @Test
+    public void testSelectedItemsOnRemoveGrandParentOfSelectedItemIfLast() {
+        TreeItem grandParent = createBranch("grandParent", true);
+        TreeItem childWithSelection = createBranch("selected", true);
+        grandParent.getChildren().add(childWithSelection);
+        TreeItem selected = (TreeItem) childWithSelection.getChildren().get(0);
+        int lastIndex = rawItems.size() - 1;
+        TreeItem oldFirst = (TreeItem) getRootChildren().get(lastIndex);
+        getRootChildren().add(grandParent);
+        getSelectionModel().select(selected);
+        getRootChildren().remove(grandParent);
+        assertEquals("sibling of removed selected", oldFirst, getSelectionModel().getSelectedItem());
+        assertEquals("selectedItems contain sibling", oldFirst, getSelectionModel().getSelectedItems().get(0));
+    }
+    
+    
+    /**
+     * Regression testing: 
+     * SelectedItems contains null after removing unselected grandParent of 
+     * selectedItem
+     * https://javafx-jira.kenai.com/browse/RT-38334
+     * 
+     * different problem in my own implementation: old selected still selected!
+     * Actually, no: accidentally, the value is the same, not the item. 
+     * The selection is moved to the item following the removed
+     * grandParent - which feels natural.
+     */
+    @Test
+    public void testSelectedItemsOnRemoveGrandParentOfSelectedItem() {
+        TreeItem grandParent = createBranch("grandParent", true);
+        TreeItem childWithSelection = createBranch("selected", true);
+        grandParent.getChildren().add(childWithSelection);
+        TreeItem selected = (TreeItem) childWithSelection.getChildren().get(0);
+        TreeItem oldFirst = (TreeItem) getRootChildren().get(0);
+        getRootChildren().add(0, grandParent);
+        getSelectionModel().select(selected);
+        assertEquals("sanity: oldfirst is next child", oldFirst, getRootChildren().get(1));
+        getRootChildren().remove(grandParent);
+        assertEquals("sibling of removed selected", oldFirst, getSelectionModel().getSelectedItem());
+        assertEquals("selectedItems contain sibling", oldFirst, getSelectionModel().getSelectedItems().get(0));
+    }
+    
+    
     @Test
     public void testSelectedOnExpandedGrandBranchCollapsed() {
         TreeItem childBranch = createBranch("expandedChild", true);
         TreeItem grandChildBranch = createBranch("expandedGrandChild", true);
         childBranch.getChildren().add(0, grandChildBranch);
         TreeItem selected = (TreeItem) grandChildBranch.getChildren().get(rawItems.size() - 1);
-        getView().getRoot().getChildren().add(0, childBranch);
+        getRootChildren().add(0, childBranch);
         getSelectionModel().select(selected);
         TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
         assertEquals(selectedItem, getSelectionModel().getSelectedItems().get(0));
@@ -59,7 +113,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         TreeItem grandChildBranch = createBranch("expandedGrandChild");
         grandChildBranch.setExpanded(true);
         childBranch.getChildren().add(0, grandChildBranch);
-        getView().getRoot().getChildren().add(0, childBranch);
+        getRootChildren().add(0, childBranch);
         int index = 6;
         getSelectionModel().select(index);
         TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
@@ -70,6 +124,16 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         assertEquals(selectedItem, getSelectionModel().getSelectedItem());
     }
     
+    /**
+     * Sanity? Removing last child throws IOOB if selected
+     */
+    @Test
+    public void testSelectedRemoveLast() {
+        int lastIndex = rawItems.size() - 1;
+        TreeItem lastChild = (TreeItem) getRootChildren().get(lastIndex);
+        getSelectionModel().select(lastChild);
+        getRootChildren().remove(lastChild);
+    }
 //---------------- super adjusted to tree-specifics: 
 // root not shown, expanded, no subtrees    
     /**
@@ -298,6 +362,12 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         super.testAnchorOnClearSelectionAtAfterRange();
     }
     
+    protected TreeItem getRoot() {
+        return getView().getRoot();
+    }
+    protected ObservableList getRootChildren() {
+        return getRoot().getChildren();
+    }
     @Override
     protected MultipleSelectionModel<TreeItem> getSelectionModel() {
         return getView().getSelectionModel();
@@ -327,7 +397,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     @Override
     protected void setAllItems(ObservableList treeItems) {
-        TreeItem root = getView().getRoot();
+        TreeItem root = getRoot();
         root.getChildren().setAll(treeItems);
     }
 
@@ -336,29 +406,29 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     @Override
     protected void setAllItems(Object... treeItems) {
-        getView().getRoot().getChildren().setAll(treeItems);
+        getRootChildren().setAll(treeItems);
     }
 
     @Override
     protected void removeAllItems(Object... treeItem) {
-        getView().getRoot().getChildren().removeAll(treeItem);
+        getRootChildren().removeAll(treeItem);
         items.removeAll(treeItem);
     }
 
     @Override
     protected void removeItem(int pos) {
-        getView().getRoot().getChildren().remove(pos);
+        getRootChildren().remove(pos);
         items.remove(pos);
     }
 
     @Override
     protected void addItem(int pos, Object treeItem) {
-        getView().getRoot().getChildren().add(pos, treeItem);
+        getRootChildren().add(pos, treeItem);
     }
 
     @Override
     protected void setItem(int pos, Object treeItem) {
-        getView().getRoot().getChildren().set(pos, treeItem);
+        getRootChildren().set(pos, treeItem);
     }
 
     @Override
@@ -369,7 +439,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
 
     @Override
     protected void clearItems() {
-        getView().getRoot().getChildren().clear();
+        getRootChildren().clear();
     }
 
     
@@ -384,9 +454,22 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         return items;
     }
 
+    /**
+     * Created a collapsed default branch with given value.
+     * 
+     * @param value
+     * @return
+     */
     protected TreeItem createBranch(Object value) {
         return createBranch(value, false);
     }
+    
+    /**
+     * Creates a default branch with given value, expanded controlled by flag.
+     * @param value
+     * @param expanded
+     * @return
+     */
     protected TreeItem createBranch(Object value, boolean expanded) {
         TreeItem item = createItem(value);
         item.getChildren().setAll(createItems(rawItems));
@@ -401,4 +484,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         // TODO Auto-generated constructor stub
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(AbstractTreeMultipleSelectionIssues.class.getName());
 }

@@ -44,11 +44,12 @@ public class TreeSelectionAndModification extends Application {
     
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
             "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", 
-            "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected"};
+            "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected",
+            "removeGrandParent"};
     // PENDING - how to unify KeyCode and KeyCombination?
     KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
-            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null, null, null, null};
+            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null, null, null, null, null};
     private int count;
     
     protected Map<String, Consumer<TreeView>> createActions() {
@@ -114,14 +115,24 @@ public class TreeSelectionAndModification extends Application {
           node.getParent().getChildren().add(index, child);
 //          printSelectionState("insertAtSelected", f);
       });
-      actions.put("setBranchAtSelected", f -> {
+        actions.put("setBranchAtSelected", f -> {
+            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+            if (node == null || node.getParent() == null) return;
+            int index = node.getParent().getChildren().indexOf(node);
+            node.getParent().getChildren().set(index, createBranch(count++ +"set-Branch", f));
+//          DebugUtils.printSelectionState(f);
+        });
+      actions.put("removeGrandParent", f -> {
           TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
           if (node == null || node.getParent() == null) return;
-          int index = node.getParent().getChildren().indexOf(node);
-          node.getParent().getChildren().set(index, createBranch(count++ +"set-Branch", f));
-//          DebugUtils.printSelectionState(f);
+          TreeItem grandParent = node.getParent().getParent();
+          // root involved
+          if (grandParent == null || grandParent.getParent() == null ) return;
+          grandParent.getParent().getChildren().remove(grandParent);
+          LOG.info("" + f.getSelectionModel().getSelectedItems());
       });
         
+      
         return actions ;
     }
 

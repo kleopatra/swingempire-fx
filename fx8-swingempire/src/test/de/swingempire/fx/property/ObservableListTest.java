@@ -52,6 +52,23 @@ public class ObservableListTest {
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     /**
+     * Sanity ... removing last implies that getFrom == size!! that is
+     * invalid index altogether.
+     */
+    @Test
+    public void testRemovedLast() {
+        ObservableList<String> items = createObservableList(true);
+        ListChangeReport report = new ListChangeReport(items);
+        int oldSize = items.size();
+        int lastIndex = oldSize - 1;
+        items.remove(lastIndex);
+        assertEquals(oldSize - 1, items.size());
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(lastIndex, c.getFrom());
+        report.prettyPrint();
+    }
+    /**
      * Sanity ...
      */
     @Test

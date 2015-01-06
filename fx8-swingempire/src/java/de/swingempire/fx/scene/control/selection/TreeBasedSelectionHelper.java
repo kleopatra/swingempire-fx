@@ -155,7 +155,7 @@ public class TreeBasedSelectionHelper<T> {
             if (c.getList().isEmpty() ) {
                 newSelectedItem = source;
             } else {
-                int childIndex = Math.min(c.getFrom(), c.getList().size());
+                int childIndex = Math.min(c.getFrom(), c.getList().size() - 1);
                 newSelectedItem = c.getList().get(childIndex);
                 
             }
