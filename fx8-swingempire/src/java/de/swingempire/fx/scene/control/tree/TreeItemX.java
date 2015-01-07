@@ -31,12 +31,21 @@ import javafx.scene.control.TreeItem;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class TreeItemX<T> extends TreeItem<T> {
+public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
 
     /** flag to indicate whether or not we already replaced super's field */
     private boolean wasCheckedChildren;
 
     private ListChangeListener<TreeItem<T>> childrenListener = c -> childrenChanged(c) ;
+
+    /**
+     * Beware: dirty!
+     * This is an alias to super's private children field. It may be null
+     * if either not yet accessed or reflection failed.
+     */
+    private ObservableList<TreeItem<T>> aliasChildren;
+
+//-------------------------- support extended TreeModificationEvent
     
     protected void childrenChanged(Change<? extends TreeItem<T>> c) {
         // first update internals of this treeItem
@@ -55,7 +64,7 @@ public class TreeItemX<T> extends TreeItem<T> {
      */
     private void updateChildren(ListChangeListener.Change<? extends TreeItem<T>> c) {
         invokeExpandedDescendentCountDirty();
-        invokeSetLeaf(c.getList().isEmpty());
+        updateLeaf(c.getList());
         while (c.next()) {
             final List<? extends TreeItem<T>> added = c.getAddedSubList();
             final List<? extends TreeItem<T>> removed = c.getRemoved();
@@ -149,6 +158,18 @@ public class TreeItemX<T> extends TreeItem<T> {
         return invokePreviousExpandedDescendantCount();
     }
 
+//-------------------------- support leafness
+    
+    /**
+     * This is called from the listener to children.
+     * Extracted to support semantic leafs.
+     * 
+     * @param list
+     */
+    protected void updateLeaf(ObservableList<? extends TreeItem<T>> list) {
+        invokeSetLeaf(list.isEmpty());
+    }
+    
     
 //----------- going dirty: reflective access of super
 
@@ -239,13 +260,15 @@ public class TreeItemX<T> extends TreeItem<T> {
      * Going dirty: children is package-private, is often addressed
      * directly, so we need to replace the field.
      */
-    private void checkChildren() {
+    protected void checkChildren() {
         wasCheckedChildren = true;
         Class<?> clazz = TreeItem.class;
         try {
             Field field = clazz.getDeclaredField("children");
             field.setAccessible(true);
-            field.set(this, createChildren());
+            ObservableList<TreeItem<T>> replaceChildren = createChildren();
+            field.set(this, replaceChildren);
+            aliasChildren = replaceChildren;
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             e.printStackTrace();
         }

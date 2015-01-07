@@ -5,6 +5,8 @@
 package de.swingempire.fx.scene.control.tree;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
@@ -14,6 +16,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -21,7 +25,16 @@ import javafx.stage.Stage;
  * Example from api doc TreeItem.
  * 
  * Inconsistent isLeaf vs. leafProperty.get()
- * Reported: https://javafx-jira.kenai.com/browse/RT-39762
+ * Reported as doc error: https://javafx-jira.kenai.com/browse/RT-39762
+ * 
+ * Real issue: 
+ * <li> missing api for semantic leaf
+ * <li> as per example, they should override isLeaf
+ * <li> if they do, they break the invariant isLeaf == leafProperty.isLeaf initially
+ *     because there is no public api to sync the leafProperty (RT-39762, and those 
+ *     proposing protected setter/property access)
+ * <li> if they somehow (going dirty or with protected setter) sync initially,  treeItem
+ *     breaks the invariant in its listener to children 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -31,29 +44,46 @@ public class FileTreeExample extends Application {
     private static final Logger LOG = Logger.getLogger(FileTreeExample.class
             .getName());
     
+    boolean syncInitially;
+    
     /**
      * @return
      */
     private Parent getContent() {
         TreeView<File> tree = buildFileSystemBrowser();
         tree.getRoot().setExpanded(true);
-        for (TreeItem child : tree.getRoot().getChildren()) {
-            if (child.isLeaf() != child.leafProperty().get()) {
-//                throw new IllegalStateException("inconsistent leaf state " + child);
+        tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F1) {
+                TreeItem<File> item = tree.getSelectionModel().getSelectedItem();
+                if (item == null) return;
+                // broken invariant of leaf: property and getter out off sync
+                // first issue: initially for folders, all correct after first expansion
+                debugLeaf(item, "Log -- ");
+                e.consume();
             }
-        }
-        tree.getSelectionModel().selectedItemProperty().addListener((p, old, item) -> {
-            if (item == null) return;
-            // invalid implementation of isLeaf: propery and getter out off synch
-            // initially for folders, all correct after first expansion
-            String leafs = "getter: " + item.isLeaf() + " property: " + item.leafProperty().get(); 
-            LOG.info("" + leafs);
         });
+        tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.DELETE) {
+                TreeItem<File> item = tree.getSelectionModel().getSelectedItem();
+                if (item == null || item.getValue().isFile()) return;
+                item.getChildren().clear();
+                // broken invariant of leaf: property and getter out off sync
+                // second issue: even if hacked initially, clearing the children asyncs again
+                debugLeaf(item, "Log after emove -- ");
+                e.consume();
+            }
+        });
+
         BorderPane pane = new BorderPane(tree);
         return pane;
     }
+
+    protected void debugLeaf(TreeItem<File> item, String mes) {
+        String leafs = "getter: " + item.isLeaf() + " property: " + item.leafProperty().get(); 
+        LOG.info(mes + leafs);
+    }
     
-    private TreeView buildFileSystemBrowser() {
+    private TreeView<File> buildFileSystemBrowser() {
         TreeItem<File> root = createNode(new File("."));
         return new TreeView<File>(root);
     }
@@ -96,16 +126,25 @@ public class FileTreeExample extends Application {
                     isFirstTimeLeaf = false;
                     File f = (File) getValue();
                     isLeaf = f.isFile();
-                    // dirty trick, doesn't work for root
-                    if (!isLeaf) {
-                        setExpanded(true);
-                        setExpanded(false);
-                    }
+                    // synchronize with property
+                    if (syncInitially)
+                        invokeSetLeaf(isLeaf);
                 }
 
                 return isLeaf;
             }
    
+            private void invokeSetLeaf(boolean leaf) {
+                Class<?> clazz = TreeItem.class;
+                try {
+                    Method method = clazz.getDeclaredMethod("setLeaf", boolean.class);
+                    method.setAccessible(true);
+                    method.invoke(this, leaf);
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+
             private ObservableList<TreeItem<File>> buildChildren(TreeItem<File> TreeItem) {
                 File f = TreeItem.getValue();
                 if (f != null && f.isDirectory()) {
