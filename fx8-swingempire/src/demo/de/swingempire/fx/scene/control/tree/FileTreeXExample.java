@@ -144,7 +144,7 @@ public class FileTreeXExample extends Application {
         public FileTreeItemX(File file) {
             super(file);
             updateLeaf(file);
-            // super goes dirty with replective replace of base children
+            // super goes dirty with reflective replace of base children
             // conflicts with lazy child eval here
             // trying to only enforce the replace - doesn't help
 //            checkChildren();
