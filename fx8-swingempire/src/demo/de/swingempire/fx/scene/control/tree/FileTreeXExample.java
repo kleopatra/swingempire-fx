@@ -79,13 +79,16 @@ public class FileTreeXExample extends Application {
         tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F2) {
                 TreeItem<File> item = tree.getSelectionModel().getSelectedItem();
-                TreeItem<File> nextFolder =  item.nextSibling();
+                FileTreeItemX nextFolder =  (FileTreeItemX) item.previousSibling();
                 while (nextFolder != null) {
                     if (!nextFolder.isLeaf()) break;
-                    nextFolder = nextFolder.nextSibling();
+                    nextFolder = (FileTreeItemX) nextFolder.previousSibling();
                 }
                 if (nextFolder != null) {
+                    File dir = nextFolder.getValue();
+                    int fileCount = dir.listFiles().length;
                     nextFolder.setExpanded(true);
+                    LOG.info("files/expandedDesc " + fileCount + "/ "+ nextFolder.getExpandedDescendantCount());
                 }
                 e.consume();
             }
@@ -107,6 +110,10 @@ public class FileTreeXExample extends Application {
         return treeView;
     }
 
+    private static TreeItem<File> createNode(final File f) {
+        return new FileTreeItemX(f);
+    }
+
     /**
      * Modified from core: don't override the getter! As per convention, properties
      * and their getters/setters must be sync'ed at all times. Even with access to
@@ -122,15 +129,13 @@ public class FileTreeXExample extends Application {
      * - actual: showing children plus same number of empty lines
      * 
      * Seems to be related to lazy eval of children, somehow the dirtyness around
-     * base's previous/expandedDescendantCount seems to get confused
+     * base's previous/expandedDescendantCount seems to get confused.
      * 
-     * @param f
-     * @return
+     * Actually, unrelated to deletion - happens after selecting any node above. So looks
+     * like a bug in selection if children are lazily evaluated? Hmm ... do we want to
+     * dig into it? Could be previous/expandedCount getting confused?
+     * 
      */
-    private static TreeItem<File> createNode(final File f) {
-        return new FileTreeItemX(f);
-    }
-
     public static class FileTreeItemX extends TreeItemX<File> {
         // We do the children and leaf testing only once, and then set these
         // booleans to false so that we do not check again during this
@@ -149,7 +154,7 @@ public class FileTreeXExample extends Application {
             // trying to only enforce the replace - doesn't help
 //            checkChildren();
             // need real access
-            getChildren();
+//            getChildren();
         }
 
 //------------------- implement Leafness

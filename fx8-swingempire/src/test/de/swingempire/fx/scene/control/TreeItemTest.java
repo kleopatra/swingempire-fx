@@ -18,12 +18,14 @@ import javafx.scene.control.TreeItem.TreeModificationEvent;
 
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
+import com.codeaffine.test.ConditionalIgnoreRule;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import de.swingempire.fx.util.FXUtils;
@@ -36,6 +38,9 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
 public class TreeItemTest {
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+
 
     protected TreeItem treeItem;
     protected ObservableList<TreeItem> children;
@@ -165,9 +170,9 @@ public class TreeItemTest {
         rawItems = FXCollections.observableArrayList(
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
-        treeItem = createItem("root");
+        treeItem = createBranch("root");
         children = treeItem.getChildren();
-        children.setAll(createItems(rawItems));
+//        children.setAll(createItems(rawItems));
     }
     
     protected TreeItem createItem(Object item) {

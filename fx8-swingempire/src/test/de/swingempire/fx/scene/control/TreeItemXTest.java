@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import de.swingempire.fx.scene.control.TreeIgnores.IgnoreLog;
 import de.swingempire.fx.scene.control.tree.TreeItemIterator;
 import de.swingempire.fx.scene.control.tree.TreeItemStreamSupport;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
@@ -168,6 +171,7 @@ public class TreeItemXTest extends TreeItemTest {
     }
     
     @Test 
+    @ConditionalIgnore (condition = IgnoreLog.class)
     public void testLogTraversalExpandedChildX() {
         getRoot().setExpanded(true);
         TreeItemX child = createBranch("child");
@@ -182,6 +186,7 @@ public class TreeItemXTest extends TreeItemTest {
         }
     }
     @Test 
+    @ConditionalIgnore (condition = IgnoreLog.class)
     public void testLogTraversalCollapsedChildX() {
         getRoot().setExpanded(true);
         TreeItemX child = createBranch("child");
@@ -214,7 +219,8 @@ public class TreeItemXTest extends TreeItemTest {
         getRoot().getChildren().add(child);
         assertEquals("added expanded child", count *2, countExpanded(getRoot()));
     }
-    @Test @Ignore
+    @Test 
+    @ConditionalIgnore (condition = IgnoreLog.class)
     public void testLogTraversalSO() {
         getRoot().setExpanded(true);
         TreeItemX child = createBranch("child");
