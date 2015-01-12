@@ -135,6 +135,7 @@ public class FileTreeXExample extends Application {
      * like a bug in selection if children are lazily evaluated? Hmm ... do we want to
      * dig into it? Could be previous/expandedCount getting confused?
      * 
+     * Works fine in 8u40b20
      */
     public static class FileTreeItemX extends TreeItemX<File> {
         // We do the children and leaf testing only once, and then set these

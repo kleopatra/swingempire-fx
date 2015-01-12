@@ -34,7 +34,7 @@ public class TreeModificationEventX<T> extends TreeModificationEvent<T> {
             TreeItem<T> treeItem, List<? extends TreeItem<T>> added,
             List<? extends TreeItem<T>> removed,
             Change<? extends TreeItem<T>> change) {
-        super(eventType, treeItem, added, removed, change);
+        super(eventType, treeItem, added, removed);
         this.change = change;
     }
 
