@@ -15,6 +15,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
@@ -93,7 +94,7 @@ public class FileTreeXExample extends Application {
                 e.consume();
             }
         });
-
+        Button b = new Button();
         BorderPane pane = new BorderPane(tree);
         return pane;
     }
@@ -135,15 +136,9 @@ public class FileTreeXExample extends Application {
      * like a bug in selection if children are lazily evaluated? Hmm ... do we want to
      * dig into it? Could be previous/expandedCount getting confused?
      * 
-     * Works fine in 8u40b20
+     * 
      */
     public static class FileTreeItemX extends TreeItemX<File> {
-        // We do the children and leaf testing only once, and then set these
-        // booleans to false so that we do not check again during this
-        // run. A more complete implementation may need to handle more 
-        // dynamic file system situations (such as where a folder has files
-        // added after the TreeView is shown). Again, this is left as an
-        // exercise for the reader.
         private boolean isFirstTimeChildren = true;
         private boolean allowsChildren;
 
