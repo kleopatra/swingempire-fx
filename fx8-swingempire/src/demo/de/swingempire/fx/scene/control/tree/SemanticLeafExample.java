@@ -45,7 +45,7 @@ public class SemanticLeafExample extends Application {
             .getName());
     
     // flag to indicate whether to reflectively invoke setting the leaf property
-    static boolean syncInitially;
+    static boolean syncInitially = true;
     
     /**
      * @return
@@ -96,10 +96,9 @@ public class SemanticLeafExample extends Application {
     }
     
     protected void debugLeaf(TreeItem<String> item, String mes) {
-        String leafs = "getter: " + item.isLeaf() + " property: " + item.leafProperty().get(); 
-        LOG.info(mes + leafs);
+        String leafs = " getter: " + item.isLeaf() + " property: " + item.leafProperty().get(); 
+        LOG.info(mes + item + leafs);
     }
-    
 
     public static class SemanticLeafItem extends TreeItem<String> {
         
@@ -126,7 +125,6 @@ public class SemanticLeafExample extends Application {
          */
         @Override
         public boolean isLeaf() {
-            if (syncInitially) return super.isLeaf();
             return !allowsChildren;
         }
 
