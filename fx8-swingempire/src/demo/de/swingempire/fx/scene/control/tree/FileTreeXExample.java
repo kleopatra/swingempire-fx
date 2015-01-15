@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -136,6 +137,9 @@ public class FileTreeXExample extends Application {
      * like a bug in selection if children are lazily evaluated? Hmm ... do we want to
      * dig into it? Could be previous/expandedCount getting confused?
      * 
+     * Problem might be interleaved treeModification events: children are added while
+     * receiving the expansion notification, thus firing a list change "in-between".
+     * 
      * 
      */
     public static class FileTreeItemX extends TreeItemX<File> {
@@ -187,7 +191,11 @@ public class FileTreeXExample extends Application {
 
                 // First getChildren() call, so we actually go off and 
                 // determine the children of the File contained in this TreeItem.
-                super.getChildren().setAll(buildChildren(this));
+                // needs to be queued for building, otherwise listener might
+                // get confused by interleaved treeModification events
+                // on expansion
+                Platform.runLater(() -> super.getChildren().setAll(buildChildren(this)));
+//                super.getChildren().setAll(buildChildren(this));
             }
             return super.getChildren();
         }
