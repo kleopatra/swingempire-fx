@@ -125,7 +125,7 @@ public class FileTreeXExample extends Application {
      * 
      * PENDING JW: misbehaviour on expansion (happens only if next had never been expanded)
      * - select first folder
-     * - press DELETE to remove children
+     * (not needed: - press DELETE to remove children)
      * - expand next any folder below
      * - expected: showing children as always
      * - actual: showing children plus same number of empty lines
