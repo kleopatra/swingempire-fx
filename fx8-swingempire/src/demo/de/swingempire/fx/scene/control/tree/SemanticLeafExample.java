@@ -45,6 +45,7 @@ public class SemanticLeafExample extends Application {
             .getName());
     
     // flag to indicate whether to reflectively invoke setting the leaf property
+    // if true, we sync the property initially to the value returned by the getter
     static boolean syncInitially = true;
     
     /**
