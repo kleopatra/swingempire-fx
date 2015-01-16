@@ -45,6 +45,8 @@ public class FileTreeExample extends Application {
             .getName());
     
     boolean syncInitially;
+
+    private TreeItem<File> safedItem;
     
     /**
      * @return
@@ -73,7 +75,24 @@ public class FileTreeExample extends Application {
                 e.consume();
             }
         });
-
+        
+        // quick check: http://stackoverflow.com/q/23990493/203657
+        // unrelated: select hidden item expands parents
+        tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F2) {
+                TreeItem<File> item = tree.getSelectionModel().getSelectedItem();
+                safedItem = item;
+                LOG.info("storing " + safedItem);
+            }
+        });
+        
+        tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F3) {
+                tree.getSelectionModel().select(safedItem);
+            }
+        });
+        //----------- end quick check
+        
         BorderPane pane = new BorderPane(tree);
         return pane;
     }

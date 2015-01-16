@@ -48,6 +48,8 @@ public class FileTreeXExample extends Application {
             .getName());
     
     boolean syncInitially;
+
+    private TreeItem<File> safedItem;
     
     /**
      * @return
@@ -77,22 +79,20 @@ public class FileTreeXExample extends Application {
             }
         });
         
-        // trying to track-down issue with incorrect children on expansion
+        // quick check: http://stackoverflow.com/q/23990493/203657
+        // unrelated: select hidden item expands parents
+        // not working in xSelection - need to track!
         tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F2) {
                 TreeItem<File> item = tree.getSelectionModel().getSelectedItem();
-                FileTreeItemX nextFolder =  (FileTreeItemX) item.previousSibling();
-                while (nextFolder != null) {
-                    if (!nextFolder.isLeaf()) break;
-                    nextFolder = (FileTreeItemX) nextFolder.previousSibling();
-                }
-                if (nextFolder != null) {
-                    File dir = nextFolder.getValue();
-                    int fileCount = dir.listFiles().length;
-                    nextFolder.setExpanded(true);
-                    LOG.info("files/expandedDesc " + fileCount + "/ "+ nextFolder.getExpandedDescendantCount());
-                }
-                e.consume();
+                safedItem = item;
+                LOG.info("storing " + safedItem);
+            }
+        });
+        
+        tree.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F3) {
+                tree.getSelectionModel().select(safedItem);
             }
         });
         Button b = new Button();
