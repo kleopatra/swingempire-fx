@@ -24,6 +24,12 @@ import de.swingempire.fx.junit.JavaFXThreadingRule;
 import static org.junit.Assert.*;
 
 /**
+ * Unexpected behaviour of tree.getRow(TreeItem). Reported
+ * https://javafx-jira.kenai.com/browse/RT-39661
+ * 
+ * fixed for 8u60, changesset:
+ * http://hg.openjdk.java.net/openjfx/8u-dev/rt/rev/83f197be0dcf
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
