@@ -5,7 +5,10 @@
 package de.swingempire.fx.scene.control;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -25,11 +28,9 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.TreeModificationReport;
+
 import static org.junit.Assert.*;
 
 /**
@@ -41,10 +42,9 @@ public class TreeItemTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
-
     protected TreeItem treeItem;
     protected ObservableList<TreeItem> children;
-    protected ObservableList<String> rawItems;
+    protected ObservableList rawItems;
 
     
     @Test
@@ -172,25 +172,22 @@ public class TreeItemTest {
                 "5-item", "4-item", "3-item", "2-item", "1-item");
         treeItem = createBranch("root");
         children = treeItem.getChildren();
-//        children.setAll(createItems(rawItems));
     }
     
-    protected TreeItem createItem(Object item) {
-        return new TreeItem(item);
+    protected TreeItem createItem(Object value) {
+        return new TreeItem(value);
     }
 
+    protected Supplier<TreeItem> treeItemSupplier;
+    
     protected TreeItem createBranch(Object value) {
-        TreeItem item = createItem(value);
-        item.getChildren().setAll(createItems(rawItems));
-        return item;
+        TreeItem branch = createItem(value);
+        branch.getChildren().setAll((List<TreeItem>) rawItems.stream()
+                .map(this::createItem)
+                .collect(Collectors.toList()));
+        return branch;
     }
     
-    protected ObservableList<TreeItem> createItems(ObservableList other) {
-        ObservableList items = FXCollections.observableArrayList();
-        other.stream().forEach(item -> items.add(createItem(item)));
-        return items;
-    }
-
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(TreeItemTest.class
             .getName());

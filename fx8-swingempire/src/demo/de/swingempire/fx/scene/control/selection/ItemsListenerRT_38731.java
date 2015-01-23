@@ -63,9 +63,9 @@ public class ItemsListenerRT_38731 extends Application {
     public void start(Stage primaryStage) throws Exception {
        Pane ap = new VBox();
        // empty list
-//       ChoiceBox choice = new ChoiceBox();
+       ChoiceBox choice = new ChoiceBox();
        // same with comboBox
-       ComboBox choice = new ComboBox();
+//       ComboBox choice = new ComboBox();
        Button choiceAdd = new Button("set empty items and add choice");
        choiceAdd.setOnAction(ev -> {
            ObservableList cl = FXCollections.observableArrayList();

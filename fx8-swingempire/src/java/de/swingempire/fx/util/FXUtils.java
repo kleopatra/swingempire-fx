@@ -4,17 +4,23 @@
  */
 package de.swingempire.fx.util;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
 
 import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
+import javafx.util.Callback;
 
 import com.sun.javafx.tk.Toolkit;
 
@@ -32,9 +38,36 @@ import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
 public class FXUtils {
 
     public final static String ANCHOR_KEY = "anchor";
-    private FXUtils() {
-    }
 
+// -------------- aggregates
+    
+    public static <T>  Collector<T, ?, ObservableList<T>> toObservableList() {
+        return Collector.of((Supplier<ObservableList<T>>) FXCollections::observableArrayList,
+                List::add,
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                });
+    }
+    
+    public static <T>  Collector<T, ?, ObservableList<T>> toObservableList(Callback<T, Observable[]> extractor) {
+        return Collector.of((Supplier<ObservableList<T>>) () -> FXCollections.observableArrayList(extractor),
+                List::add,
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                });
+    }
+    
+    public static <T>  Collector<T, ?, ObservableList<T>> toObservableList(ObservableList<T> target) {
+        return Collector.of((Supplier<ObservableList<T>>) () -> target,
+                List::add,
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                });
+    }
+    
 //--------------- list change
 
     public enum ChangeType {
@@ -140,6 +173,74 @@ public class FXUtils {
     
 //-------------------anchor    
     
+    //---------------------- end copy
+    
+    public static <T> void prettyPrint(Change<? extends T> change) {
+        StringBuilder sb = new StringBuilder("Change event data on list: " + change.getList());
+        sb.append("\n " + change.getClass() + "\n " + change);
+        int i = 0;
+        change.reset();
+        while (change.next()) {
+            sb.append("\n\tcursor = ").append(i++).append("\n");
+    
+            final String kind = change.wasPermutated() ? "permutated" : change
+                    .wasReplaced() ? "replaced"
+                    : change.wasRemoved() ? "removed"
+                            : change.wasAdded() ? "added"
+                                    : change.wasUpdated() ? "updated" : "none";
+            sb.append("\t\tKind of change: ").append(kind).append("\n");
+    
+            sb.append("\t\tAffected range: [").append(change.getFrom())
+                    .append(", ").append(change.getTo()).append("]\n");
+    
+            if (kind.equals("added") || kind.equals("replaced")) {
+                sb.append("\t\tAdded size: ").append(change.getAddedSize())
+                        .append("\n");
+                sb.append("\t\tAdded sublist: ")
+                        .append(change.getAddedSubList()).append("\n");
+            }
+    
+            if (kind.equals("removed") || kind.equals("replaced")) {
+                sb.append("\t\tRemoved size: ").append(change.getRemovedSize())
+                        .append("\n");
+                sb.append("\t\tRemoved: ").append(change.getRemoved())
+                        .append("\n");
+            }
+    
+            if (kind.equals("permutated")) {
+                StringBuilder permutationStringBuilder = new StringBuilder("[");
+                for (int k = change.getFrom(); k < change.getTo(); k++) {
+                    permutationStringBuilder.append(k).append("->")
+                            .append(change.getPermutation(k));
+                    if (k < change.getTo() - 1) {
+                        permutationStringBuilder.append(", ");
+                    }
+                }
+                permutationStringBuilder.append("]");
+                String permutation = permutationStringBuilder.toString();
+                sb.append("\t\tPermutation: ").append(permutation).append("\n");
+            }
+        }
+        System.out.println(sb.toString());
+    }
+
+    public static class PrintingListChangeListener implements ListChangeListener {
+        String source;
+        int counter;
+        public PrintingListChangeListener() {
+        }
+        
+        public PrintingListChangeListener(String message, ObservableList<?> list) {
+            list.addListener(this);
+            source = message;
+        }
+        @Override
+        public void onChanged(Change change) {
+            System.out.println("Change #" + counter++ + " on " + source + "\nlist = " + change.getList());
+            prettyPrint(change);
+        }
+    }
+
     public static int getAnchorIndex(ListView<?> view) {
         if (view.getSelectionModel() instanceof AnchoredSelectionModel) {
             return ((AnchoredSelectionModel) view.getSelectionModel()).getAnchorIndex();
@@ -217,70 +318,7 @@ public class FXUtils {
 
 //---------------------- end copy
     
-    public static <T> void prettyPrint(Change<? extends T> change) {
-        StringBuilder sb = new StringBuilder("Change event data on list: " + change.getList());
-        sb.append("\n " + change.getClass() + "\n " + change);
-        int i = 0;
-        change.reset();
-        while (change.next()) {
-            sb.append("\n\tcursor = ").append(i++).append("\n");
-
-            final String kind = change.wasPermutated() ? "permutated" : change
-                    .wasReplaced() ? "replaced"
-                    : change.wasRemoved() ? "removed"
-                            : change.wasAdded() ? "added"
-                                    : change.wasUpdated() ? "updated" : "none";
-            sb.append("\t\tKind of change: ").append(kind).append("\n");
-
-            sb.append("\t\tAffected range: [").append(change.getFrom())
-                    .append(", ").append(change.getTo()).append("]\n");
-
-            if (kind.equals("added") || kind.equals("replaced")) {
-                sb.append("\t\tAdded size: ").append(change.getAddedSize())
-                        .append("\n");
-                sb.append("\t\tAdded sublist: ")
-                        .append(change.getAddedSubList()).append("\n");
-            }
-
-            if (kind.equals("removed") || kind.equals("replaced")) {
-                sb.append("\t\tRemoved size: ").append(change.getRemovedSize())
-                        .append("\n");
-                sb.append("\t\tRemoved: ").append(change.getRemoved())
-                        .append("\n");
-            }
-
-            if (kind.equals("permutated")) {
-                StringBuilder permutationStringBuilder = new StringBuilder("[");
-                for (int k = change.getFrom(); k < change.getTo(); k++) {
-                    permutationStringBuilder.append(k).append("->")
-                            .append(change.getPermutation(k));
-                    if (k < change.getTo() - 1) {
-                        permutationStringBuilder.append(", ");
-                    }
-                }
-                permutationStringBuilder.append("]");
-                String permutation = permutationStringBuilder.toString();
-                sb.append("\t\tPermutation: ").append(permutation).append("\n");
-            }
-        }
-        System.out.println(sb.toString());
-    };
-
-    public static class PrintingListChangeListener implements ListChangeListener {
-        String source;
-        int counter;
-        public PrintingListChangeListener() {
-        }
-        
-        public PrintingListChangeListener(String message, ObservableList<?> list) {
-            list.addListener(this);
-            source = message;
-        }
-        @Override
-        public void onChanged(Change change) {
-            System.out.println("Change #" + counter++ + " on " + source + "\nlist = " + change.getList());
-            prettyPrint(change);
-        }
+    private FXUtils() {
     }
 
     @SuppressWarnings("unused")

@@ -17,7 +17,6 @@ import de.swingempire.fx.scene.control.TreeIgnores.IgnoreLog;
 import de.swingempire.fx.scene.control.tree.TreeItemIterator;
 import de.swingempire.fx.scene.control.tree.TreeItemStreamSupport;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendantEnumeration;
 import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
 
 import static de.swingempire.fx.scene.control.tree.TreeItemX.*;
@@ -97,7 +96,6 @@ public class TreeItemXTest extends TreeItemTest {
         assertEquals("added expanded child", count, getRoot().getExpandedDescendantCount());
     }
 
-
     /**
      * Informal testing of TreeItemX.ExpandedDescendants
      */
@@ -105,11 +103,11 @@ public class TreeItemXTest extends TreeItemTest {
     public void testDescendantCountExpandedCollapsedIXterator() {
         getRoot().setExpanded(true);
         int count = getRoot().getExpandedDescendantCount();
-        long iterCount = countExpandedX(getRoot());
+        long iterCount = countExpandedDescendantsWithIter(getRoot());
         assertEquals("same count for iter", count, iterCount);
         TreeItemX child = createBranch("child");
         getRoot().getChildren().add(child);
-        assertEquals("added collapsed child", count + 1, countExpandedDescendants(getRoot()));
+        assertEquals("added collapsed child", count + 1, countExpandedDescendantsWithIter(getRoot()));
     }
     
     /**
@@ -122,50 +120,16 @@ public class TreeItemXTest extends TreeItemTest {
         TreeItemX child = createBranch("child");
         child.setExpanded(true);
         getRoot().getChildren().add(child);
-        assertEquals("added expanded child", count *2, countExpandedDescendants(getRoot()));
+        assertEquals("added expanded child", count *2, countExpandedDescendantsWithIter(getRoot()));
     }
 
-
-    private int countExpandedDescendants(TreeItem rootItem) {
-        ExpandedDescendants<TreeItem> enumer = 
+    private int countExpandedDescendantsWithIter(TreeItem rootItem) {
+        ExpandedDescendants<TreeItem> iter = 
                 new ExpandedDescendants<TreeItem>(rootItem);
         int count = 0;
-        while (enumer.hasNext()) {
+        while (iter.hasNext()) {
             count++;
-            enumer.next();
-        }
-        return count;
-    }
-    
-
-    @Test
-    public void testDescendantCountExpandedCollapsedX() {
-        getRoot().setExpanded(true);
-        int count = getRoot().getExpandedDescendantCount();
-        long iterCount = countExpandedX(getRoot());
-        assertEquals("same count for iter", count, iterCount);
-        TreeItemX child = createBranch("child");
-        getRoot().getChildren().add(child);
-        assertEquals("added collapsed child", count + 1, countExpandedX(getRoot()));
-    }
-    
-    @Test
-    public void testDescendantCountExpandedExpandedX() {
-        getRoot().setExpanded(true);
-        int count = getRoot().getExpandedDescendantCount();
-        TreeItemX child = createBranch("child");
-        child.setExpanded(true);
-        getRoot().getChildren().add(child);
-        assertEquals("added expanded child", count *2, countExpandedX(getRoot()));
-    }
-
-    private int countExpandedX(TreeItem rootItem) {
-        ExpandedDescendantEnumeration<TreeItem> enumer = 
-                new ExpandedDescendantEnumeration<TreeItem>(rootItem);
-        int count = 0;
-        while (enumer.hasMoreElements()) {
-            count++;
-            enumer.nextElement();
+            iter.next();
         }
         return count;
     }
@@ -178,11 +142,12 @@ public class TreeItemXTest extends TreeItemTest {
         child.setExpanded(true);
         getRoot().getChildren().add(2, child);
         //        PreorderTreeItemEnumeration<TreeItem> iter = new PreorderTreeItemEnumeration<TreeItem>(getRoot());
-        ExpandedDescendantEnumeration<TreeItem> iter = new ExpandedDescendantEnumeration<TreeItem>(getRoot());
+//        ExpandedDescendantEnumeration<TreeItem> iter = new ExpandedDescendantEnumeration<TreeItem>(getRoot());
+        ExpandedDescendants<TreeItem> iter = new ExpandedDescendants<TreeItem>(getRoot());
         int position = 0;
         System.out.println("Using TreeItemX: all expanded");
-        while (iter.hasMoreElements()) {
-            System.out.println("count: " + position ++ + " / " + iter.nextElement());
+        while (iter.hasNext()) {
+            System.out.println("count: " + position ++ + " / " + iter.next());
         }
     }
     @Test 
@@ -193,11 +158,12 @@ public class TreeItemXTest extends TreeItemTest {
         //        child.setExpanded(true);
         getRoot().getChildren().add(2, child);
         //        PreorderTreeItemEnumeration<TreeItem> iter = new PreorderTreeItemEnumeration<TreeItem>(getRoot());
-        ExpandedDescendantEnumeration<TreeItem> iter = new ExpandedDescendantEnumeration<TreeItem>(getRoot());
+//        ExpandedDescendantEnumeration<TreeItem> iter = new ExpandedDescendantEnumeration<TreeItem>(getRoot());
+        ExpandedDescendants<TreeItem> iter = new ExpandedDescendants<TreeItem>(getRoot());
         int position = 0;
         System.out.println("Using TreeItemX: collapsed");
-        while (iter.hasMoreElements()) {
-            System.out.println("count: " + position ++ + " / " + iter.nextElement());
+        while (iter.hasNext()) {
+            System.out.println("count: " + position ++ + " / " + iter.next());
         }
     }
     @Test @Ignore
@@ -246,15 +212,16 @@ public class TreeItemXTest extends TreeItemTest {
                         .filter(t -> t.isLeaf() || !t.isExpanded())
                         .count();
     }
-    protected TreeItemX createBranch(String item) {
-        TreeItemX child = createItem(item);
-        child.getChildren().setAll(createItems(rawItems));
-        return child;
-    }
     
     protected TreeItemX getRoot() {
         return (TreeItemX) treeItem;
     }
+    
+    @Override
+    protected TreeItemX createBranch(Object value) {
+        return (TreeItemX) super.createBranch(value);
+    }
+
     @Override
     protected TreeItemX createItem(Object item) {
         return new TreeItemX(item);
