@@ -1,0 +1,38 @@
+/* 
+ * remove the highlight from cell as a whole 
+ */
+
+/* Selected rows */
+.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-text-only:filled:selected {
+    -fx-background: -fx-control-inner-background; 
+}
+/* Selected when control is not focused */
+.tree-text-only:filled:selected {
+    -fx-background: -fx-control-inner-background; 
+}
+/* focused cell (keyboard navigation) */
+.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-text-only:focused {
+    -fx-cell-focus-inner-border: -fx-control-inner-background; 
+}
+
+/* 
+ * highlight only the label
+ */
+
+// Add background color rule
+.tree-text-only > .label {
+    -fx-background-color: -fx-background; 
+}
+/* Selected rows */
+.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-text-only:filled:selected > .label {
+    -fx-background: -fx-selection-bar; 
+}
+/* Selected when control is not focused */
+.tree-text-only:filled:selected > .label {
+    -fx-background: -fx-selection-bar-non-focused;
+}
+/* focused cell (keyboard navigation) */
+.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-text-only:focused > .label {
+    -fx-background: -fx-selection-bar; 
+}
+

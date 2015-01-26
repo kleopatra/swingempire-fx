@@ -1,16 +1,18 @@
 /* remove the highligh from cell as a whole, c&p from modena */
 .tree-text-only:filled:selected {
     -fx-background: -fx-control-inner-background; 
-    -fx-background-color: -fx-background;
+/*    -fx-background-color: -fx-background; */
 }
 
-.tree-text-only:filled:selected .label {
+.tree-text-only:filled:selected > .label {
     /* following is the selection color from themes, doesn't show */
     -fx-background: -fx-selection-bar; 
+    -fx-background-color: -fx-background;
     /* hard-coded color does show */
     /*   -fx-background-color: -fx-accent ; */
+     -fx-background-color: CHART_COLOR_2 ; 
     /* auto-adjust text fill */
     /* no effect for hard-coded color, showing nothing for selection bar */
-    -fx-text-fill: -fx-text-background-color;
+    /*-fx-text-fill: -fx-text-background-color;*/
 }
 

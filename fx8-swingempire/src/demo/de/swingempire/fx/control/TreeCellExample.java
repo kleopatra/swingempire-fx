@@ -30,17 +30,27 @@ import javafx.stage.Stage;
  * - Text has no background
  * - can't make css to look-up highlight color, only hard-coded
  * 
- * giving up for now ..
- * 
  * Links around native theming:
  * https://bitbucket.org/software4java/javafx-native-themes/src (doesn't contain
  * treeCell, nor other cells)
  * domain software4java.com expired (was: united media)
  * guigarage has several blogs (and started on aeroFX in mid-2014)
  * 
- * DECISION: don't go further, since win7 the active area in win trees spans
+ * DECISION: don't go for a complete solution, just as far as to understand
+ * since win7 the active area in win trees spans
  * (and highlights) the whole width of the tree, just as fx default! 
  * 
+ * Question ask on SO:
+ * http://stackoverflow.com/q/28113294/203657
+ * 
+ * main problem was a silly mistake: mixed up the style key <code>-fx-background-color</code>
+ * with a global var for its value <code>-fx-background</code>
+ * 
+ * So:
+ * - for showing the background, need to set the style key to a value, 
+ *   either hard-coded or var
+ * - for auto-adjust of text-fill, need to set the global var (because the 
+ *   text-fill is ladder that's based on -fx-background)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -68,7 +78,6 @@ public class TreeCellExample extends Application {
                 setGraphic(label);
             }
         }
-        
     }
     
     private Parent getContent() {
@@ -76,57 +85,17 @@ public class TreeCellExample extends Application {
         root.setExpanded(true);
         TreeView tree = new TreeView(root);
         tree.getStylesheets().add(
-                getClass().getResource("treetextonly.css").toExternalForm());
+                getClass().getResource("treetextonlyso.css").toExternalForm());
         tree.setCellFactory(p -> new MyTreeCell());
 
         BorderPane pane = new BorderPane(tree);
         return pane;
     }
 
-    protected TreeItem createItem(Object value) {
-        return new TreeItem(value);
-    }
-
-    protected ObservableList<TreeItem> createItems(List values) {
-        ObservableList items = FXCollections.observableArrayList();
-        values.stream().forEach(value -> items.add(createItem(value)));
-        return items;
-    }
-
-    protected ObservableList<TreeItem> createItemsAgg(List values) {
-        return (ObservableList<TreeItem>) values.stream()
-                .map(this::createItem)
-                .collect(Collector.of(FXCollections::observableArrayList,
-                        List::add,
-                        (left, right) -> {
-                            left.addAll(right);
-                            return left;
-                        }
-                        
-                        ));
-    }
-    protected ObservableList<TreeItem> createItemsAggTo(List values, ObservableList target) {
-        return (ObservableList<TreeItem>) values.stream()
-                .map(this::createItem)
-                .collect(Collector.of(() -> target,
-                        List::add,
-                        (left, right) -> {
-                            left.addAll(right);
-                            return left;
-                        }
-                        
-               ));
-    }
-    protected List<TreeItem> createTreeItems(List values) {
-        return (List<TreeItem>) values.stream()
-                .map(this::createItem)
-                .collect(Collectors.toList());
-    }
-    
     ObservableList rawItems = FXCollections.observableArrayList(
             "9-item", "8-item", "7-item", "6-item", 
             "5-item", "4-item", "3-item", "2-item", "1-item");
-
+    
     protected TreeItem createSubTree(Object value) {
         TreeItem child = new TreeItem(value);
         child.getChildren().setAll((List<TreeItem>) rawItems.stream()
@@ -134,7 +103,11 @@ public class TreeCellExample extends Application {
                 .collect(Collectors.toList()));
         return child;
     }
-    
+
+    protected TreeItem createItem(Object value) {
+        return new TreeItem(value);
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
