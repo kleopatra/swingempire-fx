@@ -1,0 +1,53 @@
+.root {
+	-fx-chart-color-1: #f3622d;
+	-fx-chart-color-2: #fba71b;
+	-fx-chart-color-3: #57b757
+}
+
+/* cell with chart */
+.chart-cell {
+}
+
+.chart-cell .chart-content {
+    -fx-padding: 0;
+} 
+
+.chart-cell .chart {
+    -fx-legend-visible: false;
+    -fx-padding: 2;
+    /* makes chart fit into cell with fixedCellSize
+     */
+    -fx-min-height: 0;
+}
+
+/*
+.default-color0.chart-bar { -fx-bar-fill: -fx-chart-color-1; }
+.default-color1.chart-bar { -fx-bar-fill: -fx-chart-color-3; }
+*/
+.chart-cell .stacked-bar-chart {
+    -fx-horizontal-grid-lines-visible: false;
+    -fx-vertical-grid-lines-visible: false;
+    -fx-legend-visible: false;
+	-fx-category-gap: 0;
+}
+
+.chart-cell .axis {
+    -fx-horizontal-zero-line-visible: false;
+    -fx-vertical-zero-line-visible: false;
+    -fx-tick-mark-visible: false;
+    -fx-minor-tick-visible: false;
+    -fx-tick-labels-visible: false;
+	-fx-start-margin: 0;
+	-fx-end-margin: 0;
+	
+    /* following three are for hiding the line between content and axis 
+     * for valueAxis that is drawn by the border, setting to transparent 
+     * does make it invisible but still leaves the area. Also doesn't 
+     * work for catagory at all. Setting prefwidth/height to zero does
+     * the trick - but is an implementation detail of axis/chart layout! 
+     */
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+    
+    
+}

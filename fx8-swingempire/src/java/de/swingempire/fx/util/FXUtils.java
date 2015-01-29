@@ -68,6 +68,16 @@ public class FXUtils {
                 });
     }
     
+// ------------- various, not necessarily fx-related
+    
+    public static String version() {
+        return version(false);
+    }
+    
+    public static String version(boolean withOS) {
+        String version = System.getProperty("java.version")+ "-" + System.getProperty("java.vm.version");
+        return withOS ? version + " (" + System.getProperty("os.arch") + ")" : version;
+    }
 //--------------- list change
 
     public enum ChangeType {

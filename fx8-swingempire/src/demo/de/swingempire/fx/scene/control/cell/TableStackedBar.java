@@ -1,9 +1,10 @@
 /*
- * Created on 26.01.2015
+ * Created on 28.01.2015
  *
  */
 package de.swingempire.fx.scene.control.cell;
 
+import javafx.scene.chart.StackedBarChart;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -12,24 +13,21 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.stage.Stage;
+import javafx.stage.Stage; 
 
 /**
- * from SO, how to show relative bars with colors of 
+ * How to show relative bars with colors of 
  * a related chart
- * 
- * http://stackoverflow.com/a/28141421/203657
- * 
- * That's a solution with manually calculating and
- * filling a rectangle with base chart colors
  * 
  * Here trying to use StackedBarChart .. problems as noted in cell doc.
  * Extracted TableStackedBarChart for SO question.
+ * 
+ * This here is - more or less - the original in the report.
+ * Reported: https://javafx-jira.kenai.com/browse/RT-39884
  */
 public class TableStackedBar extends Application {
     public static void main(String[] args) { launch(args); }
@@ -54,9 +52,10 @@ public class TableStackedBar extends Application {
         tv.getColumns().addAll(col1,col2,col3);
         tv.setFixedCellSize(50.);
         
-        Scene scene = new Scene(tv);
+        Scene scene = new Scene(tv, 1000, 700);
 
         stage.setScene(scene);
+        stage.setTitle(System.getProperty("java.version"));
         stage.show();
     }
 
@@ -113,7 +112,6 @@ public class TableStackedBar extends Application {
             } else {
                 setGraphic(sbcHoriz);
                 // scenario B: set new series
-                // uncomment for scenario A
 //                XYChart.Series<Number, String> series1Horiz = new XYChart.Series<>();
 //                XYChart.Series<Number, String> series2Horiz = new XYChart.Series<>();
 //                sbcHoriz.getData().setAll(series1Horiz, series2Horiz);
@@ -133,4 +131,4 @@ public class TableStackedBar extends Application {
         public SimpleIntegerProperty num1Property(){return num1;}
         public SimpleIntegerProperty num2Property(){return num2;}
     }
-}
+}  
