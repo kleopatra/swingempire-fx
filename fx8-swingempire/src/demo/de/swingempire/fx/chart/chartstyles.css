@@ -1,0 +1,8 @@
+.default-color3.chart-bar {
+-fx-bar-fill: black;
+}
+
+.default-color0.chart-pie {
+-fx-pie-color: black;
+}
+

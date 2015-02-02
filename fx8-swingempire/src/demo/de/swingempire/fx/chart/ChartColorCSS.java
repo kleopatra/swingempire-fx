@@ -2,7 +2,7 @@
  * Created on 27.01.2015
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.chart;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

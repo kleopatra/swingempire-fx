@@ -26,6 +26,11 @@ import javafx.stage.Stage;
  * Correlate colors between different charts
  * http://stackoverflow.com/q/28217355/203657
  * 
+ * Accepted answer: have a map of which data is at which location (sequence)
+ * in the first chart, in the second (or other dependents) update the default
+ * colors by setting style classes to the default-something-xx from the first.
+ * Has to be done after styling! didn't check for side-effects.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class CorrelatedChartColors extends Application {
