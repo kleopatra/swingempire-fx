@@ -18,6 +18,8 @@ import javafx.stage.Stage;
  * Reported: https://javafx-jira.kenai.com/browse/RT-39899
  * Might be intentional, as CHART_COLOR_XX isn't specified.
  * 
+ * Evaluated as bug, marked as fixed for 8u60
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ChartColorCSS extends Application {
