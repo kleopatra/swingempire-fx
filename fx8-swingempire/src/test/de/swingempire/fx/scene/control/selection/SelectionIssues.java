@@ -4,6 +4,9 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.beans.value.ChangeListener;
@@ -25,6 +28,7 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
@@ -61,7 +65,88 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     protected ObservableList items;
     protected V view;
 
+//--------------- changes in list
     
+    /**
+     * Testing notification on disjoint removes above selected. Here: item
+     */
+    @Test
+    public void testSelectedItemNotificationOnDisjointRemovesAbove() {
+        int last = items.size() - 2;
+        Object lastItem = items.get(last);
+        getSelectionModel().select(last);
+        assertEquals(lastItem, getSelectionModel().getSelectedItem());
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        removeAll(0, 2);
+        assertEquals("sanity: selectedItem unchanged", lastItem, getSelectionModel().getSelectedItem());
+        assertEquals("must not fire on removes above", 0, report.getEventCount());
+    }
+    
+    /**
+     * Testing notification on disjoint removes above selected. Here: index
+     * 
+     * Note that we don't use the corner case of having the last index selected
+     * (which fails already on updating the index)
+     */
+    @Test
+    public void testSelectedIndexNotificationOnDisjointRemovesAbove() {
+        int last = items.size() - 2;
+        getSelectionModel().select(last);
+        assertEquals(last, getSelectionModel().getSelectedIndex());
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
+        removeAll(0, 2);
+        assertEquals("sanity: selectedIndex must be shifted by -2", last - 2, 
+                getSelectionModel().getSelectedIndex());
+        assertEquals("must fire single event on removes above", 1, 
+                report.getEventCount());
+    }
+    
+    @Test
+    public void testSelectedIndexAtLastNotificationOnDisjointRemovesAbove() {
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        assertEquals(last, getSelectionModel().getSelectedIndex());
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
+        removeAll(0, 2);
+//        assertEquals("sanity: selectedIndex must be shifted by -2", last - 2, 
+//                getSelectionModel().getSelectedIndex());
+        assertEquals("must fire single event on removes above", 1, 
+                report.getEventCount());
+    }
+    
+    /**
+     * Testing notification on disjoint removes above selected. Here: index
+     * Here test the (bad!) effect of incorrect handling of disjoint 
+     * changes - index in change notification is illegal.
+     * 
+     * This fails to fail because there is no change fired on selectedIndex
+     * - which in itself is the-correct-thingy-to-do, because it is
+     * not updated (which is incorrect)
+     * 
+     */
+    @Test
+    public void testAccessSelectedIndexNotificationOnDisjointRemovesAbove() {
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        ChangeListener l = (o, old, value) -> {
+            // hmm ... don't reach here? what happened, had it
+            int newSelected = (int) value;
+            LOG.info("new value/size: " + newSelected + "/" + items.size());
+            if (newSelected > -1) {
+                assertTrue("index " + newSelected + "must be less than size " + items.size(),
+                        newSelected < items.size());
+            }
+        } ;
+        getSelectionModel().selectedIndexProperty().addListener(l);
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
+        removeAll(0, 2);
+        LOG.info("last/previous" + report.getNewValueAt(0) + "/" + report.getNewValueAt(1));
+        
+        fail("doooh ...");
+    }
+    
+
+//-------------------------    
     /**
      * @see #testSelectedItemUncontainedNotificationSingle
      */
@@ -262,11 +347,97 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
     }
     
+    /**
+     * Corner case: last selected.
+     */
+    @Test
+    public void testSelectedAtLastOnRemoveItemAbove() {
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        removeItem(1);
+        int expected = last - 1;
+        assertEquals("selected index after remove single item above", 
+                expected, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Test selectedIndex on disjoint remove above.
+     * Corner case: last selected. Fails for core
+     */
+    @Test
+    public void testAccessSelectedAtLastOnDisjointRemoveItemsAbove() {
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        // disjoint remove of 2 elements above the last selected
+        removeAll(1, 3);
+        int selected = getSelectionModel().getSelectedIndex();
+        if (selected > -1)
+            items.get(selected);
+    }
+    
+    /**
+     * Test selectedIndex on disjoint remove above.
+     * Corner case: last selected. Fails for core
+     */
+    @Test
+    public void testSelectedAtLastOnDisjointRemoveItemsAbove() {
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        // disjoint remove of 2 elements above the last selected
+        removeAll(1, 3);
+        int expected = last - 2;
+        assertEquals("selected index after disjoint removes above", 
+                expected, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Test selectedIndex on disjoint remove above.
+     */
+    @Test
+    public void testSelectedOnDisjointRemoveItemsAbove() {
+        int last = items.size() - 2;
+        getSelectionModel().select(last);
+        // disjoint remove of 2 elements above the last selected
+        removeAll(1, 3);
+        int expected = last - 2;
+        assertEquals("selected index on disjoint removes above", 
+                expected, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * Test selectedItem on disjoint remove above.
+     */
+    @Test
+    public void testSelectedItemOnDisjointRemoveItemsAbove() {
+        int last = items.size() - 2;
+        Object lastItem = items.get(last);
+        getSelectionModel().select(last);
+        // disjoint remove of 2 elements above the last selected
+        removeAll(1, 3);
+        assertEquals("selected item unchanged on disjoint remove above", 
+                lastItem, getSelectionModel().getSelectedItem());
+    }
+    
+    /**
+     * Test selectedItem on disjoint remove above.
+     * corner case: last selected
+     */
+    @Test
+    public void testSelectedItemAtLastOnDisjointRemoveItemsAbove() {
+        int last = items.size() - 1;
+        Object lastItem = items.get(last);
+        getSelectionModel().select(last);
+        // disjoint remove of 2 elements above the last selected
+        removeAll(1, 3);
+        assertEquals("selected item unchanged on disjoint remove above", 
+                lastItem, getSelectionModel().getSelectedItem());
+    }
+    
+    
     @Test
     public void testSelectedOnRemoveItemAbove() {
         int index = 2;
         getSelectionModel().select(index);
-//        items.remove(1);
         removeItem(1);
         int expected = index - 1;
         assertEquals("open 30931 - selected after remove above selected", 
@@ -972,6 +1143,13 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         items.remove(i);
     }
 
+    protected void removeAll(int... indices) {
+        List result = new ArrayList(); 
+        Arrays.stream(indices).forEach(i -> result.add(items.get(i)));
+//        List result =  Arrays.stream(indices)
+//                .map(i ->  items.get(i)).collect(Collectors.toList());
+        items.removeAll(result);
+    }
     /**
      * Re-configures the view with new items via view.setItems(other)
      * @param other

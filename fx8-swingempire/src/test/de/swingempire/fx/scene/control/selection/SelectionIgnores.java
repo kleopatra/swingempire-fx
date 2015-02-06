@@ -122,14 +122,27 @@ public class SelectionIgnores {
     }
 
     /**
-     * Working with static class that doesn't require access to running
-     * test class
+     * Violating contract of selectFirst: with the violation
+     * doc'ed as by-design, the issue is fixed
+     * 
+     * https://javafx-jira.kenai.com/browse/RT-26079
      */
     public static class IgnoreRT26079 implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
+     * Ignore failures due to selecting the separator.
+     */
+    public static class IgnoreSeparatorSelect implements IgnoreCondition {
     
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }
@@ -140,7 +153,7 @@ public class SelectionIgnores {
      *  
      * @author Jeanette Winzenburg, Berlin
      */
-    public static class IgnoreDynamicItems implements IgnoreCondition {
+    public static class IgnoreDynamicItemsInPopup implements IgnoreCondition {
 
         @Override
         public boolean isSatisfied() {

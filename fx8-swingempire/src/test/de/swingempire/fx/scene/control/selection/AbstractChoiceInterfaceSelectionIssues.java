@@ -25,7 +25,6 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.SkinBase;
 import javafx.util.StringConverter;
 
@@ -39,9 +38,11 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboSelectionRT_19433;
 import de.swingempire.fx.scene.control.comboboxx.ComboboxSelectionCopyRT_26079;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDynamicItems;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDynamicItemsInPopup;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreExternalError;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSeparatorSelect;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
+import de.swingempire.fx.util.ChangeReport;
 import static org.junit.Assert.*;
 
 /**
@@ -55,8 +56,43 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     extends SelectionIssues<V, W>{
 
     
-//---------- test combo issues
+    // ---------- test combo issues
 
+    /**
+     * RT_39908: replacing item before selected shifts 
+     * selection towards the end. 
+     * 
+     * marked as fixed, doing regression testing here for custom models
+     * 
+     * PENDING JW: 
+     * - the fix (sometime around 4. Feb. 2015) ignores all replace
+     *   changes: check what happens on replacing all items
+     * - selection is shifted on each subChange, check what happens
+     *   on disjoint changes: must not fire more than a single event,
+     *   looks like it might  
+     */
+    @Test
+    public void testSelectedIndexOnReplacedAbove_rt_39908() {
+//        initSkin();
+        getSelectionModel().clearAndSelect(1);
+        assertEquals(items.get(1), getSelectionModel().getSelectedItem());
+        assertEquals(1, getSelectionModel().getSelectedIndex());
+        
+        items.set(0, "a");
+        assertEquals("selectedIndex unchanged on replaced above", 1, 
+                getSelectionModel().getSelectedIndex());
+    }
+    @Test
+    public void testSelectedItemOnReplacedAbove_rt_39908() {
+//        initSkin();
+        getSelectionModel().clearAndSelect(1);
+        assertEquals(items.get(1), getSelectionModel().getSelectedItem());
+        assertEquals(1, getSelectionModel().getSelectedIndex());
+
+        items.set(0, "a");
+        assertEquals("selectedItem unchanged on replaced above", 
+                items.get(1), getSelectionModel().getSelectedItem());
+    }
     /**
      * Trying to catch RT_19227: support duplicate items.
      * Here we select in combo and test listView's sync
@@ -118,7 +154,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
      * https://javafx-jira.kenai.com/browse/RT-20945
      */
     @Test
-    @ConditionalIgnore (condition = IgnoreDynamicItems.class)
+    @ConditionalIgnore (condition = IgnoreDynamicItemsInPopup.class)
     public void testUpdateOnShowingSetAllItems() {
         initSkin();
         getChoiceView().showingProperty().addListener((o, old, value) -> {
@@ -139,7 +175,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
      * https://javafx-jira.kenai.com/browse/RT-20945
      */
     @Test
-    @ConditionalIgnore (condition = IgnoreDynamicItems.class)
+    @ConditionalIgnore (condition = IgnoreDynamicItemsInPopup.class)
     public void testUpdateOnShowingSetItems() {
         initSkin();
         getChoiceView().showingProperty().addListener((o, old, value) -> {
@@ -374,6 +410,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     
 //---------- test unselectable (Separator)
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorNotSelectedItem() {
         if (!supportsSeparators()) return;
         getSelectionModel().select(new Separator());
@@ -383,6 +420,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorNotSelected() {
         if (!supportsSeparators()) return;
         int index = 2;
@@ -393,6 +431,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorSelectNext() {
         if (!supportsSeparators()) return;
         
@@ -405,6 +444,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorSelectPrevious() {
         if (!supportsSeparators()) return;
         int index = 2;
@@ -416,6 +456,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorSelectFirst() {
         if (!supportsSeparators()) return;
         int index = 0;
@@ -426,6 +467,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorSelectLast() {
         if (!supportsSeparators()) return;
         int index = items.size() - 1;
@@ -436,6 +478,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreSeparatorSelect.class)
     public void testSeparatorInPopup() {
         if (!supportsSeparators()) return;
         if (!hasPopup()) return;

@@ -55,6 +55,9 @@ public class ChangeReport implements ChangeListener {
         return newValues.size() > 0 ? newValues.get(0) : null;
     }
     
+    public Object getNewValueAt(int index) {
+        return index < newValues.size() ? newValues.get(index) : null;
+    }
     public void clear() {
         sources.clear();
         newValues.clear();

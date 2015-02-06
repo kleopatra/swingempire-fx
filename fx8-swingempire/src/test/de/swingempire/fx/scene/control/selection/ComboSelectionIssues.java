@@ -23,6 +23,10 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
+import de.swingempire.fx.util.StageLoader;
+
+import static org.junit.Assert.*;
+
 import static org.junit.Assert.*;
 
 /**
@@ -39,7 +43,6 @@ import static org.junit.Assert.*;
 public class ComboSelectionIssues 
     extends AbstractChoiceInterfaceSelectionIssues<ComboBox, SingleSelectionModel> {
 
-    
     /**
      * Trying to reproduce RT_26079 with builder: 
      * blowing if set equal but not same list
@@ -204,7 +207,6 @@ public class ComboSelectionIssues
 
     @Override
     protected boolean isClearSelectionOnSetItem() {
-        // TODO Auto-generated method stub
         return false;
     }
     @Override

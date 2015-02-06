@@ -28,6 +28,8 @@ import javafx.stage.Stage;
  * 
  * This here is - more or less - the original in the report.
  * Reported: https://javafx-jira.kenai.com/browse/RT-39884
+ * 
+ * virulent in 8u40b20, 8u40b23
  */
 public class TableStackedBar extends Application {
     public static void main(String[] args) { launch(args); }
@@ -52,7 +54,7 @@ public class TableStackedBar extends Application {
         tv.getColumns().addAll(col1,col2,col3);
         tv.setFixedCellSize(50.);
         
-        Scene scene = new Scene(tv, 1000, 700);
+        Scene scene = new Scene(tv); //, 1000, 700);
 
         stage.setScene(scene);
         stage.setTitle(System.getProperty("java.version"));

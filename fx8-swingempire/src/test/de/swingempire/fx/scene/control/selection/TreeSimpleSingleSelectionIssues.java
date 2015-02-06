@@ -19,7 +19,9 @@ import de.swingempire.fx.scene.control.tree.TreeItemX;
 import static org.junit.Assert.*;
 
 /**
- * Testing single selection api in TreeViewSelectionModel, for both selection modes.
+ * Testing single selection api in SimpleTreeSelectionModel (requires the tree
+ * is build with TreeItemX - or the other way round) for both selection modes.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

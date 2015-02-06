@@ -27,6 +27,11 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 /**
+ * Base class for testing single selection behaviour in treeView.
+ * 
+ * Note: so far, this tests only the linear part, that is the only branch
+ * is the root which is expanded.
+ *  
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
