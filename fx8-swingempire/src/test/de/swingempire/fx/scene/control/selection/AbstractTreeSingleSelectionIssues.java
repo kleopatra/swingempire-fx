@@ -4,7 +4,17 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,18 +23,10 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
 import static org.junit.Assert.*;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 
 /**
  * Base class for testing single selection behaviour in treeView.
@@ -189,6 +191,15 @@ public abstract class AbstractTreeSingleSelectionIssues extends
         TreeItem root = getView().getRoot();
         List items = createItems(other);
         root.getChildren().setAll(items);
+    }
+
+    
+    @Override
+    protected void removeAll(int... indices) {
+        ObservableList children = getView().getRoot().getChildren();
+        List toRemove = new ArrayList();
+        Arrays.stream(indices).forEach(i -> toRemove.add(children.get(i)));
+        children.removeAll(toRemove);
     }
 
     @Override

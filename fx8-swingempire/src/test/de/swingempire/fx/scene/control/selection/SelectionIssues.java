@@ -129,7 +129,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int last = items.size() - 1;
         getSelectionModel().select(last);
         ChangeListener l = (o, old, value) -> {
-            // hmm ... don't reach here? what happened, had it
+            // hmm ... don't reach here? 
+            // nothing fired, as the index isn't updated ...
             int newSelected = (int) value;
             LOG.info("new value/size: " + newSelected + "/" + items.size());
             if (newSelected > -1) {
@@ -140,9 +141,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().selectedIndexProperty().addListener(l);
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         removeAll(0, 2);
-        LOG.info("last/previous" + report.getNewValueAt(0) + "/" + report.getNewValueAt(1));
-        
-        fail("doooh ...");
     }
     
 
@@ -399,6 +397,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(last);
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
+//        items.removeAll(1, 3);
         int expected = last - 2;
         assertEquals("selected index on disjoint removes above", 
                 expected, getSelectionModel().getSelectedIndex());
