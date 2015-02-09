@@ -69,6 +69,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     /**
      * Testing notification on disjoint removes above selected. Here: item
+     * 
+     * Included in bug report: https://javafx-jira.kenai.com/browse/RT-40012
      */
     @Test
     public void testSelectedItemNotificationOnDisjointRemovesAbove() {
@@ -78,6 +80,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(lastItem, getSelectionModel().getSelectedItem());
         ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         removeAll(0, 2);
+//        items.removeAll(items.get(1), items.get(3));
         assertEquals("sanity: selectedItem unchanged", lastItem, getSelectionModel().getSelectedItem());
         assertEquals("must not fire on removes above", 0, report.getEventCount());
     }
@@ -87,6 +90,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * 
      * Note that we don't use the corner case of having the last index selected
      * (which fails already on updating the index)
+     * 
+     * Included in bug report: https://javafx-jira.kenai.com/browse/RT-40012
      */
     @Test
     public void testSelectedIndexNotificationOnDisjointRemovesAbove() {
@@ -95,12 +100,19 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         assertEquals(last, getSelectionModel().getSelectedIndex());
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         removeAll(0, 2);
+//        items.removeAll(items.get(1), items.get(3));
         assertEquals("sanity: selectedIndex must be shifted by -2", last - 2, 
                 getSelectionModel().getSelectedIndex());
         assertEquals("must fire single event on removes above", 1, 
                 report.getEventCount());
     }
     
+    /**
+     * This fails because it it not updated at all, that is old selectedIndex ==
+     * newSelectedIndex
+     * 
+     * not included in bug report
+     */
     @Test
     public void testSelectedIndexAtLastNotificationOnDisjointRemovesAbove() {
         int last = items.size() - 1;
@@ -132,14 +144,13 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
             // hmm ... don't reach here? 
             // nothing fired, as the index isn't updated ...
             int newSelected = (int) value;
-            LOG.info("new value/size: " + newSelected + "/" + items.size());
+//            LOG.info("new value/size: " + newSelected + "/" + items.size());
             if (newSelected > -1) {
                 assertTrue("index " + newSelected + "must be less than size " + items.size(),
                         newSelected < items.size());
             }
         } ;
         getSelectionModel().selectedIndexProperty().addListener(l);
-        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         removeAll(0, 2);
     }
     
@@ -339,7 +350,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         assertEquals("sanity: focus set along with selected index", index, getFocusIndex(index));
-//        items.remove(1);
         removeItem(1);
         int expected = index -1;
         assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
@@ -368,6 +378,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(last);
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
+//        items.removeAll(items.get(1), items.get(3));
         int selected = getSelectionModel().getSelectedIndex();
         if (selected > -1)
             items.get(selected);
@@ -376,13 +387,15 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     /**
      * Test selectedIndex on disjoint remove above.
      * Corner case: last selected. Fails for core
-     */
+     * Included in bug report: https://javafx-jira.kenai.com/browse/RT-40012
+    */
     @Test
     public void testSelectedAtLastOnDisjointRemoveItemsAbove() {
         int last = items.size() - 1;
         getSelectionModel().select(last);
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
+//        items.removeAll(items.get(1), items.get(3));
         int expected = last - 2;
         assertEquals("selected index after disjoint removes above", 
                 expected, getSelectionModel().getSelectedIndex());
@@ -405,6 +418,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     
     /**
      * Test selectedItem on disjoint remove above.
+     * 
+     * Passes because not using the last index, that is list access is
+     * valid during internal update.
      */
     @Test
     public void testSelectedItemOnDisjointRemoveItemsAbove() {
