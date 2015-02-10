@@ -13,6 +13,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.util.Callback;
 
 /**
+ * PENDING JW: unused, still favoring property access by name, old habits :-)
  */
 public class ControlUtils {
     
