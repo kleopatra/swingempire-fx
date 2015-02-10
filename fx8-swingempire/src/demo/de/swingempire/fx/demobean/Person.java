@@ -53,6 +53,11 @@ public class Person {
         return email;
     }
     
+    
+    @Override
+    public String toString() {
+        return getLastName() + ", " + getFirstName();
+    }
     public static ObservableList<Person> persons() {
         return FXCollections.observableArrayList(
                 new Person("Jacob", "Smith", "jacob.smith@example.com"),

@@ -13,7 +13,6 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.util.Callback;
 
 /**
- * @author Jeanette Winzenburg, Berlin
  */
 public class ControlUtils {
     
