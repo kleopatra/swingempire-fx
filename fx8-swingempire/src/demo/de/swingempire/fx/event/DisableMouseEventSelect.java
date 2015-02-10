@@ -23,6 +23,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -69,14 +70,11 @@ public class DisableMouseEventSelect extends Application {
     class MySpecialCellSkin extends TableCellSkinBase {
         private final TableColumn tableColumn;
 
-        /**
-         * @param tableCell
-         */
         public MySpecialCellSkin(TableCell tableCell) {
             super(tableCell, new MySpecialCellBehavior(tableCell));
-            consumeMouseEvents(true);
+            // doesn't make a difference
+            //consumeMouseEvents(true);
             this.tableColumn = tableCell.getTableColumn();
-            
             super.init(tableCell);
         }
 
@@ -92,9 +90,6 @@ public class DisableMouseEventSelect extends Application {
     
     class MySpecialCellBehavior extends TableCellBehavior {
 
-        /**
-         * @param control
-         */
         public MySpecialCellBehavior(TableCell control) {
             super(control);
         }
@@ -102,21 +97,18 @@ public class DisableMouseEventSelect extends Application {
         @Override
         protected void doSelect(double x, double y, MouseButton button,
                 int clickCount, boolean shiftDown, boolean shortcutDown) {
-//            if (button == MouseButton.SECONDARY) return;
+            if (button == MouseButton.SECONDARY) return;
             super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
         }
-        
-        
-        
+
     }
+
     class MySpecialCell extends MyTableCell {
         Canvas canvas = new Canvas(200.0, 12.0);
         public MySpecialCell() {
             super(null);
             canvas.setMouseTransparent(true);
-//            addEventHandler(MouseEvent.ANY, e -> e.consume());
             addEventFilter(MouseEvent.ANY, e -> e.consume());
-//            setMouseTransparent(true);
         }
 
         @Override
@@ -131,10 +123,10 @@ public class DisableMouseEventSelect extends Application {
             }
         }
 
-//        @Override
-//        protected Skin<?> createDefaultSkin() {
-//            return new MySpecialCellSkin(this);
-//        }
+        @Override
+        protected Skin<?> createDefaultSkin() {
+            return new MySpecialCellSkin(this);
+        }
         
         
     }
