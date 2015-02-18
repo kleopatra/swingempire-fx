@@ -104,11 +104,18 @@ public class DisableMouseEventSelect extends Application {
     }
 
     class MySpecialCell extends MyTableCell {
+        // parent type doesn't make a difference
+//    class MySpecialCell extends TableCell<Person, String> {
         Canvas canvas = new Canvas(200.0, 12.0);
+        // unrelated to canvas
+        Label label = new Label();
         public MySpecialCell() {
             super(null);
             canvas.setMouseTransparent(true);
             addEventFilter(MouseEvent.ANY, e -> e.consume());
+            // move Jonathan's code from table to cell level:
+            // need to consume contextMenuEvents as well
+            addEventFilter(ContextMenuEvent.ANY, e -> e.consume());
         }
 
         @Override
@@ -116,6 +123,8 @@ public class DisableMouseEventSelect extends Application {
             super.updateItem(item, empty);
             setText(null);
             if (! empty) {
+//                label.setText(item);
+//                setGraphic(label);
                 canvas.getGraphicsContext2D().strokeText(item, 5.0, 10.0);
                 setGraphic(canvas);
             } else {
@@ -123,10 +132,10 @@ public class DisableMouseEventSelect extends Application {
             }
         }
 
-        @Override
-        protected Skin<?> createDefaultSkin() {
-            return new MySpecialCellSkin(this);
-        }
+//        @Override
+//        protected Skin<?> createDefaultSkin() {
+//            return new MySpecialCellSkin(this);
+//        }
         
         
     }
@@ -168,6 +177,15 @@ public class DisableMouseEventSelect extends Application {
         table.setItems(data);
         table.getColumns().addAll(firstNameCol, lastNameCol, emailCol);
 
+        //--------- Jonathon's code to resolve as not-an-issue: 
+//        table.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+//            if (e.getButton() == MouseButton.SECONDARY) {
+//                e.consume();
+//            }
+//        });
+//        table.addEventFilter(ContextMenuEvent.ANY, e -> {
+//            e.consume();
+//        });
         final VBox vbox = new VBox();
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(10, 0, 0, 10));

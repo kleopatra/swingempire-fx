@@ -22,6 +22,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Tab;
@@ -45,8 +46,6 @@ import javafx.util.converter.DefaultStringConverter;
 import com.sun.javafx.css.Stylesheet;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.ControlUtils;
-import de.swingempire.fx.scene.control.ControlUtils.PropertyFactory;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
@@ -317,11 +316,20 @@ public class TableViewSample extends Application {
 
     /**
      * Though not abstract, TableCell simply shows nothing. Need to
-     * subclass and implement updateItem.
+     * subclass and implement updateItem.<p>
+     * 
+     * Unrelated to binding: added constructor with contextMenu.
      * 
      * C&P of default tableCell in TableColumn.
      */
     public static class PlainTableCell<S, T> extends TableCell<S, T> {
+        
+        public PlainTableCell() {
+        }
+        
+        public PlainTableCell(ContextMenu menu) {
+            setContextMenu(menu);
+        }
         @Override protected void updateItem(T item, boolean empty) {
             if (item == getItem()) return;
 

@@ -19,9 +19,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
+import com.sun.glass.ui.Robot;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
@@ -258,7 +260,30 @@ public class FXUtils {
         Object anchor = view.getProperties().get(ANCHOR_KEY);
         return anchor != null ? (int) anchor : -1;
     }
-//--------------- copied from TBee's TestUtils    
+
+    /**
+     * Get current mouse location. <p>
+     * 
+     * Copied from efxclipse:
+     * http://git.eclipse.org/
+     * c/efxclipse/org.eclipse.efxclipse.git/tree/experimental
+     * /swt/org.eclipse.fx.runtime.swt/src/ org/eclipse/swt/widgets/Display.java
+     * 
+     * @return
+     */
+    public Point2D getCursorLocation() {
+        Robot r = null;
+        try {
+            r = com.sun.glass.ui.Application.GetApplication().createRobot();
+            return new Point2D(r.getMouseX(), r.getMouseY());
+        } finally {
+            if (r != null) {
+                r.destroy();
+            }
+        }
+    }
+
+    //--------------- copied from TBee's TestUtils    
     static public void sleep(int ms) {
         try {
             Thread.sleep(ms);

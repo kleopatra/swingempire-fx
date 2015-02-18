@@ -54,6 +54,16 @@
             });
     
             BorderPane root = new BorderPane(table);
+            //-------- unrelated: quick check of scrollTo
+            // scroll index to first line
+            Button scroll = new Button("scrollTo focused");
+            scroll.setOnAction(e -> {
+                int index = table.getSelectionModel().getSelectedIndex();
+                if (index < 0) return;
+                table.scrollTo(index);
+            });
+            root.setBottom(scroll);
+            //-------- end of scrollTo
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle(System.getProperty("java.version"));
