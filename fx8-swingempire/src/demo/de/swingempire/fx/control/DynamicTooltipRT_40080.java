@@ -16,9 +16,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * Tooltip flickering (showing/hiding) when setting text in onShowing.
+ *  
+ * Reported: https://javafx-jira.kenai.com/browse/RT-40080
+ *  
  * @author Jeanette Winzenburg, Berlin
  */
-public class DynamicTooltip extends Application {
+public class DynamicTooltipRT_40080 extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
