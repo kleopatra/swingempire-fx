@@ -273,7 +273,7 @@ public class TableViewContextMenu extends Application {
                 LOG.info("got context on plaincell? " + getItem() + getIndex());
             });
 
-//            setContextMenu(menu);
+            setContextMenu(menu);
         }
         @Override protected void updateItem(T item, boolean empty) {
             if (item == getItem()) return;
