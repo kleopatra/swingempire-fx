@@ -438,7 +438,7 @@ public class TableViewSample extends Application {
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
             LOG.info("old/new " + oldValue + "\n  " + newValue);
-            LOG.info("anchor? " + table.getProperties().get("anchor"));
+//            LOG.info("anchor? " + table.getProperties().get("anchor"));
         });
         TableColumn<Person, String> firstNameCol = new TableColumn<>(
                 "First Name");

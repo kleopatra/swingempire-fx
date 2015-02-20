@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.event;
 
+import java.util.logging.Logger;
+
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -24,6 +26,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -92,7 +95,19 @@ public class DisableMouseEventSelect extends Application {
 
         public MySpecialCellBehavior(TableCell control) {
             super(control);
+            control.addEventHandler(KeyEvent.ANY, e -> {
+                LOG.info("got key? " + e);
+            });
         }
+
+
+
+        @Override
+        public void contextMenuRequested(ContextMenuEvent e) {
+            LOG.info("got contextMenu?" + e);
+            super.contextMenuRequested(e);
+        }
+
 
         @Override
         protected void doSelect(double x, double y, MouseButton button,
@@ -115,7 +130,7 @@ public class DisableMouseEventSelect extends Application {
             addEventFilter(MouseEvent.ANY, e -> e.consume());
             // move Jonathan's code from table to cell level:
             // need to consume contextMenuEvents as well
-            addEventFilter(ContextMenuEvent.ANY, e -> e.consume());
+//            addEventFilter(ContextMenuEvent.ANY, e -> e.consume());
         }
 
         @Override
@@ -132,10 +147,10 @@ public class DisableMouseEventSelect extends Application {
             }
         }
 
-//        @Override
-//        protected Skin<?> createDefaultSkin() {
-//            return new MySpecialCellSkin(this);
-//        }
+        @Override
+        protected Skin<?> createDefaultSkin() {
+            return new MySpecialCellSkin(this);
+        }
         
         
     }
@@ -235,4 +250,8 @@ public class DisableMouseEventSelect extends Application {
         }
 
     }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(DisableMouseEventSelect.class.getName());
 }
