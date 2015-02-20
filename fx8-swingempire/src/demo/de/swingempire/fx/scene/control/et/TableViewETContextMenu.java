@@ -7,7 +7,9 @@ package de.swingempire.fx.scene.control.et;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,8 +24,13 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import com.sun.javafx.scene.control.behavior.TableCellBehavior;
+import com.sun.javafx.scene.control.skin.TableCellSkinBase;
+
 import de.swingempire.fx.util.FXUtils;
 
 /**
@@ -86,6 +93,11 @@ public class TableViewETContextMenu extends Application {
      * PENDING: need to position the contextMenu relative to
      * the cell (currently is relative to tableView)
      * 
+     * ContextMenuEvent has a copyFor(newSource, ...) method - where to apply?
+     * Once the event reaches the cell/behaviour it's too late: the handler
+     * in control is already installed, sees it before us, no way to 
+     * switch to another.
+     * 
      * C&P of default tableCell in TableColumn + contextMenu
      */
     private static class PlainTableCell<S, T> extends TableCell<S, T> {
@@ -95,7 +107,7 @@ public class TableViewETContextMenu extends Application {
 //                LOG.info("got key on plaincell? " + getItem() + getIndex());
 //            });
             addEventHandler(ContextMenuEvent.ANY, e -> {
-                
+                e.consume();
                 LOG.info("got context on plaincell? " + getItem() + getIndex() + "\n   " +e);
             });
 
@@ -119,7 +131,48 @@ public class TableViewETContextMenu extends Application {
         }
         @Override
         protected Skin<?> createDefaultSkin() {
-            return super.createDefaultSkin();
+            return new MySpecialCellSkin(this);
+//            return super.createDefaultSkin();
+        }
+        
+    }
+    private static class MySpecialCellBehavior extends TableCellBehavior {
+
+        public MySpecialCellBehavior(TableCell control) {
+            super(control);
+        }
+
+        @Override
+        public void contextMenuRequested(ContextMenuEvent e) {
+            LOG.info("contextMenu requested in behaviour?" + e);
+            e.consume();
+            super.contextMenuRequested(e);
+        }
+
+        @Override
+        protected void doSelect(double x, double y, MouseButton button,
+                int clickCount, boolean shiftDown, boolean shortcutDown) {
+//            if (button == MouseButton.SECONDARY) return;
+            super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
+        }
+
+    }
+
+    private static class MySpecialCellSkin extends TableCellSkinBase {
+        private final TableColumn tableColumn;
+
+        public MySpecialCellSkin(TableCell tableCell) {
+            super(tableCell, new MySpecialCellBehavior(tableCell));
+            this.tableColumn = tableCell.getTableColumn();
+            super.init(tableCell);
+        }
+
+        @Override protected BooleanProperty columnVisibleProperty() {
+            return tableColumn.visibleProperty();
+        }
+
+        @Override protected ReadOnlyDoubleProperty columnWidthProperty() {
+            return tableColumn.widthProperty();
         }
         
     }
