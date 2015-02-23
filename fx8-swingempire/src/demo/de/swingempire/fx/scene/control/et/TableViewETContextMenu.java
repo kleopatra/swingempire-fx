@@ -101,7 +101,6 @@ public class TableViewETContextMenu extends Application {
      * C&P of default tableCell in TableColumn + contextMenu
      */
     private static class PlainTableCell<S, T> extends TableCell<S, T> {
-        
         public PlainTableCell(ContextMenu menu) {
 //            addEventHandler(KeyEvent.ANY, e -> {
 //                LOG.info("got key on plaincell? " + getItem() + getIndex());

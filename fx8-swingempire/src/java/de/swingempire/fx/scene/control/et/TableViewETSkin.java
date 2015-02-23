@@ -12,6 +12,7 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 
+import com.sun.javafx.event.EventHandlerManager;
 import com.sun.javafx.scene.control.skin.TableRowSkin;
 import com.sun.javafx.scene.control.skin.TableViewSkin;
 
@@ -20,6 +21,7 @@ import com.sun.javafx.scene.control.skin.TableViewSkin;
  */
 public class TableViewETSkin<S> extends TableViewSkin<S> implements EventTarget {
 
+    EventHandlerManager eventHandlerManager = new EventHandlerManager(this);
     @Override
     public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
         TablePosition<S, ?> focused = getFocusedCell();
@@ -35,6 +37,7 @@ public class TableViewETSkin<S> extends TableViewSkin<S> implements EventTarget 
                 }
             }
         }
+//        return tail.prepend(eventHandlerManager);
         return tail;
     }
 

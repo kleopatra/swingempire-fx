@@ -12,13 +12,16 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 
+import com.sun.javafx.event.EventHandlerManager;
 import com.sun.javafx.scene.control.skin.TableRowSkin;
 
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableRowETSkin<T> extends TableRowSkin<T> implements EventTarget {
-    
+
+    EventHandlerManager eventHandlerManager = new EventHandlerManager(this);
+
     @Override
     public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
         TableView<T> tableView = getSkinnable().getTableView();
@@ -30,6 +33,7 @@ public class TableRowETSkin<T> extends TableRowSkin<T> implements EventTarget {
                 cell.buildEventDispatchChain(tail);
             }
         }
+//        return tail.prepend(eventHandlerManager);
         return tail;
     }
 
