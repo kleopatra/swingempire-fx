@@ -8,6 +8,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventDispatchChain;
+import javafx.event.EventDispatcher;
 import javafx.event.EventTarget;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -24,12 +25,30 @@ import com.sun.javafx.event.EventHandlerManager;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 
 /**
- * Activate cell contextMenu by keyboard, quick shot on ListView
+ * Activate cell contextMenu by keyboard, quick shot on ListView<p>
+ * 
+ * Not supported: contextMenu requests are dispatched to the focused
+ * component (which is the listView), not the cell. Need to dispatch
+ * further down, as described in the issue evaluation<p>
+ * 
+ * https://javafx-jira.kenai.com/browse/RT-40071
+ * <p>
+ * 
+ * Here's a stand-alone example  
+ * 
+ * ContextMenu is shown, but at a location relative to the containing
+ * view, not relative to the cell. How to position it relative to 
+ * the cell? <p>
+ * 
+ * Asked at SO
+ * http://stackoverflow.com/q/28673753/203657
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ListViewETContextMenu extends Application {
 
     private Parent getContent() {
+        EventDispatcher t;
         ObservableList<String> data = FXCollections.observableArrayList("one", "two", "three");
 //        ListView<String> listView = new ListView<>();
         ListViewC<String> listView = new ListViewC<>();
@@ -53,9 +72,8 @@ public class ListViewETContextMenu extends Application {
                     Cell<?> cell = flow.getCell(focused);
                     tail = cell.buildEventDispatchChain(tail);
                 }
-                return tail;
                 // the handlerManager doesn't make a difference
-    //            return tail.prepend(eventHandlerManager);
+                return tail.prepend(eventHandlerManager);
             }
             
             // boiler-plate constructor
