@@ -26,6 +26,7 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -159,9 +160,9 @@ public class DebugUtils {
      * just for fun: playing with method references.
      */
     public enum BoundsType implements AddBounds {
-        LOCAL(DebugUtils::addBoundsInLocal), INPARENT(
-                DebugUtils::addBoundsInParent), LAYOUT(
-                DebugUtils::addLayoutBounds);
+        LOCAL(DebugUtils::addBoundsInLocal), 
+        INPARENT(DebugUtils::addBoundsInParent), 
+        LAYOUT(DebugUtils::addLayoutBounds);
 
         private final AddBounds delegate;
 
@@ -175,6 +176,33 @@ public class DebugUtils {
         }
     }
 
+    public static void printBounds(Node node) {
+        String className = node.getClass().getName();
+        String result = className  
+                + "\n   " + "local:  " + node.getBoundsInLocal()
+                + "\n   " + "parent: " + node.getBoundsInParent()
+                + "\n   " + "layout: " + node.getLayoutBounds()
+                ;
+        LOG.info(result );
+    }
+
+    public static void printLocalTo(Node node) {
+        Bounds local = node.getBoundsInLocal();
+        String toTransform = "\n" +"local bounds " + local 
+                + "\n   " + "to parent: " + node.localToParent(local)
+                + "\n   " + "to scene:  " + node.localToScene(local)
+                + "\n   " + "to screen: " + node.localToScreen(local);
+        LOG.info(toTransform);
+    }
+    
+    public static void printContextLocation(ContextMenuEvent event) {
+        String location = "contextMenu on " + event.getSource().getClass().getName()
+                + "\n   " + "x/y:       " + event.getX() + " / " + event.getY()
+                + "\n   " + "sceneX/Y:  " + event.getSceneX() + " / " + event.getSceneY()
+                + "\n   " + "screenX/Y: " + event.getScreenX() + " / " + event.getScreenY()
+        ;
+        LOG.info(location);
+    }
     public static void addAllBounds(Parent parent, Node node) {
         // PENDING JW: see no way to use a method reference if the method
         // needs parameters
@@ -193,18 +221,36 @@ public class DebugUtils {
         type.addBounds(parent, node);
     }
 
+    /**
+     * Adds a transparent rectangle with red Border to 
+     * visualize the boundsInParen of the given node
+     * @param parent
+     * @param node
+     */
     public static void addBoundsInParent(Parent parent, Node node) {
         Bounds bounds = node.getBoundsInParent();
         Color strokePaint = Color.RED;
         addBounds(parent, bounds, strokePaint);
     }
 
+    /**
+     * Adds a transparent rectangle with blue Border to 
+     * visualize the boundsInLocal of the given node
+     * @param parent
+     * @param node
+     */
     public static void addBoundsInLocal(Parent parent, Node node) {
         Bounds bounds = node.getBoundsInLocal();
         Color strokePaint = Color.BLUE;
         addBounds(parent, bounds, strokePaint);
     }
 
+    /**
+     * Adds a transparent rectangle with green Border to 
+     * visualize the layoutBounds of the given node
+     * @param parent
+     * @param node
+     */
     public static void addLayoutBounds(Parent parent, Node node) {
         Bounds bounds = node.getLayoutBounds();
         Color strokePaint = Color.GREEN;
