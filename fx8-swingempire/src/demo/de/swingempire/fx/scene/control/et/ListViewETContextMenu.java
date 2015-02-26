@@ -29,6 +29,8 @@ import javafx.stage.Stage;
 import com.sun.javafx.event.EventHandlerManager;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 
+import de.swingempire.fx.util.DebugUtils;
+
 /**
  * Activate cell contextMenu by keyboard, quick shot on ListView<p>
  * 
@@ -77,7 +79,7 @@ public class ListViewETContextMenu extends Application {
 //        ListView<String> listView = new ListView<>();
         
         ListViewC<String> listView = new ListViewC<>();
-//        listView.setContextMenu(new ContextMenu(new MenuItem("listView")));
+        listView.setContextMenu(new ContextMenu(new MenuItem("listView")));
         listView.setItems(data);
         listView.setCellFactory(p -> new ListCellC<>(new ContextMenu(new MenuItem("item"))));
         return listView;
@@ -92,6 +94,7 @@ public class ListViewETContextMenu extends Application {
 
         private EventDispatcher delegate;
         private Cell<?> targetCell;
+        private ContextMenuEvent originalContextMenuEvent;
         
         public ContextMenuEventDispatcher(EventDispatcher delegate) {
             this.delegate = delegate;
@@ -107,19 +110,31 @@ public class ListViewETContextMenu extends Application {
         
         /**
          * Implemented to replace a keyboard-triggered contextMenuEvent before
-         * letting the delegate dispatch it.
+         * letting the delegate dispatch it.<p>
          * 
+         * PENDING how to replace the event only if the cell actually 
+         * has a contextMenu?
          */
         @Override
         public Event dispatchEvent(Event event, EventDispatchChain tail) {
-            event = handleContextMenuEvent(event);
+            event = maybeReplaceContextMenuEvent(event);
+            // trying to not interfere if cell has no event ... no effect
+//            Event tailHandled = delegate.dispatchEvent(event, tail);
+//            if (originalContextMenuEvent != null && tailHandled == event) {
+//                event = originalContextMenuEvent;
+//            } else {
+//                event = tailHandled;
+//            }
+//            originalContextMenuEvent = null;
+//            DebugUtils.printSourceTarget(event);
             return delegate.dispatchEvent(event, tail);
         }
 
-        private Event handleContextMenuEvent(Event event) {
+        private Event maybeReplaceContextMenuEvent(Event event) {
             if (!(event instanceof ContextMenuEvent) || targetCell == null) return event;
             ContextMenuEvent cme = (ContextMenuEvent) event;
             if (!cme.isKeyboardTrigger()) return event;
+            originalContextMenuEvent = cme;
             final Bounds bounds = targetCell.localToScreen(
                     targetCell.getBoundsInLocal());
             // calculate screen coordinates of contextMenu
@@ -147,13 +162,12 @@ public class ListViewETContextMenu extends Application {
         public EventDispatchChain buildEventDispatchChain(
                 EventDispatchChain tail) {
             int focused = getSkinnable().getFocusModel().getFocusedIndex();
-            Cell cell = null;
+            Cell<?> cell = null;
             if (focused > -1) {
                 cell = flow.getCell(focused);
                 tail = cell.buildEventDispatchChain(tail);
             }
             contextHandler.setTargetCell(cell);
-            // the handlerManager doesn't make a difference
             return tail.prepend(contextHandler);
         }
 
@@ -187,8 +201,9 @@ public class ListViewETContextMenu extends Application {
     
     private static class ListCellC<T> extends ListCell<T> {
      
+        ContextMenu menu;
         public ListCellC(ContextMenu menu) {
-            setContextMenu(menu);
+            this.menu = menu;
 //            setOnMousePressed(e -> DebugUtils.printLocalTo(this));
 //            setOnContextMenuRequested(e -> DebugUtils.printContextLocation(e));
         }
@@ -199,6 +214,7 @@ public class ListViewETContextMenu extends Application {
             super.updateItem(item, empty);
             
             if (empty) {
+                setContextMenu(null);
                 setText(null);
                 setGraphic(null);
             } else if (item instanceof Node) {
@@ -209,12 +225,7 @@ public class ListViewETContextMenu extends Application {
                     setGraphic(newNode);
                 }
             } else {
-                /**
-                 * This label is used if the item associated with this cell is to be
-                 * represented as a String. While we will lazily instantiate it
-                 * we never clear it, being more afraid of object churn than a minor
-                 * "leak" (which will not become a "major" leak).
-                 */
+//                setContextMenu(menu);
                 setText(item == null ? "null" : item.toString());
                 setGraphic(null);
             }
@@ -224,6 +235,8 @@ public class ListViewETContextMenu extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
+//        scene.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> e.consume());
+//        scene.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> e.consume());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

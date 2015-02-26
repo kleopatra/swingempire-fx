@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -151,6 +152,22 @@ public class DebugUtils {
         return null;
     }
 
+//---------------- event
+    
+    public static void printSourceTarget(Event event) {
+        String es = null;
+        if (event != null) {
+            es = "source/target for " + event.getEventType()
+                + "\n    " + getClazz(event.getSource())
+                + "\n    " + getClazz(event.getTarget());
+        }
+        LOG.info(es);
+    }
+    
+    public static String getClazz(Object instance) {
+        return instance != null ? instance.getClass().getSimpleName() : "none";
+    }
+//------------- layout/bounds    
     @FunctionalInterface
     public interface AddBounds {
         void addBounds(Parent parent, Node node);
