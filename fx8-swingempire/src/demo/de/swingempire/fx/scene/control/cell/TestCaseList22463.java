@@ -37,6 +37,11 @@ import javafx.stage.Stage;
  * 
  * added fields to try and track why the item is updated, but not the whole list
  * 
+ * Since 8u40b12, this can be handled by a custom ListCell that overrides
+ * isItemChanged to return false if new/old item aren't identical.
+ * 
+ * https://javafx-jira.kenai.com/browse/RT-39094
+ * 
  * @author dosiennik
  */
 public class TestCaseList22463 extends Application {
@@ -60,9 +65,35 @@ public class TestCaseList22463 extends Application {
 
         final ListView<Person22463> listView = new ListView<>();
 
+        // prior to 8u40b12
+//        listView.setCellFactory(lv -> {
+//            System.out.println("created");
+//            ListCell cell = new IdentityCheckingListCell<Person22463>() {
+//                @Override
+//                protected void updateItem(Person22463 item, boolean empty) {
+//                    super.updateItem(item, empty);
+//                    setText(item != null ? item.getName() : "");
+//                    if (!empty) {
+//                        System.out.println("item updated to '" + item + "'"  + "for " + getId());
+//                    }
+//                }
+//            };
+//            cell.setId("cell-id: " + idCount++);
+//            return cell;
+//         });
+
+        // with new api, since 8u40b12
         listView.setCellFactory(lv -> {
-            System.out.println("created");
-            ListCell cell = new IdentityCheckingListCell<Person22463>() {
+            ListCell<Person22463> cell = new ListCell<Person22463>() {
+                
+                
+                @Override
+                protected boolean isItemChanged(Person22463 oldItem,
+                        Person22463 newItem) {
+                    return oldItem != newItem;
+                }
+    
+                // boiler-plate to show anything
                 @Override
                 protected void updateItem(Person22463 item, boolean empty) {
                     super.updateItem(item, empty);
@@ -71,11 +102,10 @@ public class TestCaseList22463 extends Application {
                         System.out.println("item updated to '" + item + "'"  + "for " + getId());
                     }
                 }
-            };
-            cell.setId("cell-id: " + idCount++);
+            };    
             return cell;
-         });
-
+                
+        });
         Button init = new Button("init for setItem");
         init.setOnAction(e -> {
             listView.getItems().clear();

@@ -20,6 +20,11 @@ import javafx.scene.control.ListCell;
  *   // decides about calling or not updateItem(newValue, empty)
  * does not call if newValue.equals(oldValue)  
  * 
+ * no longer needed:
+ * Since 8u40b12, this can be handled by a custom ListCell that overrides
+ * isItemChanged to return false if new/old item aren't identical.
+ * 
+ * https://javafx-jira.kenai.com/browse/RT-39094
  * 
  * @author Jeanette Winzenburg, Berlin
  */

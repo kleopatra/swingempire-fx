@@ -572,15 +572,16 @@ public class ObservableListTest {
     
     /**
      * Invalidation events are fired.
+     * So a scenario to reliably be notified by list changes is:
+     * 
+     * - create a ListProperty
+     * - bind the listProperty to the list-valued ObjectProperty
+     * - listen to listProperty's listChanges 
      */
     @Test
     public void testListValuedObjectPropertyBoundTo() {
         ObservableList<String> list = createObservableList(true);
         ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
-        ObjectProperty<ObservableList<String>> otherProperty =
-                new SimpleObjectProperty(createObservableList(true));
-        assertFalse("sanity: two properties with equal list are not equal", 
-                property.equals(otherProperty));
         ListProperty listProperty = new SimpleListProperty();
         listProperty.bind(property);
         
@@ -593,7 +594,22 @@ public class ObservableListTest {
         assertEquals(1, lr.getEventCount());
     }
     
-    
+    /**
+     * Sanity test: list-valued ObjectProperty with equal list is not 
+     * equal.
+     */
+    @Test
+    public void testObjectPropertyWithEqualOrSameList() {
+        ObservableList<String> list = createObservableList(true);
+        ObjectProperty<ObservableList<String>> property = new SimpleObjectProperty<>(list);
+        ObjectProperty<ObservableList<String>> otherPropertySameList = new SimpleObjectProperty<>(list);
+        assertFalse("sanity: two properties with same list are not equal", 
+                property.equals(otherPropertySameList));
+        ObjectProperty<ObservableList<String>> otherPropertyEqualList =
+                new SimpleObjectProperty(createObservableList(true));
+        assertFalse("sanity: two properties with equal list are not equal", 
+                property.equals(otherPropertyEqualList));
+    }
     /**
      * Issue RT-38828 ListProperty fires ChangeEvent on modifications to the list
      * Confused: listProperty fires changeEvent if items in underlying list

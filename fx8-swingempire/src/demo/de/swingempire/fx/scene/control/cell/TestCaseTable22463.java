@@ -4,12 +4,6 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +29,14 @@ import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 /**
  * Here we have a list that's equal to the new list because its items are equals.
  * Should be covered by 15793? Why not?
+ * 
+ * 
+ * Since 8u40b12, this can be handled by a custom ListCell that overrides
+ * isItemChanged to return false if new/old item aren't identical.
+ * Since 8u60, the remaining part of the bug (tableRowCell needs custom
+ * skin as well) is fixed also.
+ * https://javafx-jira.kenai.com/browse/RT-39094
+
  * 
  * @author dosiennik
  */
