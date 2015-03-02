@@ -76,9 +76,12 @@ public class ListViewETContextMenu extends Application {
         EventDispatcher t;
         ContextMenuEvent s;
         ObservableList<String> data = FXCollections.observableArrayList("one", "two", "three");
+        // core
 //        ListView<String> listView = new ListView<>();
-        
-        ListViewC<String> listView = new ListViewC<>();
+        // custom that effectively builds the chain twice
+//        ListViewC<String> listView = new ListViewC<>();
+        // custom that builds either from listView or from cell
+        ListViewET<String> listView = new ListViewET<>();
         listView.setContextMenu(new ContextMenu(new MenuItem("listView")));
         listView.setItems(data);
         listView.setCellFactory(p -> new ListCellC<>(new ContextMenu(new MenuItem("item"))));
@@ -126,7 +129,7 @@ public class ListViewETContextMenu extends Application {
 //                event = tailHandled;
 //            }
 //            originalContextMenuEvent = null;
-//            DebugUtils.printSourceTarget(event);
+            DebugUtils.printSourceTarget(event);
             return delegate.dispatchEvent(event, tail);
         }
 
@@ -147,7 +150,81 @@ public class ListViewETContextMenu extends Application {
         }
         
     }
+ 
+//------------- ListViewET/Skin: trying to build the chain once only
     
+    /**
+     * ListViewSkin that implements EventTarget and hooks the focused cell into
+     * the event dispatch chain.
+     * 
+     * No visible change against the C version ... still missing something
+     */
+    private static class ListViewETSkin<T> extends ListViewSkin<T> implements
+            EventTarget {
+
+        private ContextMenuEventDispatcher contextHandler = 
+                new ContextMenuEventDispatcher(new EventHandlerManager(this));
+        
+        /**
+         * Implemented to return the chain build from the focused cell, if 
+         * available, or null if nothing focused.
+         * 
+         * PENDING the null return value violates super's contract!
+         */
+        @Override
+        public EventDispatchChain buildEventDispatchChain(
+                EventDispatchChain tail) {
+            int focused = getSkinnable().getFocusModel().getFocusedIndex();
+            Cell<?> cell = null;
+            if (focused > -1) {
+                cell = flow.getCell(focused);
+                contextHandler.setTargetCell(cell);
+                tail = tail.prepend(contextHandler);
+                tail = cell.buildEventDispatchChain(tail);
+                return tail;//.prepend(contextHandler);
+            }
+            return null;
+        }
+
+        // boiler-plate constructor
+        public ListViewETSkin(ListView<T> listView) {
+            super(listView);
+        }
+
+    }
+
+    /**
+     * ListView that hooks its skin into the event dispatch chain.
+     * 
+     * Here we try to build the chain either from the cell or from 
+     * the list.
+     */
+    private static class ListViewET<T> extends ListView<T> {
+
+        @Override
+        public EventDispatchChain buildEventDispatchChain(
+                EventDispatchChain tail) {
+            if (getSkin() instanceof EventTarget) {
+                tail = ((EventTarget) getSkin()).buildEventDispatchChain(tail);
+            }
+            // PENDING this is whacky, violating super's contract
+            if (tail != null) {
+                return tail;
+            }
+            return super.buildEventDispatchChain(tail);
+        }
+
+        @Override
+        protected Skin<?> createDefaultSkin() {
+            return new ListViewETSkin<>(this);
+        }
+        
+    }
+
+ //---------------- end of ListView/SkinET   
+    
+    
+//---------------------- ListView/SkinC: builds the chain twice!    
     /**
      * ListViewSkin that implements EventTarget and hooks the focused cell into
      * the event dispatch chain
@@ -157,7 +234,7 @@ public class ListViewETContextMenu extends Application {
 
         private ContextMenuEventDispatcher contextHandler = 
                 new ContextMenuEventDispatcher(new EventHandlerManager(this));
-        
+
         @Override
         public EventDispatchChain buildEventDispatchChain(
                 EventDispatchChain tail) {
@@ -171,6 +248,7 @@ public class ListViewETContextMenu extends Application {
             return tail.prepend(contextHandler);
         }
 
+
         // boiler-plate constructor
         public ListViewCSkin(ListView<T> listView) {
             super(listView);
@@ -180,6 +258,10 @@ public class ListViewETContextMenu extends Application {
 
     /**
      * ListView that hooks its skin into the event dispatch chain.
+     * 
+     * PENDING: shouldn't build the chain up to the scene twice, as we do here
+     * - once from the focused cell (done in skin)
+     * - once from this list (done in super
      */
     private static class ListViewC<T> extends ListView<T> {
 
@@ -198,6 +280,9 @@ public class ListViewETContextMenu extends Application {
         }
         
     }
+
+//------------------- end of ListView/SkinC
+    
     
     private static class ListCellC<T> extends ListCell<T> {
      
@@ -225,7 +310,7 @@ public class ListViewETContextMenu extends Application {
                     setGraphic(newNode);
                 }
             } else {
-//                setContextMenu(menu);
+                setContextMenu(menu);
                 setText(item == null ? "null" : item.toString());
                 setGraphic(null);
             }
