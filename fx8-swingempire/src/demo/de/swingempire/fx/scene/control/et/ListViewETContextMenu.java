@@ -22,7 +22,9 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
+import javafx.scene.control.TextField;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.stage.Stage;
 
@@ -72,19 +74,30 @@ import de.swingempire.fx.util.DebugUtils;
  */
 public class ListViewETContextMenu extends Application {
 
+    private static boolean HAS_CELL_CONTEXT = true;
+
     private Parent getContent() {
         EventDispatcher t;
         ContextMenuEvent s;
         ObservableList<String> data = FXCollections.observableArrayList("one", "two", "three");
         // core
-//        ListView<String> listView = new ListView<>();
+        ListView<String> listView = new ListView<>();
         // custom that effectively builds the chain twice
 //        ListViewC<String> listView = new ListViewC<>();
         // custom that builds either from listView or from cell
-        ListViewET<String> listView = new ListViewET<>();
+//        ListViewET<String> listView = new ListViewET<>();
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         listView.setContextMenu(new ContextMenu(new MenuItem("listView")));
         listView.setItems(data);
-        listView.setCellFactory(p -> new ListCellC<>(new ContextMenu(new MenuItem("item"))));
+//        listView.setCellFactory(p -> new ListCellC<>(new ContextMenu(new MenuItem("item"))));
+//        listView.setCellFactory(p -> new ListCellText<>(new ContextMenu(new MenuItem("item"))));
+        listView.setCellFactory(p -> new FocusableListCell<>(new ContextMenu(new MenuItem("item"))));
+        listView.getFocusModel().focusedItemProperty().addListener(
+                (source, old, value) -> {
+                    Node focusOwner = listView.getScene().getFocusOwner();
+                    LOG.info("focusedCell: " + value + focusOwner);
+                });
+        
         return listView;
     }
 
@@ -283,12 +296,44 @@ public class ListViewETContextMenu extends Application {
 
 //------------------- end of ListView/SkinC
     
+    private static class ListCellText<T> extends ListCell<T> {
+        private ContextMenu menu;
+        private TextField field;
+        public ListCellText(ContextMenu menu) {
+            this.menu = menu;
+            field = new TextField();
+            field.setEditable(false);
+        }
+        
+        @Override 
+        public void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+            
+            if (empty) {
+                setContextMenu(null);
+                field.setText(null);
+                setGraphic(null);
+            } else {
+                if (HAS_CELL_CONTEXT) {
+                    setContextMenu(menu);
+                    field.setContextMenu(menu);
+                }
+                field.setText(item == null ? "null" : item.toString());
+                setGraphic(field);
+            }
+        }
+
+    }
     
+    /**
+     * ListCell with contextMenu.    
+     */
     private static class ListCellC<T> extends ListCell<T> {
      
         ContextMenu menu;
         public ListCellC(ContextMenu menu) {
             this.menu = menu;
+            setFocusTraversable(true);
 //            setOnMousePressed(e -> DebugUtils.printLocalTo(this));
 //            setOnContextMenuRequested(e -> DebugUtils.printContextLocation(e));
         }
@@ -310,7 +355,8 @@ public class ListViewETContextMenu extends Application {
                     setGraphic(newNode);
                 }
             } else {
-                setContextMenu(menu);
+                if (HAS_CELL_CONTEXT)
+                    setContextMenu(menu);
                 setText(item == null ? "null" : item.toString());
                 setGraphic(null);
             }
@@ -322,6 +368,13 @@ public class ListViewETContextMenu extends Application {
         Scene scene = new Scene(getContent());
 //        scene.addEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> e.consume());
 //        scene.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, e -> e.consume());
+        scene.focusOwnerProperty().addListener((source, old, value) -> {
+            String change = "focusOwner old/new: " 
+                    + "\n old: " + old   
+                    + "\n new: " + value;
+            LOG.info(change);
+        });
+        scene.getStylesheets().add(getClass().getResource("focusedlistcell.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
