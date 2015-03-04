@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 /**
  * ContextMenu:
  * user interaction broken when activated by keyboard.
+ * https://javafx-jira.kenai.com/browse/RT-40175
  * 
  * To reproduce, compile, run and activate contextMenu by keyboard (shift-f10 on win)
  * 
