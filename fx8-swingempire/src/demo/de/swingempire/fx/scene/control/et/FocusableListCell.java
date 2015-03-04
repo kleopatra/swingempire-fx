@@ -97,11 +97,16 @@ public class FocusableListCell<T> extends ListCell<T> {
     
     @Override
     protected Skin<?> createDefaultSkin() {
-//        return super.createDefaultSkin();
-        return new FocusableListCellSkin<>(this);
+        return super.createDefaultSkin();
+//        return new FocusableListCellSkin<>(this);
     }
 
-
+    /**
+     * A skin configured to consume mouseEvents (normally, cells
+     * don't). Not a good idea, can't interact with the 
+     * containing listView if they are consumed.
+     * 
+     */
     private static class FocusableListCellSkin<T> extends ListCellSkin<T> {
 
         /**

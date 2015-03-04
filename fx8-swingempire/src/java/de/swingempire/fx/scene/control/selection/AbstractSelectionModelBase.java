@@ -15,7 +15,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
 /**
- * Replacement of MultipleSelectionModelBase. Lets IndexedItemsController manage 
+ * Replacement of MultipleSelectionModelBase. Delegates to IndexedItemsController to manage 
  * the technicalities of selectedIndices/-Items lists. Handles itself semantics of 
  * multiple selection and sync to single selection state. 
  * <p>
@@ -28,10 +28,6 @@ import javafx.scene.control.SelectionMode;
  * (see https://javafx-jira.kenai.com/browse/RT-39552) 
  * 
  * <p> 
- * 
- * NOTE: for now, this assumes an ObservableList as backing items. Most probably
- * extendable to not (need another implementation of IndexedItems) such that
- * applicable for tree structures as well. 
  * 
  * Experimental: separated out the sync of single selection state (aka: listening to
  * backing data and update selectedItem/-Index after multiple state is updated) 
