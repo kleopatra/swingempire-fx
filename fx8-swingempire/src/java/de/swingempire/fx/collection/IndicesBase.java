@@ -4,9 +4,13 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javafx.collections.ObservableListBase;
 
@@ -43,7 +47,8 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
 
     protected BitSet bitSet;
     /**
-     * Sets the given indices. All previously set indices are
+     * Sets the given indices. All previously set indices that are not
+     * in the given list are
      * cleared. Does nothing if null or empty.
      * 
      * PENDING JW: don't remove indices that are about to be added
@@ -55,10 +60,34 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      *     or >= getSourceSize
      */
     public void setIndices(int... indices) {
+        if (indices == null || indices.length == 0) return;
         beginChange();
-        clearAllIndices();
+        doClearUncontainedIndices(indices);
+//        clearAllIndices();
         addIndices(indices);
         endChange();
+    }
+
+    /**
+     * Clears all indices that are not contained in the given array.
+     * 
+     * PENDING JW: this is ... rough implementation
+     * @param indices the indices that should not be cleared.
+     */
+    protected void doClearUncontainedIndices(int... indices) {
+        IntStream intStream = Arrays.stream(indices);
+        Stream<Integer> boxed = intStream.boxed();
+        List<Integer> toS = boxed.collect(Collectors.toList());
+        IntStream self = stream().mapToInt(Integer::intValue);
+        List<Integer> toClear = stream().filter(p -> !toS.contains(p)).collect(Collectors.toList()); 
+        // arggghh .... list to array again...
+        if (!toClear.isEmpty()) {
+            int[] clearArray = new int[toClear.size()];
+            for (int i = 0; i < clearArray.length; i++) {
+                clearArray[i] = toClear.get(i);
+            }
+            doClearIndices(clearArray);
+        }
     }
 
     /**
