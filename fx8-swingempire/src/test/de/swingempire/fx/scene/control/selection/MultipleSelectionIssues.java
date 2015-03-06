@@ -284,15 +284,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * for single-select
      */
     @Test
-    public void testSelectedItemEventsMultipleReselectSingle() {
+    public void testEventsMultipleReselectSingleSelectedItem() {
         if (!multipleMode) return;
         int start = 3;
         int end = 5;
-        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         getSelectionModel().selectRange(start, end);
         int selected = getSelectionModel().getSelectedIndex();
-        assertEquals("received single event", 1, report.getEventCount());
-        report.clear();
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
@@ -307,16 +305,49 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * for single-select
      */
     @Test
-    public void testSelectedIndexEventsMultipleReselectSingle() {
+    public void testEventsMultipleReselectSingleSelectedIndex() {
         if (!multipleMode) return;
         int start = 3;
         int end = 5;
-        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         getSelectionModel().selectRange(start, end);
         int selected = getSelectionModel().getSelectedIndex();
-        assertEquals("received single event", 1, report.getEventCount());
-        report.clear();
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         getSelectionModel().select(selected);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    /**
+     * Issue: selectionModel must not fire on reselect selected index
+     * 
+     * Here: test selectedIndex, clearAndSelect with index already selected.
+     * This is the doc'ed context in selectionModel: listeners to 
+     * selectedIndex must not receive an intermediate -1
+     * 
+     * spurned by:
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     */
+    @Test
+    public void testEventsMultipleToSingleClearAndSelectSelectedIndex() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
+        getSelectionModel().clearAndSelect(selected);
+        assertEquals("no event on adding already selected", 0, report.getEventCount());
+    }
+    
+    @Test
+    public void testEventsMultipleToSingleClearAndSelectSelectedItem() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getSelectionModel().clearAndSelect(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
     
@@ -330,16 +361,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * for single-select
      */
     @Test
-    public void testSelectedIndicesEventsMultipleReselectSingle() {
+    public void testEventsMultipleReselectSingleSelectedIndices() {
         if (!multipleMode) return;
         int start = 3;
         int end = 5;
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
         getSelectionModel().selectRange(start, end);
-        assertEquals("received single event", 1, report.getEventCount());
-        assertTrue(wasSingleAdded(report.getLastChange()));
-        report.clear();
-        getSelectionModel().select(end - 1);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
     
@@ -353,16 +382,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * for single-select
      */
     @Test
-    public void testSelectedItemsEventsMultipleReselectSingle() {
+    public void testEventsMultipleReselectSingleSelectedItems() {
         if (!multipleMode) return;
         int start = 3;
         int end = 5;
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
         getSelectionModel().selectRange(start, end);
-        assertEquals("received single event", 1, report.getEventCount());
-        assertTrue(wasSingleAdded(report.getLastChange()));
-        report.clear();
-        getSelectionModel().select(end - 1);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
     
@@ -373,19 +400,95 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * This is the test for 37360: clearAndSelect an already selected
      */
     @Test
-    public void testSelectedItemsEventsMultipleToSingle() {
+    public void testEventsMultipleToSingleClearAndSelectSelectedItems() {
         if (!multipleMode) return;
         int start = 3;
         int end = 5;
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
         getSelectionModel().selectRange(start, end);
-        assertEquals("received single event", 1, report.getEventCount());
-        assertTrue(wasSingleAdded(report.getLastChange()));
-        report.clear();
-        getSelectionModel().clearAndSelect(end - 1);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().clearAndSelect(selected);
         assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
-        assertTrue("must be single replace but was " + c, wasSingleReplaced(c));
+        // incorrect assumption: we had 2 selected, with clearAndSelect the last
+        // we should get a single removed
+//        report.prettyPrint();
+        assertTrue("must be single removed but was " + c, wasSingleRemoved(c));
+    }
+    
+    /**
+     * Regression testing RT-37360: fired both removed and added
+     * for single-select
+     * 
+     * PENDING JW: still issues
+     * - core: incorrect change event
+     * - simple: clearAndSelect not yet implemented (to not fire if selected)
+     * 
+     * This is the test for 37360: clearAndSelect an already selected
+     */
+    @Test
+    public void testEventsMultipleToSingleClearAndSelectSelectedIndices() {
+        if (!multipleMode) return;
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().clearAndSelect(selected);
+        assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        // hadbeen wasSingleReplaced - 
+        // that's an incorrect assumption: we had 2 selected, with clearAndSelect the last
+        // we should get a single removed
+        // fails in core due an invalid change event
+        // fails in simple due to clearAndSelect not yet really implemented
+        assertTrue("must be single removed but was " + c, wasSingleRemoved(c));
+    }
+    
+    /**
+     * ClearAndSelect fires invalid event if selectedIndex is unchanged.
+     * Reported https://javafx-jira.kenai.com/browse/RT-40212
+     */
+    @Test
+    public void testChangeEventSelectedItemsOnClearAndSelect() {
+        if (!multipleMode) return;
+        // init with multiple selection
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().clearAndSelect(selected);
+        assertEquals("sanity: selectedIndex unchanged", selected, getSelectionModel().getSelectedIndex());
+        assertEquals("single event on clearAndSelect already selected", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        while(c.next()) {
+            boolean type = c.wasAdded() || c.wasRemoved() || c.wasPermutated() || c.wasUpdated();
+            assertTrue("at least one of the change types must be true", type);
+        }
+    }
+    
+    /**
+     * ClearAndSelect fires invalid change event if selectedIndex is unchanged.
+     * REported: https://javafx-jira.kenai.com/browse/RT-40212
+     */
+    @Test
+    public void testChangeEventSelectedIndicesOnClearAndSelect() {
+        if (!multipleMode) return;
+        // init with multiple selection
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        int selected = getSelectionModel().getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().clearAndSelect(selected);
+        assertEquals("sanity: selectedIndex unchanged", selected, getSelectionModel().getSelectedIndex());
+        assertEquals("single event on clearAndSelect already selected", 1, report.getEventCount());
+        Change c = report.getLastChange();
+        while(c.next()) {
+            boolean type = c.wasAdded() || c.wasRemoved() || c.wasPermutated() || c.wasUpdated();
+            assertTrue("at least one of the change types must be true", type);
+        }
     }
     
 //-------------------- items modification    

@@ -17,7 +17,8 @@ import javafx.collections.ObservableListBase;
  * The IndicesBase 
  * provides the set/add/clearIndices and supporting infrastructure, the extending
  * classes would handle the updates triggered by notifications of the sequential
- * data structure.
+ * data structure. Implemented to fire as few changes as possible, particularly not
+ * firing an added change if an index is already set.
  * <p>
  * Note: this is a kind-of transformation list, cannot use a Transform directly, though,
  * because the sequential "source" might be of type other than List.
@@ -44,6 +45,10 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     /**
      * Sets the given indices. All previously set indices are
      * cleared. Does nothing if null or empty.
+     * 
+     * PENDING JW: don't remove indices that are about to be added
+     * again - add some logic to find the latter and call clear only 
+     * on the rest (vs. clearAll as currently done here)
      * 
      * @param indices positions in source list, must be valid.
      * @throws IndexOutOfBoundsException if any of the indices < 0

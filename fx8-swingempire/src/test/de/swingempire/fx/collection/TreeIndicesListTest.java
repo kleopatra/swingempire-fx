@@ -4,9 +4,12 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TreeItem;
@@ -24,16 +27,15 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-import de.swingempire.fx.collection.TreeIndicesList;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
-import de.swingempire.fx.util.TreeModificationReport;
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -350,15 +352,196 @@ public class TreeIndicesListTest {
         assertEquals("eventCount", 1, report.getEventCount());
     }
     
-//--------------------- indicesList api
+//--------------------- indicesList api (copied from IndicesListTest)
+    @Test
+    public void testSetAllIndices() {
+        indicesList.setAllIndices();
+        assertEquals(tree.getExpandedItemCount() , indicesList.size());
+    }
     
     @Test
     public void testSetIndices() {
-        int index = 2;
-        indicesList.setIndices(index);
-        assertEquals("size after setting index", 1, indicesList.size());
-        assertEquals("index stored", index, indicesList.get(0).intValue());
-        assertEquals("eventCount", 1, report.getEventCount());
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        int[] setIndices = new int[] {2, 4, 6, 7};
+        indicesList.setIndices(setIndices);
+        assertEquals(setIndices.length, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleReplaced(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
+    }
+    
+    @Test
+    public void testClearAll() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.clearAllIndices();
+        assertEquals(0, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+//        report.prettyPrint();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
+    }
+    @Test
+    public void testClearSomeIndicesNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        int[] clear = new int[] {5, 1};
+//        new PrintingListChangeListener("clearSomeNotification", indicesList);
+        indicesList.clearIndices(clear);
+        assertEquals(1, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertEquals("must be 2 disjoint removes", 2, getChangeCount(report.getLastChange(), ChangeType.REMOVED));
+    }
+    @Test
+    public void testClearIndicesNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.clearIndices(indices);
+        assertEquals(0, indicesList.size());
+        assertEquals(1, report.getEventCount());
+        assertTrue("must be single remove", wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.reset();
+        c.next();
+        Arrays.sort(indices);
+        List base = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            base.add(indices[i]);
+        }
+        assertEquals(base, c.getRemoved());
+    }
+    
+    @Test
+    public void testClearUnsetNoNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.clearIndices(2);
+        assertEquals(0, report.getEventCount());
+    }
+    
+    
+    @Test
+    public void testAddAlreadySetNoNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.addIndices(indices[0]);
+        assertEquals(0, report.getEventCount());
+    }
+
+    @Test
+    public void testSetAlreadySetNoNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.setIndices(indices);
+        assertEquals(0, report.getEventCount());
+    }
+    
+    @Test
+    public void testAddMoreNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        int[] more = new int[] { 2, 7, 4};
+        indicesList.addIndices(more);
+        
+        assertEquals(1, report.getEventCount());
+        assertEquals(3, getChangeCount(report.getLastChange()));
+    }
+    
+    @Test
+    public void testAddMultiple() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        assertEquals(indices.length, indicesList.size());
+        Arrays.sort(indices);
+        for (int i = 0; i < indices.length; i++) {
+            assertEquals("expected value at " + i, indices[i], indicesList.get(i).intValue());
+        }
+        assertEquals(1, report.getEventCount());
+        assertTrue("got a single added", wasSingleAdded(report.getLastChange()));
+    }
+    
+    @Test
+    public void testAddSingle() {
+        int index = 3;
+        indicesList.addIndices(index);
+        assertEquals(1, indicesList.size());
+        assertEquals(index, indicesList.get(0).intValue());
+        assertEquals(1, report.getEventCount());
+    }
+
+    /**
+     * Source index is same as get, kind of.
+     * SourceIndex not supported?
+     */
+//    @Test
+//    public void testSourceIndexInRange() {
+//        int[] indices = new int[] { 3, 5, 1};
+//        indicesList.addIndices(indices);
+//        assertEquals(indices.length, indicesList.size());
+//        Arrays.sort(indices);
+//        for (int i = 0; i < indices.length; i++) {
+//            assertEquals("sourceIndex " + i, indices[i], indicesList.getSourceIndex(i));
+//        }
+//        
+//    }
+    /**
+     * Test sourceIndex if index off range.
+     * Changed implementation to throw IndexOOB 
+     * (off range access is always a programming error)
+     */
+//    @Test (expected = IndexOutOfBoundsException.class)
+//    public void testSourceIndexOffRange() {
+//        int[] indices = new int[] { 3, 5, 1};
+//        indicesList.addIndices(indices);
+//        assertEquals(indices.length, indicesList.size());
+//        assertEquals(-1, indicesList.getSourceIndex(-1));
+//        assertEquals(-1, indicesList.getSourceIndex(indices.length));
+//    }
+    
+    /**
+     * Test get if index off range.
+     * Changed implementation to throw IndexOOB 
+     * (off range access is always a programming error)
+     */
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testGetOffRange() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        assertEquals(indices.length, indicesList.size());
+        assertEquals(-1, indicesList.get(-1).intValue());
+        assertEquals(-1, indicesList.get(indices.length).intValue());
+    }
+    
+    
+    @Test
+    public void testAddEmpty() {
+        indicesList.addIndices();
+        assertEquals(0, report.getEventCount());
     }
     
     @Test

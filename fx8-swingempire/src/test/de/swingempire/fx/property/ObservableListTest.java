@@ -397,6 +397,38 @@ public class ObservableListTest {
     }
 
 //---------- end testing 22463    
+    
+    /**
+     * Invalid change fired by ListProperty.
+     * Reported https://javafx-jira.kenai.com/browse/RT-40213
+     */
+    @Test
+    public void testListPropertyChangeOnSetEmptyToEmpty() {
+        ListProperty listProperty = new SimpleListProperty(createObservableList(false));
+        ListChangeReport report = new ListChangeReport(listProperty);
+        listProperty.set(createObservableList(false));
+        Change c = report.getLastChange();
+        while(c.next()) {
+            boolean type = c.wasAdded() || c.wasRemoved() || c.wasPermutated() || c.wasUpdated();
+            assertTrue("at least one of the change types must be true", type);
+        }
+    }
+
+    /**
+     * Invalid change fired by ListProperty.
+     * Reported https://javafx-jira.kenai.com/browse/RT-40213
+     */
+    @Test
+    public void testListPropertyChangeOnSetEmptyToNull() {
+        ListProperty listProperty = new SimpleListProperty();
+        ListChangeReport report = new ListChangeReport(listProperty);
+        listProperty.set(createObservableList(false));
+        Change c = report.getLastChange();
+        while(c.next()) {
+            boolean type = c.wasAdded() || c.wasRemoved() || c.wasPermutated() || c.wasUpdated();
+            assertTrue("at least one of the change types must be true", type);
+        }
+    }
     @Test
     public void testListPropertyAdapterInitial() {
         ObservableList<String> list = createObservableList(true);

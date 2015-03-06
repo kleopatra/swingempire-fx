@@ -61,8 +61,9 @@ public class MultiToSingleTableItemSelection extends Application {
         // selection change handling
         table.getSelectionModel().getSelectedItems().addListener(this::processListChange);
 
-//        ListView<Item> list = new ListView<>();
-        ListViewAnchored<Item> list = new ListViewAnchored<>();
+        ListView<Item> list = new ListView<>();
+//        list.setSelectionModel(new SimpleListSelectionModel(list));
+//        ListViewAnchored<Item> list = new ListViewAnchored<>();
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         list.getSelectionModel().getSelectedItems().addListener(this::processListChange);
         // table items

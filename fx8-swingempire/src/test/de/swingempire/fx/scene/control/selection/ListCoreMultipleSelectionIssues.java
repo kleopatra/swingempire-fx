@@ -103,6 +103,54 @@ public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelecti
         assertEquals("must not fire if nothing changed", 0, counter.get());
     }
     
+    /**
+     * Here we test select(selectedIndex) twice: the second must not fire 
+     * any event as no state is changed.
+     */
+    @Test 
+    public void test_rt_37360_reselect() {
+        ListView<String> stringListView = new ListView<>();
+        stringListView.getItems().addAll("a", "b");
+        
+        MultipleSelectionModel<String> sm = stringListView.getSelectionModel();
+        sm.setSelectionMode(SelectionMode.MULTIPLE);
+        // PENDING JW: direct add doesn't work: 
+        // expressions/bindings are defined on the
+        // level of the ReadOnlyXX and return a new Binding (vs. 
+        // modifying the current
+        IntegerProperty adder = new SimpleIntegerProperty();
+        IntegerProperty remover = new SimpleIntegerProperty();
+        sm.getSelectedItems().addListener((ListChangeListener<String>) c -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    adder.set(adder.get() + c.getAddedSize());
+                }
+                if (c.wasRemoved()) {
+                    remover.set(remover.get() + c.getRemovedSize());
+                }
+            }
+        });
+        
+        assertEquals(0, sm.getSelectedItems().size());
+        assertEquals(0, adder.get());
+        assertEquals(0, remover.get());
+        
+        sm.select(0);
+        assertEquals(1, sm.getSelectedItems().size());
+        assertEquals(1, adder.get());
+        assertEquals(0, remover.get());
+        
+        sm.select(1);
+        assertEquals(2, sm.getSelectedItems().size());
+        assertEquals(2, adder.get());
+        assertEquals(0, remover.get());
+        
+        sm.select(1);
+        assertEquals(2, sm.getSelectedItems().size());
+        assertEquals(2, adder.get());
+        assertEquals(0, remover.get());
+    }
+    
     @Test 
     public void test_rt_37360() {
         ListView<String> stringListView = new ListView<>();
@@ -181,6 +229,12 @@ public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelecti
         assertEquals(2, sm.getSelectedItems().size());
         assertEquals(2, rt_37360_add_count);
         assertEquals(0, rt_37360_remove_count);
+        
+        // re-select already selected
+//        sm.select(1);
+//        assertEquals(2, sm.getSelectedItems().size());
+//        assertEquals(2, rt_37360_add_count);
+//        assertEquals(0, rt_37360_remove_count);
 
         sm.clearAndSelect(1);
         assertEquals(1, sm.getSelectedItems().size());

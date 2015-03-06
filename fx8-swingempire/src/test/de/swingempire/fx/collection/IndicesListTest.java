@@ -763,6 +763,15 @@ public class IndicesListTest {
     }
     
     @Test
+    public void testSetAlreadySetNoNotification() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.setIndices(indices);
+        assertEquals(0, report.getEventCount());
+    }
+    
+    @Test
     public void testAddMoreNotification() {
         int[] indices = new int[] { 3, 5, 1};
         indicesList.addIndices(indices);
