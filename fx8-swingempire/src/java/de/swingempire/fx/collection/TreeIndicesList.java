@@ -189,7 +189,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         // PENDING JW: decrease removed by one? maybe not, as we query the
         // children (vs. the source), such that the source itself is not 
         // counted
-        boolean hadSetBits = doClearIndices(from, removedSize);
+        boolean hadSetBits = doClearIndicesInRange(from, removedSize);
         // step two: shift indices below the range
         doShiftLeft(from, removedSize);
 //        if (hadSetBits) doAddIndices(row);
@@ -300,7 +300,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         for (TreeItem<T> item : c.getRemoved()) {
             removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
         }
-        doClearIndices(from, removedSize);
+        doClearIndicesInRange(from, removedSize);
         // step 2
         doShiftLeft(from, removedSize);
     }
@@ -330,7 +330,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 //            return;
 //        }
 
-        doClearIndices(treeFrom, removedSize);
+        doClearIndicesInRange(treeFrom, removedSize);
         int diff = addedSize - removedSize;
         if (diff < 0) {
             doShiftLeft(treeFrom, diff);

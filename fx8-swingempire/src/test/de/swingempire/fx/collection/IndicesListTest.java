@@ -669,6 +669,23 @@ public class IndicesListTest {
     public void testSetAllIndices() {
         indicesList.setAllIndices();
         assertEquals(items.size(), indicesList.size());
+        assertEquals(1, report.getEventCount());
+    }
+    
+    /**
+     * Test notification on setAll if there are already set.
+     */
+    @Test
+    public void testSetAllNotificationIfHasSet() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        indicesList.setAllIndices();
+        report.prettyPrint();
+        assertEquals(items.size(), indicesList.size());
+        assertEquals(1, report.getEventCount());
+        Change c = report.getLastChange();
+        assertEquals(4, getChangeCount(c, ChangeType.ADDED));
     }
     
     @Test

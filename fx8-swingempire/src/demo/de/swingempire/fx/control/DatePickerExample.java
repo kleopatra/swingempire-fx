@@ -12,6 +12,9 @@ import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -28,6 +31,7 @@ public class DatePickerExample extends Application {
      * @return
      */
     private Parent getContent() {
+        
         DatePicker picker = new DatePicker();
         picker.valueProperty().addListener((p, oldValue, newValue) -> {
             if (newValue == null) return;
@@ -38,7 +42,19 @@ public class DatePickerExample extends Application {
             int weekBased = newValue.get(fields.weekOfWeekBasedYear());
             LOG.info("week/Based " + week + "/" + weekBased);
         });
-        Pane pane = new BorderPane(picker);
+        BorderPane pane = new BorderPane(picker);
+        // quick check for menubar: how to get to menubar from menuItem/menu?
+//        Menu menu = new Menu("dummy menu");
+//        MenuItem menuItem = new MenuItem("dummy");
+//        menuItem.setOnAction(e -> {
+//            // both are null for a menu?
+//            LOG.info("got item: " + menu.getParentPopup() + menu.getParentMenu() + menu.getProperties());
+//            }
+//        );
+//        menu.getItems().addAll(menuItem, new MenuItem("dummy2"));
+//        MenuBar bar = new MenuBar(menu);
+//        pane.setTop(bar);
+        // end menubar check
         return pane;
     }
 

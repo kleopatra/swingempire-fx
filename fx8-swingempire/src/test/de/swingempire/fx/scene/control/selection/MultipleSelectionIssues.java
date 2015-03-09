@@ -883,7 +883,21 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
     
     /**
+     * 
+     */
+    @Test
+    public void testSelectedOnSetItemsOldContained() {
+        getSelectionModel().select(1);
+        Object selectedItem = getSelectionModel().getSelectedItem();
+        ObservableList other = FXCollections.observableArrayList(createItem("some"), createItem("other"), selectedItem);
+        setItems(other);
+        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        
+    }
+    
+    /**
      * SetAll must clear out selection state: contained or not must not make a difference.
+     * Maybe not: see https://javafx-jira.kenai.com/browse/RT-35039
      */
     @Test
     public void testSelectedOnSetAllOldContained() {
@@ -1008,7 +1022,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Regression testing: removing first selected item doesn't update the item.
      * https://javafx-jira.kenai.com/browse/RT-28637
      * 
-     * This is basically 30961 (or so, the one that should define what happens if
+     * This is basically 30931 (or so, the one that should define what happens if
      * the selectedIndex is removed). Most implementations move the index to
      * an adjacent index, so this test my fail for custom implemenations.
      * Unexpected failure for SimpleListSelectionModel.

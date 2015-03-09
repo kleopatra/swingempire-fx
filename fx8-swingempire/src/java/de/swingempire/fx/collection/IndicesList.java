@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ListPropertyBase;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -118,8 +119,18 @@ public class IndicesList<T> extends IndicesBase<T> {
                 // no-op, the state of this list isn't changed on updates of backing list
             } else if (c.wasReplaced()) {
                 replaced(c);
-            } else {
+            } else if (c.wasAdded() || c.wasRemoved()){
                 addedOrRemoved(c);
+            } else {
+                // we can reach here if the backing source is-a ListProperty
+                // and its empty list replaced by another empty list
+                // https://javafx-jira.kenai.com/browse/RT-40213
+                if (getSource() instanceof ListPropertyBase && c.getAddedSize() == 0 && c.getRemovedSize() == 0) {
+                    // probably fine
+                    LOG.finer("got unknown change type from listProperty? " + c + "\n" + getSource());
+                } else {
+                    throw new IllegalStateException("unknown change type from " + c + "\n " +getSource() );
+                }
             }
         }
         setSourceChange(c);
@@ -154,7 +165,7 @@ public class IndicesList<T> extends IndicesBase<T> {
             return;
         }
 
-        doClearIndices(c.getFrom(), c.getRemovedSize());
+        doClearIndicesInRange(c.getFrom(), c.getRemovedSize());
         int diff = c.getAddedSize() - c.getRemovedSize();
         if (diff < 0) {
             doShiftLeft(c.getFrom(), diff);
@@ -179,9 +190,7 @@ public class IndicesList<T> extends IndicesBase<T> {
             added(c);
         } else if (c.wasRemoved()) {
             removed(c);
-        } else {
-            throw new IllegalStateException("what have we got here? " + c);
-        }
+        } 
     }
 
     private void removed(Change<? extends T> c) {
@@ -190,7 +199,7 @@ public class IndicesList<T> extends IndicesBase<T> {
         // for all left over indices after the remove, decrease the value by removedSize (?)
         int removedSize = c.getRemovedSize();
         int from = c.getFrom();
-        doClearIndices(from, removedSize);
+        doClearIndicesInRange(from, removedSize);
         // step 2
         doShiftLeft(from, removedSize);
     }
@@ -214,7 +223,7 @@ public class IndicesList<T> extends IndicesBase<T> {
         int to = c.getTo();
         BitSet copy = (BitSet) bitSet.clone();
         // argghh .. second parameter is the _size_
-        doClearIndices(from, to - from);
+        doClearIndicesInRange(from, to - from);
         int addSize = 0;
         for (int i = from; i < to; i++) {
             if (copy.get(i)) addSize++;

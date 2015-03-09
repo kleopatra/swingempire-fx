@@ -6,13 +6,15 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import com.sun.javafx.collections.SortHelper;
-
+import javafx.beans.property.ListPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.TransformationList;
+
+import com.sun.javafx.collections.SortHelper;
 
 /**
  * Helper for selectedItems. Source contains the selectedIndices, backingList the items.
@@ -69,9 +71,19 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
                 // PENDING JW: need to update accumulatedRemoved?
                 // only if we have to expect a mixture of change types?
                 // do we?
-            } else {
+            } else if (c.wasAdded() || c.wasRemoved()){
                 addedOrRemovedItems(c);
                 accumulatedRemoved += c.getRemovedSize();
+            } else {
+                // we reach here if the backing source is-a ListProperty
+                // and its empty list replaced by another empty list
+                // https://javafx-jira.kenai.com/browse/RT-40213
+                if (backingList instanceof ListPropertyBase && c.getAddedSize() == 0 && c.getRemovedSize() == 0) {
+                    // probably fine
+                    LOG.finer("got unknown change type from listProperty? " + c + "\n" + backingList);
+                } else {
+                    throw new IllegalStateException("unknown change type from " + c + "\n " + backingList );
+                }
             }
         }
         endChange();
@@ -88,9 +100,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
             // don't change our state
         } else if (c.wasRemoved()){
             removedItems(c);
-        } else {
-            throw new IllegalStateException("shouldn't be here: " + c);
-        }
+        } 
     }
 
     /**
@@ -313,5 +323,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         return getSource().size();
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(IndexMappedList.class
+            .getName());
 
 }

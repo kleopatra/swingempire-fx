@@ -49,9 +49,9 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     /**
      * Sets the given indices. All previously set indices that are not
      * in the given list are
-     * cleared. Does nothing if null or empty.
+     * cleared. Does nothing if null or empty.<p>
      * 
-     * PENDING JW: don't remove indices that are about to be added
+     * Fixed: don't remove indices that are about to be added
      * again - add some logic to find the latter and call clear only 
      * on the rest (vs. clearAll as currently done here)
      * 
@@ -62,39 +62,17 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     public void setIndices(int... indices) {
         if (indices == null || indices.length == 0) return;
         beginChange();
-        doClearUncontainedIndices(indices);
 //        clearAllIndices();
-        addIndices(indices);
+//        addIndices(indices);
+        doClearAllIndicesExcept(indices);
+        doAddIndices(indices);
         endChange();
-    }
-
-    /**
-     * Clears all indices that are not contained in the given array.
-     * 
-     * PENDING JW: this is ... rough implementation
-     * @param indices the indices that should not be cleared.
-     */
-    protected void doClearUncontainedIndices(int... indices) {
-        IntStream intStream = Arrays.stream(indices);
-        Stream<Integer> boxed = intStream.boxed();
-        List<Integer> toS = boxed.collect(Collectors.toList());
-        IntStream self = stream().mapToInt(Integer::intValue);
-        List<Integer> toClear = stream().filter(p -> !toS.contains(p)).collect(Collectors.toList()); 
-        // arggghh .... list to array again...
-        if (!toClear.isEmpty()) {
-            int[] clearArray = new int[toClear.size()];
-            for (int i = 0; i < clearArray.length; i++) {
-                clearArray[i] = toClear.get(i);
-            }
-            doClearIndices(clearArray);
-        }
     }
 
     /**
      * Sets all indices. 
      * 
      * PENDING JW: notification on already set?
-     * 
      * 
      */
     public void setAllIndices() {
@@ -190,6 +168,24 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     }
 
     /**
+     * Clears all indices that are not contained in the given array.
+     * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
+     * / {@code endChange()} block.
+     * 
+     * PENDING JW: this is ... rough implementation
+     * @param indices the indices that should not be cleared.
+     */
+    protected void doClearAllIndicesExcept(int... indices) {
+        List<Integer> toSet = Arrays.stream(indices).boxed().collect(Collectors.toList());
+        
+        doClearIndices(stream()
+                .filter(p -> !toSet.contains(p))
+                .mapToInt(Integer::intValue)
+                .toArray()
+                );
+    }
+
+    /**
      * Clears all indices in the given range. The index is a coordinates in 
      * backing list.
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
@@ -197,7 +193,7 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * @param from
      * @param removedSize
      */
-    protected boolean doClearIndices(int from, int removedSize) {
+    protected boolean doClearIndicesInRange(int from, int removedSize) {
         int[] removedIndices = new int[removedSize];
         int index = from;
         for (int i = 0; i < removedIndices.length; i++) {

@@ -241,6 +241,8 @@ public class SelectionAndModification extends Application {
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
         Pane content = new HBox(/*table, */ listView, listSView, listXView, listXAView, info);
+        Pane header = new HBox(/*new Label("table"), */ new Label("core list"), 
+                new Label("core list + simple"), new Label("listX"), new Label("listX + simpleA"));
         CheckBox check = new CheckBox("MultipleMode");
         check.setOnAction(e -> {
             SelectionMode old = listView.getSelectionModel().getSelectionMode();
@@ -254,7 +256,9 @@ public class SelectionAndModification extends Application {
         Pane buttons = new HBox(check);
 //        Pane content = new HBox(table, listView, info);
 //        Pane content = new HBox(table, info);
+        
         BorderPane borderPane = new BorderPane(content);
+        borderPane.setTop(header);
         borderPane.setBottom(buttons);
         return borderPane;
     }
