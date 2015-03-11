@@ -34,6 +34,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
@@ -233,6 +234,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     
     /**
      * Why do we get a permutated? How are we supposed to use it?
+     * don't expect a permutation change, incorrect in core!
      */
     @Test
     @ConditionalIgnore(condition = IgnoreReported.class)
@@ -243,14 +245,16 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(start, end);
         ObservableList<Integer> indices = getSelectionModel().getSelectedIndices();
         ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
-        LOG.info("before add: " + copy);
         ListChangeReport report = new ListChangeReport(indices);
         items.add(0, "newItem");
-        LOG.info("after add: " + indices);
         Change c = report.getLastChange();
-        prettyPrint(c);
+//        prettyPrint(c);
         c.reset();
         c.next();
+        if (!c.wasPermutated()) {
+            LOG.info("no permutation as expected:" + c);
+            return;
+        }
         for (int i = c.getFrom(); i < c.getTo(); i++) {
             int newIndex = c.getPermutation(i);
             assertEquals("item at oldIndex " + i, copy.get(i), indices.get(newIndex));
@@ -448,8 +452,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     /**
      * ClearAndSelect fires invalid event if selectedIndex is unchanged.
      * Reported https://javafx-jira.kenai.com/browse/RT-40212
+     * 
+     * closed as fixed afte u60b5
      */
     @Test
+    @ConditionalIgnore(condition=PropertyIgnores.IgnoreReported.class)
     public void testChangeEventSelectedItemsOnClearAndSelect() {
         if (!multipleMode) return;
         // init with multiple selection
@@ -471,8 +478,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     /**
      * ClearAndSelect fires invalid change event if selectedIndex is unchanged.
      * REported: https://javafx-jira.kenai.com/browse/RT-40212
+     * closed as fixed afte u60b5
      */
     @Test
+    @ConditionalIgnore(condition=PropertyIgnores.IgnoreReported.class)
     public void testChangeEventSelectedIndicesOnClearAndSelect() {
         if (!multipleMode) return;
         // init with multiple selection
@@ -883,6 +892,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
     
     /**
+     * Specification ambiguity: clear out all selection state an replacing
+     * all items or not?
+     * Maybe not: see https://javafx-jira.kenai.com/browse/RT-35039
      * 
      */
     @Test
@@ -891,7 +903,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object selectedItem = getSelectionModel().getSelectedItem();
         ObservableList other = FXCollections.observableArrayList(createItem("some"), createItem("other"), selectedItem);
         setItems(other);
-        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectionModel().getSelectedItem());
+        fail("spec ambiguity: replace all items and old selectedItem still contained - keep or not");
     }
     
     /**
@@ -902,9 +915,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testSelectedOnSetAllOldContained() {
         int index = 2;
         getSelectionModel().select(index);
-        Object selected = getSelectionModel().getSelectedItem();
-        setAllItems(createItem("one"), createItem("two"), createItem("three"), selected);
-        assertEmptySelection();
+        Object selectedItem = getSelectionModel().getSelectedItem();
+        setAllItems(createItem("one"), createItem("two"), createItem("three"), selectedItem);
+        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectionModel().getSelectedItem());
+//        assertEmptySelection();
+        fail("spec ambiguity: replace all items and old selectedItem still contained - keep or not");
     }
     
     /**
@@ -916,6 +931,19 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(index);
         Object selected = getSelectionModel().getSelectedItem();
         setAllItems(createItem("one"), createItem("two"), createItem("three"), modifyItem(selected,"XX"));
+        assertEmptySelection();
+    }
+    
+    /**
+     * SetAll must clear out selection state.
+     */
+    @Test
+    public void testSelectedOnSetItems() {
+        int index = 2;
+        getSelectionModel().select(index);
+        Object selected = getSelectionModel().getSelectedItem();
+        setItems(FXCollections.observableArrayList(
+                createItem("one"), createItem("two"), createItem("three"), modifyItem(selected,"XX")));
         assertEmptySelection();
     }
     

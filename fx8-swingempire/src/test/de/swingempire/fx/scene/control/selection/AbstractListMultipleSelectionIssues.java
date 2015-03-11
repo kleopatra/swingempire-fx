@@ -52,7 +52,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
      * 
      * Stand-alone test for report.
      * 
-     * PENDING JW: wait until fix bubbles up in preview.
+     * Reported: https://javafx-jira.kenai.com/browse/RT-39553 
      * 
      * @see #testNoSuchElementOnClear_38884()
      * @see #testNoSuchElementOnClear_38884Unfixed()

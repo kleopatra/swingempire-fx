@@ -54,15 +54,14 @@ public class PropertyIgnores {
      * Used for reported bugs that are still open.
      * 
      */
-     public static class IgnoreReported implements IgnoreCondition {
-    
+    public static class IgnoreReported implements IgnoreCondition {
+        
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }
-
-
+    
      
 }
