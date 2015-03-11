@@ -30,7 +30,6 @@ public class LookupApp_35039 extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        
         final Map<String,SomeBean> map = new HashMap<>();
         map.put("aabbaa", new SomeBean("aabbaa"));
         map.put("bbc", new SomeBean("bbc"));

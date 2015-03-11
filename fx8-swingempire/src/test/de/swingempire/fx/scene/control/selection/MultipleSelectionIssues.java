@@ -892,7 +892,6 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         ObservableList other = FXCollections.observableArrayList(createItem("some"), createItem("other"), selectedItem);
         setItems(other);
         assertEquals(selectedItem, getSelectionModel().getSelectedItem());
-        
     }
     
     /**

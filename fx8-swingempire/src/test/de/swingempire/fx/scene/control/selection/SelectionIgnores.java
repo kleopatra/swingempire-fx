@@ -206,6 +206,14 @@ public class SelectionIgnores {
         
         
     }
+    public static class IgnoreFailCommented implements IgnoreCondition {
+    
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
     
     // KEEP to not forget: nested classes in tests are not working
     // in classes that extend the defining
