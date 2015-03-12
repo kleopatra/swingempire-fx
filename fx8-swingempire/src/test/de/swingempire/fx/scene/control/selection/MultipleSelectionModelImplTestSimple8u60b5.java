@@ -58,7 +58,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -70,6 +69,7 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+
 import static org.junit.Assert.*;
 
 /**
@@ -103,17 +103,17 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
     private Class<? extends MultipleSelectionModel> modelClass;
     private Control currentControl;
 
-    private static Class<? extends MultipleSelectionModel> coreSelectionClass;
-    private static Class<? extends FocusModel> coreFocusClass;
+    private static Class<? extends MultipleSelectionModel> coreListSelectionClass;
+    private static Class<? extends FocusModel> coreListFocusClass;
     static {
         Class clazz = ListView.class;
         Class[] classes = clazz.getDeclaredClasses();
         List<Class> classList = Arrays.asList(classes);
         for (Class sub : classList) {
             if (sub.getName().contains("SelectionModel")) {
-                coreSelectionClass = sub;
+                coreListSelectionClass = sub;
             } else if (sub.getName().contains("FocusModel")) {
-                coreFocusClass = sub;
+                coreListFocusClass = sub;
             }
         }
     }
@@ -122,7 +122,7 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
 
     // ListView model data
     // PENDING JW: static mutable state in a test is ... bad
-    // had weird failures with un-ignored
+    // had weird failures with un-ignored testSelectionChangesWhenItemIsInsertedAtStartOfModel
 //    private static ObservableList<String> defaultData = FXCollections.<String>observableArrayList();
 //    private static ObservableList<String> data = FXCollections.<String>observableArrayList();
     private ObservableList<String> data;
@@ -147,9 +147,8 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
     @Parameters public static Collection implementations() {
         return Arrays.asList(new Object[][] {
                 {SimpleListSelectionModel.class},  
-                {coreSelectionClass},
-                // just a stand-in, actually we test core listselection 
-//                {SimpleTreeSelectionModel.class},
+                // reflective class lookup for listViewBitSelectionModel
+                {coreListSelectionClass},
 //            { ListView.ListViewBitSetSelectionModel.class },
 //            { TreeView.TreeViewBitSetSelectionModel.class },
 //            { TableView.TableViewArrayListSelectionModel.class },
@@ -220,11 +219,11 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
                 currentControl = listView;
                 focusModel = listView.getFocusModel();
                 
-            } else if (modelClass.equals(coreSelectionClass)) {
+            } else if (modelClass.equals(coreListSelectionClass)) {
                 // relective access
-                model = (MultipleSelectionModel) invokeCreateCoreInstance(coreSelectionClass, listView);
+                model = (MultipleSelectionModel) invokeCreateCoreInstance(coreListSelectionClass, listView);
                 currentControl = listView;
-                focusModel = (FocusModel) invokeCreateCoreInstance(coreFocusClass, listView);
+                focusModel = (FocusModel) invokeCreateCoreInstance(coreListFocusClass, listView);
                 listView.setSelectionModel(model);
                 listView.setFocusModel(focusModel);
 //            // we create a new SelectionModel per test to ensure it is always back
@@ -839,7 +838,7 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
 
     @Test(expected=IllegalArgumentException.class)
     public void testNullListViewInSelectionModel() throws Throwable {
-        if (modelClass == coreSelectionClass) {
+        if (modelClass == coreListSelectionClass) {
             // PENDING JW: the original IllegalArgumentException is
             // mapped to a InvocationTargetException
             // so can't be tested reflectively  
@@ -898,11 +897,10 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
          * data model. The end result should be that the fourth item should NOT
          * be selected, and the fifth item SHOULD be selected.
          */
-//        assertSame("sanity: listView has data as items", data, listView.getItems());
+        assertSame("sanity: listView has data as items", data, listView.getItems());
         assertEquals("sanity: listView has model ", model, listView.getSelectionModel());
         model.select(3);
         assertTrue(model.isSelected(3));
-        int dataSize = data.size();
         data.add(0, "Inserted String");
 //        listView.getItems().add(0, "Inserted String");
 //        assertEquals(dataSize + 1, data.size());
@@ -1284,7 +1282,8 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
         model.clearAndSelect(-1);
     }
 
-    @Ignore
+//    @Ignore
+    // PENDING JW: removed the ignore ... this test fails with core selection
     @Test public void test_rt38884_invalidChange() {
         model.select(3);
         int removedSize = model.getSelectedItems().size();
