@@ -4,7 +4,10 @@
  */
 package de.swingempire.fx.property;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
@@ -21,16 +24,22 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;
@@ -38,6 +47,7 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -403,6 +413,7 @@ public class ObservableListTest {
      * Reported https://javafx-jira.kenai.com/browse/RT-40213
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreReported.class)
     public void testListPropertyChangeOnSetEmptyToEmpty() {
         ListProperty listProperty = new SimpleListProperty(createObservableList(false));
         ListChangeReport report = new ListChangeReport(listProperty);
@@ -419,6 +430,7 @@ public class ObservableListTest {
      * Reported https://javafx-jira.kenai.com/browse/RT-40213
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreReported.class)
     public void testListPropertyChangeOnSetEmptyToNull() {
         ListProperty listProperty = new SimpleListProperty();
         ListChangeReport report = new ListChangeReport(listProperty);

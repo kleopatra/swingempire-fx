@@ -1921,6 +1921,22 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         
     }
+    
+    /**
+     * Trying to dig into test error of SimpleXX in core MultipleSelectionModelImpl
+     * 
+     * @see MultipleSelectionModelImplTestSimple8u60b5.testSelectionChangesWhenItemIsInsertedAtStartOfModel()
+     */
+    @Test
+    public void testIsSelectedOnInsertAbove() {
+        int index = 3;
+        getSelectionModel().select(index);
+        assertTrue("index must be selected: ", getSelectionModel().isSelected(index));
+        addItem(0, createItem("added at 0"));
+        int expected = index + 1;
+        assertEquals(expected, getSelectionModel().getSelectedIndex());
+        assertFalse("old index must not be selected " + index, getSelectionModel().isSelected(index));
+    }
 
 //----------------------- test single selection enforce in singleMode    
     /**
