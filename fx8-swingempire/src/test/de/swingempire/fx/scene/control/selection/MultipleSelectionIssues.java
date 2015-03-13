@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -30,9 +32,6 @@ import org.junit.runners.Parameterized;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
@@ -40,8 +39,10 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelat
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -499,8 +500,71 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             assertTrue("at least one of the change types must be true", type);
         }
     }
+
+    /**
+     * Test list change of selectedIndices on setIndices. 
+     * (nearly) standalone for reporting.
+     * Reported
+     * https://javafx-jira.kenai.com/browse/RT-40263
+     */
+    @Test
+    public void testEventIndicesOnSelectIndicesStandalone() {
+        if (!multipleMode) return;
+        int[] indices = new int[]{2, 5, 7};
+        ListChangeListener l = c -> {
+            int subChanges = 0;
+            while(c.next()) {
+                subChanges++;
+            }
+            assertEquals(1, subChanges);
+            c.reset();
+            c.next();
+            assertEquals(indices.length, c.getAddedSize());
+        };
+        getSelectionModel().getSelectedIndices().addListener(l);
+        getSelectionModel().selectIndices(indices[0], indices);
+    }
     
-//-------------------- items modification    
+    /**
+     * Test list change of selectedIndices on setIndices. 
+     */
+    @Test
+    public void testEventIndicesOnSelectIndices() {
+        if (!multipleMode) return;
+        assertEquals("sanity: no previous selection", 0, getSelectionModel().getSelectedIndices().size());
+        int[] indices = new int[]{2, 5, 7};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        getSelectionModel().selectIndices(indices[0], indices);
+        assertEquals(1, report.getEventCount());
+        assertTrue("event must be single added but was " + report.getLastChange(), 
+                wasSingleAdded(report.getLastChange()));
+        assertEquals(1, getChangeCount(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(indices.length, c.getAddedSize());
+    }
+    
+    /**
+     * Test list change of selectedIndices on setIndices. 
+     */
+    @Test
+    public void testEventItemsOnSelectIndices() {
+        if (!multipleMode) return;
+        assertEquals("sanity", 0, getSelectionModel().getSelectedItems().size());
+        int[] indices = new int[]{2, 5, 7};
+        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        getSelectionModel().selectIndices(indices[0], indices);
+        assertEquals(1, report.getEventCount());
+        assertTrue("event must be single added but was " + report.getLastChange(), 
+                wasSingleAdded(report.getLastChange()));
+        assertEquals(1, getChangeCount(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        assertEquals(indices.length, c.getAddedSize());
+    }
+    
+
+    //-------------------- items modification    
     
     /**
      * Bunch of tests that verify no change of uncontained selectedItem if it isn't

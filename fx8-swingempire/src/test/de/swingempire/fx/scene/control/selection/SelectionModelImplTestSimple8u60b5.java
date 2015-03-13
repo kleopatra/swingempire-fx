@@ -31,6 +31,7 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -78,10 +79,16 @@ import static org.junit.Assert.*;
  * - commented paramaters that access core classes
  * - commented tests that use internal test infrastructure, made them fail 
  *   and conditionally ignore them
+ * - replaced static test data (doesn't seem to make a difference here, but
+ *   does in MultipleImpl)
+ * - added reflective class lookup for hidden core (just to compare, all fine :)  
  * 
  * Issues:
  * - why the manual call to setup in some tests? should be called automatically
- * - 
+ * - beware: static mutable (and mutated!) test data is EVIL!
+ * - there shouldn't be a need to explicitly set a new selectionModel for core,
+ *   everything's newly created for each test so should be in clean state
+ *   at instantiation. If not, something is wrong in the test setup!!
  * 
  * --------------- below is original java doc
  * 
@@ -108,12 +115,29 @@ public class SelectionModelImplTestSimple8u60b5 {
     private Class<? extends SelectionModel> modelClass;
     private Control currentControl;
 
+    // hacking internal class
+    private static Class<? extends MultipleSelectionModel> coreListSelectionClass;
+    private static Class<? extends FocusModel> coreListFocusClass;
+    static {
+        Class clazz = ListView.class;
+        Class[] classes = clazz.getDeclaredClasses();
+        List<Class> classList = Arrays.asList(classes);
+        for (Class sub : classList) {
+            if (sub.getName().contains("SelectionModel")) {
+                coreListSelectionClass = sub;
+            } else if (sub.getName().contains("FocusModel")) {
+                coreListFocusClass = sub;
+            }
+        }
+    }
+
     // ListView
     private ListView<String> listView;
 
     // ListView model data
 //    private static ObservableList<String> defaultData = FXCollections.<String>observableArrayList();
-    private static ObservableList<String> data = FXCollections.<String>observableArrayList();
+//    private static ObservableList<String> data = FXCollections.<String>observableArrayList();
+    private ObservableList<String> data;
     private static final String ROW_1_VALUE = "Row 1";
     private static final String ROW_2_VALUE = "Row 2";
     private static final String ROW_3_VALUE = "Row 3";
@@ -144,6 +168,7 @@ public class SelectionModelImplTestSimple8u60b5 {
     @Parameters public static Collection implementations() {
         return Arrays.asList(new Object[][] {
                 {  SimpleListSelectionModel.class },
+                { coreListSelectionClass },
 //            { ListView.ListViewBitSetSelectionModel.class },
 //            { TreeView.TreeViewBitSetSelectionModel.class },
 //            { TableView.TableViewArrayListSelectionModel.class },
@@ -160,6 +185,7 @@ public class SelectionModelImplTestSimple8u60b5 {
     @AfterClass public static void tearDownClass() throws Exception {    }
 
     @Before public void setUp() {
+        data = FXCollections.<String>observableArrayList();
         // reset the data model
         data.setAll(ROW_1_VALUE, ROW_2_VALUE, ROW_3_VALUE, "Row 4", ROW_5_VALUE, "Row 6",
                 "Row 7", "Row 8", "Row 9", "Row 10", "Row 11", "Row 12", "Row 13",
@@ -214,6 +240,10 @@ public class SelectionModelImplTestSimple8u60b5 {
                 model = new SimpleListSelectionModel(listView);
                 listView.setSelectionModel((MultipleSelectionModel<String>) model);
                 currentControl = listView;
+            } else if (modelClass.equals(coreListSelectionClass)) {
+                model = listView.getSelectionModel();
+                currentControl = listView;
+                focusModel = listView.getFocusModel();
 //            if (modelClass.equals(ListView.ListViewBitSetSelectionModel.class)) {
 //                // recreate the selection model
 //                model = modelClass.getConstructor(ListView.class).newInstance(listView);
@@ -511,7 +541,8 @@ public class SelectionModelImplTestSimple8u60b5 {
     }
 
     @Test public void test_rt_30356_selectRowAtIndex1() {
-        setUp();
+        // PENDING JW: commented - should be automatically called!
+//        setUp();
 
         // this test selects the 1st row, then removes it, and sees what happens
         // to the selection.
