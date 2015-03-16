@@ -65,9 +65,11 @@ import org.junit.runners.Parameterized.Parameters;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionModel;
 import de.swingempire.fx.scene.control.selection.SimpleListSelectionModel;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import static org.junit.Assert.*;
 
 /**
@@ -131,6 +133,21 @@ public class SelectionModelImplTestSimple8u60b5 {
         }
     }
 
+    private static Class<? extends MultipleSelectionModel> coreTreeSelectionClass;
+    private static Class<? extends FocusModel> coreTreeFocusClass;
+    static {
+        Class clazz = TreeView.class;
+        Class[] classes = clazz.getDeclaredClasses();
+        List<Class> classList = Arrays.asList(classes);
+        for (Class sub : classList) {
+            if (sub.getName().contains("SelectionModel")) {
+                coreTreeSelectionClass = sub;
+            } else if (sub.getName().contains("FocusModel")) {
+                coreTreeFocusClass = sub;
+            }
+        }
+    }
+
     // ListView
     private ListView<String> listView;
 
@@ -165,10 +182,13 @@ public class SelectionModelImplTestSimple8u60b5 {
 
     // --- ListView model data
 
-    @Parameters public static Collection implementations() {
+    @Parameters (name = "{index}: {0}" )
+    public static Collection implementations() {
         return Arrays.asList(new Object[][] {
                 {  SimpleListSelectionModel.class },
                 { coreListSelectionClass },
+                {SimpleTreeSelectionModel.class},
+                { coreTreeSelectionClass},
 //            { ListView.ListViewBitSetSelectionModel.class },
 //            { TreeView.TreeViewBitSetSelectionModel.class },
 //            { TableView.TableViewArrayListSelectionModel.class },
@@ -193,21 +213,22 @@ public class SelectionModelImplTestSimple8u60b5 {
 
         
         // ListView init
-        listView = new ListView<>(data);
+        // JW: moved into init
+//        listView = new ListView<>(data);
         
         // --- ListView init
 
         // TreeView init
-        root = new TreeItem<>(ROW_1_VALUE);
-        root.setExpanded(true);
-        for (int i = 1; i < data.size(); i++) {
-            root.getChildren().add(new TreeItem<>(data.get(i)));
-        }
-        ROW_2_TREE_VALUE = root.getChildren().get(0);
-        ROW_3_TREE_VALUE = root.getChildren().get(1);
-        ROW_5_TREE_VALUE = root.getChildren().get(3);
-
-        treeView = new TreeView(root);
+//        root = new TreeItem<>(ROW_1_VALUE);
+//        root.setExpanded(true);
+//        for (int i = 1; i < data.size(); i++) {
+//            root.getChildren().add(new TreeItem<>(data.get(i)));
+//        }
+//        ROW_2_TREE_VALUE = root.getChildren().get(0);
+//        ROW_3_TREE_VALUE = root.getChildren().get(1);
+//        ROW_5_TREE_VALUE = root.getChildren().get(3);
+//
+//        treeView = new TreeView(root);
         // --- TreeView init
 
         // TableView init
@@ -237,14 +258,46 @@ public class SelectionModelImplTestSimple8u60b5 {
             // we create a new SelectionModel per test to ensure it is always back
             // at the default settings
             if (modelClass.equals(SimpleListSelectionModel.class)) {
+                listView = new ListView<>(data);
                 model = new SimpleListSelectionModel(listView);
                 listView.setSelectionModel((MultipleSelectionModel<String>) model);
                 currentControl = listView;
             } else if (modelClass.equals(coreListSelectionClass)) {
-                model = listView.getSelectionModel();
+                listView = new ListView<>(data);
                 currentControl = listView;
                 focusModel = listView.getFocusModel();
-//            if (modelClass.equals(ListView.ListViewBitSetSelectionModel.class)) {
+                model = listView.getSelectionModel();
+            } else if (modelClass.equals(SimpleTreeSelectionModel.class)) {
+                root = new TreeItemX<>(ROW_1_VALUE);
+                root.setExpanded(true);
+                for (int i = 1; i < data.size(); i++) {
+                    root.getChildren().add(new TreeItemX<>(data.get(i)));
+                }
+                ROW_2_TREE_VALUE = root.getChildren().get(0);
+                ROW_3_TREE_VALUE = root.getChildren().get(1);
+                ROW_5_TREE_VALUE = root.getChildren().get(3);
+
+                treeView = new TreeView(root);
+                currentControl = treeView;
+                treeView.setSelectionModel(new SimpleTreeSelectionModel(treeView));
+                model = treeView.getSelectionModel();
+                focusModel = treeView.getFocusModel();
+            } else if (modelClass.equals(coreTreeSelectionClass)) {
+                root = new TreeItem<>(ROW_1_VALUE);
+                root.setExpanded(true);
+                for (int i = 1; i < data.size(); i++) {
+                    root.getChildren().add(new TreeItem<>(data.get(i)));
+                }
+                ROW_2_TREE_VALUE = root.getChildren().get(0);
+                ROW_3_TREE_VALUE = root.getChildren().get(1);
+                ROW_5_TREE_VALUE = root.getChildren().get(3);
+
+                treeView = new TreeView(root);
+                currentControl = treeView;
+                model = treeView.getSelectionModel();
+                focusModel = treeView.getFocusModel();
+
+                //            if (modelClass.equals(ListView.ListViewBitSetSelectionModel.class)) {
 //                // recreate the selection model
 //                model = modelClass.getConstructor(ListView.class).newInstance(listView);
 //                listView.setSelectionModel((MultipleSelectionModel<String>)model);
@@ -313,8 +366,7 @@ public class SelectionModelImplTestSimple8u60b5 {
     }
 
     private boolean isTree() {
-        // PENDING JW: unconditionally return false, testing ListSelectionModel
-        return false;
+        return currentControl == treeView;
 //        return (model instanceof TreeView.TreeViewBitSetSelectionModel) ||
 //               (model instanceof TreeTableView.TreeTableViewArrayListSelectionModel);
     }
@@ -457,11 +509,23 @@ public class SelectionModelImplTestSimple8u60b5 {
          */
         model.select(3);
         assertTrue(model.isSelected(3));
-        data.add(0, "Inserted String");
-        assertFalse(model.isSelected(3));
-        assertTrue(model.isSelected(4));
+        if (isTree()) {
+            root.getChildren().add(0, createTreeItem("inserted string"));
+            assertTrue(model.isSelected(4));
+            assertFalse(model.isSelected(3));
+//            fail("TBD: not yet implemented");
+        } else {
+            assertSame("sanity: listView has data as items", data, listView.getItems());
+            data.add(0, "Inserted String");
+            assertTrue(model.isSelected(4));
+            assertFalse(model.isSelected(3));
+        }
     }
-    
+
+    private TreeItem<String> createTreeItem(String string) {
+        return modelClass == SimpleTreeSelectionModel.class ? new TreeItemX(string) : new TreeItem(string);
+    }
+
     @ConditionalIgnore(condition = SelectionIgnores.IgnoreFailCommented.class)
     @Test public void test_rt_29821() {
         fail("TBD - internal test api");
@@ -548,6 +612,7 @@ public class SelectionModelImplTestSimple8u60b5 {
         // to the selection.
 
         if (isTree()) {
+            
             // we hide the root, so we have a bunch of children at the same level
             if (currentControl instanceof TreeView) {
                 ((TreeView)currentControl).setShowRoot(false);

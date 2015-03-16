@@ -16,6 +16,10 @@ import de.swingempire.fx.collection.TreeIndicesList;
  * a treeView doesn't have a model and is needed for flattening the hierarchical 
  * structure of its <code>TreeItem</code>s into a sequential, indexable data
  * structure.
+ * <p>
+ * PENDING JW:
+ * <li> root changes 
+ * <li> changes to showRoot property not handled     
  * 
  * <p>
  * @author Jeanette Winzenburg, Berlin

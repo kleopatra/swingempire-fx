@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.logging.Logger;
+
 import javafx.collections.ListChangeListener.Change;
 import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
@@ -49,6 +51,15 @@ public class TreeBasedSelectionHelper<T> {
         this.selectionModel = selectionModel;
         this.treeView = tree;
         tree.getRoot().addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);;
+        tree.showRootProperty().addListener((source, old, value) -> {
+            showRootChanged(value);
+        });
+    }
+
+    protected void showRootChanged(Boolean value) {
+        if (selectionModel.isEmpty()) return;
+        int diff = value ? 1 : -1;
+        selectionModel.select(selectionModel.getSelectedIndex() + diff);
     }
 
     /**
@@ -322,4 +333,7 @@ public class TreeBasedSelectionHelper<T> {
         
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(TreeBasedSelectionHelper.class.getName());
 }

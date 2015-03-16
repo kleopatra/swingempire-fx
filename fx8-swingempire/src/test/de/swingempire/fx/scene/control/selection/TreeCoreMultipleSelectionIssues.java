@@ -55,10 +55,11 @@ public class TreeCoreMultipleSelectionIssues extends AbstractTreeMultipleSelecti
         root.getChildren().clear();
         assertEquals("itemCount must be ", 0, view.getExpandedItemCount());
         if (view.getSelectionModel().getSelectedIndex() > -1) {
-             LOG.info("selectedItems at 0: " +
-             view.getSelectionModel().getSelectedItems().get(0)
-             + "\n + selectedIndices at 0: " +
-             view.getSelectionModel().getSelectedIndices().get(0) );
+            // uncomment to see RT-34725
+//             LOG.info("selectedItems at 0: " +
+//             view.getSelectionModel().getSelectedItems().get(0)
+//             + "\n + selectedIndices at 0: " +
+//             view.getSelectionModel().getSelectedIndices().get(0) );
         }
         assertEquals("selectedItems must be empty", 0, 
                 view.getSelectionModel().getSelectedItems().size());

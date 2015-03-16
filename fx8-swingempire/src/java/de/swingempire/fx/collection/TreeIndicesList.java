@@ -30,12 +30,12 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * 
  * PENDING JW: 
  * <li> root changes 
+ * <li> changes to showRoot property not handled     
  * <li> weakEventHandler?
  * <li> core (OS) behaviour is to select the parent if a child has been selected
  *      when the branch is collapsed - implement here? More than the usual 
  *      bitSet-only behaviour, but feels natural enough? But can't without
  *      knowing whether to add (multiple mode) or set (single mode) the index
- *      
  * 
  * @see IndicesList
  * @see TreeIndexMappedList
@@ -80,6 +80,26 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         this.root = (TreeItemX<T>) tree.getRoot();
         bitSet = new BitSet();
         root.addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
+        tree.showRootProperty().addListener((source, old, value) -> {
+            showRootChanged(value);
+        });
+    }
+
+    /**
+     * Called when the tree's showRoot property changed. 
+     * Not good enough in itself: at least the selectionHelper must be
+     * implemented to cope! 
+     *  
+     * @param value
+     */
+    protected void showRootChanged(Boolean value) {
+        beginChange();
+        if (value) {
+            doShiftRight(0, 1);
+        } else {
+            doShiftLeft(0, 1);
+        }
+        endChange();
     }
     
     

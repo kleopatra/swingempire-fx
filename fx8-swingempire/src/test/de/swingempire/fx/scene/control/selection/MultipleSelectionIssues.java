@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
@@ -55,6 +56,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
+//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class MultipleSelectionIssues<V extends Control, M extends MultipleSelectionModel> {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
@@ -2157,11 +2159,18 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * PENDING: why not parameterize directly on the mode?
      * @return
      */
-    @Parameterized.Parameters
+    @Parameters(name = "{index} - multiple {0}")
     public static Collection selectionModes() {
         return Arrays.asList(new Object[][] { { false }, { true } });
     }
 
+    // PENDING JW: javadoc of Parameters states that we only need a simple array
+    // not working, though, instantiationException
+//    @Parameters
+//    public static Object[] data() {
+//           return new Object[] { false, true };
+//    }
+    
     protected void checkMode(M model) {
        if (multipleMode && model.getSelectionMode() != SelectionMode.MULTIPLE) {
            model.setSelectionMode(SelectionMode.MULTIPLE);

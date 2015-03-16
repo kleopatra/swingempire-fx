@@ -13,6 +13,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -23,6 +24,9 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnch
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
+import de.swingempire.fx.util.ListChangeReport;
+import de.swingempire.fx.util.TreeModificationReport;
+
 import static org.junit.Assert.*;
 
 /**
@@ -140,6 +144,105 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         TreeItem lastChild = (TreeItem) getRootChildren().get(lastIndex);
         getSelectionModel().select(lastChild);
         getRootChildren().remove(lastChild);
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootIndexOn() {
+        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
+        int index = 3;
+        getSelectionModel().select(index);
+        getView().setShowRoot(true);
+        assertEquals(index + 1, getSelectedIndex());
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootItemAtIndexOn() {
+        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
+        int index = 3;
+        getSelectionModel().select(index);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+        getView().setShowRoot(true);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootIndexOff() {
+        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        getView().setShowRoot(false);
+        assertEquals(index - 1, getSelectedIndex());
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootItemOn() {
+        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
+        int index = 3;
+        getSelectionModel().select(index);
+        Object item = getSelectedItem();
+        getView().setShowRoot(true);
+        assertEquals("selectedItem unchanged on showing root:", item, getSelectedItem());
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootItemOff() {
+        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        Object item = getSelectedItem();
+        getView().setShowRoot(false);
+        assertEquals("selectedItem unchanged on showing root:", item, getSelectedItem());
+    }
+
+    /**
+     * Items not changed, no event on selectedItems.
+     * 
+     * TreeIndexMap must be updated to cope with showRoot!
+     */
+    @Test
+    public void testShowRootNotificationItemsOn() {
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        getView().setShowRoot(true);
+        report.prettyPrint();
+        assertEquals("selectedItems must not fire if nothing changed", 0, report.getEventCount());
+    }
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    /** 
+     * incorrect assumption: showRoot or not is property of the tree, 
+     * the treeItem cannot fire on its behalf, doesn't even know it
+     */
+    @Test @Ignore
+    public void testShowRootNotification() {
+        TreeModificationReport report = new TreeModificationReport(getView().getRoot());
+        getView().setShowRoot(true);
+        assertEquals(1, report.getEventCount());
     }
 //---------------- super adjusted to tree-specifics: 
 // root not shown, expanded, no subtrees    

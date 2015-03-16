@@ -69,7 +69,7 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import static org.junit.Assert.*;
 
 /**
@@ -117,6 +117,20 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
             }
         }
     }
+    private static Class<? extends MultipleSelectionModel> coreTreeSelectionClass;
+    private static Class<? extends FocusModel> coreTreeFocusClass;
+    static {
+        Class clazz = TreeView.class;
+        Class[] classes = clazz.getDeclaredClasses();
+        List<Class> classList = Arrays.asList(classes);
+        for (Class sub : classList) {
+            if (sub.getName().contains("SelectionModel")) {
+                coreTreeSelectionClass = sub;
+            } else if (sub.getName().contains("FocusModel")) {
+                coreTreeFocusClass = sub;
+            }
+        }
+    }
     // ListView
     private ListView<String> listView;
 
@@ -144,11 +158,14 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
     // TableView
     private TableView tableView;
 
-    @Parameters public static Collection implementations() {
+    @Parameters (name = "{index}: {0}" )
+    public static Collection implementations() {
         return Arrays.asList(new Object[][] {
                 {SimpleListSelectionModel.class},  
                 // reflective class lookup for listViewBitSelectionModel
                 {coreListSelectionClass},
+                {SimpleTreeSelectionModel.class},
+                {coreTreeSelectionClass},
 //            { ListView.ListViewBitSetSelectionModel.class },
 //            { TreeView.TreeViewBitSetSelectionModel.class },
 //            { TableView.TableViewArrayListSelectionModel.class },
@@ -177,19 +194,21 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
                 "Row 14", "Row 15", "Row 16", "Row 17", "Row 18", "Row 19", ROW_20_VALUE);
 
 
-        listView = new ListView<>(data);
+        // JW: moved into per-type init - 
+//        listView = new ListView<>(data);
         // --- ListView init
 
         // TreeView init
-        root = new TreeItem<>(ROW_1_VALUE);
-        root.setExpanded(true);
-        for (int i = 1; i < data.size(); i++) {
-            root.getChildren().add(new TreeItem<>(data.get(i)));
-        }
-        ROW_2_TREE_VALUE = root.getChildren().get(0);
-        ROW_5_TREE_VALUE = root.getChildren().get(3);
-
-        treeView = new TreeView(root);
+        // JW: moved into per-type init - 
+//        root = new TreeItemX<>(ROW_1_VALUE);
+//        root.setExpanded(true);
+//        for (int i = 1; i < data.size(); i++) {
+//            root.getChildren().add(new TreeItemX<>(data.get(i)));
+//        }
+//        ROW_2_TREE_VALUE = root.getChildren().get(0);
+//        ROW_5_TREE_VALUE = root.getChildren().get(3);
+//
+//        treeView = new TreeView(root);
         // --- TreeView init
 
         // TreeTableView init
@@ -214,23 +233,63 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
             // we create a new SelectionModel per test to ensure it is always back
             // at the default settings
             if (modelClass.equals(SimpleListSelectionModel.class)) {
+                listView = new ListView(data);
                 model = new SimpleListSelectionModel(listView);
                 listView.setSelectionModel((MultipleSelectionModel<String>) model);
                 currentControl = listView;
                 focusModel = listView.getFocusModel();
                 
             } else if (modelClass.equals(coreListSelectionClass)) {
-                // relective access
-                model = (MultipleSelectionModel) invokeCreateCoreInstance(coreListSelectionClass, listView);
+                listView = new ListView(data);
                 currentControl = listView;
-                focusModel = (FocusModel) invokeCreateCoreInstance(coreListFocusClass, listView);
-                listView.setSelectionModel(model);
-                listView.setFocusModel(focusModel);
+                model = listView.getSelectionModel();
+                focusModel = listView.getFocusModel();
 //            // we create a new SelectionModel per test to ensure it is always back
 //            // at the default settings
-              // JW: why? the list is recreated per test, so guaranteed to be
-              // in default state  
-                // PENDING JW: commented private classes
+                // JW: why? the list is recreated per test, so guaranteed to be
+                // in default state  
+                // relective access
+//                model = (MultipleSelectionModel) invokeCreateCoreInstance(coreListSelectionClass, listView);
+//                currentControl = listView;
+//                focusModel = (FocusModel) invokeCreateCoreInstance(coreListFocusClass, listView);
+//                listView.setSelectionModel(model);
+//                listView.setFocusModel(focusModel);
+            } else if (modelClass.equals(SimpleTreeSelectionModel.class)) {
+                root = new TreeItemX<>(ROW_1_VALUE);
+                root.setExpanded(true);
+                for (int i = 1; i < data.size(); i++) {
+                    root.getChildren().add(new TreeItemX<>(data.get(i)));
+                }
+                ROW_2_TREE_VALUE = root.getChildren().get(0);
+                ROW_5_TREE_VALUE = root.getChildren().get(3);
+                
+                treeView = new TreeView(root);
+                model = new SimpleTreeSelectionModel<>(treeView);
+                treeView.setSelectionModel((MultipleSelectionModel<String>)model);
+                focusModel = treeView.getFocusModel();
+                
+                // create a new focus model
+                //              focusModel = new TreeViewFocusModel(treeView);
+                //              treeView.setFocusModel(focusModel);
+                currentControl = treeView;
+              } else if (modelClass.equals(coreTreeSelectionClass)) {
+                  root = new TreeItem<>(ROW_1_VALUE);
+                  root.setExpanded(true);
+                  for (int i = 1; i < data.size(); i++) {
+                      root.getChildren().add(new TreeItem<>(data.get(i)));
+                  }
+                  ROW_2_TREE_VALUE = root.getChildren().get(0);
+                  ROW_5_TREE_VALUE = root.getChildren().get(3);
+
+                  treeView = new TreeView(root);
+                  model = treeView.getSelectionModel();
+                  focusModel = treeView.getFocusModel();
+    
+                  // create a new focus model
+    //              focusModel = new TreeViewFocusModel(treeView);
+    //              treeView.setFocusModel(focusModel);
+                  currentControl = treeView;
+                  // PENDING JW: commented private classes
 //            if (modelClass.equals(ListView.ListViewBitSetSelectionModel.class)) {
 //                // recreate the selection model
 //                model = modelClass.getConstructor(ListView.class).newInstance(listView);
@@ -324,8 +383,7 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
     }
     
     private boolean isTree() {
-        // PENDING JW: hardcoded to list
-        return false;
+        return currentControl == treeView;
 //        return model instanceof TreeView.TreeViewBitSetSelectionModel ||
 //               model instanceof TreeTableView.TreeTableViewArrayListSelectionModel;
     }
@@ -838,7 +896,7 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
 
     @Test(expected=IllegalArgumentException.class)
     public void testNullListViewInSelectionModel() throws Throwable {
-        if (modelClass == coreListSelectionClass) {
+        if (modelClass == coreListSelectionClass || modelClass == coreTreeSelectionClass) {
             // PENDING JW: the original IllegalArgumentException is
             // mapped to a InvocationTargetException
             // so can't be tested reflectively  
@@ -851,8 +909,10 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
-        } else {
+        } else if (modelClass == SimpleListSelectionModel.class){
             new SimpleListSelectionModel<>(null);
+        } else if (modelClass == SimpleTreeSelectionModel.class) {
+            new SimpleTreeSelectionModel<>(null);
         }
 //        new ListView.ListViewBitSetSelectionModel(null);
     }
@@ -897,17 +957,30 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
          * data model. The end result should be that the fourth item should NOT
          * be selected, and the fifth item SHOULD be selected.
          */
-        assertSame("sanity: listView has data as items", data, listView.getItems());
-        assertEquals("sanity: listView has model ", model, listView.getSelectionModel());
+//        assertEquals("sanity: listView has model ", model, listView.getSelectionModel());
         model.select(3);
         assertTrue(model.isSelected(3));
-        data.add(0, "Inserted String");
-//        listView.getItems().add(0, "Inserted String");
-//        assertEquals(dataSize + 1, data.size());
-        assertTrue(model.isSelected(4));
-        assertFalse(model.isSelected(3));
+        if (isTree()) {
+            root.getChildren().add(0, createTreeItem("inserted string"));
+            assertTrue(model.isSelected(4));
+            assertFalse(model.isSelected(3));
+//            fail("TBD: not yet implemented");
+        } else {
+            assertSame("sanity: listView has data as items", data, listView.getItems());
+            data.add(0, "Inserted String");
+            assertTrue(model.isSelected(4));
+            assertFalse(model.isSelected(3));
+        }
     }
     
+    /**
+     * @param string
+     * @return
+     */
+    private TreeItem<String> createTreeItem(String string) {
+        return modelClass == SimpleTreeSelectionModel.class ? new TreeItemX(string) : new TreeItem(string);
+    }
+
     private int rt_28615_row_1_hit_count = 0;
     private int rt_28615_row_2_hit_count = 0;
     @Test public void test_rt_28615() {
@@ -1296,9 +1369,11 @@ public class MultipleSelectionModelImplTestSimple8u60b5 {
     }
 
     private void clearModelData() {
-        listView.getItems().clear();
+        if (listView != null)
+            listView.getItems().clear();
         tableView.getItems().clear();
-        treeView.setRoot(null);
+        if (treeView != null)
+            treeView.setRoot(null);
         treeTableView.setRoot(null);
     }
 }
