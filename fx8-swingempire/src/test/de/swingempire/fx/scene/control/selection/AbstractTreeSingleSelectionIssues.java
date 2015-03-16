@@ -74,7 +74,7 @@ public abstract class AbstractTreeSingleSelectionIssues extends
             int expected = index +1;
             Platform.runLater(() -> 
             assertEquals("selection moved by one after inserting item", 
-                    expected, getFocusIndex(expected))
+                    expected, getFocusedIndex(expected))
             );
         }
 
@@ -89,7 +89,7 @@ public abstract class AbstractTreeSingleSelectionIssues extends
         int expected = index +1;
         Platform.runLater(() -> 
         assertEquals("focused moved by one after inserting item", 
-                expected, getFocusIndex(expected))
+                expected, getFocusedIndex(expected))
                 );
     }
 
@@ -110,7 +110,7 @@ public abstract class AbstractTreeSingleSelectionIssues extends
         addItem(index, createItem("6-item"));
         int expected = index + 1;
         assertEquals("focused moved by one after inserting item", expected,
-                getFocusIndex(expected));
+                getFocusedIndex(expected));
     }
     /**
      * For a tree, the requirement is unclear.
@@ -127,10 +127,10 @@ public abstract class AbstractTreeSingleSelectionIssues extends
 //        items.set(index, modified);
         setItem(index, modified);
         assertEquals("selected index must be unchanged on setItem", 
-                index, getSelectionModel().getSelectedIndex());
-        assertEquals(modified, getSelectionModel().getSelectedItem());
+                index, getSelectedIndex());
+        assertEquals(modified, getSelectedItem());
     }
-    
+
     @Test
     @Override
     @ConditionalIgnore (condition = IgnoreTreeFocus.class)
@@ -149,12 +149,12 @@ public abstract class AbstractTreeSingleSelectionIssues extends
     public void testFocusOnRemoveItemAbove() {
             int index = 2;
             getSelectionModel().select(index);
-            assertEquals("sanity: focus set along with selected index", index, getFocusIndex(index));
+            assertEquals("sanity: focus set along with selected index", index, getFocusedIndex(index));
     //        items.remove(1);
             removeItem(1);
             int expected = index -1;
             Platform.runLater(() -> {
-                assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
+                assertEquals("open 30931 - focus after remove above focused", expected, getFocusedIndex(expected));
             });
             
         }
@@ -183,7 +183,7 @@ public abstract class AbstractTreeSingleSelectionIssues extends
         addItem(index, createItem("6-item"));
         int expected = index +1;
         assertEquals("selected moved by one after inserting item", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
 
     @Override

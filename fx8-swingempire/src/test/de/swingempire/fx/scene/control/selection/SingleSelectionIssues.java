@@ -55,7 +55,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
         getSelectionModel().selectFirst();
         assertEquals("anchor must be unchanged when moving focus", 
                 index, getAnchorIndex(index));
-        int next = getFocusModel().getFocusedIndex();
+        int next = getFocusedIndex(0);
         assertEquals("focus must be on first", 0, next);
     }
 
@@ -75,7 +75,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().selectPrevious();
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         if (multipleMode) {
             assertEquals("multipleMode: anchor unchanged on adding selection", 
                     index, getAnchorIndex(index));
@@ -100,7 +100,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().selectNext();
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         if (multipleMode) {
             assertEquals("multipleMode: anchor must unchanged on adding selection", 
                     index, getAnchorIndex(index));
@@ -110,9 +110,7 @@ public abstract class SingleSelectionIssues<C extends Control, M extends Multipl
                     
         }
     }
-    
 
-    
     public SingleSelectionIssues(boolean multiple) {
         this.multipleMode = multiple;
     }

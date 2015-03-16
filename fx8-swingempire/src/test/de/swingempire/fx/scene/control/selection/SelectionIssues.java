@@ -27,14 +27,13 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 
 /**
@@ -77,14 +76,14 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int last = items.size() - 2;
         Object lastItem = items.get(last);
         getSelectionModel().select(last);
-        assertEquals(lastItem, getSelectionModel().getSelectedItem());
+        assertEquals(lastItem, getSelectedItem());
         ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         removeAll(0, 2);
 //        items.removeAll(items.get(1), items.get(3));
-        assertEquals("sanity: selectedItem unchanged", lastItem, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: selectedItem unchanged", lastItem, getSelectedItem());
         assertEquals("must not fire on removes above", 0, report.getEventCount());
     }
-    
+
     /**
      * Testing notification on disjoint removes above selected. Here: index
      * 
@@ -97,16 +96,15 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedIndexNotificationOnDisjointRemovesAbove() {
         int last = items.size() - 2;
         getSelectionModel().select(last);
-        assertEquals(last, getSelectionModel().getSelectedIndex());
+        assertEquals(last, getSelectedIndex());
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         removeAll(0, 2);
 //        items.removeAll(items.get(1), items.get(3));
         assertEquals("sanity: selectedIndex must be shifted by -2", last - 2, 
-                getSelectionModel().getSelectedIndex());
+                getSelectedIndex());
         assertEquals("must fire single event on removes above", 1, 
                 report.getEventCount());
     }
-    
     /**
      * This fails because it it not updated at all, that is old selectedIndex ==
      * newSelectedIndex
@@ -117,7 +115,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedIndexAtLastNotificationOnDisjointRemovesAbove() {
         int last = items.size() - 1;
         getSelectionModel().select(last);
-        assertEquals(last, getSelectionModel().getSelectedIndex());
+        assertEquals(last, getSelectedIndex());
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         removeAll(0, 2);
 //        assertEquals("sanity: selectedIndex must be shifted by -2", last - 2, 
@@ -166,7 +164,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectedItem());
         getSelectionModel().selectedIndexProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -181,7 +179,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectionModel().getSelectedIndex());
+        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectedIndex());
         getSelectionModel().selectedItemProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -225,8 +223,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
 //        items.clear();
         clearItems();
-        assertEquals("selectedIndex must be cleared on removeAll", -1, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItem must be cleared on removeAll", null, getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex must be cleared on removeAll", -1, getSelectedIndex());
+        assertEquals("selectedItem must be cleared on removeAll", null, getSelectedItem());
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
     }
     
@@ -241,8 +239,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(uncontained);
         clearItems();
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
     }
     
     
@@ -264,7 +262,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(index);
-        assertEquals("open 30931 - focus after remove focused", index, getFocusIndex(index));
+        assertEquals("open 30931 - focus after remove focused", index, getFocusedIndex(index));
     }
     
     @Test
@@ -273,7 +271,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         items.remove(index);
         assertEquals("open 30931 - selection after remove focused", 
-                index, getSelectionModel().getSelectedIndex());
+                index, getSelectedIndex());
     }
     
     @Test
@@ -302,8 +300,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 //        items.set(index, modified);
         setItem(index, modified);
         assertEquals("selected index must be unchanged on setItem", 
-                index, getSelectionModel().getSelectedIndex());
-        assertEquals(modified, getSelectionModel().getSelectedItem());
+                index, getSelectedIndex());
+        assertEquals(modified, getSelectedItem());
     }
     
     /**
@@ -317,10 +315,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         Object selected = items.get(index);
-        assertEquals("sanity: focus at selected", index, getFocusIndex(index));
+        assertEquals("sanity: focus at selected", index, getFocusedIndex(index));
         Object modified = selected + "xx";
         items.set(index, modified);
-        assertEquals(index, getFocusIndex(index));
+        assertEquals(index, getFocusedIndex(index));
     }
     
     /**
@@ -349,10 +347,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testFocusOnRemoveItemAbove() {
         int index = 2;
         getSelectionModel().select(index);
-        assertEquals("sanity: focus set along with selected index", index, getFocusIndex(index));
+        assertEquals("sanity: focus set along with selected index", index, getFocusedIndex(index));
         removeItem(1);
         int expected = index -1;
-        assertEquals("open 30931 - focus after remove above focused", expected, getFocusIndex(expected));
+        assertEquals("open 30931 - focus after remove above focused", expected, getFocusedIndex(expected));
     }
     
     /**
@@ -365,7 +363,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         removeItem(1);
         int expected = last - 1;
         assertEquals("selected index after remove single item above", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     /**
@@ -379,7 +377,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
 //        items.removeAll(items.get(1), items.get(3));
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         if (selected > -1)
             items.get(selected);
     }
@@ -398,7 +396,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 //        items.removeAll(items.get(1), items.get(3));
         int expected = last - 2;
         assertEquals("selected index after disjoint removes above", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     /**
@@ -413,7 +411,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 //        items.removeAll(1, 3);
         int expected = last - 2;
         assertEquals("selected index on disjoint removes above", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     /**
@@ -430,7 +428,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
         assertEquals("selected item unchanged on disjoint remove above", 
-                lastItem, getSelectionModel().getSelectedItem());
+                lastItem, getSelectedItem());
     }
     
     /**
@@ -445,7 +443,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         // disjoint remove of 2 elements above the last selected
         removeAll(1, 3);
         assertEquals("selected item unchanged on disjoint remove above", 
-                lastItem, getSelectionModel().getSelectedItem());
+                lastItem, getSelectedItem());
     }
     
     
@@ -456,7 +454,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         removeItem(1);
         int expected = index - 1;
         assertEquals("open 30931 - selected after remove above selected", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     @Test
@@ -467,7 +465,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         addItem(0, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     @Test
@@ -479,7 +477,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         addItem(0, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
-                expected, getFocusIndex(expected));
+                expected, getFocusedIndex(expected));
     }
     
     /**
@@ -494,7 +492,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         other.add(index, "6-item");
         int expected = index +1;
         assertEquals("focused moved by one after inserting item", 
-                expected, getFocusIndex(expected));
+                expected, getFocusedIndex(expected));
     }
     
     /**
@@ -509,7 +507,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         other.add(index, "6-item");
         int expected = index +1;
         assertEquals("selected moved by one after inserting item", 
-                expected, getSelectionModel().getSelectedIndex());
+                expected, getSelectedIndex());
     }
     
     /**
@@ -543,9 +541,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int insert = 3;
 //        items.add(insert, uncontained);
         addItem(insert, uncontained);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
         assertEquals("selectedIndex must be updated to position of selectedItem", 
-                insert, getSelectionModel().getSelectedIndex());
+                insert, getSelectedIndex());
     }
 
     @Test
@@ -556,7 +554,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         items.add(index, "6-item");
         int expected = index +1;
         assertEquals("focused moved by one after inserting item", 
-                expected, getFocusIndex(expected));
+                expected, getFocusedIndex(expected));
     }
     
     @Test
@@ -564,13 +562,13 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         initSkin();
         int index = 2;
         getSelectionModel().select(index);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
 //        items.add(index, "6-item");
         addItem(index, createItem("6-item"));
         int expected = index +1;
         assertEquals("selection moved by one after inserting item", 
-                expected, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItem must be unchanged", selectedItem, getSelectionModel().getSelectedItem());
+                expected, getSelectedIndex());
+        assertEquals("selectedItem must be unchanged", selectedItem, getSelectedItem());
     }
     
     /**
@@ -584,7 +582,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.add(index, "6-item");
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -595,7 +593,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection();
-        assertEquals("focus must be cleared clearSelection", -1, getFocusIndex(-1));
+        assertEquals("focus must be cleared clearSelection", -1, getFocusedIndex(-1));
         
     }
     @Test
@@ -603,14 +601,14 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearAndSelect(index + 1);
-        assertEquals("focus must same as selected", index + 1, getFocusIndex(index + 1));
+        assertEquals("focus must same as selected", index + 1, getFocusedIndex(index + 1));
         
     }
     @Test
     public void testFocus() {
         int index = 2;
         getSelectionModel().select(index);
-        assertEquals("focus must be same as selected index", index, getFocusIndex(index));
+        assertEquals("focus must be same as selected index", index, getFocusedIndex(index));
     }
     
     @Test
@@ -618,7 +616,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection(index);
-        assertEquals("focus must be cleared", -1, getFocusIndex(-1));
+        assertEquals("focus must be cleared", -1, getFocusedIndex(-1));
     }
     
     @Test
@@ -626,7 +624,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearSelection(index + 1);
-        assertEquals("focus must be unchanged on clear of unselected", index, getFocusIndex(index));
+        assertEquals("focus must be unchanged on clear of unselected", index, getFocusedIndex(index));
     }
     @Test
     public void testFocusOnSelectNext() {
@@ -635,7 +633,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().selectNext();
         int next = index + 1;
         assertEquals("focus must be same as next index", next, 
-                getFocusIndex(next));
+                getFocusedIndex(next));
     }
 
     @Test
@@ -645,7 +643,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().selectPrevious();
         int previous = index - 1;
         assertEquals("focus must be same as previous index", previous, 
-                getFocusIndex(previous));
+                getFocusedIndex(previous));
     }
 
     @Test
@@ -655,7 +653,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().selectFirst();
         int first = 0;
         assertEquals("focus must be same as first index", first, 
-                getFocusIndex(first));
+                getFocusedIndex(first));
     }
 
     @Test
@@ -665,7 +663,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().selectLast();
         int last = items.size() - 1;
         assertEquals("focus must be same as first index", last, 
-                getFocusIndex(last));
+                getFocusedIndex(last));
     }
     
     @Test
@@ -715,7 +713,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().clearAndSelect(index + 1);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -758,7 +756,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(index + 1);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -772,7 +770,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.add(index + 1, "6-item");
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -787,7 +785,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.add(0, "6-item");
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -802,7 +800,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         items.remove(0);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertEquals("anchor must be same as selected index", 
                 selected, getAnchorIndex(selected));
     }
@@ -826,7 +824,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectUncontainedIfEmptySelection() {
         Object item = "uncontained";
         getSelectionModel().select(item);
-        assertEquals("sanity: the item is selected", item, getSelectionModel().getSelectedItem());
+        assertEquals("sanity: the item is selected", item, getSelectedItem());
         assertFalse("probably DOC ERROR: selection must not be empty", 
                 getSelectionModel().isEmpty());
     }
@@ -859,11 +857,11 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         Object item = createItem("uncontained");
         getSelectionModel().select(item);
-        if (getSelectionModel().getSelectedIndex() >= 0) {
+        if (getSelectedIndex() >= 0) {
             assertEquals("selectedItem must be model item at selectedIndex", 
-                    items.get(index), getSelectionModel().getSelectedItem());
+                    items.get(index), getSelectedItem());
         } else {
-            assertEquals("uncontained item must be selected item", item, getSelectionModel().getSelectedItem());
+            assertEquals("uncontained item must be selected item", item, getSelectedItem());
         }
     }
     
@@ -886,9 +884,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectNullItem() {
         int index = 2;
         getSelectionModel().select(index);
-        Object item = getSelectionModel().getSelectedItem();
+        Object item = getSelectedItem();
         getSelectionModel().select(null);
-        assertEquals("unspecified behaviour on select(null): what to expect?", item, getSelectionModel().getSelectedItem());
+        assertEquals("unspecified behaviour on select(null): what to expect?", item, getSelectedItem());
         fail("unspecified behaviour for selecting null item");
     }
     
@@ -901,9 +899,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectNullIndex() {
         int index = 2;
         getSelectionModel().select(index);
-        Object item = getSelectionModel().getSelectedItem();
+        Object item = getSelectedItem();
         getSelectionModel().select(null);
-        assertEquals("unspecified behaviour on select(null) ", index, getSelectionModel().getSelectedIndex());
+        assertEquals("unspecified behaviour on select(null) ", index, getSelectedIndex());
         fail("unspecified behaviour for selecting null item");
     }
 
@@ -920,7 +918,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().select(-1);
-        assertEquals("selecting off-range (here: - 1) must have no effect on selectedItem", items.get(index), getSelectionModel().getSelectedItem());
+        assertEquals("selecting off-range (here: - 1) must have no effect on selectedItem", items.get(index), getSelectedItem());
     }
 
     /**
@@ -936,7 +934,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().select(-1);
-        assertEquals("selecting off-range (here: -1) must have no effect on selectedIndex", index, getSelectionModel().getSelectedIndex());
+        assertEquals("selecting off-range (here: -1) must have no effect on selectedIndex", index, getSelectedIndex());
      }
     /**
      * Test clearSelection(index).
@@ -952,7 +950,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
                 getSelectionModel().isEmpty());
         assertFalse("index must be unselected", getSelectionModel().isSelected(index));
         assertEquals("index must be cleared", 
-                -1, getSelectionModel().getSelectedIndex());
+                -1, getSelectedIndex());
     }
 
     @Test
@@ -961,7 +959,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         getSelectionModel().clearSelection(index + 1);
         assertEquals("selectedIndex must be unchanged after clearing unselected index",
-                index, getSelectionModel().getSelectedIndex());
+                index, getSelectedIndex());
     }
     
     @Test
@@ -971,7 +969,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection(items.size());
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
         assertEquals("index must still be selected", 
-                index, getSelectionModel().getSelectedIndex());
+                index, getSelectedIndex());
         
     }
     /**
@@ -984,7 +982,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().select(index + 1);
-        assertEquals(index +1, getSelectionModel().getSelectedIndex());
+        assertEquals(index +1, getSelectedIndex());
     }
     
 //---------- navigational methods on empty selection
@@ -998,7 +996,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection();
         getSelectionModel().selectNext();
         assertEquals("intuitve: next on empty is first", 0, 
-                getSelectionModel().getSelectedIndex());
+                getSelectedIndex());
         fail("doc clash: _will only succeed if there is currently a lead/focused index_");
     }
     
@@ -1011,7 +1009,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().clearSelection();
         getSelectionModel().selectPrevious();
         assertEquals("intuitve: previous on empty is last", items.size() - 1, 
-                getSelectionModel().getSelectedIndex());
+                getSelectedIndex());
         fail("doc clash: _will only succeed if there is currently a lead/focused index_");
     }
     
@@ -1034,7 +1032,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         FXCollections.sort(items);
         assertFalse("selection must not be empty after sorting", getSelectionModel().isEmpty());
         assertTrue("last index must be selected", getSelectionModel().isSelected(last));
-        assertEquals(last, getSelectionModel().getSelectedIndex());        
+        assertEquals(last, getSelectedIndex());        
     }
     /**
      * SelectionModel is documented to do nothing if the index is out of range.
@@ -1044,8 +1042,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         getSelectionModel().select(index);
         getSelectionModel().select(items.size() + 3);
-        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedIndex", index, getSelectionModel().getSelectedIndex());
-        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedItem", items.get(index), getSelectionModel().getSelectedItem());
+        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedIndex", index, getSelectedIndex());
+        assertEquals("selecting off-range (here: size + 3) must have no effect on selectedItem", items.get(index), getSelectedItem());
     }
 
     @Test
@@ -1053,7 +1051,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         int index = 2;
         Object item = items.get(index);
         getSelectionModel().select(item);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
+        assertEquals(index, getSelectedIndex());
     }
     
     /**
@@ -1064,7 +1062,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectIndexSyncItem() {
         int index = 2;
         getSelectionModel().select(index);
-        assertEquals(items.get(index), getSelectionModel().getSelectedItem());
+        assertEquals(items.get(index), getSelectedItem());
     }
 
     @Test
@@ -1082,14 +1080,14 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     // == fix for F2 having no effect
     @Test
     public void testInitialSelection() {
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(null, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
+        assertEquals(null, getSelectedItem());
         assertTrue(getSelectionModel().isEmpty());
     }
 
     @Test
     public void testInitialFocus() {
-        assertEquals(-1, getFocusIndex(-1));
+        assertEquals(-1, getFocusedIndex(-1));
     }
 
     @Test
@@ -1190,6 +1188,15 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 
     protected abstract void setSelectionModel(T model);
 
+    protected Object getSelectedItem() {
+        return getSelectionModel().getSelectedItem();
+    }
+
+    protected int getSelectedIndex() {
+        return getSelectionModel().getSelectedIndex();
+    }
+    
+
     /**
      * Returns the index of the anchor value. Note that subclasses which store a
      * compound value need to override and extract the index.
@@ -1216,7 +1223,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
      * @param index the default value for views that don't have a focusModel
      * @return 
      */
-    protected int getFocusIndex(int index) {
+    protected int getFocusedIndex(int index) {
         return getFocusModel() != null? getFocusModel().getFocusedIndex() : index;
     }
     
