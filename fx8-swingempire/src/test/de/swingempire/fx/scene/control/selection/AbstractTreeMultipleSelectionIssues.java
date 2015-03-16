@@ -391,6 +391,20 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
             getFocusModel().focus(-1);
         }
     }
+    
+    
+
+    /**
+     * TreeItem has no setItems, so this is implemneted to delegate
+     * to setAll.
+     * 
+     * Here we expect the elements to be treeItems.
+     */
+    @Override
+    protected void setItems(ObservableList other) {
+        setAllItems(other);
+    }
+
 
     /**
      * Here we expect the elements to be treeItems!.
@@ -481,7 +495,6 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     public AbstractTreeMultipleSelectionIssues(boolean multiple) {
         super(multiple);
-        // TODO Auto-generated constructor stub
     }
 
     @SuppressWarnings("unused")

@@ -64,7 +64,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 
 
     /**
-     * TreeView must treeItems of type TreeItemX. That's the only one firing an
+     * TreeView must have treeItems of type TreeItemX. That's the only one firing an
      * extended TreeModificationEventX: without access to the children's change, 
      * this class can't do its job properly. Here we check if the root has the
      * correct type. Can throw an IllegalStateException later if not receiving

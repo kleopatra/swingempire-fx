@@ -7,6 +7,9 @@ package de.swingempire.fx.scene.control.selection;
 import javafx.collections.ObservableList;
 
 /**
+ * Encapsulates control of the pair selectedIndices/selectedItems, that is
+ * multiple selection state.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public interface IndexedItemsController<T> {

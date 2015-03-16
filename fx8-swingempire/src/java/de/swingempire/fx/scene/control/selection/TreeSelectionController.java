@@ -7,12 +7,17 @@ package de.swingempire.fx.scene.control.selection;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.TreeIndexMappedList;
 import de.swingempire.fx.collection.TreeIndicesList;
 
 
 /**
+ * Implementation of IndexedItemsController that handles a TreeView. Unfortunately, 
+ * a treeView doesn't have a model and is needed for flattening the hierarchical 
+ * structure of its <code>TreeItem</code>s into a sequential, indexable data
+ * structure.
+ * 
+ * <p>
  * @author Jeanette Winzenburg, Berlin
  */
 public class TreeSelectionController<T> implements IndexedItemsController<TreeItem<T>> {
@@ -20,8 +25,8 @@ public class TreeSelectionController<T> implements IndexedItemsController<TreeIt
     protected TreeIndicesList<T> indicesList;
     protected TreeIndexMappedList<T> indexedItems;
 
-    public TreeSelectionController(TreeView<T> items) {
-        indicesList = new TreeIndicesList<>(items);
+    public TreeSelectionController(TreeView<T> tree) {
+        indicesList = new TreeIndicesList<>(tree);
         indexedItems = new TreeIndexMappedList<>(indicesList);
     }
 
@@ -74,12 +79,5 @@ public class TreeSelectionController<T> implements IndexedItemsController<TreeIt
     public TreeItem<T> getSourceItem(int index) {
         return indicesList.getSource().getTreeItem(index);
     }
-
-//    @Override
-//    public ObservableList<? extends TreeItem<T>> getSource() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-
 
 }

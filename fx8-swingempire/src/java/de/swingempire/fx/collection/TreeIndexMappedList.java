@@ -277,7 +277,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
 
     /**
      * Implemented to react to changes in indicesList only if they originated
-     * from directly modifying its indices. 
+     * from direct motification its indices. 
      * <p>
      * As this handles only changes that resulted from direct modifications of 
      * indicesList (set/add/clearIndices), we don't expect permutated nor updated notifications, 

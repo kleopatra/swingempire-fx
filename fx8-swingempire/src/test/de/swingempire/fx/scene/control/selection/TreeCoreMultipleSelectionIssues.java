@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
@@ -17,8 +16,6 @@ import javafx.scene.control.TreeView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import static org.junit.Assert.*;
 
 import static org.junit.Assert.*;
 

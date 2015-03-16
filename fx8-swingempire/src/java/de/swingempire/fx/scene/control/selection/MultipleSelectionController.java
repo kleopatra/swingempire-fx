@@ -9,8 +9,10 @@ import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
 
 /**
- * Encapsulates control of selectedIndices/selectedItems, that is
- * multiple selection state.
+ * Implementation of IndexedItemsController that handles a list of items.
+ * <p>
+ * PENDING JW:
+ * - should take a property of items (vs. the raw items)
  * 
  * @author Jeanette Winzenburg, Berlin
  */

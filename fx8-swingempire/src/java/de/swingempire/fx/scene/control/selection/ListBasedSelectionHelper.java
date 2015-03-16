@@ -11,6 +11,26 @@ import javafx.collections.WeakListChangeListener;
 import javafx.scene.control.TreeItem;
 
 /**
+ * This class helps a (Abstract)MultipleSelectionModel to keep its single selection state 
+ * sync'ed to its multiple selection state when the source list changes. It assumes 
+ * that multiple selection state is completely update before seeing the change.
+ * 
+ * <p>
+ * 
+ * This helper can handle a list as source.
+ * 
+ * PENDING JW:
+ * - should take a property of items (vs. the raw items)
+ * - should wrap into a ListProperty itself (if not yet done), currently simply
+ *   assumes that the caller handles the wrap
+ * - need to support configuration of handling of changes (removeAt, setItems/All, 
+ *   uncontained, set(..))
+ * - bug: replacing a single element list by a single element list doesn't clear
+ *   out selection state (who's responsible? IndicesList/IndexMappedList or this?)     
+ * 
+ * @see AbstractSelectionModelBase
+ * @see TreeBasedSelectionHelper
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ListBasedSelectionHelper<T> {
@@ -27,7 +47,11 @@ public class ListBasedSelectionHelper<T> {
             new WeakListChangeListener<T>(itemsContentListener);
     private AbstractSelectionModelBase<T> selectionModel;
     
-    
+    /**
+     * 
+     * @param selectionModel
+     * @param items
+     */
     public ListBasedSelectionHelper(AbstractSelectionModelBase<T> selectionModel, ObservableList<T> items) {
         this.selectionModel = selectionModel;
         items.addListener(weakItemsContentListener);

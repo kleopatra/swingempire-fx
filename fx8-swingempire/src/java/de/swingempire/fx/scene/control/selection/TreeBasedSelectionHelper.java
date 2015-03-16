@@ -14,6 +14,15 @@ import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
 import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
+ * This class helps a (Abstract)MultipleSelectionModel to keep its single selection state 
+ * sync'ed to its multiple selection state when the source list changes. It assumes 
+ * that multiple selection state is completely update before seeing the change.
+ * 
+ * <p>
+ * 
+ * This helper can handle a TreeView as source. Its root has to be of type TreeItemX.
+ * 
+ * <p>
  * PENDING JW
  * <li> weak eventHandler?
  * <li> listen to root changes
@@ -28,7 +37,11 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 public class TreeBasedSelectionHelper<T> {
 
     // PENDING JW: weakEventHandler?
-    private EventHandler<TreeModificationEvent<T>> modificationListener = e -> treeModified(e);
+    /**
+     * The default listener installed on backing list to monitor list changes.
+     * Implemented to call treeModified.
+     */
+    protected EventHandler<TreeModificationEvent<T>> modificationListener = e -> treeModified(e);
     private AbstractSelectionModelBase<TreeItem<T>> selectionModel;
     private TreeView<T> treeView;
 
@@ -39,8 +52,13 @@ public class TreeBasedSelectionHelper<T> {
     }
 
     /**
-     * @param e
-     * @return
+     * This method is called when the listener on the tree's item received a TreeModificationEvent
+     * from the tree's root. Implemented to dispatch the event or its list change (as appropriate)
+     * to either treeItemChanged or childrenChanged, respectively. Does nothing if the sender
+     * is not visible.
+     * 
+     * @param e the event received from the tree's root.
+     * @throws IllegalStateException if the sender is not of type TreeItemX.
      */
     protected void treeModified(TreeModificationEvent<T> event) {
         if (!(event.getTreeItem() instanceof TreeItemX)) {
@@ -58,10 +76,13 @@ public class TreeBasedSelectionHelper<T> {
     }
 
     /**
-     * @param source
-     * @param change
+     * Called if the treeModification was caused by a change of a child list of 
+     * a visible treeItem.
+     * 
+     * @param source the sending TreeItem
+     * @param change the list change
      */
-    private void childrenChanged(TreeItemX<T> source,
+    protected void childrenChanged(TreeItemX<T> source,
             Change<? extends TreeItem<T>> change) {
         int oldSelectedIndex = selectionModel.getSelectedIndex();
         TreeItem<T> oldSelectedItem = selectionModel.getSelectedItem();
@@ -123,7 +144,7 @@ public class TreeBasedSelectionHelper<T> {
      * @param source the treeItem sending the changed
      * @param change the list change
      */
-    private void selectedItemChanged(TreeItemX<T> source,
+    protected void selectedItemChanged(TreeItemX<T> source,
             Change<? extends TreeItem<T>> c) {
         c.reset();
         while(c.next()) {
@@ -178,7 +199,7 @@ public class TreeBasedSelectionHelper<T> {
         TreeItem<T> oldSelectedItem = selectionModel.getSelectedItem();
         // short-cut for child itself
         if (oldSelectedItem == treeItem) return true;
-        ExpandedDescendants<TreeItem> subtree = new ExpandedDescendants<TreeItem>(treeItem);
+        ExpandedDescendants<TreeItem<T>> subtree = new ExpandedDescendants<TreeItem<T>>(treeItem);
         while (subtree.hasNext()) {
             if (treeItem == subtree.next()) return true;
         }
@@ -209,7 +230,7 @@ public class TreeBasedSelectionHelper<T> {
                     + "something wrong if we get a negativ from " + event);
         }
         
-        // similar short-cuts than for children modifications
+        // similar short-cuts as for children modifications
         int oldSelectedIndex = selectionModel.getSelectedIndex();
         TreeItem<T> oldSelectedItem = selectionModel.getSelectedItem();
         int oldFocus = selectionModel.getFocusedIndex();
@@ -271,7 +292,7 @@ public class TreeBasedSelectionHelper<T> {
      * 
      * @param event
      */
-    private void collapsed(TreeModificationEvent<T> event) {
+    protected void collapsed(TreeModificationEvent<T> event) {
         TreeItemX<T> source = (TreeItemX<T>) event.getTreeItem();
         // getRow returns expected result only for visible items
         int from = treeView.getRow(source);
@@ -288,10 +309,14 @@ public class TreeBasedSelectionHelper<T> {
     }
 
     /**
-     * @param source
-     * @param change
+     * Called if focus hasn't been handled implicitly by synching selection.
+     * 
+     * PENDING: not yet implemented.
+     * 
+     * @param source the sender of the event
+     * @param change the change of children's list
      */
-    private void updateFocus(TreeItemX<T> source,
+    protected void updateFocus(TreeItemX<T> source,
             Change<? extends TreeItem<T>> change) {
         // TODO Auto-generated method stub
         
