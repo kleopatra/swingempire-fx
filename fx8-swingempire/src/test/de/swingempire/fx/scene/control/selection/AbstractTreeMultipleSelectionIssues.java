@@ -27,6 +27,12 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUnco
 import static org.junit.Assert.*;
 
 /**
+ * Tree-selection related tests. 
+ * <p>
+ * To comply with super's test assumption, the tree instantiated in setup has an
+ * expanded root with super.items added to its children list and has
+ * no subtrees. The root is not visible.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -34,7 +40,9 @@ import static org.junit.Assert.*;
 public abstract class AbstractTreeMultipleSelectionIssues extends
     MultipleSelectionIssues<TreeView, MultipleSelectionModel<TreeItem>> {
 
-
+    /**
+     * the list of values of the treeItems in a default branch.
+     */
     private ObservableList<String> rawItems;
     
     /**

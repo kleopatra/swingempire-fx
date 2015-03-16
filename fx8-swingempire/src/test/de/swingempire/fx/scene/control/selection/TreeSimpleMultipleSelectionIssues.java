@@ -25,7 +25,6 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class TreeSimpleMultipleSelectionIssues extends AbstractTreeMultipleSelectionIssues {
 
-//extends MultipleSelectionIssues<TreeView, MultipleSelectionModel> {
 
     public TreeSimpleMultipleSelectionIssues(boolean multiple) {
         super(multiple);
