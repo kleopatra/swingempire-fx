@@ -219,7 +219,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     /**
      * Items not changed, no event on selectedItems.
      * 
-     * TreeIndexMap must be updated to cope with showRoot!
+     * TBD: TreeIndexMap must be updated to cope with showRoot! 
      */
     @Test
     public void testShowRootNotificationItemsOn() {
