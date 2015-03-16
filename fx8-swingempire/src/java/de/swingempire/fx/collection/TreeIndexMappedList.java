@@ -31,6 +31,12 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * but to changes in the sourceChanged property of the treeIndicesList. Get them
  * when the treeIndicesList has updated itself to the modification but not yet 
  * broadcasted. 
+ * <p>
+ * 
+ * PENDING JW
+ * <li> cope with toggling showRoot - probably needs the help of TreeIndicesList in a 
+ * similar manner as with listChanges: ignore changes from source if they resulted
+ * from showRoot?
  * 
  * @see TreeIndicesList
  * @see IndexMappedList
