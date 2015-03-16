@@ -92,7 +92,7 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         invokeBehavior(method);
         assertEquals(method + " focus must be moved", expectedFocus, getFocusIndex());
         assertFalse(method + " focus must not be selected", getSelectionModel().isSelected(expectedFocus));
-        assertEquals(method + " selection must be unchanged", intialSelected, getSelectionModel().getSelectedIndex());
+        assertEquals(method + " selection must be unchanged", intialSelected, getSelectedIndex());
         assertEquals(method + " anchor must be unchanged", intialSelected, getAnchorIndex());
     }
     
@@ -150,9 +150,9 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         getSelectionModel().select(selectedIndex);
         if (run != null) run.run();
         invokeBehavior(method);
-        assertEquals(method + " selected index must be moved", expectedIndex, getSelectionModel().getSelectedIndex());
+        assertEquals(method + " selected index must be moved", expectedIndex, getSelectedIndex());
         assertEquals(method + " focus must same as selected index", expectedIndex, getFocusIndex());
-        assertEquals(method + " selection size must be one", 1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(method + " selection size must be one", 1, getSelectedIndices().size());
         assertEquals(method + " anchor must be same as focus", expectedIndex, getAnchorIndex());
     }
 
@@ -226,18 +226,18 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         getSelectionModel().select(index);
         invokeKey("isShiftDown");
         invokeBehavior(method);
-        assertEquals(method + " selected index must be moved", focus, getSelectionModel().getSelectedIndex());
+        assertEquals(method + " selected index must be moved", focus, getSelectedIndex());
         assertEquals(method + " focus must be moved", focus, getFocusIndex());
         if (multipleMode) {
-            assertEquals(method + " selection size must be changed in multiple mode", size, getSelectionModel().getSelectedIndices().size());
+            assertEquals(method + " selection size must be changed in multiple mode", size, getSelectedIndices().size());
             assertEquals(method + " anchor must be unchanged in multiple mode", index, getAnchorIndex());
         } else {
-            assertEquals(method + " selection size must be 1 in single mode", 1, getSelectionModel().getSelectedIndices().size());
+            assertEquals(method + " selection size must be 1 in single mode", 1, getSelectedIndices().size());
             assertEquals(method + " anchor must be updated to focus in single mode", 
                     focus, getAnchorIndex());
         }
     }
-
+ 
     @Test
     @ConditionalIgnore (condition = IgnoreBehavior.class)
     public void testBehaviorAlsoSelectNextRow() throws Exception {
@@ -289,17 +289,18 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
         int size = focus - index + 1;
         getFocusModel().focus(focus);
         invokeBehavior(method, anchorFocus);
-        assertEquals(focus, getSelectionModel().getSelectedIndex());
+        assertEquals(focus, getSelectedIndex());
         assertEquals("sanity: focus unchanged", focus, getFocusIndex());
         if (multipleMode) {
             int expectedAnchor = anchorFocus ? focus : index;
             assertEquals(expectedAnchor, getAnchorIndex());
-            assertEquals(size, getSelectionModel().getSelectedIndices().size());
+            assertEquals(size, getSelectedIndices().size());
         } else {
             assertEquals(focus, getAnchorIndex());
-            assertEquals(1, getSelectionModel().getSelectedIndices().size());
+            assertEquals(1, getSelectedIndices().size());
         }
     }
+
 
     @Test
     @ConditionalIgnore (condition = IgnoreBehavior.class)

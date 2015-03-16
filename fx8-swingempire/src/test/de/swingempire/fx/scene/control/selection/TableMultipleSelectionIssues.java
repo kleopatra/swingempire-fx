@@ -93,7 +93,7 @@ public class TableMultipleSelectionIssues
     @Test
     @ConditionalIgnore(condition = IgnoreReported.class)
     public void testSelectedItemsOnDiscontinousRemovedItems() {
-        
+        super.testSelectedItemsOnDiscontinousRemovedItems();
     }
 
     @Test

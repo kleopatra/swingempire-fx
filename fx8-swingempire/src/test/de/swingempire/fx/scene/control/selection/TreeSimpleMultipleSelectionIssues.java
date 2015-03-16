@@ -52,14 +52,6 @@ public class TreeSimpleMultipleSelectionIssues extends AbstractTreeMultipleSelec
     protected TreeItemX createItem(Object item) {
         return new TreeItemX(item);
     }
-
-    
-
-    
-
-//    @Override
-//    protected void setSelectionModel(MultipleSelectionModel model) {
-//        getView().setSelectionModel(model);
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

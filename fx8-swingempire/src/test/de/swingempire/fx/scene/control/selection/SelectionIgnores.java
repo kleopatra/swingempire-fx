@@ -90,7 +90,7 @@ public class SelectionIgnores {
         
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }
@@ -104,7 +104,7 @@ public class SelectionIgnores {
 
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }

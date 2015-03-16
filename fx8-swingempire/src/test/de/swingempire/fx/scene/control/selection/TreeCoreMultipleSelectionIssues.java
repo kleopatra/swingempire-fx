@@ -54,20 +54,20 @@ public class TreeCoreMultipleSelectionIssues extends AbstractTreeMultipleSelecti
                 .getChildren().get(index)).getValue());
         root.getChildren().clear();
         assertEquals("itemCount must be ", 0, view.getExpandedItemCount());
-        assertEquals("selectedItem must be cleared", null, view
-                .getSelectionModel().getSelectedItem());
-        if (view.getSelectionModel().getSelectedItems().size() > 0) {
-            // LOG.info("selectedItems at 0: " +
-            // view.getSelectionModel().getSelectedItems().get(0)
-            // + "\n + selectedIndices at 0: " +
-            // view.getSelectionModel().getSelectedIndices().get(0) );
+        if (view.getSelectionModel().getSelectedIndex() > -1) {
+             LOG.info("selectedItems at 0: " +
+             view.getSelectionModel().getSelectedItems().get(0)
+             + "\n + selectedIndices at 0: " +
+             view.getSelectionModel().getSelectedIndices().get(0) );
         }
-        assertEquals("selectedIndex must be cleared", -1, view
-                .getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItems must be empty", 0, view.getSelectionModel()
-                .getSelectedItems().size());
-        assertEquals("selectedIndices must be empty", 0, view
-                .getSelectionModel().getSelectedIndices().size());
+        assertEquals("selectedItems must be empty", 0, 
+                view.getSelectionModel().getSelectedItems().size());
+        assertEquals("selectedIndices must be empty", 0, 
+                view.getSelectionModel().getSelectedIndices().size());
+        assertEquals("selectedItem must be cleared", null, 
+                view.getSelectionModel().getSelectedItem());
+        assertEquals("selectedIndex must be cleared", -1, 
+                view.getSelectionModel().getSelectedIndex());
     }
 
     public TreeCoreMultipleSelectionIssues(boolean multiple) {
@@ -91,10 +91,6 @@ public class TreeCoreMultipleSelectionIssues extends AbstractTreeMultipleSelecti
         return table;
     }
 
-//    @Override
-//    protected void setSelectionModel(MultipleSelectionModel model) {
-//        getView().setSelectionModel(model);
-    
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TreeCoreMultipleSelectionIssues.class.getName());

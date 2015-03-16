@@ -23,7 +23,6 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnch
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
-
 import static org.junit.Assert.*;
 
 /**
@@ -65,11 +64,10 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getRootChildren().add(grandParent);
         getSelectionModel().select(selected);
         getRootChildren().remove(grandParent);
-        assertEquals("sibling of removed selected", oldFirst, getSelectionModel().getSelectedItem());
-        assertEquals("selectedItems contain sibling", oldFirst, getSelectionModel().getSelectedItems().get(0));
+        assertEquals("sibling of removed selected", oldFirst, getSelectedItem());
+        assertEquals("selectedItems contain sibling", oldFirst, getSelectedItems().get(0));
     }
-    
-    
+
     /**
      * Regression testing: 
      * SelectedItems contains null after removing unselected grandParent of 
@@ -92,8 +90,8 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getSelectionModel().select(selected);
         assertEquals("sanity: oldfirst is next child", oldFirst, getRootChildren().get(1));
         getRootChildren().remove(grandParent);
-        assertEquals("sibling of removed selected", oldFirst, getSelectionModel().getSelectedItem());
-        assertEquals("selectedItems contain sibling", oldFirst, getSelectionModel().getSelectedItems().get(0));
+        assertEquals("sibling of removed selected", oldFirst, getSelectedItem());
+        assertEquals("selectedItems contain sibling", oldFirst, getSelectedItems().get(0));
     }
     
     
@@ -105,12 +103,12 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         TreeItem selected = (TreeItem) grandChildBranch.getChildren().get(rawItems.size() - 1);
         getRootChildren().add(0, childBranch);
         getSelectionModel().select(selected);
-        TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
-        assertEquals(selectedItem, getSelectionModel().getSelectedItems().get(0));
-        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        TreeItem selectedItem = getSelectedItems().get(0);
+        assertEquals(selectedItem, getSelectedItems().get(0));
+        assertEquals(selectedItem, getSelectedItem());
         grandChildBranch.setExpanded(false);
-        assertEquals("selected items size", 1, getSelectionModel().getSelectedItems().size());
-        assertEquals(grandChildBranch, getSelectionModel().getSelectedItem());
+        assertEquals("selected items size", 1, getSelectedItems().size());
+        assertEquals(grandChildBranch, getSelectedItem());
 //        assertEquals(index, getSelectionModel().getSelectedIndex());
 //        assertEquals(index, getSelectionModel().getSelectedIndices().get(0).intValue());
     }
@@ -124,14 +122,15 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getRootChildren().add(0, childBranch);
         int index = 6;
         getSelectionModel().select(index);
-        TreeItem selectedItem = getSelectionModel().getSelectedItems().get(0);
+        TreeItem selectedItem = getSelectedItems().get(0);
         grandChildBranch.setExpanded(false);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
-        assertEquals(index, getSelectionModel().getSelectedIndices().get(0).intValue());
-        assertEquals(selectedItem, getSelectionModel().getSelectedItems().get(0));
-        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals(index, getSelectedIndex());
+        assertEquals(index, getSelectedIndices().get(0).intValue());
+        assertEquals(selectedItem, getSelectedItems().get(0));
+        assertEquals(selectedItem, getSelectedItem());
     }
-    
+
+   
     /**
      * Sanity? Removing last child throws IOOB if selected
      */
@@ -160,20 +159,19 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        TreeItem parent = getSelectionModel().getSelectedItem().getParent();
+        TreeItem parent = getSelectedItem().getParent();
         clearItems();
         if (getSelectionModel().isEmpty()) {
-            assertEquals(null, getSelectionModel().getSelectedItem());
-            assertEquals(-1, getSelectionModel().getSelectedIndex());
-            assertEquals("selectedItems must be empty", 0, getSelectionModel()
-                    .getSelectedItems().size());
-            assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
+            assertEquals(null, getSelectedItem());
+            assertEquals(-1, getSelectedIndex());
+            assertEquals("selectedItems must be empty", 0, getSelectedItems().size());
+            assertTrue("", getSelectedIndices().isEmpty());
 //            assertEquals("focus must be cleared", -1, getFocusModel()
 //                    .getFocusedIndex());
         } else {
-            assertEquals(0, getSelectionModel().getSelectedItems().indexOf(parent));
+            assertEquals(0, getSelectedItems().indexOf(parent));
             assertEquals("parent selected after clearing children", parent,
-                    getSelectionModel().getSelectedItem());
+                    getSelectedItem());
         }
     }
     
@@ -183,7 +181,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        TreeItem parent = getSelectionModel().getSelectedItem().getParent();
+        TreeItem parent = getSelectedItem().getParent();
         clearItems();
         if (getSelectionModel().isEmpty()) {
             assertEquals("focus must be cleared", -1, getFocusModel()
@@ -204,21 +202,21 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     public void testSelectedOnClearItemsSingle() {
         int index = 2;
         getSelectionModel().select(index);
-        TreeItem parent = getSelectionModel().getSelectedItem().getParent();
+        TreeItem parent = getSelectedItem().getParent();
         int parentIndex = getView().getRow(parent);
         clearItems();
         if (getSelectionModel().isEmpty()) {
             assertTrue("selection must be empty", getSelectionModel().isEmpty());
-            assertEquals(-1, getSelectionModel().getSelectedIndex());
-            assertEquals(null, getSelectionModel().getSelectedItem());
-            assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
-            assertTrue("", getSelectionModel().getSelectedItems().isEmpty());
+            assertEquals(-1, getSelectedIndex());
+            assertEquals(null, getSelectedItem());
+            assertTrue("", getSelectedIndices().isEmpty());
+            assertTrue("", getSelectedItems().isEmpty());
 //            assertEquals("focus must be cleared", -1, getFocusModel()
 //                    .getFocusedIndex());
         } else {
-            assertEquals("selectedIndex at parentIndex", parentIndex, getSelectionModel().getSelectedIndex());
+            assertEquals("selectedIndex at parentIndex", parentIndex, getSelectedIndex());
             assertEquals("parent must be selected after clearing ", parent, 
-                    getSelectionModel().getSelectedItem());
+                    getSelectedItem());
         }
     }
 
@@ -258,8 +256,8 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         int last = items.size() -1;
         getSelectionModel().select(first);
         FXCollections.sort(items);
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
-        assertEquals(last, getSelectionModel().getSelectedIndices().get(0).intValue());
+        assertEquals(1, getSelectedIndices().size());
+        assertEquals(last, getSelectedIndices().get(0).intValue());
     }
 
     @Override
@@ -279,15 +277,15 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         TreeItem uncontained = createItem("uncontained");
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectedIndex());
         // make uncontained part of the items by replacing old items
         ObservableList copy = FXCollections.observableArrayList(items);
         int insertIndex = 3;
         copy.add(insertIndex, uncontained);
         setAllItems(copy);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectedIndex());
     }
 
     /**
@@ -301,15 +299,15 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         TreeItem uncontained = createItem("uncontained");
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectedIndex());
         // make uncontained part of the items by replacing old items
         ObservableList copy = FXCollections.observableArrayList(items);
         int insertIndex = 3;
         copy.add(insertIndex, createItem("anything"));
         setAllItems(copy);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("selectedIndex unchanged", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
+        assertEquals("selectedIndex unchanged", -1, getSelectedIndex());
     }
 
     @Override
@@ -381,6 +379,22 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         return getView().getSelectionModel();
     }
 
+    /**
+     * Overridden to get a list of treeItems
+     */
+    @Override
+    protected ObservableList<TreeItem> getSelectedItems() {
+        return getSelectionModel().getSelectedItems();
+    }
+
+    /**
+     * Overridden to return a TreeItem.
+     */
+    @Override
+    protected TreeItem getSelectedItem() {
+        return getSelectionModel().getSelectedItem();
+    }
+
     @Override
     protected FocusModel getFocusModel() {
         return getView().getFocusModel();
@@ -392,7 +406,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         rawItems = FXCollections.observableArrayList(
                 "9-item", "8-item", "7-item", "6-item", 
                 "5-item", "4-item", "3-item", "2-item", "1-item");
-        items = createItems(rawItems);
+        items = createTreeItems(rawItems);
         view = createView(items);
         // complete override, need to handle focus here as well
         if (getFocusModel() != null) {
@@ -400,8 +414,6 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         }
     }
     
-    
-
     /**
      * TreeItem has no setItems, so this is implemneted to delegate
      * to setAll.
@@ -409,8 +421,8 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * Here we expect the elements to be treeItems.
      */
     @Override
-    protected void setItems(ObservableList other) {
-        setAllItems(other);
+    protected void setItems(ObservableList otherTreeItems) {
+        setAllItems(otherTreeItems);
     }
 
 
@@ -419,8 +431,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     @Override
     protected void setAllItems(ObservableList treeItems) {
-        TreeItem root = getRoot();
-        root.getChildren().setAll(treeItems);
+        getRootChildren().setAll(treeItems);
     }
 
     /**
@@ -470,7 +481,15 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         return new TreeItem(item);
     }
 
-    protected ObservableList<TreeItem> createItems(ObservableList other) {
+    /**
+     * Creates and returns a list of items acceptable by the treeItem.
+     * For each item in other we create a TreeItem with that item as value
+     * and add the treeItem to the returned list.
+     *  
+     * @param other a list of elements (of arbitrary type) 
+     * @return a list of TreeItems with their value set to the raw item.
+     */
+    protected ObservableList<TreeItem> createTreeItems(ObservableList other) {
         ObservableList items = FXCollections.observableArrayList();
         other.stream().forEach(value -> items.add(createItem(value)));
         return items;
@@ -494,7 +513,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     protected TreeItem createBranch(Object value, boolean expanded) {
         TreeItem item = createItem(value);
-        item.getChildren().setAll(createItems(rawItems));
+        item.getChildren().setAll(createTreeItems(rawItems));
         item.setExpanded(expanded);
         return item;
     }

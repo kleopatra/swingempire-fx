@@ -35,6 +35,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
@@ -42,7 +43,6 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -55,7 +55,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(Parameterized.class)
-public abstract class MultipleSelectionIssues<V extends Control, T extends MultipleSelectionModel> {
+public abstract class MultipleSelectionIssues<V extends Control, M extends MultipleSelectionModel> {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
@@ -99,8 +99,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int first = 7;
         int[] indices = new int[] {1, 8, 3};
         getSelectionModel().selectIndices(first, indices);
-        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
-        ObservableList selectedItems = getSelectionModel().getSelectedItems();
+        ObservableList<Integer> selectedIndices = getSelectedIndices();
+        ObservableList selectedItems = getSelectedItems();
         for (int i = 0; i < selectedIndices.size(); i++) {
             int index = selectedIndices.get(i);
             assertEquals(items.get(index), selectedItems.get(i));
@@ -112,7 +112,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int first = 7;
         int[] indices = new int[] {1, 8, 3};
         getSelectionModel().selectIndices(first, indices);
-        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
+        ObservableList<Integer> selectedIndices = getSelectedIndices();
         assertEquals("all indices selected", indices.length + 1, selectedIndices.size());
         assertTrue("must be contained: " + first, selectedIndices.contains(first));
         for (int i = 0; i < indices.length; i++) {
@@ -131,7 +131,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int first = 7;
         int[] indices = new int[] {1, 8, 3};
         getSelectionModel().selectIndices(first, indices);
-        ObservableList<Integer> selectedIndices = getSelectionModel().getSelectedIndices();
+        ObservableList<Integer> selectedIndices = getSelectedIndices();
         int previous = selectedIndices.get(0);
         for (int i = 1; i < selectedIndices.size(); i++) {
             int current = selectedIndices.get(i);
@@ -148,18 +148,17 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // here we select 3 unique indices (the 4th is a duplicate)
         getSelectionModel().selectIndices(first, indices);
         assertEquals("selected indices must not have any duplicates", 
-                indices.length, getSelectionModel().getSelectedIndices().size());
-        assertEquals(indices[indices.length-1] , getSelectionModel().getSelectedIndex());
+                indices.length, getSelectedIndices().size());
+        assertEquals(indices[indices.length-1] , getSelectedIndex());
     }
-  
     @Test
     public void testSelectedIndicesOffRange() {
         if (!multipleMode) return;
         int first = 7;
         int[] indices = new int[] {3, 8, 100};
         getSelectionModel().selectIndices(first, indices);
-        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
-        assertEquals(8 , getSelectionModel().getSelectedIndex());
+        assertEquals(indices.length, getSelectedIndices().size());
+        assertEquals(8 , getSelectedIndex());
     }
     
     @Test
@@ -167,9 +166,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         if (!multipleMode) return;
         int first = 7;
         int[] indices = new int[] {3, 8, -100};
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().selectIndices(first, indices);
-        assertEquals(indices.length, getSelectionModel().getSelectedIndices().size());
+        assertEquals(indices.length, getSelectedIndices().size());
     }
     /**
      * Test selection state and notification of selectedIndices on continous remove items
@@ -182,12 +181,12 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 //        if (!multipleMode) return;
         int last = items.size() - 1;
         getSelectionModel().select(last);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         removeAllItems(items.get(2), items.get(3));
         int expected = last - 2;
         assertEquals("sanity: items size after remove", expected + 1, items.size());
-        assertEquals("selectedIndex", expected, getSelectionModel().getSelectedIndex());
-        assertEquals("selected in indices after removing", expected, getSelectionModel().getSelectedIndices().get(0));
+        assertEquals("selectedIndex", expected, getSelectedIndex());
+        assertEquals("selected in indices after removing", expected, getSelectedIndices().get(0).intValue());
         assertEquals("single event on discontinousremove " + report.getLastChange(), 1, report.getEventCount());
     }
     
@@ -202,16 +201,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 //        if (!multipleMode) return;
         int last = items.size() - 1;
         getSelectionModel().select(last);
-        Object selectedItem = getSelectionModel().getSelectedItem();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        Object selectedItem = getSelectedItem();
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         removeAllItems(items.get(2), items.get(5));
         int expected = last - 2;
         assertEquals("sanity: items size after remove", expected + 1, items.size());
-        assertEquals("selectedItem", selectedItem, getSelectionModel().getSelectedItem());
-        assertEquals("selected in items after removing", selectedItem, getSelectionModel().getSelectedItems().get(0));
+        assertEquals("selectedItem", selectedItem, getSelectedItem());
+        assertEquals("selected in items after removing", selectedItem, getSelectedItems().get(0));
         assertEquals("no event of selectedItems on discontinousremove " + report.getLastChange(), 0, report.getEventCount());
     }
-    
     /**
      * Test selection state and notification of selectedIndices for discontinous remove items
      * https://javafx-jira.kenai.com/browse/RT-39636
@@ -223,12 +221,12 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
 //        if (!multipleMode) return;
         int last = items.size() - 1;
         getSelectionModel().select(last);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         removeAllItems(items.get(2), items.get(5));
         int expected = last - 2;
         assertEquals("sanity: items size after remove", expected + 1, items.size());
-        assertEquals("selectedIndex", expected, getSelectionModel().getSelectedIndex());
-        assertEquals("selected in indices after removing", expected, getSelectionModel().getSelectedIndices().get(0));
+        assertEquals("selectedIndex", expected, getSelectedIndex());
+        assertEquals("selected in indices after removing", expected, getSelectedIndices().get(0).intValue());
         assertEquals("single event on discontinousremove " + report.getLastChange(), 1, report.getEventCount());
     }
     
@@ -244,7 +242,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        ObservableList<Integer> indices = getSelectionModel().getSelectedIndices();
+        ObservableList<Integer> indices = getSelectedIndices();
         ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
         ListChangeReport report = new ListChangeReport(indices);
         items.add(0, "newItem");
@@ -274,7 +272,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         addItem(0, createItem("newItem"));
         assertEquals("selected items unchanged on adding above", 0, report.getEventCount());
     }
@@ -294,7 +292,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
@@ -315,7 +313,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
@@ -338,7 +336,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         ChangeReport report = new ChangeReport(getSelectionModel().selectedIndexProperty());
         getSelectionModel().clearAndSelect(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
@@ -350,7 +348,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
         getSelectionModel().clearAndSelect(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
@@ -371,8 +369,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
@@ -392,8 +390,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         getSelectionModel().select(selected);
         assertEquals("no event on adding already selected", 0, report.getEventCount());
     }
@@ -410,8 +408,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         getSelectionModel().clearAndSelect(selected);
         assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
@@ -437,8 +435,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().clearAndSelect(selected);
         assertEquals("event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
@@ -464,10 +462,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         getSelectionModel().clearAndSelect(selected);
-        assertEquals("sanity: selectedIndex unchanged", selected, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedIndex unchanged", selected, getSelectedIndex());
         assertEquals("single event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
         while(c.next()) {
@@ -489,10 +487,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        int selected = getSelectionModel().getSelectedIndex();
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        int selected = getSelectedIndex();
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().clearAndSelect(selected);
-        assertEquals("sanity: selectedIndex unchanged", selected, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedIndex unchanged", selected, getSelectedIndex());
         assertEquals("single event on clearAndSelect already selected", 1, report.getEventCount());
         Change c = report.getLastChange();
         while(c.next()) {
@@ -521,7 +519,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             c.next();
             assertEquals(indices.length, c.getAddedSize());
         };
-        getSelectionModel().getSelectedIndices().addListener(l);
+        getSelectedIndices().addListener(l);
         getSelectionModel().selectIndices(indices[0], indices);
     }
     
@@ -531,9 +529,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testEventIndicesOnSelectIndices() {
         if (!multipleMode) return;
-        assertEquals("sanity: no previous selection", 0, getSelectionModel().getSelectedIndices().size());
+        assertEquals("sanity: no previous selection", 0, getSelectedIndices().size());
         int[] indices = new int[]{2, 5, 7};
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().selectIndices(indices[0], indices);
         assertEquals(1, report.getEventCount());
         assertTrue("event must be single added but was " + report.getLastChange(), 
@@ -550,9 +548,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testEventItemsOnSelectIndices() {
         if (!multipleMode) return;
-        assertEquals("sanity", 0, getSelectionModel().getSelectedItems().size());
+        assertEquals("sanity", 0, getSelectedItems().size());
         int[] indices = new int[]{2, 5, 7};
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         getSelectionModel().selectIndices(indices[0], indices);
         assertEquals(1, report.getEventCount());
         assertTrue("event must be single added but was " + report.getLastChange(), 
@@ -576,8 +574,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setAllItems();
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -587,8 +585,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setAllItems();
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -597,8 +595,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setAllItems(createItem("newItem"), createItem("other"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -608,8 +606,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setAllItems(createItem("newItem"), createItem("other"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -618,8 +616,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setItem(0, createItem("newItem"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -629,8 +627,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         setItem(4, createItem("newItem"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -639,7 +637,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         removeItem(0);
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(uncontained, getSelectedItem());
     }
     
     @Test
@@ -648,11 +646,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(2, 6);
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: ", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: ", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: ", uncontained, getSelectedItem());
+        assertEquals("sanity: ", -1, getSelectedIndex());
         removeItem(4);
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
     
     @Test
@@ -661,7 +659,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state
         getSelectionModel().select(uncontained);
         addItem(4, createItem("newItem"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(uncontained, getSelectedItem());
     }
     
     @Test
@@ -670,11 +668,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(2, 6);
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: ", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: ", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: ", uncontained, getSelectedItem());
+        assertEquals("sanity: ", -1, getSelectedIndex());
         addItem(4, createItem("newItem"));
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
     }
 
     /**
@@ -691,7 +689,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         int end = 6;
         getSelectionModel().selectRange(start, end);
-        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectedItem());
         getSelectionModel().selectedIndexProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -709,7 +707,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 3;
         getSelectionModel().select(start);
         ChangeListener l = (p, old, value) -> assertEquals(uncontained, 
-                getSelectionModel().getSelectedItem());
+                getSelectedItem());
         getSelectionModel().selectedIndexProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -727,7 +725,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectionModel().getSelectedIndex());
+        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectedIndex());
         getSelectionModel().selectedItemProperty().addListener(l);
         getSelectionModel().select(uncontained);
     }
@@ -817,15 +815,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object uncontained = createItem("inserted-formerly-uncontained");
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectedIndex());
         // make uncontained part of the items
         int insertIndex = 3;
         addItem(insertIndex, uncontained);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
-        assertTrue("selectedItem must be in selectedItems " + uncontained, getSelectionModel().getSelectedItems().contains(uncontained));
-        assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
-        assertTrue("selectedIndex must be in selectedIndices " + insertIndex, getSelectionModel().getSelectedIndices().contains(insertIndex));    
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
+        assertTrue("selectedItem must be in selectedItems " + uncontained, getSelectedItems().contains(uncontained));
+        assertEquals("selectedIndex updated", insertIndex, getSelectedIndex());
+        assertTrue("selectedIndex must be in selectedIndices " + insertIndex, getSelectedIndices().contains(insertIndex));    
     }
     
     /**
@@ -869,23 +867,22 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         assertEquals("sanity: selectedItem on last of range",
-                items.get(end - 1), getSelectionModel().getSelectedItem());
+                items.get(end - 1), getSelectedItem());
         getSelectionModel().select(uncontained);
         assertEquals("sanity: having uncontained selectedItem", uncontained,
-                getSelectionModel().getSelectedItem());
+                getSelectedItem());
         assertEquals("sanity: selected index removed ", -1, 
-                getSelectionModel().getSelectedIndex());
+                getSelectedIndex());
         // make uncontained part of the items
         int insertIndex = 3;
         addItem(insertIndex, uncontained);
         assertEquals("selectedItem unchanged", uncontained,
-                getSelectionModel().getSelectedItem());
-        assertEquals("selectedIndex updated", insertIndex, getSelectionModel()
-                .getSelectedIndex());
+                getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectedIndex());
         assertTrue("selectedItem must be in selectedItems " + uncontained, 
-                getSelectionModel().getSelectedItems().contains(uncontained));
+                getSelectedItems().contains(uncontained));
         assertTrue("selectedIndex must be in selectedIndices " + insertIndex, 
-                getSelectionModel().getSelectedIndices().contains(insertIndex));    
+                getSelectedIndices().contains(insertIndex));    
     }
 
     /**
@@ -898,7 +895,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object uncontained = createItem("uncontained");
         getSelectionModel().select(uncontained);
         assertFalse("uncontained selectedItem part of selectedItems?", 
-                getSelectionModel().getSelectedItems().contains(uncontained));
+                getSelectedItems().contains(uncontained));
     }
     
     /**
@@ -912,7 +909,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(start, end);
         Object uncontained = createItem("uncontained");
         getSelectionModel().select(uncontained);
-        assertFalse("uncontained selectedItem part of selectedItems?", getSelectionModel().getSelectedItems().contains(uncontained));
+        assertFalse("uncontained selectedItem part of selectedItems?", getSelectedItems().contains(uncontained));
     }
     /**
      * What happens with uncontained when replacing items with list that contains it? 
@@ -924,15 +921,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object uncontained = createItem("uncontained");
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectedIndex());
         // make uncontained part of the items by replacing old items
         ObservableList copy = FXCollections.observableArrayList(items);
         int insertIndex = 3;
         copy.add(insertIndex, uncontained);
         setItems(copy);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("selectedIndex updated", insertIndex, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
+        assertEquals("selectedIndex updated", insertIndex, getSelectedIndex());
     }
     
     /**
@@ -944,15 +941,15 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         Object uncontained = createItem("uncontained");
         // prepare state
         getSelectionModel().select(uncontained);
-        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("sanity: no selected index", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: having uncontained selectedItem", uncontained, getSelectedItem());
+        assertEquals("sanity: no selected index", -1, getSelectedIndex());
         // make uncontained part of the items by replacing old items
         ObservableList copy = FXCollections.observableArrayList(items);
         int insertIndex = 3;
         copy.add(insertIndex, createItem("anything"));
         setItems(copy);
-        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectionModel().getSelectedItem());
-        assertEquals("selectedIndex unchanged", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selectedItem unchanged", uncontained, getSelectedItem());
+        assertEquals("selectedIndex unchanged", -1, getSelectedIndex());
     }
     
     /**
@@ -964,10 +961,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testSelectedOnSetItemsOldContained() {
         getSelectionModel().select(1);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
         ObservableList other = FXCollections.observableArrayList(createItem("some"), createItem("other"), selectedItem);
         setItems(other);
-        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectedItem());
         fail("spec ambiguity: replace all items and old selectedItem still contained - keep or not");
     }
     
@@ -979,9 +976,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testSelectedOnSetAllOldContained() {
         int index = 2;
         getSelectionModel().select(index);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
         setAllItems(createItem("one"), createItem("two"), createItem("three"), selectedItem);
-        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals("setItems: new list contains old selectedItem", selectedItem, getSelectedItem());
 //        assertEmptySelection();
         fail("spec ambiguity: replace all items and old selectedItem still contained - keep or not");
     }
@@ -993,7 +990,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testSelectedOnSetAll() {
         int index = 2;
         getSelectionModel().select(index);
-        Object selected = getSelectionModel().getSelectedItem();
+        Object selected = getSelectedItem();
         setAllItems(createItem("one"), createItem("two"), createItem("three"), modifyItem(selected,"XX"));
         assertEmptySelection();
     }
@@ -1005,22 +1002,23 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testSelectedOnSetItems() {
         int index = 2;
         getSelectionModel().select(index);
-        Object selected = getSelectionModel().getSelectedItem();
+        Object selected = getSelectedItem();
         setItems(FXCollections.observableArrayList(
                 createItem("one"), createItem("two"), createItem("three"), modifyItem(selected,"XX")));
         assertEmptySelection();
     }
     
     private void assertEmptySelection() {
-        assertEquals("selectedIndex must be cleared", -1, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItem must be null", null, getSelectionModel().getSelectedItem());
-        assertEquals("selectedItems must be empty", 0, getSelectionModel().getSelectedItems().size());
-        assertEquals("selectedIndices must be empty", 0, getSelectionModel().getSelectedIndices().size());
+        assertEquals("selectedIndex must be cleared", -1, getSelectedIndex());
+        assertEquals("selectedItem must be null", null, getSelectedItem());
+        assertEquals("selectedItems must be empty", 0, getSelectedItems().size());
+        assertEquals("selectedIndices must be empty", 0, getSelectedIndices().size());
     }
 
     // ------------ focus on modifying list
     
     @Test
+    @ConditionalIgnore(condition = IgnoreFocus.class)
     public void testFocusMultipleRemoves() {
         int focus = 5;
         getFocusModel().focus(focus);
@@ -1039,11 +1037,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(select);
         getFocusModel().focus(focus);
 //        LOG.info("models: " + getSelectionModel().getClass() + getFocusModel().getClass());
-        assertEquals("sanity selectedIndex", select, getSelectionModel().getSelectedIndex());
-        assertEquals("sanity focusedIndex ", focus, getFocusModel().getFocusedIndex());
+        assertEquals("sanity selectedIndex", select, getSelectedIndex());
+        assertEquals("sanity focusedIndex ", focus, getFocusIndex());
         addItem(0, createItem("new item"));
-        assertEquals("selected increased by one", select + 1, getSelectionModel().getSelectedIndex());
-        assertEquals("focused increased by one (selected = " + getSelectionModel().getSelectedIndex() + ")", 
+        assertEquals("selected increased by one", select + 1, getSelectedIndex());
+        assertEquals("focused increased by one (selected = " + getSelectedIndex() + ")", 
                 focus + 1, getFocusModel().getFocusedIndex());
     } 
     
@@ -1051,10 +1049,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testFocusUnselectedUpdateOnInsertAbove() {
         int index = 2;
         getFocusModel().focus(index);
-        assertEquals("sanity: selected index not affected by focus", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selected index not affected by focus", -1, getSelectedIndex());
         assertEquals("sanity: focus taken", index, getFocusModel().getFocusedIndex());
         addItem(0, createItem("new item"));
-        assertEquals("sanity: selected index not affected by focus", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selected index not affected by focus", -1, getSelectedIndex());
         assertEquals(index + 1, getFocusModel().getFocusedIndex());
     }
     
@@ -1062,10 +1060,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     public void testFocusUnselectedUpdateOnRemoveAbove() {
         int index = 2;
         getFocusModel().focus(index);
-        assertEquals("sanity: selected index not affected by focus", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selected index not affected by focus", -1, getSelectedIndex());
         assertEquals("sanity: focus taken", index, getFocusModel().getFocusedIndex());
         removeItem(0);
-        assertEquals("sanity: selected index not affected by focus", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: selected index not affected by focus", -1, getSelectedIndex());
         assertEquals(index - 1, getFocusModel().getFocusedIndex());
     }
     
@@ -1080,7 +1078,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(0);
         assertEquals("sanity: focus in sync with selection", 0, getFocusModel().getFocusedIndex());
         items.remove(0);
-        assertEquals(0, getSelectionModel().getSelectedIndex());
+        assertEquals(0, getSelectedIndex());
         assertEquals(0, getFocusModel().getFocusedIndex());
     }
     /**
@@ -1124,24 +1122,24 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testRemoveSelectedItemThatIsFirst_28637() {
         getSelectionModel().select(0);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
         items.remove(selectedItem);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
     
     protected void assertRemoveItemAtSelected_28637(int selected) {
         if (selected >= 0) {
-            Object itemAfterRemove = getSelectionModel().getSelectedItem();
+            Object itemAfterRemove = getSelectedItem();
             assertEquals("selectedIndices must not be empty if selected index = " + selected, 
-                    1, getSelectionModel().getSelectedIndices().size());
+                    1, getSelectedIndices().size());
             assertEquals("index contained for " + selected, 
-                    selected, getSelectionModel().getSelectedIndices().get(0));
+                    selected, getSelectedIndices().get(0).intValue());
             assertEquals("selectedItems must not be empty if selected index = " + selected, 
-                    1, getSelectionModel().getSelectedItems().size());
+                    1, getSelectedItems().size());
             assertEquals("item contained for " + selected,
                     itemAfterRemove, 
-                    getSelectionModel().getSelectedItems().get(0)); 
+                    getSelectedItems().get(0)); 
         } else {
             fail("selectedIndex must not be -1 was: " + selected);
         }
@@ -1150,18 +1148,18 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testRemoveSelectedItemThatIsLast_28637() {
         getSelectionModel().select(items.size() - 1);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
         items.remove(selectedItem);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
     
     @Test
     public void testRemoveSelectedItemThatIsMiddle_28637() {
         getSelectionModel().select(3);
-        Object selectedItem = getSelectionModel().getSelectedItem();
+        Object selectedItem = getSelectedItem();
         items.remove(selectedItem);
-        int selected = getSelectionModel().getSelectedIndex();
+        int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
 
@@ -1175,10 +1173,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(index);
         clearItems();
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(null, getSelectionModel().getSelectedItem());
-        assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
-        assertTrue("", getSelectionModel().getSelectedItems().isEmpty());
+        assertEquals(-1, getSelectedIndex());
+        assertEquals(null, getSelectedItem());
+        assertTrue("", getSelectedIndices().isEmpty());
+        assertTrue("", getSelectedItems().isEmpty());
         assertEquals("focus must be cleared", -1, getFocusModel().getFocusedIndex());
     }
     
@@ -1192,10 +1190,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         clearItems();
-        assertEquals(null, getSelectionModel().getSelectedItem());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals("selectedItems must be empty", 0, getSelectionModel().getSelectedItems().size());
-        assertTrue("", getSelectionModel().getSelectedIndices().isEmpty());
+        assertEquals(null, getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
+        assertEquals("selectedItems must be empty", 0, getSelectedItems().size());
+        assertTrue("", getSelectedIndices().isEmpty());
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
         assertEquals("focus must be cleared", -1, getFocusModel().getFocusedIndex());
     }
@@ -1211,8 +1209,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(uncontained);
         clearItems();
         assertTrue("selection must be empty", getSelectionModel().isEmpty());
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(uncontained, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectedIndex());
+        assertEquals(uncontained, getSelectedItem());
     }
     
     
@@ -1233,11 +1231,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testNoSuchElementOnClear_38884() {
         getSelectionModel().select(0);
-        Object item = getSelectionModel().getSelectedItem();
+        Object item = getSelectedItem();
         assertEquals("sanity: selectedItem is item at 0", items.get(0), item);
         assertTrue("sanity: selectedItem contained in selectedItems", 
-                getSelectionModel().getSelectedItems().contains(item));
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+                getSelectedItems().contains(item));
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         int size = items.size();
 //        items.clear();
         clearItems();
@@ -1274,13 +1272,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testNoSuchElementOnClear_38884Unfixed() {
         getSelectionModel().select(0);
-        Object item = getSelectionModel().getSelectedItem();
-        int selectedItemsSize = getSelectionModel().getSelectedItems().size();
+        Object item = getSelectedItem();
+        int selectedItemsSize = getSelectedItems().size();
         assertEquals("sanity: selectedItem is item at 0", items.get(0), item);
         assertTrue("sanity: selectedItem contained in selectedItems", 
-                getSelectionModel().getSelectedItems().contains(item));
+                getSelectedItems().contains(item));
         assertEquals("sanity: selected items size", 1, selectedItemsSize);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         clearItems();
         assertEquals("sanity: single event", 1, report.getEventCount());
         Change c = report.getLastChange();
@@ -1310,12 +1308,12 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     @Test
     public void testSelectedItemsInvalidChange_38884() {
         getSelectionModel().select(3);
-        int removedSize = getSelectionModel().getSelectedItems().size();
+        int removedSize = getSelectedItems().size();
         ListChangeListener l = (Change c) -> {
             c.next();
             assertEquals(removedSize, c.getRemovedSize());
         };
-        getSelectionModel().getSelectedItems().addListener(l);
+        getSelectedItems().addListener(l);
         items.clear();
     }
     /**
@@ -1332,7 +1330,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectPrevious();
         assertEquals("anchor must be updated to previous in single mode", 
                 index - 1, getAnchorIndex());
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(1, getSelectedIndices().size());
     }
     
     /**
@@ -1348,7 +1346,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().select(index);
         int newFocus = getFocusIndex() - 1;
         getSelectionModel().selectRange(index, newFocus -1);
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(1, getSelectedIndices().size());
         assertEquals("anchor must be updated to previous in single mode", 
                 newFocus, getAnchorIndex());
     }
@@ -1363,7 +1361,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     }
 
     protected void assertSelectionStateAfterSkin() {
-        assertEquals("sanity: initially unselected", -1, getSelectionModel().getSelectedIndex());
+        assertEquals("sanity: initially unselected", -1, getSelectedIndex());
         // following fails as of 8u40b9 - why exactly?
         // focus forced into 0 - how to test cleanly? force back into -1?
 //        assertEquals("sanity: initially unfocused", -1, getFocusIndex());
@@ -1385,7 +1383,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         for (int i = first+ 1; i <= last; i++) {
             getSelectionModel().selectNext();
         }
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals("anchor must be kept on first of range", first, getAnchorIndex());
     }
     
@@ -1403,7 +1401,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().selectNext();
         }
         getSelectionModel().clearSelection();
-        assertEquals(0, getSelectionModel().getSelectedIndices().size());
+        assertEquals(0, getSelectedIndices().size());
         assertEquals("anchor must be cleared", -1, getAnchorIndex());
     }
     
@@ -1421,7 +1419,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().selectNext();
         }
         getSelectionModel().clearSelection(3);
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
         assertEquals("anchor must be kept when clearing index in range", first, getAnchorIndex());
     }
     
@@ -1431,6 +1429,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Test what happens if selection at anchor is cleared. 
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAnchorOnClearSelectionOfAnchorInRangeWithNext() {
         if (!multipleMode) return;
         initSkin();
@@ -1442,7 +1441,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         assertEquals("sanity: anchor on first", first, getAnchorIndex());
         getSelectionModel().clearSelection(first);
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
         assertEquals("anchor must be unchanged on clearing its selection", first, getAnchorIndex());
     }
     
@@ -1452,6 +1451,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Fails because anchorOnSelectRangeAscending fails?
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAnchorOnClearSelectionAtAfterRange() {
         if (!multipleMode) return;
         initSkin();
@@ -1459,18 +1459,19 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         getSelectionModel().clearSelection(3);
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
         assertEquals("anchor must be kept when clearing index in range", start, getAnchorIndex());
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAnchorOnSelectRangeAscending() {
         if (!multipleMode) return;
         initSkin();
         int start = 2;
         int end = 5;
         getSelectionModel().selectRange(start, end);
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals("anchor must be kept on first of range", start, getAnchorIndex());
     }
     
@@ -1481,7 +1482,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int start = 5;
         int end = 2;
         getSelectionModel().selectRange(start, end);
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals(start, getAnchorIndex());
     }
     
@@ -1497,12 +1498,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int oldFocus = getFocusIndex();
         int newFocus = oldFocus + 1;
         getSelectionModel().selectRange(anchor, newFocus + 1);
-        assertEquals(newFocus - anchor + 1, getSelectionModel().getSelectedIndices().size());
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
-        assertEquals(newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals(newFocus - anchor + 1, getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
+        assertEquals(newFocus, getSelectedIndex());
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAnchorOnClearSelectionAt() {
         initSkin();
         int index = 2;
@@ -1532,8 +1534,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int oldFocus = getFocusIndex();
         int newFocus = oldFocus - 1;
         getSelectionModel().selectRange(anchor, newFocus - 1);
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
-        assertEquals(oldFocus, getSelectionModel().getSelectedIndex());
+        assertEquals(1, getSelectedIndices().size());
+        assertEquals(oldFocus, getSelectedIndex());
     }
     
     /**
@@ -1603,10 +1605,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // not included boundary is new - 1 for descending
         getSelectionModel().selectRange(anchor, newFocus - 1);
         assertEquals("focus must be last of range", newFocus, getFocusIndex());
-        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
-                getSelectionModel().getSelectedIndices().size());
+                getSelectedIndices().size());
         
     }
     
@@ -1627,10 +1629,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // not included boundary is new - 1 for descending
         getSelectionModel().selectRange(anchor, newFocus - 1);
         assertEquals("focus must be last of range", newFocus, getFocusIndex());
-        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
-                getSelectionModel().getSelectedIndices().size());
+                getSelectedIndices().size());
     }
     
     
@@ -1656,7 +1658,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getFocusModel().focusPrevious();
         
         assertEquals(6, getAnchorIndex());
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals(2, getFocusIndex());
         
     }
@@ -1672,6 +1674,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Next == newFocus = focus + 1
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAlsoSelectNextAscending() {
         if (!multipleMode) return;
         initSkin();
@@ -1684,10 +1687,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // not included boundary is new + 1 for ascending
         getSelectionModel().selectRange(anchor, newFocus + 1);
         assertEquals("focus must be last of range", newFocus, getFocusIndex());
-        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", newFocus - anchor + 1, 
-                getSelectionModel().getSelectedIndices().size());
+                getSelectedIndices().size());
     }
     
     /**
@@ -1701,6 +1704,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
      * Previous == newFocus = focus - 1
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreAnchor.class)
     public void testAlsoSelectPreviousAscending() {
         if (!multipleMode) return;
         initSkin();
@@ -1713,10 +1717,10 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         // not included boundary is new + 1 for ascending
         getSelectionModel().selectRange(anchor, newFocus + 1);
         assertEquals("focus must be last of range", newFocus, getFocusIndex());
-        assertEquals("selected must be focus", newFocus, getSelectionModel().getSelectedIndex());
+        assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", newFocus - anchor +1 , 
-                getSelectionModel().getSelectedIndices().size());
+                getSelectedIndices().size());
     }
 
     /**
@@ -1739,7 +1743,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getFocusModel().focusNext();
         getFocusModel().focusNext();
         assertEquals(1, getAnchorIndex());
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals(5, getFocusIndex());
     }
     
@@ -1773,9 +1777,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int last = end - 1;
         assertEquals("sanity: focus after selectRange", last, getFocusIndex());
         getSelectionModel().clearSelection(last);
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
-        assertEquals("selectedIndex must be unchanged on clearAt", last, getSelectionModel().getSelectedIndex());
+        assertEquals("selectedIndex must be unchanged on clearAt", last, getSelectedIndex());
     }
     
     @Test
@@ -1787,7 +1791,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(start, end);
         int last = end - 1;
         getSelectionModel().clearSelection(3);
-        assertEquals(2, getSelectionModel().getSelectedIndices().size());
+        assertEquals(2, getSelectedIndices().size());
         assertEquals("focus must be unchanged on clearSelection in range", last, getFocusIndex());
     }
     
@@ -1799,7 +1803,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         getSelectionModel().clearSelection();
-        assertEquals(0, getSelectionModel().getSelectedIndices().size());
+        assertEquals(0, getSelectedIndices().size());
         assertEquals("focus must be cleared", -1, getFocusIndex());
     }
     
@@ -1811,7 +1815,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         int last = end - 1;
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals(last, getFocusIndex());
     }
     
@@ -1823,7 +1827,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 2;
         getSelectionModel().selectRange(start, end);
         int last = end + 1;
-        assertEquals(3, getSelectionModel().getSelectedIndices().size());
+        assertEquals(3, getSelectedIndices().size());
         assertEquals(last, getFocusIndex());
     }
     
@@ -1853,8 +1857,8 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int last = items.size() -1;
         getSelectionModel().select(first);
         FXCollections.sort(items);
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
-        assertEquals(last, getSelectionModel().getSelectedIndices().get(0));
+        assertEquals(1, getSelectedIndices().size());
+        assertEquals(last, getSelectedIndices().get(0).intValue());
     }
 
 
@@ -1864,7 +1868,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         for (int i : indices) {
             getSelectionModel().select(i);
             assertEquals("selectedIndex is last selected", 
-                    i, getSelectionModel().getSelectedIndex());
+                    i, getSelectedIndex());
         }
     }
 
@@ -1882,7 +1886,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         // re-select first
         getSelectionModel().select(lastSelected);
-        assertEquals(lastSelected, getSelectionModel().getSelectedIndex());
+        assertEquals(lastSelected, getSelectedIndex());
     }
     
     /**
@@ -1913,7 +1917,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         }
         // clear the last selected
         getSelectionModel().clearSelection(lastSelected);
-        int selectedIndex = getSelectionModel().getSelectedIndex();
+        int selectedIndex = getSelectedIndex();
         assertEquals("selected index must be .. selected " + selectedIndex, selectedIndex >= 0, 
                 getSelectionModel().isSelected(selectedIndex));
         // JW: what exactly happens is unspecified, my expectation would be to
@@ -1937,11 +1941,11 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         getSelectionModel().selectRange(start, end);
         int index = end - 1;
         Object selectedItem = items.get(index);
-        int selectionSize = getSelectionModel().getSelectedIndices().size();
+        int selectionSize = getSelectedIndices().size();
 //        getSelectionModel().select(index);
         getSelectionModel().clearSelection(index);
-        assertEquals(index, getSelectionModel().getSelectedIndex());
-        assertEquals(selectedItem, getSelectionModel().getSelectedItem());
+        assertEquals(index, getSelectedIndex());
+        assertEquals(selectedItem, getSelectedItem());
     }
     /**
      * Sanity test: select several indices, unselect them one-by-one -
@@ -1956,14 +1960,14 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         for (int index : indices) {
             getSelectionModel().select(index);
         }
-        assertEquals(size, getSelectionModel().getSelectedIndices().size());
+        assertEquals(size, getSelectedIndices().size());
         for (int index : indices) {
             getSelectionModel().clearSelection(index);
             assertFalse("cleared index must be unselected", getSelectionModel().isSelected(index));
             assertFalse("cleared index must not be contained in indices", 
-                    getSelectionModel().getSelectedIndices().contains(index));
+                    getSelectedIndices().contains(index));
             assertEquals("size of indices must be decreased by one", 
-                    --size, getSelectionModel().getSelectedIndices().size());
+                    --size, getSelectedIndices().size());
         }
         assertTrue(getSelectionModel().isEmpty());
     }
@@ -1976,12 +1980,12 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().select(i);
         }
         assertEquals("sanity: same size", indices.length, 
-                getSelectionModel().getSelectedIndices().size());;
+                getSelectedIndices().size());;
         for (int i : indices) {
             assertTrue("index must be selected", 
                     getSelectionModel().isSelected(i));
             assertTrue("index must be contained in selectedIndices", 
-                    getSelectionModel().getSelectedIndices().contains(i));
+                    getSelectedIndices().contains(i));
         }
         
     }
@@ -1998,7 +2002,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         assertTrue("index must be selected: ", getSelectionModel().isSelected(index));
         addItem(0, createItem("added at 0"));
         int expected = index + 1;
-        assertEquals(expected, getSelectionModel().getSelectedIndex());
+        assertEquals(expected, getSelectedIndex());
         assertFalse("old index must not be selected " + index, getSelectionModel().isSelected(index));
     }
 
@@ -2012,7 +2016,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int first = 2;
         int[] indices = new int[] {3, 7, 4};
         getSelectionModel().selectIndices(first, indices);
-        assertEquals(1, getSelectionModel().getSelectedIndices().size());
+        assertEquals(1, getSelectedIndices().size());
     }
         
     /** 
@@ -2028,7 +2032,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().select(i);
         }
         getSelectionModel().select(-1);
-        assertEquals(indices[1], getSelectionModel().getSelectedIndex());
+        assertEquals(indices[1], getSelectedIndex());
     }
     
     /** 
@@ -2044,7 +2048,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().select(i);
         }
         getSelectionModel().select(-1);
-        assertEquals(items.get(indices[1]), getSelectionModel().getSelectedItem());
+        assertEquals(items.get(indices[1]), getSelectedItem());
     }
     
 
@@ -2061,7 +2065,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
             getSelectionModel().select(i);
         }
         getSelectionModel().select(null);
-        assertEquals(indices[1], getSelectionModel().getSelectedIndex());
+        assertEquals(indices[1], getSelectedIndex());
     }
     
     /** 
@@ -2076,9 +2080,9 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         for (int i : indices) {
             getSelectionModel().select(i);
         }
-        Object item = getSelectionModel().getSelectedItem();
+        Object item = getSelectedItem();
         getSelectionModel().select(null);
-        assertEquals(item, getSelectionModel().getSelectedItem());
+        assertEquals(item, getSelectedItem());
     }
 
     @Test
@@ -2087,13 +2091,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 6;
         getSelectionModel().selectRange(start, end);
         int index = end - 1;
-        int selectionSize = getSelectionModel().getSelectedIndices().size();
+        int selectionSize = getSelectedIndices().size();
         getSelectionModel().clearSelection(items.size());
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
         assertEquals("selectedIndex must be unchanged", 
-                index, getSelectionModel().getSelectedIndex());
-        assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
-        assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
+                index, getSelectedIndex());
+        assertEquals(selectionSize, getSelectedIndices().size());
+        assertEquals(selectionSize, getSelectedItems().size());
     }
     
     @Test
@@ -2102,13 +2106,13 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         int end = 6;
         getSelectionModel().selectRange(start, end);
         int index = end - 1;
-        int selectionSize = getSelectionModel().getSelectedIndices().size();
+        int selectionSize = getSelectedIndices().size();
         getSelectionModel().clearSelection(end);
         assertTrue("index must still be selected " + index, getSelectionModel().isSelected(index));
         assertEquals("selectedIndex must be unchanged", 
-                index, getSelectionModel().getSelectedIndex());
-        assertEquals(selectionSize, getSelectionModel().getSelectedIndices().size());
-        assertEquals(selectionSize, getSelectionModel().getSelectedItems().size());
+                index, getSelectedIndex());
+        assertEquals(selectionSize, getSelectedIndices().size());
+        assertEquals(selectionSize, getSelectedItems().size());
     }
 
     /**
@@ -2119,7 +2123,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         if (multipleMode) return;
         int old = 3;
         getSelectionModel().select(old);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedItems());
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
         int index = 4;
         getSelectionModel().select(index);
         assertEquals("one event on select", 1, report.getEventCount());
@@ -2135,7 +2139,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         if (multipleMode) return;
         int old = 3;
         getSelectionModel().select(old);
-        ListChangeReport report = new ListChangeReport(getSelectionModel().getSelectedIndices());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
         int index = 4;
         getSelectionModel().select(index);
         assertEquals("one event on select", 1, report.getEventCount());
@@ -2158,7 +2162,7 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
         return Arrays.asList(new Object[][] { { false }, { true } });
     }
 
-    protected void checkMode(T model) {
+    protected void checkMode(M model) {
        if (multipleMode && model.getSelectionMode() != SelectionMode.MULTIPLE) {
            model.setSelectionMode(SelectionMode.MULTIPLE);
        }
@@ -2244,15 +2248,32 @@ public abstract class MultipleSelectionIssues<V extends Control, T extends Multi
     protected void clearItems() {
         items.clear();
     }
-    
+
+    /**
+     * This is (mostly?) called during setup.
+     * 
+     * @param items a list containing elements of a type acceptable by the view to create.
+     * @return a control with items
+     */
     protected abstract V createView(ObservableList items);
     
-    protected abstract T getSelectionModel();
-
     protected V getView() {
         return view;
     }
 
+    protected abstract M getSelectionModel();
+    protected ObservableList getSelectedItems() {
+        return getSelectionModel().getSelectedItems();
+    }
+    protected ObservableList<Integer> getSelectedIndices() {
+        return getSelectionModel().getSelectedIndices();
+    }
+    protected int getSelectedIndex() {
+        return getSelectionModel().getSelectedIndex();
+    }
+    protected Object getSelectedItem() {
+        return getSelectionModel().getSelectedItem();
+    }
     /**
      * Returns the index of the anchor value. Note that subclasses which store a
      * compound value need to override and extract the index.
