@@ -85,6 +85,18 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         });
     }
 
+    private Property<Boolean> showRoot = new SimpleObjectProperty<Boolean>(this, "showRoot");
+    
+    protected void setShowRoot(Boolean showing) {
+        showRootProperty().setValue(showing);
+    }
+    
+    public Boolean getShowRoot() {
+        return showRootProperty().getValue();
+    }
+    public Property<Boolean> showRootProperty() {
+        return showRoot;
+    }
     /**
      * Called when the tree's showRoot property changed. 
      * Not good enough in itself: at least the selectionHelper must be
@@ -97,9 +109,19 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         if (value) {
             doShiftRight(0, 1);
         } else {
+            boolean rootSelected = contains(0);
+            if (rootSelected) {
+                doClearIndicesInRange(0, 1);
+            }
+            int from = rootSelected ? 1 : 0;
             doShiftLeft(0, 1);
+            if (rootSelected) {
+                doAddIndices(0);
+            }
         }
+        setShowRoot(value);
         endChange();
+        setShowRoot(null);
     }
     
     

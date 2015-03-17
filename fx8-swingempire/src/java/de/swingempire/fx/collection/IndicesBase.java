@@ -214,7 +214,7 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * clear all indices in the range:
      * 
      * <pre><code>
-     * doClearIndices(from, removedSize);
+     * doClearIndicesInRange(from, removedSize);
      * doShiftLeft(from, removedSize);
      * </code></pre>
      *  

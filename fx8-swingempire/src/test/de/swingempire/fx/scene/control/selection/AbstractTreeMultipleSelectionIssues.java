@@ -24,6 +24,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnch
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
 
@@ -145,14 +146,14 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getSelectionModel().select(lastChild);
         getRootChildren().remove(lastChild);
     }
-    
+//----------------------   https://javafx-jira.kenai.com/browse/RT-40278 
+
     /**
      * SelectionModel must update indices on toggling showRoot
      * https://javafx-jira.kenai.com/browse/RT-40278
      */
     @Test
     public void testShowRootIndexOn() {
-        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
         int index = 3;
         getSelectionModel().select(index);
         getView().setShowRoot(true);
@@ -164,22 +165,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * https://javafx-jira.kenai.com/browse/RT-40278
      */
     @Test
-    public void testShowRootItemAtIndexOn() {
-        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
-        int index = 3;
-        getSelectionModel().select(index);
-        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
-        getView().setShowRoot(true);
-        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
-    }
-    
-    /**
-     * SelectionModel must update indices on toggling showRoot
-     * https://javafx-jira.kenai.com/browse/RT-40278
-     */
-    @Test
     public void testShowRootIndexOff() {
-        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
         getView().setShowRoot(true);
         int index = 3;
         getSelectionModel().select(index);
@@ -193,7 +179,6 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     @Test
     public void testShowRootItemOn() {
-        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
         int index = 3;
         getSelectionModel().select(index);
         Object item = getSelectedItem();
@@ -207,7 +192,6 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     @Test
     public void testShowRootItemOff() {
-        assertFalse("sanity: test setup such that root is not showing", getView().isShowRoot());
         getView().setShowRoot(true);
         int index = 3;
         getSelectionModel().select(index);
@@ -217,9 +201,171 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     }
 
     /**
+     * Corner case: first child selected
+     */
+    @Test
+    public void testShowRootIndexAtFirstChildOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(1);
+        getView().setShowRoot(false);
+        assertEquals("selection moved to first child of hidden root", 0, getSelectedIndex());
+    }
+    
+    /**
+     * Corner case: first child selected
+     */
+    @Test
+    public void testShowRootIndexAtRootAndFirstChildOff() {
+        if (!multipleMode) return;
+        getView().setShowRoot(true);
+        getSelectionModel().selectIndices(0, 1);
+        getView().setShowRoot(false);
+        assertEquals(1, getSelectedIndices().size());
+        assertEquals("selection moved to first child of hidden root", 0, getSelectedIndex());
+    }
+    
+    /**
+     * Corner case: root selected
+     */
+    @Test
+    public void testShowRootIndexAtRootOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(0);
+        assertEquals("sanity: root selected", getRoot(), getSelectedItem());
+        getView().setShowRoot(false);
+        assertEquals("selection moved to first child of hidden root", 0, getSelectedIndex());
+    }
+
+    /**
+     * Corner case: root selected
+     */
+    @Test
+    public void testShowRootItemAtRootOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(0);
+        assertEquals("sanity: root selected", getRoot(), getSelectedItem());
+        getView().setShowRoot(false);
+        assertEquals("selection moved to first child of hidden root", 
+                getRootChildren().get(0), getSelectedItem());
+    }
+
+    /**
+     * Corner case: root selected
+     * 
+     * Here testing that selectedIndices don't fire on re-selecting the next.
+     * Fails for simpleTreeSM: might expect a single change (we are re-selecting
+     * in selectionHelper/treeIndicesList whoever might be responsible).
+     * Might be a implementation limitation in IndicesBase: shiftLeft requires
+     * that nothing in the removed range is selected.
+     */
+    @Test
+    public void testShowRootNotificationIndicesAtRootOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(0);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getView().setShowRoot(false);
+//        report.prettyPrint();
+        assertEquals("selectedIndices must not have fired", 0, report.getEventCount());
+    }
+    
+    /**
+     * Corner case: root selected
+     * Here we expect the selecteItems to fire because the root selection is
+     * effectively replaced by th selection of its first child
+     */
+    @Test
+    public void testShowRootNotificationItemsAtRootOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(0);
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        getView().setShowRoot(false);
+        assertTrue(getSelectedItems().contains(getSelectedItem()));
+        assertEquals("selectedItems must have fired", 1, report.getEventCount());
+    }
+    
+    /**
+     * Corner case: root selected
+     */
+    @Test
+    public void testShowRootNotificationItemAtRootOff() {
+        getView().setShowRoot(true);
+        getSelectionModel().select(0);
+        ChangeReport report = new ChangeReport(getSelectionModel().selectedItemProperty());
+        getView().setShowRoot(false);
+        assertEquals("selectedItem must have fired", 1, report.getEventCount());
+    }
+    
+    
+    /**
+     * corner case: root selected
+     */
+    @Test
+    public void testShowRootItemAtIndexAtRootOff() {
+        getView().setShowRoot(true);
+        int index = 0;
+        getSelectionModel().select(index);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+        getView().setShowRoot(false);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootItemAtIndexOff() {
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+        getView().setShowRoot(false);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+    }
+    
+    /**
+     * SelectionModel must update indices on toggling showRoot
+     * https://javafx-jira.kenai.com/browse/RT-40278
+     */
+    @Test
+    public void testShowRootItemAtIndexOn() {
+        int index = 3;
+        getSelectionModel().select(index);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+        getView().setShowRoot(true);
+        assertEquals(getSelectedItem(), getView().getTreeItem(getSelectedIndex()));
+    }
+    
+    /**
      * Items not changed, no event on selectedItems.
      * 
-     * TBD: TreeIndexMap must be updated to cope with showRoot! 
+     */
+    @Test
+    public void testShowRootNotificationIndicesOn() {
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getView().setShowRoot(true);
+        assertEquals("selectedIndices must fire", 1, report.getEventCount());
+    }
+    
+    /**
+     * Items not changed, no event on selectedItems.
+     * 
+     */
+    @Test
+    public void testShowRootNotificationIndicesOff() {
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getView().setShowRoot(false);
+        assertEquals("selectedIndices must fire", 1, report.getEventCount());
+    }
+    
+    /**
+     * Items not changed, no event on selectedItems.
+     * 
      */
     @Test
     public void testShowRootNotificationItemsOn() {
@@ -227,9 +373,79 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getSelectionModel().select(index);
         ListChangeReport report = new ListChangeReport(getSelectedItems());
         getView().setShowRoot(true);
-        report.prettyPrint();
         assertEquals("selectedItems must not fire if nothing changed", 0, report.getEventCount());
     }
+    
+    /**
+     * Items not changed, no event on selectedItems.
+     * 
+     */
+    @Test
+    public void testShowRootNotificationItemsOff() {
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        getView().setShowRoot(false);
+        assertEquals("selectedItems must not fire if nothing changed", 0, report.getEventCount());
+    }
+
+    @Test
+    public void testShowRootFocusOn() {
+        int index = 3;
+        getSelectionModel().select(index);
+        TreeItem focusedItem = (TreeItem) getFocusModel().getFocusedItem();
+        assertEquals("sanity: focus at selected", index, getFocusedIndex());
+        getView().setShowRoot(true);
+        assertEquals(index + 1, getFocusedIndex());
+        assertEquals(focusedItem, getFocusModel().getFocusedItem());
+    }
+    
+    @Test
+    public void testShowRootFocusOff() {
+        getView().setShowRoot(true);
+        int index = 3;
+        getSelectionModel().select(index);
+        TreeItem focusedItem = (TreeItem) getFocusModel().getFocusedItem();
+        assertEquals("sanity: focus at selected", index, getFocusedIndex());
+        getView().setShowRoot(false);
+        assertEquals(index - 1, getFocusedIndex());
+        assertEquals(focusedItem, getFocusModel().getFocusedItem());
+    }
+    
+    @Test
+    public void testShowRootAnchorOn() {
+        initSkin();
+        int index = 3;
+        getSelectionModel().select(index);
+        assertEquals("sanity: anchor", index, getAnchorIndex());
+        getView().setShowRoot(true);
+        assertEquals(index + 1, getAnchorIndex());
+    }
+    
+    @Test
+    public void testShowRootAnchorOff() {
+        getView().setShowRoot(true);
+        initSkin();
+        int index = 3;
+        getSelectionModel().select(index);
+        assertEquals("sanity: anchor", index, getAnchorIndex());
+        getView().setShowRoot(false);
+        assertEquals(index - 1, getAnchorIndex());
+    }
+    
+    
+    /**
+     * Sanity testing: getTreeItem(nextRow) returns correctly?
+     */
+    @Test
+    public void testShowRootGetTreeItem() {
+        int index = 3;
+        TreeItem item = getView().getTreeItem(index);
+        getView().setShowRoot(true);
+        assertEquals(item, getView().getTreeItem(index + 1));
+    }
+    
     /**
      * SelectionModel must update indices on toggling showRoot
      * https://javafx-jira.kenai.com/browse/RT-40278
@@ -244,6 +460,9 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getView().setShowRoot(true);
         assertEquals(1, report.getEventCount());
     }
+    
+//------------------ end https://javafx-jira.kenai.com/browse/RT-40278
+    
 //---------------- super adjusted to tree-specifics: 
 // root not shown, expanded, no subtrees    
     /**
@@ -290,7 +509,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
             assertEquals("focus must be cleared", -1, getFocusModel()
                     .getFocusedIndex());
         } else {
-            assertEquals("focus is where?", 0, getFocusIndex());
+            assertEquals("focus is where?", 0, getFocusedIndex());
             assertEquals("parent focused after clearing children", parent,
                 getFocusModel().getFocusedItem());
         }
@@ -470,7 +689,12 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     public void testAnchorOnClearSelectionAtAfterRange() {
         super.testAnchorOnClearSelectionAtAfterRange();
     }
-    
+
+    @Test
+    public void testInitialState() {
+        assertFalse("sanity: subclasses must hide the root", getView().isShowRoot());
+        assertTrue("sanity: subclasses must expand the root", getRoot().isExpanded());
+    }
     protected TreeItem getRoot() {
         return getView().getRoot();
     }

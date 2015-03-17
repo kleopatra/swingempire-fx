@@ -37,6 +37,11 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * <li> cope with toggling showRoot - probably needs the help of TreeIndicesList in a 
  * similar manner as with listChanges: ignore changes from source if they resulted
  * from showRoot?
+ * Note that the "normal" listening to source (== indicesList) can't cope in itself
+ * due to the overall setup of this - here we assume that a change is either triggered
+ * by the source or the backing tree, but that the respective other is constant. 
+ * The event that indicesList fires looks like a
+ * source change but is a backing tree change as well, so the assumption doesn't hold.
  * 
  * @see TreeIndicesList
  * @see IndexMappedList
@@ -48,6 +53,9 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     private ChangeListener<TreeModificationEvent<T>> sourceChangeListener;
     private WeakChangeListener<TreeModificationEvent<T>> weakSourceChangeListener;
     
+    private ChangeListener<Boolean> showRootListener;
+    private WeakChangeListener<Boolean> weakShowRootChangeListener;
+    
     /**
      * @param source
      */
@@ -57,6 +65,23 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         sourceChangeListener = (p, old, value) -> treeModified(value);
         weakSourceChangeListener = new WeakChangeListener<>(sourceChangeListener);
         source.treeModificationProperty().addListener(weakSourceChangeListener);
+        
+        showRootListener = (p, old, value) -> showRootChanged(value);
+    }
+
+    /**
+     * Listener callback to TreeIndicesList showRoot property. <p>
+     * 
+     * Called when a showRoot property change on the tree is passed
+     * on to this. This only needs to handle the special case when the
+     * selected root had been hidden.
+     * 
+     * @param value the new value received in the change
+     */
+    protected void showRootChanged(Boolean value) {
+        // nothing to do if the marker is null or root shown
+        if (!Boolean.FALSE.equals(value)) return;
+        
     }
 
     /**
@@ -292,7 +317,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      */
     @Override
     protected void sourceChanged(Change<? extends Integer> c) {
-        if (getIndicesList().getTreeModification() != null) return;
+        if (wasBackingTreeChanged()) return;
         beginChange();
         while (c.next()) {
             if (c.wasPermutated()) {
@@ -308,6 +333,17 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
             }
         }
         endChange();
+    }
+
+    /**
+     * Returns true if the list change received from source had been triggered
+     * by changes to the backing tree.
+     * 
+     * @return
+     */
+    protected boolean wasBackingTreeChanged() {
+        return getIndicesList().getTreeModification() != null 
+                || getIndicesList().getShowRoot() != null;
     }
 
     /**

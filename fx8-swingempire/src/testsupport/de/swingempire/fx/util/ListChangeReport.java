@@ -45,6 +45,13 @@ public class ListChangeReport implements ListChangeListener {
         c.reset();
     }
     
+    public void prettyPrintAll() {
+        changes.stream().forEach(c -> {
+           System.out.println("--- change at: " + changes.indexOf(c));
+           FXUtils.prettyPrint(c);
+           c.reset();
+        });
+    }
     /**
      * @return the last change, reset if available
      */

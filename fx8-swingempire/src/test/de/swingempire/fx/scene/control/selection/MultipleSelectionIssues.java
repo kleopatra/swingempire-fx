@@ -232,7 +232,38 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         assertEquals("single event on discontinousremove " + report.getLastChange(), 1, report.getEventCount());
     }
     
-    
+    /**
+     * Test list changes fired by selectedIndices if item at selectedIndex is removed.
+     * The expected result depends on the strategy of selection update (RT-30961 or so)
+     * - if the index is unchanged (implemented in simpleXX, selectedIndices must not fire 
+     *   fails for simple, due to remove in indicesList and re-selection in selectionHelper.
+     *   The re-select is done in selectionHelper because we wanted a clear handle on 
+     *   the strategy: subclasses might do nothing, update focus or whatever. At that time
+     *   multiple selection state had updated itself, so there's not much else to do 
+     *   without jeopardizing the strict separation of concerns (multiple selection state
+     *   must not know about single selection) Might consider living with the two events? 
+     * - if the index is changed (implemented in core), selectedIndices must fire a single
+     *   replaced. Fails for core, fires a single added instead.  
+     */
+    @Test
+    public void testNotificationSelectedIndicesOnRemoveAt() {
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        removeItem(index);
+        if (getSelectedIndex() == index) {
+            // failure of SimpleSM: we get a removed followed by an added
+            assertEquals("selectedIndices must not fire, unchanged index " + index, 
+                    0, report.getEventCount());
+        } else {
+            report.prettyPrintAll();
+            assertEquals("selectedIndices must fire, changed index " + getSelectedIndex(), 
+                    1, report.getEventCount());
+            // failure of core: fires a single added instead of the expected replaced
+            assertTrue("event must be single replaced but was " + report.getLastChange(), 
+                    wasSingleReplaced(report.getLastChange()));
+        }
+    }
     /**
      * Why do we get a permutated? How are we supposed to use it?
      * don't expect a permutation change, incorrect in core!
@@ -1026,7 +1057,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getFocusModel().focus(focus);
         // remove one above, one below
         removeAllItems(items.get(3), items.get(6));
-        assertEquals("focus must be decreased by one", focus -1, getFocusIndex());
+        assertEquals("focus must be decreased by one", focus -1, getFocusedIndex());
     }
 
     /**
@@ -1040,7 +1071,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getFocusModel().focus(focus);
 //        LOG.info("models: " + getSelectionModel().getClass() + getFocusModel().getClass());
         assertEquals("sanity selectedIndex", select, getSelectedIndex());
-        assertEquals("sanity focusedIndex ", focus, getFocusIndex());
+        assertEquals("sanity focusedIndex ", focus, getFocusedIndex());
         addItem(0, createItem("new item"));
         assertEquals("selected increased by one", select + 1, getSelectedIndex());
         assertEquals("focused increased by one (selected = " + getSelectedIndex() + ")", 
@@ -1079,7 +1110,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     public void testFocusFirstRemovedItem() {
         getSelectionModel().select(0);
         assertEquals("sanity: focus in sync with selection", 0, getFocusModel().getFocusedIndex());
-        items.remove(0);
+        removeItem(0);
         assertEquals(0, getSelectedIndex());
         assertEquals(0, getFocusModel().getFocusedIndex());
     }
@@ -1116,7 +1147,6 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * This is basically 30931 (or so, the one that should define what happens if
      * the selectedIndex is removed). Most implementations move the index to
      * an adjacent index, so this test my fail for custom implemenations.
-     * Unexpected failure for SimpleListSelectionModel.
      * 
      * Not quite: whatever the strategy, _if_ selectedIndex > -1 it must be 
      * part of selectedIndices and selectedItems must be updated along with it.
@@ -1125,7 +1155,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     public void testRemoveSelectedItemThatIsFirst_28637() {
         getSelectionModel().select(0);
         Object selectedItem = getSelectedItem();
-        items.remove(selectedItem);
+        removeAllItems(selectedItem);
         int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
@@ -1151,7 +1181,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     public void testRemoveSelectedItemThatIsLast_28637() {
         getSelectionModel().select(items.size() - 1);
         Object selectedItem = getSelectedItem();
-        items.remove(selectedItem);
+        removeAllItems(selectedItem);
         int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
@@ -1160,7 +1190,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     public void testRemoveSelectedItemThatIsMiddle_28637() {
         getSelectionModel().select(3);
         Object selectedItem = getSelectedItem();
-        items.remove(selectedItem);
+        removeAllItems(selectedItem);
         int selected = getSelectedIndex();
         assertRemoveItemAtSelected_28637(selected);
     }
@@ -1346,7 +1376,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         initSkin();
         int index = 2;
         getSelectionModel().select(index);
-        int newFocus = getFocusIndex() - 1;
+        int newFocus = getFocusedIndex() - 1;
         getSelectionModel().selectRange(index, newFocus -1);
         assertEquals(1, getSelectedIndices().size());
         assertEquals("anchor must be updated to previous in single mode", 
@@ -1497,7 +1527,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         initSkin();
         getSelectionModel().select(0);
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus + 1;
         getSelectionModel().selectRange(anchor, newFocus + 1);
         assertEquals(newFocus - anchor + 1, getSelectedIndices().size());
@@ -1516,7 +1546,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getSelectionModel().clearAndSelect(index);
         // clear at
         getSelectionModel().clearSelection(index);
-        assertEquals("anchor must be same as focus", getFocusIndex(), getAnchorIndex());
+        assertEquals("anchor must be same as focus", getFocusedIndex(), getAnchorIndex());
         assertEquals("anchor must be cleared", -1, getAnchorIndex());
         // wrong assumption: contract changed to make behaviour consistent between
         // anchor and focus: if nothing else selected after clearAt, anchor is
@@ -1533,7 +1563,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         initSkin();
         getSelectionModel().select(0);
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus - 1;
         getSelectionModel().selectRange(anchor, newFocus - 1);
         assertEquals(1, getSelectedIndices().size());
@@ -1551,7 +1581,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getSelectionModel().select(1);
         getSelectionModel().selectRange(1, -1);
         assertEquals("anchor unchanged", 1, getAnchorIndex());
-        assertEquals("focus on 0", 0, getFocusIndex());
+        assertEquals("focus on 0", 0, getFocusedIndex());
     }
     
     /**
@@ -1569,7 +1599,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         int newFocus = oldFocus + 1;
         getSelectionModel().selectRange(anchor, newFocus + 1);
         assertEquals("anchor unchanged", anchor, getAnchorIndex());
-        assertEquals("focus on last", newFocus, getFocusIndex());
+        assertEquals("focus on last", newFocus, getFocusedIndex());
     }
     
     /**
@@ -1587,7 +1617,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         int newFocus = oldFocus + 1;
         getSelectionModel().selectRange(anchor, newFocus + 1);
         assertEquals("anchor unchanged", anchor, getAnchorIndex());
-        assertEquals("focus unchanged", oldFocus, getFocusIndex());
+        assertEquals("focus unchanged", oldFocus, getFocusedIndex());
     }
 
     /**
@@ -1601,12 +1631,12 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         prepareAlsoSelectDescending();
         
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus + 1;
         getSelectionModel().clearSelection();
         // not included boundary is new - 1 for descending
         getSelectionModel().selectRange(anchor, newFocus - 1);
-        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("focus must be last of range", newFocus, getFocusedIndex());
         assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
@@ -1625,12 +1655,12 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         prepareAlsoSelectDescending();
         
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus - 1;
         getSelectionModel().clearSelection();
         // not included boundary is new - 1 for descending
         getSelectionModel().selectRange(anchor, newFocus - 1);
-        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("focus must be last of range", newFocus, getFocusedIndex());
         assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", anchor - newFocus + 1, 
@@ -1661,7 +1691,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         
         assertEquals(6, getAnchorIndex());
         assertEquals(3, getSelectedIndices().size());
-        assertEquals(2, getFocusIndex());
+        assertEquals(2, getFocusedIndex());
         
     }
 
@@ -1683,12 +1713,12 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         prepareAlsoSelectAscending();
         
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus + 1;
         getSelectionModel().clearSelection();
         // not included boundary is new + 1 for ascending
         getSelectionModel().selectRange(anchor, newFocus + 1);
-        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("focus must be last of range", newFocus, getFocusedIndex());
         assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", newFocus - anchor + 1, 
@@ -1713,12 +1743,12 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         prepareAlsoSelectAscending();
         
         int anchor = getAnchorIndex();
-        int oldFocus = getFocusIndex();
+        int oldFocus = getFocusedIndex();
         int newFocus = oldFocus - 1;
         getSelectionModel().clearSelection();
         // not included boundary is new + 1 for ascending
         getSelectionModel().selectRange(anchor, newFocus + 1);
-        assertEquals("focus must be last of range", newFocus, getFocusIndex());
+        assertEquals("focus must be last of range", newFocus, getFocusedIndex());
         assertEquals("selected must be focus", newFocus, getSelectedIndex());
         assertEquals("anchor must be unchanged", anchor, getAnchorIndex());
         assertEquals("size must be old selection till focus", newFocus - anchor +1 , 
@@ -1746,7 +1776,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getFocusModel().focusNext();
         assertEquals(1, getAnchorIndex());
         assertEquals(3, getSelectedIndices().size());
-        assertEquals(5, getFocusIndex());
+        assertEquals(5, getFocusedIndex());
     }
     
     
@@ -1765,7 +1795,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
 //        assertEquals("sanity anchor", start, getAnchorIndex());
         getFocusModel().focusNext();
         
-        assertEquals("sanity ..", end, getFocusIndex());
+        assertEquals("sanity ..", end, getFocusedIndex());
 //        assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
     }
     
@@ -1777,10 +1807,10 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         int end = 5;
         getSelectionModel().selectRange(start, end);
         int last = end - 1;
-        assertEquals("sanity: focus after selectRange", last, getFocusIndex());
+        assertEquals("sanity: focus after selectRange", last, getFocusedIndex());
         getSelectionModel().clearSelection(last);
         assertEquals(2, getSelectedIndices().size());
-        assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusIndex());
+        assertEquals("focus must be unchanged on clearSelection at focus", last, getFocusedIndex());
         assertEquals("selectedIndex must be unchanged on clearAt", last, getSelectedIndex());
     }
     
@@ -1794,7 +1824,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         int last = end - 1;
         getSelectionModel().clearSelection(3);
         assertEquals(2, getSelectedIndices().size());
-        assertEquals("focus must be unchanged on clearSelection in range", last, getFocusIndex());
+        assertEquals("focus must be unchanged on clearSelection in range", last, getFocusedIndex());
     }
     
     @Test
@@ -1806,7 +1836,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getSelectionModel().selectRange(start, end);
         getSelectionModel().clearSelection();
         assertEquals(0, getSelectedIndices().size());
-        assertEquals("focus must be cleared", -1, getFocusIndex());
+        assertEquals("focus must be cleared", -1, getFocusedIndex());
     }
     
     @Test
@@ -1818,7 +1848,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getSelectionModel().selectRange(start, end);
         int last = end - 1;
         assertEquals(3, getSelectedIndices().size());
-        assertEquals(last, getFocusIndex());
+        assertEquals(last, getFocusedIndex());
     }
     
     @Test
@@ -1830,7 +1860,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         getSelectionModel().selectRange(start, end);
         int last = end + 1;
         assertEquals(3, getSelectedIndices().size());
-        assertEquals(last, getFocusIndex());
+        assertEquals(last, getFocusedIndex());
     }
     
     @Test
@@ -2301,7 +2331,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * @param index the default value for views that don't have a focusModel
      * @return 
      */
-    protected int getFocusIndex() {
+    protected int getFocusedIndex() {
         return getFocusModel().getFocusedIndex();
     }
     

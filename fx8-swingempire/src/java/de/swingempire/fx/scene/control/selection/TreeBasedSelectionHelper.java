@@ -57,9 +57,11 @@ public class TreeBasedSelectionHelper<T> {
     }
 
     protected void showRootChanged(Boolean value) {
-        if (selectionModel.isEmpty()) return;
+        int oldSelectedIndex = selectionModel.getSelectedIndex();
+        if (oldSelectedIndex < 0) return;
         int diff = value ? 1 : -1;
-        selectionModel.select(selectionModel.getSelectedIndex() + diff);
+        int toSelect = Math.max(0, oldSelectedIndex + diff);
+        selectionModel.select(toSelect);
     }
 
     /**
