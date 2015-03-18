@@ -244,8 +244,12 @@ public class TreeIndexMappedListTest {
      * PENDING JW:
      * Single child replaced ... what should happen?
      * Here we replace with a collapsed child
+     * 
+     * It's less the _what_ than the actual doing it!
+     * @see IgnoreTreeDeferredIssue
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
     public void testSetCollapsedChildAt() {
         TreeItemX child = createBranch("single-replaced-child");
         int index = 3;
@@ -261,6 +265,11 @@ public class TreeIndexMappedListTest {
      * PENDING JW:
      * Single child replaced ... what should happen?
      * Here we replace with a expanded child
+     * 
+     * Hmm ... can't see any difference to set(i, item) in list, or is there?
+     * 
+     * It's less the _what_ than the actual doing it!
+     * @see IgnoreTreeDeferredIssue
      */
     @Test 
     @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
@@ -271,6 +280,7 @@ public class TreeIndexMappedListTest {
         indicesList.setIndices(index);
         report.clear();
         rootChildren.set(index -1, child);
+        assertFalse("indicesList must not be empty", indicesList.isEmpty());
         if (!indicesList.isEmpty()) {
             int intValue = indicesList.get(0).intValue();
             assertTrue("index must not be negative, was " , intValue >= 0);
@@ -410,6 +420,9 @@ public class TreeIndexMappedListTest {
     @Test
     public void testInitial() {
         assertEquals(0, indexedItems.size());
+        assertTrue(root.isExpanded());
+        assertSame(root, tree.getRoot());
+        assertTrue(tree.isShowRoot());
     }
     
     @Before

@@ -109,15 +109,14 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         if (value) {
             doShiftRight(0, 1);
         } else {
-            boolean rootSelected = contains(0);
-            if (rootSelected) {
-                doClearIndicesInRange(0, 1);
-            }
-            int from = rootSelected ? 1 : 0;
+            // JW: keep it simple - this class shouldn't
+            // know anything about singleSelection state
+            // so we treat a removed selected root the same
+            // way as any other removed selected node
+            // that is remove from our list and let 
+            // more appropriate collaborators reselect if needed
+            doClearIndicesInRange(0, 1);
             doShiftLeft(0, 1);
-            if (rootSelected) {
-                doAddIndices(0);
-            }
         }
         setShowRoot(value);
         endChange();

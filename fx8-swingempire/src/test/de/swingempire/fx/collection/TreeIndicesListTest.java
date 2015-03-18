@@ -222,6 +222,12 @@ public class TreeIndicesListTest {
      * PENDING JW:
      * Single child replaced ... what should happen?
      * Here we replace with a collapsed child
+     * 
+     * What's wrong with doing the same as with list? that is do nothing
+     * for a single replace?
+     * 
+     * It's less the _what_ than the actual doing it!
+     * @see IgnoreTreeDeferredIssue
      */
     @Test
     @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
@@ -230,14 +236,20 @@ public class TreeIndicesListTest {
         int index = 3;
         indicesList.setIndices(index);
         rootChildren.set(index -1, child);
+        assertFalse(indicesList.isEmpty());
         if (!indicesList.isEmpty())
             assertEquals(index, indicesList.get(0).intValue());
+        fail("TBD: need to specify what to do on setChildAt");
     }
     
     /**
      * PENDING JW:
      * Single child replaced ... what should happen?
      * Here we replace with a expanded child
+     * 
+     * It's less the _what_ than the actual doing it!
+     * 
+     * @see IgnoreTreeDeferredIssue
      */
     @Test 
     @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
@@ -247,6 +259,7 @@ public class TreeIndicesListTest {
         int index = 3;
         indicesList.setIndices(index);
         rootChildren.set(index -1, child);
+        assertFalse(indicesList.isEmpty());
         if (!indicesList.isEmpty()) {
             int intValue = indicesList.get(0).intValue();
             assertTrue("index must not be negative, was " , intValue >= 0);

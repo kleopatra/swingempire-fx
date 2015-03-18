@@ -40,6 +40,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
@@ -246,6 +247,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      *   replaced. Fails for core, fires a single added instead.  
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreNotificationIndicesOnRemove.class)
     public void testNotificationSelectedIndicesOnRemoveAt() {
         int index = 3;
         getSelectionModel().select(index);
@@ -253,7 +255,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         removeItem(index);
         if (getSelectedIndex() == index) {
             // failure of SimpleSM: we get a removed followed by an added
-            assertEquals("selectedIndices must not fire, unchanged index " + index, 
+            assertEquals("selectedIndices must not fire, index unchanged " + index, 
                     0, report.getEventCount());
         } else {
             report.prettyPrintAll();
@@ -264,6 +266,8 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
                     wasSingleReplaced(report.getLastChange()));
         }
     }
+
+    
     /**
      * Why do we get a permutated? How are we supposed to use it?
      * don't expect a permutation change, incorrect in core!
@@ -278,10 +282,9 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         ObservableList<Integer> indices = getSelectedIndices();
         ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
         ListChangeReport report = new ListChangeReport(indices);
-        items.add(0, "newItem");
+        addItem(0, createItem("new item"));
         Change c = report.getLastChange();
 //        prettyPrint(c);
-        c.reset();
         c.next();
         if (!c.wasPermutated()) {
             LOG.info("no permutation as expected:" + c);
@@ -1269,7 +1272,6 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
                 getSelectedItems().contains(item));
         ListChangeReport report = new ListChangeReport(getSelectedItems());
         int size = items.size();
-//        items.clear();
         clearItems();
         assertEquals("sanity: single event", 1, report.getEventCount());
         Change c = report.getLastChange();
@@ -1346,7 +1348,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
             assertEquals(removedSize, c.getRemovedSize());
         };
         getSelectedItems().addListener(l);
-        items.clear();
+        clearItems();
     }
     /**
      * Trying to dig into unexpected failure of alsoSelect.

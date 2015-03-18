@@ -101,34 +101,43 @@ public abstract class AbstractTreeSingleSelectionIssues extends
     @Test
     @ConditionalIgnore(condition = IgnoreTreeFocus.class)
     public void testFocusOnInsertItemAtSelected39042() {
-        ObservableList other = FXCollections.observableArrayList(items.subList(
-                0, 5));
-        resetItems(other);
-        int index = 2;
-        getSelectionModel().select(index);
-        // other.add(index, "6-item");
-        addItem(index, createItem("6-item"));
-        int expected = index + 1;
-        assertEquals("focused moved by one after inserting item", expected,
-                getFocusedIndex(expected));
+        super.testFocusOnInsertItemAtSelected39042();
+//        ObservableList other = FXCollections.observableArrayList(items.subList(
+//                0, 5));
+//        resetItems(other);
+//        int index = 2;
+//        getSelectionModel().select(index);
+//        // other.add(index, "6-item");
+//        addItem(index, createItem("6-item"));
+//        int expected = index + 1;
+//        assertEquals("focused moved by one after inserting item", expected,
+//                getFocusedIndex(expected));
     }
     /**
-     * For a tree, the requirement is unclear.
+     * For a tree, the requirement is unclear. 
+     * PENDING JW: why should it be different than a list?
+     * fails in isolated testing of TreeIndicesList/TreeIndexMappedList - because
+     * it's simply not yet implemented
+     * 
+     * so the real
+     * question here is why it doesn't at this complete test?
+     * In fact, it does with the conditionalIgnore set to false ..
      */
     @Override
     @Test
     @ConditionalIgnore (condition = IgnoreTreeDeferredIssue.class)
     public void testSelectedOnSetItemAtSelectedFocused() {
-        initSkin();
-        int index = 2;
-        getSelectionModel().select(index);
-        Object selected = items.get(index);
-        Object modified = modifyItem(selected, "xx");
-//        items.set(index, modified);
-        setItem(index, modified);
-        assertEquals("selected index must be unchanged on setItem", 
-                index, getSelectedIndex());
-        assertEquals(modified, getSelectedItem());
+        super.testSelectedOnSetItemAtSelectedFocused();
+//        initSkin();
+//        int index = 2;
+//        getSelectionModel().select(index);
+//        Object selected = items.get(index);
+//        Object modified = modifyItem(selected, "xx");
+////        items.set(index, modified);
+//        setItem(index, modified);
+//        assertEquals("selected index must be unchanged on setItem", 
+//                index, getSelectedIndex());
+//        assertEquals(modified, getSelectedItem());
     }
 
     @Test
@@ -163,8 +172,8 @@ public abstract class AbstractTreeSingleSelectionIssues extends
      * Sorting needs special handling (?) for a tree.
      */
     @Test
-    @Ignore
     @Override
+    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
     public void testSelectedIndexAfterSort() {
         super.testSelectedIndexAfterSort();
     }

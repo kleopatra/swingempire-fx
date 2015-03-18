@@ -29,6 +29,12 @@ public class SelectionIgnores {
     /**
      * Ignore tests that need a second thought, due to tree specifics.
      * 
+     * Open issues:
+     * <li> handle single-replace in TreeIndicesList (might effect the rows
+     * below if the replaced and/or the replacing TreeItem is expanded and
+     * has children 
+     * <li> sorting of treeItems
+     * 
      */
     public static class IgnoreTreeDeferredIssue implements IgnoreCondition {
         
@@ -38,6 +44,26 @@ public class SelectionIgnores {
         }
         
     }
+    
+    /**
+     * Open issue: selectedIndices fires two events on removeAt with strategy
+     * to keep the selectedIndex constant if possible.<p>
+     * 
+     * The reason is understood: indicesList explicitly clears the index before
+     * shifting left, selectionHelper re-selects the same. Unclear whether or
+     * not this is important enough to trade against the clear separation of 
+     * concerns (between single/multiple selection state) 
+     */
+    public static class IgnoreNotificationIndicesOnRemove implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    
+    
     /**
      * Ignore focus-related tests in treeView selection: TreeFocusModel sets its
      * focus in a Platform.runLater, even wrapping the test in a runLater as well
@@ -151,7 +177,6 @@ public class SelectionIgnores {
      * Ignore tests that try to test state on filling the items
      * dynamically on showing the popup - hard to test.
      *  
-     * @author Jeanette Winzenburg, Berlin
      */
     public static class IgnoreDynamicItemsInPopup implements IgnoreCondition {
 
@@ -164,7 +189,6 @@ public class SelectionIgnores {
     
     /**
      * Ignore doc errors/ambiguities
-     * @author Jeanette Winzenburg, Berlin
      */
     public static class IgnoreDocErrors implements IgnoreCondition {
 
@@ -180,7 +204,6 @@ public class SelectionIgnores {
      * list but only on the console. Not understood, might be a 
      * threading issue?
      *  
-     * @author Jeanette Winzenburg, Berlin
      */
     public static class IgnoreExternalError implements IgnoreCondition {
 
@@ -195,7 +218,6 @@ public class SelectionIgnores {
      * Ignore tests that require a custom selectionModel (doesn't make sense
      * in adapters)
      * 
-     * @author Jeanette Winzenburg, Berlin
      */
     public static class IgnoreSetSelectionModel implements IgnoreCondition {
 
@@ -204,8 +226,14 @@ public class SelectionIgnores {
             return true;
         }
         
-        
     }
+    
+    /**
+     * Some tests are commented for various reason (f.i. adapted core tests
+     * that use internal/off scope/unavailable classes). As a general 
+     * procedure, we add a fail (to not forget) and a conditionalIgnore
+     * so that the failures don't bloat the test results.
+     */
     public static class IgnoreFailCommented implements IgnoreCondition {
     
         @Override

@@ -261,7 +261,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testFocusOnRemoveItemAtSelectedFocused() {
         int index = 2;
         getSelectionModel().select(index);
-        items.remove(index);
+//        items.remove(index);
+        removeItem(index);
         assertEquals("open 30931 - focus after remove focused", index, getFocusedIndex(index));
     }
     
@@ -269,7 +270,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
     public void testSelectedOnRemoveItemAtSelectedFocused() {
         int index = 2;
         getSelectionModel().select(index);
-        items.remove(index);
+//        items.remove(index);
+        removeItem(index);
         assertEquals("open 30931 - selection after remove focused", 
                 index, getSelectedIndex());
     }
@@ -280,7 +282,8 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         initSkin();
         int index = 2;
         getSelectionModel().select(index);
-        items.remove(index);
+//        items.remove(index);
+        removeItem(index);
         assertEquals("open 30931 - anchor after remove focused", 
                 index, getAnchorIndex(index));
     }
@@ -297,7 +300,6 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         Object selected = items.get(index);
         Object modified = modifyItem(selected, "xx");
-//        items.set(index, modified);
         setItem(index, modified);
         assertEquals("selected index must be unchanged on setItem", 
                 index, getSelectedIndex());
@@ -316,8 +318,7 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         Object selected = items.get(index);
         assertEquals("sanity: focus at selected", index, getFocusedIndex(index));
-        Object modified = selected + "xx";
-        items.set(index, modified);
+        setItem(index, modifyItem(selected, "xx"));
         assertEquals(index, getFocusedIndex(index));
     }
     
@@ -334,8 +335,9 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
         getSelectionModel().select(index);
         Object selected = items.get(index);
         assertEquals("sanity: anchor at selected", index, getAnchorIndex(index));
-        Object modified = selected + "xx";
-        items.set(index, modified);
+//        Object modified = selected + "xx";
+//        items.set(index, modified);
+        setItem(index, modifyItem(selected, "xx"));
         assertEquals(index, getAnchorIndex(index));
     }
     

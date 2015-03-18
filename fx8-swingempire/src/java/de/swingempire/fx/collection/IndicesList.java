@@ -158,10 +158,10 @@ public class IndicesList<T> extends IndicesBase<T> {
         // depend on it 
         // handle special case of "real" replaced, often size == 1
         if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
-            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
-                int pos = indexOf(i);
-                nextSet(pos, i);
-            }
+//            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
+//                int pos = indexOf(i);
+//                nextSet(pos, i);
+//            }
             return;
         }
 

@@ -20,6 +20,7 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
@@ -27,7 +28,6 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUnco
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
-
 import static org.junit.Assert.*;
 
 /**
@@ -256,9 +256,15 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * Fails for simpleTreeSM: might expect a single change (we are re-selecting
      * in selectionHelper/treeIndicesList whoever might be responsible).
      * Might be a implementation limitation in IndicesBase: shiftLeft requires
-     * that nothing in the removed range is selected.
+     * that nothing in the removed range is selected.<p>
+     * 
+     * Not special to showRoot - it's a variant of notification on removeAt, 
+     * @see IgnoreNotificationIndicesOnRemove
+     * 
+     * @see #testNotificationSelectedIndicesOnRemoveAt()
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreNotificationIndicesOnRemove.class)
     public void testShowRootNotificationIndicesAtRootOff() {
         getView().setShowRoot(true);
         getSelectionModel().select(0);

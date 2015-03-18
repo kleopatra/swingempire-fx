@@ -453,6 +453,10 @@ public class IndicesListTest {
         assertEquals("selectedIndices unchanged", 0, report.getEventCount());
     }
     
+    /**
+     * The spec is: keep the selected on-replace-item - this means no change
+     * to the indicesList, no notification.
+     */
     @Test
     public void testItemsReplacedAt() {
         int[] indices = new int[] { 3, 5, 1};
@@ -465,9 +469,9 @@ public class IndicesListTest {
         for (int i = 0; i < indices.length; i++) {
             assertEquals("expected value at " + i, indices[i], indicesList.get(i).intValue());
         }
-        assertEquals("selectedIndices unchanged", 1, report.getEventCount());
+        assertEquals("selectedIndices unchanged", 0, report.getEventCount());
 //        report.prettyPrint();
-        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+//        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
 
     /**
@@ -478,6 +482,17 @@ public class IndicesListTest {
         indicesList.setIndices(3);
         items.remove(3);
         assertEquals(0, indicesList.size());
+    }
+    
+    @Test
+    public void testItemSetAt() {
+        int index = 3;
+        indicesList.setIndices(index);
+        report.clear();
+        items.set(index, "replaced-element-at-3");
+        assertEquals(1, indicesList.size());
+        assertEquals(index, indicesList.get(0).intValue());
+        assertEquals(0, report.getEventCount());
     }
     
 //---------- tests: check state of sourceChange
@@ -681,7 +696,7 @@ public class IndicesListTest {
         indicesList.addIndices(indices);
         report.clear();
         indicesList.setAllIndices();
-        report.prettyPrint();
+//        report.prettyPrint();
         assertEquals(items.size(), indicesList.size());
         assertEquals(1, report.getEventCount());
         Change c = report.getLastChange();

@@ -45,11 +45,12 @@ public class TreeSelectionAndModification extends Application {
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
             "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", 
             "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected",
-            "removeGrandParent"};
+            "removeGrandParent", "toggleRoot"};
     // PENDING - how to unify KeyCode and KeyCombination?
     KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
-            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null, null, null, null, null};
+            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, 
+            null, null, null, null, null, null, null};
     private int count;
     
     protected Map<String, Consumer<TreeView>> createActions() {
@@ -131,7 +132,9 @@ public class TreeSelectionAndModification extends Application {
           grandParent.getParent().getChildren().remove(grandParent);
           LOG.info("" + f.getSelectionModel().getSelectedItems());
       });
-        
+      actions.put("toggleRoot", f -> {
+          f.setShowRoot(!f.isShowRoot());
+      });  
       
         return actions ;
     }

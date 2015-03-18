@@ -24,7 +24,6 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 import static de.swingempire.fx.util.FXUtils.*;
@@ -414,6 +413,27 @@ public class IndexMappedListTest {
         assertEquals("newItem", c.getAddedSubList().get(0));
     }
  
+    /**
+     * Trying to find out why force-failed treeIndexMappedListTest - use same
+     * test here
+     * 
+     * @see TreeIndexMappedListTest#testSetCollapsedChildAt()
+     * @see TreeIndexMappedListTest#testSetExpandedChildAt()
+     * 
+     */
+    @Test
+    public void testSetItemAtIndexed() {
+        int index = 3;
+        indicesList.setIndices(index); 
+        report.clear();
+        String element = "replaced-element-at-3";
+        items.set(index, element);
+        assertEquals(element, indexedItems.get(0));
+        assertEquals("indices unchanged", index, indicesList.get(0).intValue());
+        assertTrue("expected singleReplaced but was: " + report.getLastChange(), 
+                wasSingleReplaced(report.getLastChange()));
+        
+    }
     
 //------------------- test change in indexMapped after direct setting of indicesList    
 

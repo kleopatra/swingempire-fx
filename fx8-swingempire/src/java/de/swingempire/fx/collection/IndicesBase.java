@@ -24,8 +24,8 @@ import javafx.collections.ObservableListBase;
  * data structure. Implemented to fire as few changes as possible, particularly not
  * firing an added change if an index is already set.
  * <p>
- * Note: this is a kind-of transformation list, cannot use a Transform directly, though,
- * because the sequential "source" might be of type other than List.
+ * Note: this is-a kind-of transformation list, cannot use a TransformList directly, though,
+ * because the sequential "source" might be of type other than List, f.i. a TreeView
  * 
  * <p>
  * 
@@ -34,7 +34,12 @@ import javafx.collections.ObservableListBase;
  * <li> IndicesBase is-an unmodifiable ObservableList of Integers
  * <li> IndicesBase has api to set/add/clear indices as valid by the backing structure
  * <li> concrete subclasses listen to changes in the backing data and update the indices as
- *     appropriate
+ *      appropriate
+ * <li> implementations (at least that's the idea so far) should be deaf and dumb to its clients: 
+ *      in particular they should _not_ know anything about the selectionModel that it is used by.
+ *      It only manages the transform, semantics of "special" indices (like the selectedIndex)
+ *      don't belong here, they should be implemented in the collaborator that manages single
+ *      selection state.   
  * 
  * @see IndicesList
  * @see IndexMappedList
