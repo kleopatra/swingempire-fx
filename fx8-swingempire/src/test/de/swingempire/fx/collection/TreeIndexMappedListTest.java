@@ -24,11 +24,13 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -416,6 +418,25 @@ public class TreeIndexMappedListTest {
         assertEquals("indexed item", item, indexedItems.get(0));
         assertEquals("event count", 1, report.getEventCount());
     }
+
+    @Test
+    public void testClearsIndicesOnSettingNullRoot() {
+        indicesList.setIndices(3);
+        tree.setRoot(null);
+        assertEquals("empty selection when setting null root", 0, indexedItems.size());
+    }
+
+    /**
+     * copes with null root
+     */
+    @Test
+    public void testNullRoot() {
+        TreeView tree = new TreeView();
+        assertNull(tree.getRoot());
+        TreeIndicesList indicesList = new TreeIndicesList(tree);
+        TreeIndexMappedList indexMapped = new TreeIndexMappedList<>(indicesList);
+    }
+
     
     @Test
     public void testInitial() {

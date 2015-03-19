@@ -18,6 +18,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
+import de.swingempire.fx.property.PathAdapter;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
@@ -29,8 +30,8 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * <p> 
  * 
  * PENDING JW: 
- * <li> root changes 
- * <li> changes to showRoot property not handled     
+ * <li> DONE, but not yet properly testedroot changes 
+ * <li> DONE changes to showRoot property not handled     
  * <li> weakEventHandler?
  * <li> core (OS) behaviour is to select the parent if a child has been selected
  *      when the branch is collapsed - implement here? More than the usual 
@@ -47,7 +48,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 
     private TreeView<T> tree;
     // the tree's root item
-    private TreeItemX<T> root;
+//    private TreeItemX<T> root;
     
     private EventHandler<TreeModificationEvent<T>> modificationListener = e -> treeModified(e);
 
@@ -74,15 +75,38 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
      */
     public TreeIndicesList(TreeView<T> tree) {
         this.tree = Objects.requireNonNull(tree, "tree must not be null");
-        if (!(tree.getRoot() instanceof TreeItemX)) {
+        if (tree.getRoot() != null &&!(tree.getRoot() instanceof TreeItemX)) {
             throw new IllegalArgumentException("expected extended TreeItemX but was:" + tree.getRoot() );
         }
-        this.root = (TreeItemX<T>) tree.getRoot();
         bitSet = new BitSet();
-        root.addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
         tree.showRootProperty().addListener((source, old, value) -> {
             showRootChanged(value);
         });
+        rootChanged(null, tree.getRoot());
+        tree.rootProperty().addListener((s, old, value) -> rootChanged(old, value));
+        
+    }
+
+    /**
+     * @param old
+     * @param value
+     * @return
+     */
+    protected void rootChanged(TreeItem<T> old, TreeItem<T> root) {
+        if (old != null) {
+            old.removeEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
+        }
+        if (root != null) {
+            root.addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
+        }
+        updateIndicesOnRootChanged();
+    }
+
+    /**
+     * 
+     */
+    protected void updateIndicesOnRootChanged() {
+        clearAllIndices();
     }
 
     private Property<Boolean> showRoot = new SimpleObjectProperty<Boolean>(this, "showRoot");

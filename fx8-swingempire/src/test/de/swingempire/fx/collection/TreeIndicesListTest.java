@@ -556,7 +556,22 @@ public class TreeIndicesListTest {
         indicesList.addIndices();
         assertEquals(0, report.getEventCount());
     }
-    
+
+    @Test
+    public void testClearsIndicesOnSettingNullRoot() {
+        indicesList.setIndices(3);
+        tree.setRoot(null);
+        assertEquals("empty selection when setting null root", 0, indicesList.size());
+    }
+    /**
+     * copes with null root
+     */
+    @Test
+    public void testNullRoot() {
+        TreeView tree = new TreeView();
+        assertNull(tree.getRoot());
+        TreeIndicesList indicesList = new TreeIndicesList(tree);
+    }
     @Test
     public void testInitial() {
         assertEquals(0, indicesList.size());

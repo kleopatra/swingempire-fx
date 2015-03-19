@@ -27,7 +27,8 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * <p>
  * PENDING JW
  * <li> weak eventHandler?
- * <li> listen to root changes
+ * <li> DONE but not yet properly tested: listen to root changes
+ * <li> DONE handle showRoot
  * <li> partly done: specify/implement behaviour of selection on collapsed node 
  *    selectedItem/Index is moved to the collapsing parent if somewhere under its
  *    subtree. 
@@ -50,10 +51,34 @@ public class TreeBasedSelectionHelper<T> {
     public TreeBasedSelectionHelper(AbstractSelectionModelBase<TreeItem<T>> selectionModel, TreeView<T> tree) {
         this.selectionModel = selectionModel;
         this.treeView = tree;
-        tree.getRoot().addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);;
         tree.showRootProperty().addListener((source, old, value) -> {
             showRootChanged(value);
         });
+        rootChanged(null, tree.getRoot());
+        tree.rootProperty().addListener((s, old, value) -> rootChanged(old, value));
+        
+    }
+
+    /**
+     * @param old
+     * @param value
+     * @return
+     */
+    protected void rootChanged(TreeItem<T> old, TreeItem<T> root) {
+        if (old != null) {
+            old.removeEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
+        }
+        if (root != null) {
+            root.addEventHandler(TreeItem.treeNotificationEvent(), modificationListener);
+        }
+        updateIndicesOnRootChanged();
+    }
+
+    /**
+     * 
+     */
+    protected void updateIndicesOnRootChanged() {
+        selectionModel.clearSelection();
     }
 
     protected void showRootChanged(Boolean value) {

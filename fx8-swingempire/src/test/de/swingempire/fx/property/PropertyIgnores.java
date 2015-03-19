@@ -15,6 +15,8 @@ public class PropertyIgnores {
     /**
      * Ignore tests around TreeView.getRow() 
      * Reported as https://javafx-jira.kenai.com/browse/RT-39661
+     * 
+     * Tests still failing? Dig!
      */
     public static class IgnoreTreeGetRow implements IgnoreCondition {
 
@@ -26,12 +28,14 @@ public class PropertyIgnores {
     }
     /**
      * Administrative: ignore not yet implemented.
+     * 
+     * - sorting of tree
      */
     public static class IgnoreNotYetImplemented implements IgnoreCondition {
 
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }
@@ -39,13 +43,15 @@ public class PropertyIgnores {
     /**
      * Object property doesn't fire change if newVale.equals(oldValue), 
      * That's by design (impl?), nothing we can do about
+     * <p>
+     * Any test failing due to this is incorrect! Remove
      * 
      */
     public static class IgnoreEqualsNotFire implements IgnoreCondition {
         
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }
@@ -62,6 +68,5 @@ public class PropertyIgnores {
         }
         
     }
-    
      
 }

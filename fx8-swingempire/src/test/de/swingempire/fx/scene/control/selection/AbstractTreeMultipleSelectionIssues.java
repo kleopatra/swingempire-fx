@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
@@ -20,9 +21,9 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnchor;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
 import de.swingempire.fx.util.ChangeReport;
@@ -49,6 +50,115 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      */
     private ObservableList<String> rawItems;
     
+    @Test
+    public void testNullRoot() {
+        TreeView view = createEmptyView();
+    }
+    
+    /**
+     * IndicesList is throwing IllegalState: on hiding a collapsed root, 
+     * the root is forced to expanded (in the showRoot property invalidation)
+     * Need to cope.
+     */
+    @Test
+    public void testHideCollapsedRoot() {
+        getView().setShowRoot(true);
+        TreeItem root = getView().getRoot();
+        assertTrue("snaity: root expanded", root.isExpanded());
+        root.setExpanded(false);
+        getView().setShowRoot(false);
+    }
+    
+    /**
+     * Regression testing: 37366 - fire single event on moving selectedItem
+     * to parent.
+     */
+    @Test
+    public void testNotificationIndicesOnCollapseItemWithSelectedChild() {
+        getView().setShowRoot(true);
+        // select child of root
+        int index = 3;
+        getSelectionModel().select(index);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getRoot().setExpanded(false);
+        assertEquals(1, report.getEventCount());
+    }
+    
+    /**
+     * Regression testing: rt_37632
+     * 
+     * Not yet implemented
+     */
+    @Test
+    public void testReplaceRootMustClearSelectionState() {
+        int index = 3;
+        getSelectionModel().select(index);
+        TreeItem replace = createItem("replaced root");
+        getView().setRoot(replace);
+        assertEquals("selectedIndex must be cleared", -1, getSelectedIndex());
+        assertEquals("selectedItem must be cleared", null, getSelectedItem());
+        assertEquals("selectedIndices must be empty ", 0 , getSelectedIndices().size());
+        assertEquals("selectedItems must be empty ", 0 , getSelectedItems().size());
+    }
+    
+    /**
+     * Regression tesing: rt_38341
+     * <p>
+     * It's basically removeAt (open to spec/config support) with a tweak
+     * for tree specifics: how to change the selection when the last child
+     * of a branch is selected and removed?
+     * <p>
+     * For core, it doesn't make a difference: in all views implemented to decrease
+     * the selectedIndex. Simple (accidentally?) has the same behaviour as core for the
+     * last child of a treeItem. Need to track why/where and spec the expected behaviour.
+     * <p>
+     * seems to be something else (2 events fired vs. 1 expected) - need to dig
+     * 
+     */
+    @Test
+    public void testSelectionStateOnRemoveLastChildOfBranch() {
+        TreeItem branch = createBranch("branch", true);
+        int insert = 1;
+        getRoot().getChildren().add(insert , branch);
+        int lastBranchIndex = branch.getChildren().size() -1;
+        Object item = branch.getChildren().get(lastBranchIndex);
+        // index in model is insert in root children + child index in branch + the inserted 
+        // node itself
+        int select = insert + lastBranchIndex + 1;
+        getSelectionModel().select(select);
+        assertEquals("sanity: selected the expected child ", item, getSelectedItem());
+        ListChangeReport indicesReport = new ListChangeReport(getSelectedIndices());
+        ListChangeReport itemsReport = new ListChangeReport(getSelectedItems());
+        branch.getChildren().remove(lastBranchIndex);
+        if (getSelectedIndex() == select) {
+            // this would be the default implementation for all SimpleXX: keep 
+            // selectedIndex unchanged, effectly selecting the next item
+            // which here would be the next sibling of the removed child's parent
+            assertEquals("selectedIndex unchanged", select, getSelectedIndex());
+            assertEquals(getView().getTreeItem(select), getSelectedItem());
+            assertEquals(0, indicesReport.getEventCount());
+            assertEquals(1, itemsReport.getEventCount());
+            
+        } else { // index was changed
+            assertEquals("selected decremented", select -1, getSelectedIndex());
+            assertEquals("selectedItem", getView().getTreeItem(select - 1), getSelectedItem());
+            // fails .. we fire more than one event, reselect issue again?
+            assertEquals("items changes fired", 1, itemsReport.getEventCount());
+            assertEquals("indices changes fired ", 1, indicesReport.getEventCount());
+        }
+        fail("TBD: spec and implement removal of last child in a branch");
+    }
+    
+    /**
+     * Regression testing: Rt_39966 - core test with simple failed on setting
+     * null root (didn't clean up selection state)
+     * 
+     * This here tests the null
+     */
+    @Test
+    public void testRootNullMustClearSelection() {
+        
+    }
     /**
      * Regression testing: 
      * SelectedItems contains null after removing unselected grandParent of 
@@ -576,18 +686,32 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         super.testFocusMultipleRemoves();
     }
 
+    /**
+     * Here we have two issues that are not yet implemented:
+     * - any tree-specifics for sorting
+     * - DONE the test itself, needs a comparator
+     */
     @Override
     @Test
-    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
+    @ConditionalIgnore(condition = IgnoreNotYetImplemented.class)
     public void testSelectedIndicesAfterSort() {
         int first = 0;
         int last = items.size() -1;
         getSelectionModel().select(first);
-        FXCollections.sort(items);
+        Comparator comparator = new TreeItemComparator();
+        FXCollections.sort(items, comparator);
         assertEquals(1, getSelectedIndices().size());
         assertEquals(last, getSelectedIndices().get(0).intValue());
     }
 
+    private static class TreeItemComparator implements Comparator<TreeItem> {
+
+        @Override
+        public int compare(TreeItem o1, TreeItem o2) {
+            return ((Comparable) o1.getValue()).compareTo(o2.getValue());
+        }
+        
+    }
     @Override
     public void testFocusFirstRemovedItem() {
         super.testFocusFirstRemovedItem();
@@ -746,6 +870,8 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
             getFocusModel().focus(-1);
         }
     }
+
+    protected abstract TreeView createEmptyView();
     
     /**
      * TreeItem has no setItems, so this is implemneted to delegate

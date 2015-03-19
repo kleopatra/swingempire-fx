@@ -9,8 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,6 +21,7 @@ import javafx.scene.control.SelectionMode;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -45,6 +44,7 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -273,6 +273,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * don't expect a permutation change, incorrect in core!
      */
     @Test
+    @Ignore
     @ConditionalIgnore(condition = IgnoreReported.class)
     public void testSelectedIndicesEventsOnAddedItem() {
         if (!multipleMode) return;

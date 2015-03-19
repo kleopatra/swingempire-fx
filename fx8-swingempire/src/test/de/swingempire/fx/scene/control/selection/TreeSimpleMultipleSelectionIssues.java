@@ -56,5 +56,13 @@ public class TreeSimpleMultipleSelectionIssues extends AbstractTreeMultipleSelec
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TreeSimpleMultipleSelectionIssues.class.getName());
+
+    @Override
+    protected TreeView createEmptyView() {
+        TreeView tree = new TreeView();
+        tree.setSelectionModel(new SimpleTreeSelectionModel<>(tree));
+        tree.setShowRoot(false);
+        return tree;
+    }
     
 }

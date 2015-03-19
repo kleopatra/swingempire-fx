@@ -95,5 +95,12 @@ public class TreeCoreMultipleSelectionIssues extends AbstractTreeMultipleSelecti
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TreeCoreMultipleSelectionIssues.class.getName());
+
+    @Override
+    protected TreeView createEmptyView() {
+        TreeView tree = new TreeView();
+        tree.setShowRoot(false);
+        return tree;
+    }
     
 }
