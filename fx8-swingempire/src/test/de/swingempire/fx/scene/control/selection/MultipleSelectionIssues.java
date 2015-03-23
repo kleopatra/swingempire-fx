@@ -712,59 +712,181 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         assertEquals(-1, getSelectedIndex());
     }
 
+//-------------------------- correlated properties
+    
     /**
      * Multiple selection,
-     * listen to selectedIndexProperty and access selectedItem.
+     * listen to selectedItems and access all others.
      * 
-     * @see #testSelectedItemUncontainedNotificationSingle
+     * @see #testSyncItemNotificationSingle
      */
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
-    public void testSyncItemToIndexMultiple() {
-        Object uncontained = "uncontained";
+    public void testSyncedFromItemsListenerMultiple() {
+        int index = 1;
+        Object selectedItem = items.get(index);
         // prepare state, single Multiple
         int start = 3;
         int end = 6;
         getSelectionModel().selectRange(start, end);
-        ChangeListener l = (p, old, value) -> assertEquals(uncontained, getSelectedItem());
-        getSelectionModel().selectedIndexProperty().addListener(l);
-        getSelectionModel().select(uncontained);
+        int selectionSize = multipleMode ? getSelectedIndices().size() + 1 : 1;
+        ListChangeListener l = c -> {
+            assertEquals("access selectedIndices from itemsListener, size:", 
+                    selectionSize, getSelectedIndices().size());
+                assertEquals("access selectedItems from itemsListener, size:", 
+                        selectionSize, getSelectedItems().size());
+                assertEquals("access selectedItem form itemsListener", 
+                        selectedItem, getSelectedItem());
+                assertEquals("access selectedIndex from itemsListener", index, getSelectedIndex());
+//            assertEquals("access selectedItems in indicesListener, same size: ", 
+//                    c.getList().size(), getSelectedItems().size());
+        };
+        getSelectedItems().addListener(l);
+        getSelectionModel().select(index);
     }
-
     /**
-     * Single selection,
-     * listen to selectedIndexProperty and access selectedItem.
-     * @see #testSelectedItemUncontainedNotificationSingle
+     * Multiple selection,
+     * listen to selectedIndices and access selectedItems.
+     * 
+     * @see #testSyncItemNotificationSingle
      */
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
-    public void testSyncItemToIndexSingle() {
-        Object uncontained = "uncontained";
+    public void testSyncedFromIndicesListenerMultiple() {
+        int index = 1;
+        Object selectedItem = items.get(index);
+        // prepare state, single Multiple
+        int start = 3;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int selectionSize = multipleMode ? getSelectedIndices().size() + 1 : 1;
+        ListChangeListener l = c -> {
+            assertEquals("access selectedIndices from indicesListener, size:", 
+                    selectionSize, getSelectedIndices().size());
+                assertEquals("access selectedItems from indicesListener, size:", 
+                        selectionSize, getSelectedItems().size());
+                assertEquals("access selectedItem form indicesListener", 
+                        selectedItem, getSelectedItem());
+                assertEquals("access selectedIndex from indicesListener", index, getSelectedIndex());
+//            assertEquals("access selectedItems in indicesListener, same size: ", 
+//                    c.getList().size(), getSelectedItems().size());
+        };
+        getSelectedIndices().addListener(l);
+        getSelectionModel().select(index);
+    }
+    
+    /**
+     * Multiple selection,
+     * listen to selectedItemProperty and access all other state.
+     * 
+     * @see #testSyncItemNotificationSingle
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
+    public void testSyncedFromItemListenerMultiple() {
+        int index = 1;
+        Object selectedItem = items.get(index);
+        // prepare state, single Multiple
+        int start = 3;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int selectionSize = multipleMode ? getSelectedIndices().size() + 1 : 1;
+        ChangeListener l = (p, old, value) -> {
+            assertEquals("access selectedIndices from itemListener, size:", 
+                selectionSize, getSelectedIndices().size());
+            assertEquals("access selectedItems from itemListener, size:", 
+                    selectionSize, getSelectedItems().size());
+            assertEquals("access selectedItem form itemListener", 
+                    selectedItem, getSelectedItem());
+            assertEquals("access selectedIndex from itemListener", index, getSelectedIndex());
+        };
+        getSelectionModel().selectedItemProperty().addListener(l);
+        getSelectionModel().select(index);
+    }
+    
+    
+    /**
+     * Multiple selection,
+     * listen to selectedIndexProperty and access all others.
+     * 
+     * @see #testSyncItemNotificationSingle
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
+    public void testSyncedFromIndexListenerMultiple() {
+        int index = 1;
+        Object selectedItem = items.get(index);
+        // prepare state, single Multiple
+        int start = 3;
+        int end = 6;
+        getSelectionModel().selectRange(start, end);
+        int selectionSize = multipleMode ? getSelectedIndices().size() + 1 : 1;
+        ChangeListener l = (p, old, value) -> {
+            assertEquals("access selectedIndices from indexListener, size:", 
+                    selectionSize, getSelectedIndices().size());
+            assertEquals("access selectedItems from indexListener, size:", 
+                    selectionSize, getSelectedItems().size());
+            assertEquals("access selectedItem form indexListener", 
+                    selectedItem, getSelectedItem());
+            assertEquals("access selectedIndex from indexListener", index, getSelectedIndex());
+        };
+        getSelectionModel().selectedIndexProperty().addListener(l);
+        getSelectionModel().select(index);
+    }
+    
+    /**
+     * Single selection,
+     * listen to selectedIndexProperty and access selectedItem.
+     * @see #testSyncItemNotificationSingle
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
+    public void testSyncedFromIndexListenerSingle() {
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(uncontained, 
-                getSelectedItem());
+        int index = 1;
+        Object selectedItem= items.get(index);
+        int selectionSize = multipleMode ? 2 : 1;
+        ChangeListener l = (p, old, value) -> {
+            assertEquals("access selectedIndices from indexListener, size:", 
+                    selectionSize, getSelectedIndices().size());
+            assertEquals("access selectedItems from indexListener, size:", 
+                    selectionSize, getSelectedItems().size());
+            assertEquals("access selectedItem form indexListener", 
+                    selectedItem, getSelectedItem());
+            assertEquals("access selectedIndex from indexListener", index, getSelectedIndex());
+        };
         getSelectionModel().selectedIndexProperty().addListener(l);
-        getSelectionModel().select(uncontained);
+        getSelectionModel().select(selectedItem);
     }
     
     /**
      * Single selection,
      * listen to selectedItemProperty and access selectedIndex. Passes because index
      * is updated before item (implementation detail, of course!)
-     * @see #testSelectedItemUncontainedNotificationSingle()
+     * @see #testSyncItemNotificationSingle()
      */
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
-    public void testSyncIndexToItemSingle() {
-        Object uncontained = "uncontained";
+    public void testSyncIndexFromItemListenerSingle() {
+        int index = 1;
+        Object selectedItem = items.get(index);
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
-        ChangeListener l = (p, old, value) -> assertEquals(-1, getSelectedIndex());
+        int selectionSize = multipleMode ? 2 : 1;
+        ChangeListener l = (p, old, value) -> {
+            assertEquals("access selectedIndices from itemListener, size:", 
+                    selectionSize, getSelectedIndices().size());
+            assertEquals("access selectedItems from itemListener, size:", 
+                    selectionSize, getSelectedItems().size());
+            assertEquals("access selectedItem form itemListener", 
+                    selectedItem, getSelectedItem());
+            assertEquals("access selectedIndex from itemListener", index, getSelectedIndex());
+        };
         getSelectionModel().selectedItemProperty().addListener(l);
-        getSelectionModel().select(uncontained);
+        getSelectionModel().select(selectedItem);
     }
     
     /**
@@ -792,7 +914,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationSingle() {
-        Object uncontained = "uncontained";
+        Object uncontained = items.get(1);
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
@@ -808,7 +930,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationCount() {
-        Object uncontained = "uncontained";
+        Object uncontained = items.get(1);
         // prepare state, single select
         int start = 3;
         getSelectionModel().select(start);
@@ -826,7 +948,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     @Test
     @ConditionalIgnore(condition = IgnoreCorrelated.class)
     public void testSyncItemNotificationMultiple() {
-        Object uncontained = "uncontained";
+        Object uncontained = items.get(1);
         // prepare state, select a range
         int start = 3;
         int end = 5;
@@ -1045,7 +1167,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         assertEmptySelection();
     }
     
-    private void assertEmptySelection() {
+    protected void assertEmptySelection() {
         assertEquals("selectedIndex must be cleared", -1, getSelectedIndex());
         assertEquals("selectedItem must be null", null, getSelectedItem());
         assertEquals("selectedItems must be empty", 0, getSelectedItems().size());

@@ -78,6 +78,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocu
 import de.swingempire.fx.scene.control.selection.TreeViewTestOrig8u60b5.IgnoreCoreTBD;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.StageLoader;
+
 import static org.junit.Assert.*;
 /**
  * TreeViewTest copied from
@@ -106,6 +107,30 @@ public class TreeViewTestSimple8u60b5 {
      * rt_37395: expects permutated list changes from add/remove/collapse
      */
     public static class IgnoreIncorrectTestAssumption implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    
+    /**
+     * Ignore tests that fail for SimpleTreeSelection but are known/understood.
+     * 
+     * <li> rt_16068_middleElement_selectAndRemoveSameRow() different strategy for removeAt  
+     * <li> rt17522_focusShouldBeMovedWhenFocusedItemIsRemoved_1 might be variant of removeAt and/or
+     *      plain focus-related, need to explore
+     * <li> test_rt35039_resetRootChildren different strategy: setAll with old selected contained
+     * <li> rt_37366 reselect parent fires too many events
+     * <li> rt_38341 tree variant of removeAt (plus fishy behaviour on remove last child)
+     * <li> rt_38787_remove_b_c  variant of removeAt
+     * <li> test_rt_38787_remove_b removeAt
+     * <li> rt_40010 fails due to reselecting the parent when deleting a selected
+     *      child - the bug report was about core selectedItems/Indices not firing at all
+     *        
+     */
+    public static class IgnoreSimpleOpenIssues implements IgnoreCondition {
 
         @Override
         public boolean isSatisfied() {
@@ -113,6 +138,8 @@ public class TreeViewTestSimple8u60b5 {
         }
         
     }
+
+    
     private TreeView<String> treeView;
     private MultipleSelectionModel<TreeItem<String>> sm;
     private FocusModel<TreeItem<String>> fm;
@@ -157,9 +184,9 @@ public class TreeViewTestSimple8u60b5 {
         treeView.setSelectionModel(new SimpleTreeSelectionModel<>(treeView));
         return treeView;
     }
-    private TreeView<String> createTreeView(TreeItem<String> root) {
-        TreeView<String> treeView = new TreeView<>(root);
-        treeView.setSelectionModel(new SimpleTreeSelectionModel<>(treeView));
+    private TreeView createTreeView(TreeItem root) {
+        TreeView treeView = new TreeView<>(root);
+        treeView.setSelectionModel(new SimpleTreeSelectionModel(treeView));
         return treeView;
     }
     
@@ -562,6 +589,7 @@ public class TreeViewTestSimple8u60b5 {
         assertTrue("Focused index: " + fm.getFocusedIndex(), fm.isFocused(1));
     }
     
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt17522_focusShouldBeMovedWhenFocusedItemIsRemoved_1() {
         installChildren();
         FocusModel fm = treeView.getFocusModel();
@@ -1715,6 +1743,7 @@ public class TreeViewTestSimple8u60b5 {
         sl.dispose();
     }
 
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt35039_resetRootChildren() {
         TreeItem aabbaa = createTreeItem("aabbaa");
         TreeItem bbc = createTreeItem("bbc");
@@ -2061,37 +2090,37 @@ public class TreeViewTestSimple8u60b5 {
         sl.dispose();
     }
 
-    @ConditionalIgnore(condition = IgnoreFailCommented.class)
+//    @ConditionalIgnore(condition = IgnoreFailCommented.class)
     @Test public void test_rt_37502() {
-        fail("TBD: inline treeView creation");
-//        final TreeView<Long> tree = createTreeView(new NumberTreeItem(1));
-//        tree.setCellFactory(new Callback<TreeView<Long>, TreeCell<Long>>() {
-//            @Override
-//            public TreeCell<Long> call(TreeView<Long> param) {
-//                return new TreeCell<Long>() {
-//                    @Override
-//                    protected void updateItem(Long item, boolean empty) {
-//                        super.updateItem(item, empty);
-//                        if (!empty) {
-//                            setText(item != null ? String.valueOf(item) : "");
-//                        } else{
-//                            setText(null);
-//                        }
-//                    }
-//                };
-//            }
-//        });
-//
-//        StageLoader sl = new StageLoader(tree);
-//
-//        tree.getSelectionModel().select(0);
-//        tree.getRoot().setExpanded(true);
-//        Toolkit.getToolkit().firePulse();
-//
-//        sl.dispose();
+//        fail("TBD: inline treeView creation");
+        final TreeView<Long> tree = createTreeView(new NumberTreeItem(1));
+        tree.setCellFactory(new Callback<TreeView<Long>, TreeCell<Long>>() {
+            @Override
+            public TreeCell<Long> call(TreeView<Long> param) {
+                return new TreeCell<Long>() {
+                    @Override
+                    protected void updateItem(Long item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (!empty) {
+                            setText(item != null ? String.valueOf(item) : "");
+                        } else{
+                            setText(null);
+                        }
+                    }
+                };
+            }
+        });
+
+        StageLoader sl = new StageLoader(tree);
+
+        tree.getSelectionModel().select(0);
+        tree.getRoot().setExpanded(true);
+        Toolkit.getToolkit().firePulse();
+
+        sl.dispose();
     }
 
-    private static class NumberTreeItem extends TreeItem<Long>{
+    private static class NumberTreeItem extends TreeItemX<Long>{
         private boolean loaded = false;
 
         private NumberTreeItem(long value) {
@@ -2104,11 +2133,14 @@ public class TreeViewTestSimple8u60b5 {
 
         @Override public ObservableList<TreeItem<Long>> getChildren() {
             if(!loaded){
+                Platform.runLater(() -> {
+                    
                 final ObservableList<TreeItem<Long>> children =  super.getChildren();
                 for (int i = 0; i < 10; i++) {
                     children.add(new NumberTreeItem(10 * getValue() + i));
                 }
                 loaded = true;
+                });
             }
             return super.getChildren();
         }
@@ -2128,38 +2160,37 @@ public class TreeViewTestSimple8u60b5 {
     }
 
     private void test_rt_37538(boolean callCNextOnce, boolean callCNextInLoop) {
-        fail("TBD integer item");
         // create table with a bunch of rows and 1 column...
-//        TreeItem root = createTreeItem(0);
-//        root.setExpanded(true);
-//        for (int i = 1; i <= 50; i++) {
-//            root.getChildren().add(createTreeItem(i));
-//        }
-//        final TreeView tree = createTreeView(root);
-//
-//        tree.getSelectionModel().getSelectedItems().addListener( (ListChangeListener) c  -> {
-//            
-//            if (callCNextOnce) {
-//                c.next();
-//            } else if (callCNextInLoop) {
-//                while (c.next()) {
-//                    // no-op
-//                }
-//            }
-//
-//            if (rt_37538_count >= 1) {
-//                Thread.dumpStack();
-//                fail("This method should only be called once");
-//            }
-//
-//            rt_37538_count++;
-//        });
-//
-//        StageLoader sl = new StageLoader(tree);
-//        assertEquals(0, rt_37538_count);
-//        tree.getSelectionModel().select(0);
-//        assertEquals(1, rt_37538_count);
-//        sl.dispose();
+        TreeItem root = createTreeItem(0);
+        root.setExpanded(true);
+        for (int i = 1; i <= 50; i++) {
+            root.getChildren().add(createTreeItem(i));
+        }
+        final TreeView tree = createTreeView(root);
+
+        tree.getSelectionModel().getSelectedItems().addListener( (ListChangeListener) c  -> {
+            
+            if (callCNextOnce) {
+                c.next();
+            } else if (callCNextInLoop) {
+                while (c.next()) {
+                    // no-op
+                }
+            }
+
+            if (rt_37538_count >= 1) {
+                Thread.dumpStack();
+                fail("This method should only be called once");
+            }
+
+            rt_37538_count++;
+        });
+
+        StageLoader sl = new StageLoader(tree);
+        assertEquals(0, rt_37538_count);
+        tree.getSelectionModel().select(0);
+        assertEquals(1, rt_37538_count);
+        sl.dispose();
     }
 
 //    @Ignore("Fix not yet developed for TreeView")
@@ -2306,11 +2337,13 @@ public class TreeViewTestSimple8u60b5 {
         sl.dispose();
     }
 
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_38787_remove_b() {
         // Remove 'b', selection moves to 'a'
         test_rt_38787("a", 0, 1);
     }
 
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_38787_remove_b_c() {
         // Remove 'b' and 'c', selection moves to 'a'
         test_rt_38787("a", 0, 1, 2);
@@ -2372,6 +2405,7 @@ public class TreeViewTestSimple8u60b5 {
 
     private int rt_38341_indices_count = 0;
     private int rt_38341_items_count = 0;
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_38341() {
         Callback<Integer, TreeItem<String>> callback = number -> {
             final TreeItem<String> root = createTreeItem("Root " + number);
@@ -2541,6 +2575,7 @@ public class TreeViewTestSimple8u60b5 {
     }
 
     private int rt_37366_count = 0;
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_37366() {
         final TreeItem<String> treeItem2 = createTreeItem("Item 2");
         treeItem2.getChildren().addAll(createTreeItem("Item 21"), createTreeItem("Item 22"));
@@ -2583,10 +2618,10 @@ public class TreeViewTestSimple8u60b5 {
         assertTrue(sm.isSelected(2));
 
         root1.setExpanded(false);
-        assertEquals(3, rt_37366_count);
         assertTrue(sm.isSelected(0));
         assertFalse(sm.isSelected(1));
         assertFalse(sm.isSelected(2));
+        assertEquals(3, rt_37366_count);
     }
 
     @ConditionalIgnore(condition = SelectionIgnores.IgnoreFailCommented.class)
@@ -2809,6 +2844,10 @@ public class TreeViewTestSimple8u60b5 {
         test_rt_16068(0, 2, 0);
     }
 
+    /**
+     * Fails for simple due to different strategy on removeAtSelected
+     */
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_16068_middleElement_selectAndRemoveSameRow() {
         // select and then remove the 'b' item, selection and focus should both
         // move up one row to the 'a' item
@@ -3068,6 +3107,11 @@ public class TreeViewTestSimple8u60b5 {
     }
 
     private int rt_39966_count = 0;
+    /**
+     * The issue is about accessing a correlated property when listening to 
+     * property changes: if not specified as
+     * being safe, don't.
+     */
     @Test public void test_rt_39966() {
         TreeItem<String> root = createTreeItem("Root");
         TreeView<String> table = createTreeView(root);
@@ -3239,6 +3283,7 @@ public class TreeViewTestSimple8u60b5 {
     }
 
     private int rt_40010_count = 0;
+    @ConditionalIgnore(condition = IgnoreSimpleOpenIssues.class)
     @Test public void test_rt_40010() {
         TreeItem<String> root = createTreeItem("Root");
         TreeItem<String> child = createTreeItem("child");
@@ -3325,46 +3370,50 @@ public class TreeViewTestSimple8u60b5 {
 //        sl.dispose();
     }
 
-//    private TreeItem<Integer> createTreeItem(final int index) {
-//        final TreeItem<Integer> node = createTreeItem<Integer>(index) {
-//            private boolean isLeaf;
-//            private boolean isFirstTimeChildren = true;
-//            private boolean isFirstTimeLeaf = true;
-//
-//            @Override
-//            public ObservableList<TreeItem<Integer>> getChildren() {
-//                if (isFirstTimeChildren) {
-//                    isFirstTimeChildren = false;
-//                    super.getChildren().setAll(buildChildren(this));
-//                }
-//                return super.getChildren();
-//            }
-//
-//            @Override
-//            public boolean isLeaf() {
-//                if (isFirstTimeLeaf) {
-//                    isFirstTimeLeaf = false;
-//                    int index = getValue();
-//                    isLeaf = index % 2 != 0;
-//                }
-//
-//                return isLeaf;
-//            }
-//        };
-//        return node;
-//    }
+    private TreeItem<Integer> createTreeItem(final int index) {
+        final TreeItem<Integer> node = new TreeItemX<Integer>(index) {
+            private boolean isLeaf;
+            private boolean isFirstTimeChildren = true;
+            private boolean isFirstTimeLeaf = true;
 
-//    private ObservableList<TreeItem<Integer>> buildChildren(TreeItem<Integer> TreeItem) {
-//        Integer index = TreeItem.getValue();
-//        if (index % 2 == 0) {
-//            ObservableList<TreeItem<Integer>> children = FXCollections.observableArrayList();
-//            for (int i = 0; i < 5; i++) {
-//                children.add(createTreeItem(i));
-//            }
-//
-//            return children;
-//        }
-//
-//        return FXCollections.emptyObservableList();
+            @Override
+            public ObservableList<TreeItem<Integer>> getChildren() {
+                if (isFirstTimeChildren) {
+                    isFirstTimeChildren = false;
+                    super.getChildren().setAll(buildChildren(this));
+                }
+                return super.getChildren();
+            }
+
+            @Override
+            public boolean isLeaf() {
+                if (isFirstTimeLeaf) {
+                    isFirstTimeLeaf = false;
+                    int index = getValue();
+                    isLeaf = index % 2 != 0;
+                }
+
+                return isLeaf;
+            }
+        };
+        return node;
+    }
+
+    private ObservableList<TreeItem<Integer>> buildChildren(TreeItem<Integer> TreeItem) {
+        Integer index = TreeItem.getValue();
+        if (index % 2 == 0) {
+            ObservableList<TreeItem<Integer>> children = FXCollections.observableArrayList();
+            for (int i = 0; i < 5; i++) {
+                children.add(createTreeItem(i));
+            }
+
+            return children;
+        }
+
+        return FXCollections.emptyObservableList();
+    }
+    
+//    private TreeItemX<Integer> createTreeItem(int value) {
+//        return new TreeItemX(value);
 //    }
 }

@@ -74,7 +74,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * to parent.
      */
     @Test
-    public void testNotificationIndicesOnCollapseItemWithSelectedChild() {
+    public void testNotificationIndicesOnCollapseItemWithSelectedChild_37366() {
         getView().setShowRoot(true);
         // select child of root
         int index = 3;
@@ -90,7 +90,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * Not yet implemented
      */
     @Test
-    public void testReplaceRootMustClearSelectionState() {
+    public void testReplaceRootMustClearSelectionState_37632() {
         int index = 3;
         getSelectionModel().select(index);
         TreeItem replace = createItem("replaced root");
@@ -116,7 +116,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * 
      */
     @Test
-    public void testSelectionStateOnRemoveLastChildOfBranch() {
+    public void testSelectionStateOnRemoveLastChildOfBranch_38341() {
         TreeItem branch = createBranch("branch", true);
         int insert = 1;
         getRoot().getChildren().add(insert , branch);
@@ -156,9 +156,14 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * This here tests the null
      */
     @Test
-    public void testRootNullMustClearSelection() {
-        
+    public void testRootNullMustClearSelection_39966() {
+        int index = 3;
+        getSelectionModel().select(index);
+        getView().setRoot(null);
+        assertEmptySelection();
     }
+    
+    
     /**
      * Regression testing: 
      * SelectedItems contains null after removing unselected grandParent of 
@@ -169,7 +174,7 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * 
      */
     @Test
-    public void testSelectedItemsOnRemoveGrandParentOfSelectedItemIfLast() {
+    public void testSelectedItemsOnRemoveGrandParentOfSelectedItemIfLast_38334() {
         TreeItem grandParent = createBranch("grandParent", true);
         TreeItem childWithSelection = createBranch("selected", true);
         grandParent.getChildren().add(childWithSelection);
