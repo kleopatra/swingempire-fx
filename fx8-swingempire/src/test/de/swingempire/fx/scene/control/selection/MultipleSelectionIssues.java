@@ -32,6 +32,9 @@ import org.junit.runners.Parameterized.Parameters;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
@@ -44,7 +47,6 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -601,6 +603,25 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
 
     //-------------------- items modification    
     
+    
+    @Test
+    public void testSelectedOnSetItemAtSecondary() {
+        if (!multipleMode) return;
+        int[] indices = new int[] { 3, 5, 1};
+        getSelectionModel().selectIndices(indices[0], indices);
+        setItem(indices[0], createItem("newItem"));
+        Arrays.sort(indices);
+        assertEquals(indices.length, getSelectedIndices().size());
+//        Arrays.sort(indices);
+//        assertEquals("newItem", indexedItems.get(1));
+//        assertEquals("selectedIndices unchanged", 1, report.getEventCount());
+////        report.prettyPrint();
+//        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+//        Change c = report.getLastChange();
+//        c.next();
+//        assertEquals("newItem", c.getAddedSubList().get(0));
+    }
+
     /**
      * Bunch of tests that verify no change of uncontained selectedItem if it isn't
      * "inserted" by the modification.

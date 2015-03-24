@@ -114,10 +114,10 @@ import static de.swingempire.fx.util.DebugUtils.*;
 public class SelectionAndModification extends Application {
 
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
-            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0"};
+            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", "setAtSecondarySelected"};
     // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null};
+    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6, KeyCode.F7};
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null};
     
     protected Map<String, Consumer<Facade>> createActions() {
         Map<String, Consumer<Facade>> actions = new HashMap<>();
@@ -143,6 +143,18 @@ public class SelectionAndModification extends Application {
         });
         actions.put("removeAt0", f -> {
             f.getItems().remove(0);
+        });
+        actions.put("setAtSecondarySelected", f -> {
+            int size = f.getSelectionModel().getSelectedIndices().size();
+            if (size < 2) return;
+            int selectedIndex = f.getSelectedIndex();
+            for(int i = 0; i < size; i++) {
+                int secondary = (int) f.getSelectionModel().getSelectedIndices().get(i);
+                if (secondary != selectedIndex) {
+                    f.getItems().set(secondary, "new Item");
+                    break;
+                }
+            }
         });
         return actions ;
     }

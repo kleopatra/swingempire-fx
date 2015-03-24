@@ -94,7 +94,11 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
     /**
      * Returns true if the value identified by path is currently viewable,
      * which means it is either the root or all of its parents are expanded.
-     * Otherwise, this method returns false.
+     * Otherwise, this method returns false. 
+     * 
+     * PENDING JW: basically copied from <code>JTree.isVisible(TreePath)</code> 
+     * which unconditionally returns true if the path represents the root.
+     * How/where to handle a hidden root?
      * 
      * @param treeItem
      * @return

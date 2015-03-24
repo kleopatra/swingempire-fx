@@ -72,7 +72,6 @@ public class IndicesList<T> extends IndicesBase<T> {
      */
     protected List<Integer> oldIndices;
 
-
     /**
      * @param source
      */
@@ -144,27 +143,21 @@ public class IndicesList<T> extends IndicesBase<T> {
      * - single set(n, element) in the underlying list
      * - setAll/setItems when swapping out its contents
      * - technical result of multiple add/remove (f.i. when filtering or other transformations)  
+     * <p>
+
+     * This implemenentation delegates to singleReplaced on detecting a single item replaced. 
+     * Subclasses may override to configure.
      * 
-     * PENDING JW: Need to think about specification - a replace of a single element
-     * might be the result of a simple set(..), which may or may not require to
-     * remove a the index at the set position. Any way to differentiate?
      * 
-     * @param c
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasReplaced
      */
     private void replaced(Change<? extends T> c) {
-        // PENDING JW: no longer true, might decide to do nothing for the
-        // special case?
-        // need to replace even if unchanged, listeners to selectedItems
-        // depend on it 
         // handle special case of "real" replaced, often size == 1
         if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
-//            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
-//                int pos = indexOf(i);
-//                nextSet(pos, i);
-//            }
+            singleReplaced(c);
             return;
         }
-
         doClearIndicesInRange(c.getFrom(), c.getRemovedSize());
         int diff = c.getAddedSize() - c.getRemovedSize();
         if (diff < 0) {
@@ -175,10 +168,33 @@ public class IndicesList<T> extends IndicesBase<T> {
     }
 
     /**
-     * Implements internal update for separate add/remove from backing list.
-     * PENDING JW: think about set (aka: replace) 
+     * Callback method when we received a wasReplaced with a single item.
+     * This implementation does nothing, that is the index is unchanged. 
+     * Subclasses may override to configure the behaviour.
+     * <p>
      * 
-     * @param c
+     * PENDING JW: Need to think about specification - a replace of a single element
+     * might be the result of a simple set(..), which may or may not require to
+     * remove a the index at the set position. Any way to differentiate?
+     * 
+     * <p>
+     * <p><strong>Note</strong>: needs to be called inside {@code beginChange()/endChange()} 
+     * 
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasReplaced
+     */
+    protected void singleReplaced(Change<? extends T> c) {
+//      for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
+//          int pos = indexOf(i);
+//          nextSet(pos, i);
+//      }
+    }
+
+    /**
+     * Implements internal update for separate add/remove from backing list.
+     * 
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of either type wasAdded or wasRemoved
      */
     private void addedOrRemoved(Change<? extends T> c) {
         // change completely after
@@ -193,6 +209,12 @@ public class IndicesList<T> extends IndicesBase<T> {
         } 
     }
 
+    /**
+     * Implements internal update for a removed from backing list.
+     * 
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasRemoved
+     */
     private void removed(Change<? extends T> c) {
         // removed is two-step:
         // if any of the values that are mapped to indices, is removed remove the index
@@ -204,6 +226,12 @@ public class IndicesList<T> extends IndicesBase<T> {
         doShiftLeft(from, removedSize);
     }
 
+    /**
+     * Implements internal update for a added from backing list.
+     * 
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasAdded
+     */
     private void added(Change<? extends T> c) {
         // added: values that are after the added index must be increased by addedSize
         int from = c.getFrom();
@@ -212,9 +240,13 @@ public class IndicesList<T> extends IndicesBase<T> {
     }
 
     /**
-     * A permutation in the backing list is a replaced on the indices (nearly always: one
+     * Implements internal update for a permutated from backing list.
+     * <p>
+     * Note: a permutation in the backing list is a replaced on the indices (nearly always: one
      * example for a permutation here as well would be if all indices are selected)
-     * @param c
+     * 
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasAdded
      */
     private void permutated(Change<? extends T> c) {
         // change completely after
@@ -255,7 +287,6 @@ public class IndicesList<T> extends IndicesBase<T> {
      * 
      *    
      */
-//    @Override
     public int getSourceIndex(int index) {
         return get(index);
     }

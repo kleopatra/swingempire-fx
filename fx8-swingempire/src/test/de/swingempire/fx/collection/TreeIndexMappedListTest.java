@@ -24,8 +24,10 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
@@ -64,6 +66,45 @@ public class TreeIndexMappedListTest {
 
     private TreeIndexMappedList indexedItems;
 
+
+    /**
+     * TreeIndicesList must cope with hiding a collapsed root: forced to 
+     * expanded.
+     * Here we test root unselected -> nothing selected after
+     */
+    @Test
+    public void testShowRootHideCollapsedUnselected() {
+        root.setExpanded(false);
+        tree.setShowRoot(false);
+        assertTrue("root must be expanded on hiding", root.isExpanded());
+        assertTrue(indicesList.isEmpty());
+        assertEquals(0, report.getEventCount());
+    }
+    
+    /**
+     * TreeIndicesList must cope with hiding a collapsed root: forced to 
+     * expanded.
+     * Here we test root selected -> Options:
+     * - nothing selected after: would be inconsistent with removing selected
+     * - first child of root selected
+     * 
+     * Note: the above options are for tree selection, here we test the bare
+     * TreeIndicesList: 
+     */
+    @Test
+    public void testShowRootHideCollapsedSelected() {
+        root.setExpanded(false);
+        indicesList.setIndices(0);
+        assertEquals("sanity: root selected", root, indexedItems.get(0));
+        assertEquals("sanity: indexedItems fired", 1, report.getEventCount());
+        report.clear();
+        tree.setShowRoot(false);
+        assertTrue("root must be expanded on hiding", root.isExpanded());
+        assertEquals(0, indexedItems.size());
+        assertEquals("eventCount", 1, report.getEventCount());
+        assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
+    }
+    
 
  //---------------------------------- test TreeModifications
     
@@ -444,6 +485,7 @@ public class TreeIndexMappedListTest {
         assertTrue(root.isExpanded());
         assertSame(root, tree.getRoot());
         assertTrue(tree.isShowRoot());
+        
     }
     
     @Before

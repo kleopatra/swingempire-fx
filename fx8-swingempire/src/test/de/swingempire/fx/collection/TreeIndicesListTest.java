@@ -27,14 +27,14 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -59,7 +59,57 @@ public class TreeIndicesListTest {
     private ObservableList rawItems;
     private ObservableList<TreeItem> rootChildren;
 
-
+    /**
+     * TreeIndicesList must cope with hiding a collapsed root: forced to 
+     * expanded.
+     * Here we test root unselected -> nothing selected after
+     */
+    @Test
+    public void testShowRootHideCollapsedUnselected() {
+        root.setExpanded(false);
+        tree.setShowRoot(false);
+        assertTrue("root must be expanded on hiding", root.isExpanded());
+        assertTrue(indicesList.isEmpty());
+        assertEquals(0, report.getEventCount());
+    }
+    
+    /**
+     * TreeIndicesList must cope with hiding a collapsed root: forced to 
+     * expanded.
+     * Here we test root selected -> Options:
+     * - nothing selected after: would be inconsistent with removing selected
+     * - first child of root selected
+     * 
+     * Note: the above options are for tree selection, here we test the bare
+     * TreeIndicesList: 
+     */
+    @Test
+    public void testShowRootHideCollapsedSelected() {
+        root.setExpanded(false);
+        indicesList.setIndices(0);
+        report.clear();
+        tree.setShowRoot(false);
+        assertTrue("root must be expanded on hiding", root.isExpanded());
+        assertEquals(0, indicesList.size());
+        assertEquals("eventCount", 1, report.getEventCount());
+        assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
+        assertEquals(1, indicesList.oldIndices.size());
+        assertEquals(0, indicesList.oldIndices.get(0));
+    }
+    
+    /**
+     * Testing internals: marker sent before firing 
+     */
+    @Test
+    public void testShowRootMarker() {
+        ChangeReport report = new ChangeReport(indicesList.showRootProperty());
+        tree.setShowRoot(false);
+        assertEquals("showRootMarker null after processing ", null, indicesList.getShowRoot());
+        assertEquals(2, report.getEventCount());
+        assertEquals(false, report.getLastOldValue());
+        assertEquals(null, report.getLastNewValue());
+    }
+    
  //---------------------------------- test TreeModifications
     
     @Test
@@ -236,7 +286,7 @@ public class TreeIndicesListTest {
         int index = 3;
         indicesList.setIndices(index);
         rootChildren.set(index -1, child);
-        assertFalse(indicesList.isEmpty());
+//        assertFalse(indicesList.isEmpty());
         if (!indicesList.isEmpty())
             assertEquals(index, indicesList.get(0).intValue());
         fail("TBD: need to specify what to do on setChildAt");
@@ -259,7 +309,7 @@ public class TreeIndicesListTest {
         int index = 3;
         indicesList.setIndices(index);
         rootChildren.set(index -1, child);
-        assertFalse(indicesList.isEmpty());
+//        assertFalse(indicesList.isEmpty());
         if (!indicesList.isEmpty()) {
             int intValue = indicesList.get(0).intValue();
             assertTrue("index must not be negative, was " , intValue >= 0);
@@ -575,6 +625,9 @@ public class TreeIndicesListTest {
     @Test
     public void testInitial() {
         assertEquals(0, indicesList.size());
+        assertNull(indicesList.getShowRoot());
+        assertNull(indicesList.getTreeModification());
+        assertEquals(0, indicesList.oldIndices.size());
     }
     
     @Before

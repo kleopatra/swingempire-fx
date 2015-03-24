@@ -5,6 +5,7 @@
 package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javafx.beans.value.ChangeListener;
@@ -54,7 +55,7 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     private WeakChangeListener<TreeModificationEvent<T>> weakSourceChangeListener;
     
     private ChangeListener<Boolean> showRootListener;
-    private WeakChangeListener<Boolean> weakShowRootChangeListener;
+    private WeakChangeListener<Boolean> weakShowRootListener;
     
     /**
      * @param source
@@ -67,6 +68,8 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         source.treeModificationProperty().addListener(weakSourceChangeListener);
         
         showRootListener = (p, old, value) -> showRootChanged(value);
+        weakShowRootListener = new WeakChangeListener<>(showRootListener);
+        source.showRootProperty().addListener(weakShowRootListener);
     }
 
     /**
@@ -79,9 +82,25 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param value the new value received in the change
      */
     protected void showRootChanged(Boolean value) {
-        // nothing to do if the marker is null or root shown
-        if (!Boolean.FALSE.equals(value)) return;
+        // a null marks the end of the lifetime of the marker
+        if (null == value) return;
+        if (Boolean.TRUE.equals(value)) {
+            // a previously hidden root is shown, our items are unchanged
+            // nothing to do
+        } else {
+            // a previously visible root is hidden, need to special case
+            // if it had been selected
+            if (wasRootSelected()) {
+                beginChange();
+                nextRemove(0, Collections.singletonList(backingTree.getRoot()));
+                endChange();
+            }
+        }
         
+    }
+
+    protected boolean wasRootSelected() {
+        return getIndicesList().oldIndices.size() > 0 && getIndicesList().oldIndices.get(0) == 0;
     }
 
     /**

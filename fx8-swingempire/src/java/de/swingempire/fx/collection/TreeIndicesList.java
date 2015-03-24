@@ -31,7 +31,8 @@ import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
  * 
  * PENDING JW: 
  * <li> DONE, but not yet properly testedroot changes 
- * <li> DONE changes to showRoot property not handled     
+ * <li> DONE changes to showRoot property not handled   
+ * <li> hiding collapsed root not handled 
  * <li> weakEventHandler?
  * <li> core (OS) behaviour is to select the parent if a child has been selected
  *      when the branch is collapsed - implement here? More than the usual 
@@ -61,7 +62,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
      * change from the backing structure after this has updated itself.
      * Wheezy ... need to do better
      */
-    protected List<Integer> oldIndices;
+    protected List<Integer> oldIndices = new ArrayList<>();
 
 
     /**
@@ -124,7 +125,12 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     /**
      * Called when the tree's showRoot property changed. 
      * Not good enough in itself: at least the selectionHelper must be
-     * implemented to cope! 
+     * implemented to cope! <p>
+     * 
+     * PENDING JW: TreeIndexMappedList needs the old indicesList, here 
+     * we rely on that list being set in treeModified, that is on the
+     * order of notication - first the expanded, than the showRoot.
+     * That's brittle, think of something else
      *  
      * @param value
      */
@@ -220,6 +226,13 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         int from = tree.getRow(source);
         // source hidden anyway or change completely after, nothing to do
         if (from < 0) {
+            // might get here when a collapsed root is hidden:
+            // forced to expand
+            if (source.getParent() == null) {
+                // no selection below if the root had been collapsed
+                // nothing to do here, update will be handled in showRootChanged
+                return;
+            } 
             throw new IllegalStateException("weeded out hidden items before, "
                     + "something wrong if we get a negativ from " + event);
         }
@@ -359,8 +372,9 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     private void removed(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         int from = tree.getRow(source) + 1 + c.getFrom();
         // removed is two-step:
-        // if any of the values that are mapped to indices, is removed remove the index
-        // for all left over indices after the remove, decrease the value by removedSize (?)
+        // 1. if any of the values that are mapped to indices, is removed remove the index
+        // 2. for all left over indices after the remove, decrease the value by removedSize (?)
+        // step 1
         int removedSize = 0;
         for (TreeItem<T> item : c.getRemoved()) {
             removedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
@@ -371,6 +385,12 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
     }
 
     private void replaced(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
+        // handle special case of "real" replaced, often size == 1
+//        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
+//            singleReplaced(source, c);
+//            return;
+//        }
+
         int treeFrom = tree.getRow(source) + 1 + c.getFrom();
         int removedSize = 0;
         for (TreeItem<T> item : c.getRemoved()) {
@@ -380,22 +400,47 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
         for (TreeItem<T> item : c.getAddedSubList()) {
             addedSize += ((TreeItemX<T>) item).getExpandedDescendantCount();
         }
-        // handle special case of "real" replaced, often size == 1
-        // PENDING JW: no special handling of single replaced for a tree?
-        // might effect a complete subtree 
-//        if (removedSize == 1 && addedSize == 1) {
-//            // single replace nothing to do, assume
-//            return;
-//        }
-//        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
-//            for (int i = bitSet.nextSetBit(c.getFrom()); i >= 0 && i < c.getTo(); i = bitSet.nextSetBit(i+1)) {
-//                int pos = indexOf(i);
-//                nextSet(pos, i);
-//            }
-//            return;
-//        }
-
         doClearIndicesInRange(treeFrom, removedSize);
+        int diff = addedSize - removedSize;
+        if (diff < 0) {
+            doShiftLeft(treeFrom, diff);
+        } else {
+            doShiftRight(treeFrom, diff);
+        }
+    }
+
+    /**
+     * Callback method when we received a wasReplaced with a single item.
+     * This implementation 
+     * - keeps index on item if it had been set
+     * - removes indices in subtree
+     * - shifts indices below as needed
+     * <p>
+     * Subclasses may override to configure the behaviour.
+     * <p>
+     * 
+     * <p>
+     * <p><strong>Note</strong>: needs to be called inside {@code beginChange()/endChange()} 
+     * 
+     * @param source
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasReplaced
+     */
+    protected void singleReplaced(TreeItemX<T> source,
+            Change<? extends TreeItem<T>> c) {
+        if (true) return;
+        int treeFrom = tree.getRow(source) + 1 + c.getFrom();
+        TreeItem<T> removedItem = c.getRemoved().get(0);
+        int removedSize = ((TreeItemX<T>) removedItem).getExpandedDescendantCount();
+        TreeItem<T> addedItem = c.getAddedSubList().get(0);
+        int addedSize = ((TreeItemX<T>) addedItem).getExpandedDescendantCount();
+        if (addedSize == 1 && removedSize == 1) {
+            // nothing to do, replaced a single expandedDescandent 
+            // by another single expanded item
+            return;
+        }
+        // clear indices of removed descandants
+        doClearIndicesInRange(treeFrom , removedSize - 1);
         int diff = addedSize - removedSize;
         if (diff < 0) {
             doShiftLeft(treeFrom, diff);
