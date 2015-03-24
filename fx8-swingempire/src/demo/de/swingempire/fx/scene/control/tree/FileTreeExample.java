@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -132,10 +133,12 @@ public class FileTreeExample extends Application {
             @Override public ObservableList<TreeItem<File>> getChildren() {
                 if (isFirstTimeChildren) {
                     isFirstTimeChildren = false;
-   
-                    // First getChildren() call, so we actually go off and 
-                    // determine the children of the File contained in this TreeItem.
-                    super.getChildren().setAll(buildChildren(this));
+                        
+                        // First getChildren() call, so we actually go off and 
+                        // determine the children of the File contained in this TreeItem.
+                        super.getChildren().setAll(buildChildren(this));
+                        Platform.runLater(() -> {
+                    });
                 }
                 return super.getChildren();
             }

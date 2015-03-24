@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,7 +32,6 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.TreeModificationReport;
-
 import static org.junit.Assert.*;
 
 /**
@@ -46,6 +47,93 @@ public class TreeItemTest {
     protected ObservableList<TreeItem> children;
     protected ObservableList rawItems;
 
+    
+    /**
+     * Test that leaf property and getter are the same.
+     * Adding children will auto-sync the property, removing 
+     * all children will break it again.
+     */
+    @Test
+    public void testAllowsChildrenEvenIsFolderOnRemoveChildren() {
+        int row = 0;
+        TreeItem node = new FolderOrFileTreeItem(row, true);
+        // don't care what we add, just for having something to remove
+        node.getChildren().add(new TreeItem(3));
+        assertEquals("sanity: even row must be folder " + row, row % 2 == 0, !node.isLeaf());
+        node.getChildren().clear();
+        assertEquals("getter and property must be same", node.isLeaf(), node.leafProperty().get());
+    }
+    
+    /**
+     * Test that leaf property and getter are the same.
+     * forcing initial sync via reflective access of the setter 
+     * see https://javafx-jira.kenai.com/browse/RT-39762
+     */
+    @Test
+    public void testAllowsChildrenEvenIsFolderWithReflectiveSync() {
+        int row = 0;
+        TreeItem node = new FolderOrFileTreeItem(row, true);
+        assertEquals("sanity: even row must be folder " + row, row % 2 == 0, !node.isLeaf());
+        assertEquals("getter and property must be same", node.isLeaf(), node.leafProperty().get());
+    }
+    
+    /**
+     * Test that leaf property and getter are the same.
+     * Fails because there's 
+     * no api to sync them initially, setter is package-private.
+     * https://javafx-jira.kenai.com/browse/RT-39762
+     */
+    @Test
+    public void testAllowsChildrenEvenIsFolder() {
+        int row = 0;
+        TreeItem node = new FolderOrFileTreeItem(row, false);
+        assertEquals("sanity: even row must be folder " + row, row % 2 == 0, !node.isLeaf());
+        assertEquals("getter and property must be same", node.isLeaf(), node.leafProperty().get());
+    }
+    /**
+     * TreeItem with value-dependent leafness (simulating a folder in a
+     * filebrowser, f.i. )
+     */
+    private static class FolderOrFileTreeItem extends TreeItem<Integer> {
+        
+        private boolean allowsChildren;
+        
+        public FolderOrFileTreeItem(int value, boolean initialLeafProperty) {
+            super(value);
+            allowsChildren = value % 2 == 0;
+            if (initialLeafProperty) {
+                invokeSetLeaf(isLeaf());   
+            }
+        }
+        
+        @Override
+        public boolean isLeaf() {
+            return !allowsChildren;
+        }
+
+        /**
+         * Reflectively force leafProperty to allowsChildren
+         * @param leaf
+         */
+        private void invokeSetLeaf(boolean leaf) {
+            Class<?> clazz = TreeItem.class;
+            try {
+                Method method = clazz.getDeclaredMethod("setLeaf", boolean.class);
+                method.setAccessible(true);
+                method.invoke(this, leaf);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+    
+    @Test
+    public void testAllowsChildrenOddIsLeaf() {
+        int row = 1;
+        TreeItem node = new FolderOrFileTreeItem(row, false);
+        assertEquals("sanity: odd row must be leaf " + row, row % 2 != 0, node.isLeaf());
+    }
     
     @Test
     public void testChildEventPermutated() {

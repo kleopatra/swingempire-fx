@@ -73,12 +73,12 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFailCommented;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.TreeViewTestOrig8u60b5.IgnoreCoreTBD;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.StageLoader;
-
 import static org.junit.Assert.*;
 /**
  * TreeViewTest copied from
@@ -399,7 +399,9 @@ public class TreeViewTestSimple8u60b5 {
         TreeItem<String> newChild3 = createTreeItem("New Child 3");
         newRoot.setExpanded(true);
         newRoot.getChildren().setAll(newChild1, newChild2, newChild3);
-        treeView.setRoot(root);
+        // JW: error in test setup - meant to set new root
+//      treeView.setRoot(root);
+        treeView.setRoot(newRoot);
         
         treeView.getSelectionModel().select(2);
         assertEquals(newChild2, treeView.getSelectionModel().getSelectedItem());
@@ -500,8 +502,15 @@ public class TreeViewTestSimple8u60b5 {
     /*********************************************************************
      * Tests from bug reports                                            *
      ********************************************************************/  
-//    @Ignore 
-    @ConditionalIgnore(condition = IgnoreCoreTBD.class)
+
+    /**
+     * Report is closed as not-reproducible, 
+     * test was ignored for core, but passing (8u60b5)
+     * fails for simple (?due to unsupported correlation of index/item)  
+     */
+    //    @Ignore 
+//    @ConditionalIgnore(condition = IgnoreCoreTBD.class)
+    @ConditionalIgnore(condition = IgnoreCorrelated.class)
     @Test public void test_rt17112() {
         TreeItem<String> root1 = createTreeItem("Root");
         root1.setExpanded(true);
@@ -524,15 +533,16 @@ public class TreeViewTestSimple8u60b5 {
             int count = 0;
             @Override public void invalidated(Observable observable) {
                 if (count == 0) {
-                    assertEquals(rt17112_child1_0, sm.getSelectedItem());
                     assertEquals(1, sm.getSelectedIndices().size());
-                    assertEquals(6, sm.getSelectedIndex());
-                    assertTrue(treeView1.getFocusModel().isFocused(6));
+                    assertFalse(sm.getSelectedItems().contains(rt17112_child2));
+//                    assertEquals(6, sm.getSelectedIndex());
+//                    assertEquals(rt17112_child1_0, sm.getSelectedItem());
+//                    assertTrue(treeView1.getFocusModel().isFocused(6));
                 } else if (count == 1) {
-                    assertEquals(rt17112_child1, sm.getSelectedItem());
                     assertFalse(sm.getSelectedItems().contains(rt17112_child2));
                     assertEquals(1, sm.getSelectedIndices().size());
-                    assertTrue(treeView1.getFocusModel().isFocused(5));
+//                    assertEquals(rt17112_child1, sm.getSelectedItem());
+//                    assertTrue(treeView1.getFocusModel().isFocused(5));
                 }
                 count++;
             }
@@ -2133,8 +2143,8 @@ public class TreeViewTestSimple8u60b5 {
 
         @Override public ObservableList<TreeItem<Long>> getChildren() {
             if(!loaded){
-                Platform.runLater(() -> {
                     
+                Platform.runLater(() -> {
                 final ObservableList<TreeItem<Long>> children =  super.getChildren();
                 for (int i = 0; i < 10; i++) {
                     children.add(new NumberTreeItem(10 * getValue() + i));
@@ -3350,24 +3360,24 @@ public class TreeViewTestSimple8u60b5 {
 //    @Ignore("RT-39674 not yet fixed")
     @ConditionalIgnore(condition = IgnoreCoreTBD.class)
     @Test public void test_rt_39674_dynamicChildren() {
-        fail("TBD:  integer item" );
-//        TreeItem root = createTreeItem(0);
-//        root.setExpanded(true);
-//
-//        TreeView treeView = createTreeView(root);
-//        SelectionModel<TreeItem<Integer>> sm = treeView.getSelectionModel();
-//
-//        StageLoader sl = new StageLoader(treeView);
-//
-//        sm.select(5);
-//        assertEquals(5, sm.getSelectedIndex());
-//        assertEquals(4, (int)sm.getSelectedItem().getValue());
-//
-//        ((TreeItem) root.getChildren().get(2)).setExpanded(true);
-//        assertEquals(12, sm.getSelectedIndex());
-//        assertEquals(4, (int)sm.getSelectedItem().getValue());
-//
-//        sl.dispose();
+        TreeItem root = createTreeItem(0);
+        root.setExpanded(true);
+
+        TreeView treeView = createTreeView(root);
+        SelectionModel<TreeItem<Integer>> sm = treeView.getSelectionModel();
+
+        StageLoader sl = new StageLoader(treeView);
+
+        sm.select(5);
+        assertEquals(5, sm.getSelectedIndex());
+        assertEquals(4, (int)sm.getSelectedItem().getValue());
+
+        ((TreeItem) root.getChildren().get(2)).setExpanded(true);
+        assertEquals(12, sm.getSelectedIndex());
+        assertEquals(4, (int)sm.getSelectedItem().getValue());
+
+        sl.dispose();
+        fail("TBD:  dynamic loading of children - can't test selection state when done in runLater" );
     }
 
     private TreeItem<Integer> createTreeItem(final int index) {
@@ -3380,7 +3390,10 @@ public class TreeViewTestSimple8u60b5 {
             public ObservableList<TreeItem<Integer>> getChildren() {
                 if (isFirstTimeChildren) {
                     isFirstTimeChildren = false;
-                    super.getChildren().setAll(buildChildren(this));
+                    Platform.runLater(() -> {
+                        super.getChildren().setAll(buildChildren(this));
+                        
+                    });
                 }
                 return super.getChildren();
             }

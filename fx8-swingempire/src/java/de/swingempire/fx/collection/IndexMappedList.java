@@ -17,33 +17,37 @@ import javafx.collections.transformation.TransformationList;
 import com.sun.javafx.collections.SortHelper;
 
 /**
- * Helper for selectedItems. Source contains the selectedIndices, backingList the items.
+ * Helper for selectedItems. Source contains the selectedIndices, backingList
+ * the items.
  * 
- * This is truely unmodifiable, changes mediated by changes to source and backing list.
+ * This is truely unmodifiable, changes mediated by changes to source and
+ * backing list.
  * <p>
- * Really needed to separate changes from "real" setting of indices in source from 
- * changes that were induced by backingList changes. Without, all changes envolving
- * a remove are plain incorrect!
+ * Really needed to separate changes from "real" setting of indices in source
+ * from changes that were induced by backingList changes. Without, all changes
+ * envolving a remove are plain incorrect!
  * <p>
  * 
- * Trying to separate out by 
- * <li> not reacting to source changes if its sourceChange != null
- * <li> listen to change of sourceChangeProperty and handle changes in
- *    backingList - note that the assumption here is that indicesList
- *    has updated itself completely before firing
- *    fires null -> change notification 
+ * Trying to separate out by
+ * <li>not reacting to source changes if its sourceChange != null
+ * <li>listen to change of sourceChangeProperty and handle changes in
+ * backingList - note that the assumption here is that indicesList has updated
+ * itself completely before firing fires null -> change notification
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class IndexMappedList<T> extends TransformationList<T, Integer> {
 
     private List<? extends T> backingList;
+
     private ChangeListener<Change<? extends T>> sourceChangeListener;
+
     private WeakChangeListener<Change<? extends T>> weakSourceChangeListener;
+
     // trying to support discontinous removes from backing list
     // this is meant to be the actual old index of c.getFrom
     private int accumulatedRemoved;
-    
+
     /**
      * @param source
      */
@@ -51,14 +55,23 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         super(source);
         this.backingList = source.getSource();
         sourceChangeListener = (p, old, value) -> backingListChanged(value);
-        weakSourceChangeListener = new WeakChangeListener<>(sourceChangeListener);
+        weakSourceChangeListener = new WeakChangeListener<>(
+                sourceChangeListener);
         source.sourceChangeProperty().addListener(weakSourceChangeListener);
     }
-    
+
+    /**
+     * Called from listener to source's sourceChangeProperty. It is set when the
+     * source change resulted from a change in the backing data and after source
+     * had updated itself.
+     * 
+     * @param c the change as fired by the backing data
+     */
     protected void backingListChanged(Change<? extends T> c) {
         // nothing to do
         accumulatedRemoved = 0;
-        if (c == null) return;
+        if (c == null)
+            return;
         c.reset();
         beginChange();
         while (c.next()) {
@@ -71,36 +84,40 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
                 // PENDING JW: need to update accumulatedRemoved?
                 // only if we have to expect a mixture of change types?
                 // do we?
-            } else if (c.wasAdded() || c.wasRemoved()){
+            } else if (c.wasAdded() || c.wasRemoved()) {
                 addedOrRemovedItems(c);
                 accumulatedRemoved += c.getRemovedSize();
             } else {
                 // we reach here if the backing source is-a ListProperty
                 // and its empty list replaced by another empty list
                 // https://javafx-jira.kenai.com/browse/RT-40213
-                if (backingList instanceof ListPropertyBase && c.getAddedSize() == 0 && c.getRemovedSize() == 0) {
+                if (backingList instanceof ListPropertyBase
+                        && c.getAddedSize() == 0 && c.getRemovedSize() == 0) {
                     // probably fine
-                    LOG.finer("got unknown change type from listProperty? " + c + "\n" + backingList);
+                    LOG.finer("got unknown change type from listProperty? " + c
+                            + "\n" + backingList);
                 } else {
-                    throw new IllegalStateException("unknown change type from " + c + "\n " + backingList );
+                    throw new IllegalStateException("unknown change type from "
+                            + c + "\n " + backingList);
                 }
             }
         }
         endChange();
     }
-    
+
     /**
      * @param c
      */
     private void addedOrRemovedItems(Change<? extends T> c) {
-        if (c.wasAdded() && c.wasRemoved()) 
-            throw new IllegalStateException("expected real add/remove but was: " + c);
+        if (c.wasAdded() && c.wasRemoved())
+            throw new IllegalStateException(
+                    "expected real add/remove but was: " + c);
         if (c.wasAdded()) {
             // nothing to do: real additions to the backing list
             // don't change our state
-        } else if (c.wasRemoved()){
+        } else if (c.wasRemoved()) {
             removedItems(c);
-        } 
+        }
     }
 
     /**
@@ -114,7 +131,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         // fromIndex is startIndex of our own change - that doesn't change
         // as a subChange is about a single interval!
         int fromIndex = findIndex(realFrom, c.getRemovedSize());
-        if (fromIndex < 0) return;
+        if (fromIndex < 0)
+            return;
 
         // here we loop over the indices of the removed items
         for (int index = 0; index < c.getRemovedSize(); index++) {
@@ -129,19 +147,20 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
 
     /**
-     * Returns the first index in indicesList _old_ state. The result is
-     * in our own coordinate system, start is in backingList's coordinates.
-     *  
+     * Returns the first index in indicesList _old_ state. The result is in our
+     * own coordinate system, start is in backingList's coordinates.
+     * 
      * @param start the backinglist's index to start looking for a match
      * @param size the end of the interval, in backinglists counting.
      * 
-     * @return a the first index of old indices coordinates that matches 
-     *    a coordinate in the range, or -1 for no match.
+     * @return a the first index of old indices coordinates that matches a
+     *         coordinate in the range, or -1 for no match.
      */
     protected Integer findIndex(int start, int size) {
         for (int i = start; i < start + size; i++) {
             int index = getIndicesList().oldIndices.indexOf(i);
-            if (index > - 1) return index;
+            if (index > -1)
+                return index;
         }
         return -1;
     }
@@ -159,12 +178,13 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
                 if (index > -1) {
                     nextSet(index, c.getRemoved().get(i - c.getFrom()));
                 }
-            } 
+            }
             return;
         }
         // here we most (?) likely received a setAll/setItems
-        // that results in a removed on the indicesList, independent on the 
-        // actual relative sizes of removed/added: all (?) old indices are invalid
+        // that results in a removed on the indicesList, independent on the
+        // actual relative sizes of removed/added: all (?) old indices are
+        // invalid
         // PENDING JW: when can we get a replaced on a subrange?
         if (size() == 0) {
             removedItems(c);
@@ -173,9 +193,9 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         }
     }
 
-
     /**
      * Called when list change in backing list is of type update.
+     * 
      * @param c
      */
     private void updatedItems(Change<? extends T> c) {
@@ -184,7 +204,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
             if (index > -1) {
                 nextUpdate(index);
             }
-        } 
+        }
     }
 
     protected SortHelper sortHelper = new SortHelper();
@@ -193,7 +213,7 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      * @param c
      */
     private void permutatedItems(Change<? extends T> c) {
-//        throw new IllegalStateException("not yet implemented");
+        // throw new IllegalStateException("not yet implemented");
         List<Integer> perm = new ArrayList<>(getIndicesList().oldIndices);
         int[] permA = new int[size()];
         for (int i = 0; i < getIndicesList().oldIndices.size(); i++) {
@@ -203,7 +223,6 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
         nextPermutation(0, perm.size(), permutation);
     }
 
-
     /**
      * Implemented to react to changes in indicesList only if they originated
      * from directly modifying its indices. Indirect changes (by backingList)
@@ -211,7 +230,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
      */
     @Override
     protected void sourceChanged(Change<? extends Integer> c) {
-        if (getIndicesList().getSourceChange() != null) return;
+        if (getIndicesList().getSourceChange() != null)
+            return;
         beginChange();
         while (c.next()) {
             if (c.wasPermutated()) {
@@ -229,11 +249,13 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
 
     /**
      * Called on real added/removed changes to the indices.
+     * 
      * @param c
      */
-    private void addedOrRemoved(Change<? extends Integer> c) {
-        if (c.wasAdded() && c.wasRemoved()) 
-            throw new IllegalStateException("expected real add/remove but was: " + c);
+    protected void addedOrRemoved(Change<? extends Integer> c) {
+        if (c.wasAdded() && c.wasRemoved())
+            throw new IllegalStateException(
+                    "expected real add/remove but was: " + c);
         if (c.wasAdded()) {
             added(c);
         } else if (c.wasRemoved()) {
@@ -245,46 +267,40 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
 
     /**
      * Called on real adds to the indices.
+     * 
      * @param c
      */
-    private void added(Change<? extends Integer> c) {
+    protected void added(Change<? extends Integer> c) {
         nextAdd(c.getFrom(), c.getTo());
     }
-    
+
     /**
-     * Called on real removes on indices.
+     * Called on real removes on indices. It is safe to access the backing data
+     * with the indices found in the change because the backing data is
+     * unchanged.
+     * 
      * <p>
+     * 
      * @param c
      */
-    private void removed(Change<? extends Integer> c) {
+    protected void removed(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
         List<T> items = new ArrayList<>();
-        if (getIndicesList().getSourceChange() == null) {
-            // change resulted from direct modification of indices
-            // no change in backingList, so we can access its items 
-            // directly
-            for (Integer index : indices) {
-                items.add(backingList.get(index));
-            }
+        for (Integer index : indices) {
+            items.add(backingList.get(index));
         }
         nextRemove(c.getFrom(), items);
     }
 
-    
     /**
-     * @return
-     */
-    private IndicesList<T> getIndicesList() {
-        return (IndicesList<T>) getSource();
-    }
-
-    /**
-     * PENDING JW: all removes are carying incorrect removes - they access the 
-     * backingList which has them already removed!
+     * Called when the indices in source were replaced.
      * 
+     * It is safe to access the backing data
+     * with the indices found in the change because the backing data is
+     * unchanged. 
      * @param c
      */
-    private void replaced(Change<? extends Integer> c) {
+    protected void replaced(Change<? extends Integer> c) {
         List<? extends Integer> indices = c.getRemoved();
         List<T> items = new ArrayList<>();
         for (Integer index : indices) {
@@ -294,18 +310,47 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
 
     /**
+     * Called on receiving change with wasUpdated from indicesList. Implemented
+     * to throw, don't expect an update from the indicess.
+     * 
      * @param c
+     * @throws IllegalStateException always, we don't expect an update from
+     *         indicesList
      */
-    private void updated(Change<? extends Integer> c) {
-        nextUpdate(c.getFrom());
+    protected void updated(Change<? extends Integer> c) {
+        // nextUpdate(c.getFrom());
+        throw new IllegalStateException(
+                "don't expect permutation changes from indices " + c);
     }
 
     /**
+     * Called on receiving change with wasPermutated from indicesList.
+     * Implemented to throw, don't expect an permutation from the indicess.
+     * <p>
+     * 
+     * PENDING JW: might happen is all selected and the backing data is sorted?
+     * 
      * @param c
+     * @throws IllegalStateException always, we don't expect a permutation from
+     *         indicesList
      */
-    private void permutated(Change<? extends Integer> c) {
-        throw new IllegalStateException("don't expect permutation changes from indices " + c);
+    protected void permutated(Change<? extends Integer> c) {
+        throw new IllegalStateException(
+                "don't expect permutation changes from indices " + c);
     }
+
+    /**
+     * Returns the source indicesList.
+     * 
+     * Implementation note: getSource of super is final, so can't override to 
+     * return the specialized type!
+     *  
+     * @return source cast to IndicesList
+     */
+    protected IndicesList<T> getIndicesList() {
+        return (IndicesList<T>) getSource();
+    }
+
 
     @Override
     public int getSourceIndex(int index) {

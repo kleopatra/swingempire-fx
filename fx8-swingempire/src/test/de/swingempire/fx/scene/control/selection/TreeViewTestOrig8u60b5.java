@@ -72,6 +72,8 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 import com.sun.javafx.tk.Toolkit;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.util.StageLoader;
@@ -85,6 +87,7 @@ import static org.junit.Assert.*;
  * - commented failing focus-related asserts where they are mixed into selection-related tests, 
  *   marked with PENDING JW
  * - added IgnoreTreeFocus to failing tests that are only testing focus changes   
+ * - fixed error in test setup: ensureSelectedItemRemainsAccurateWhenItemsAreCleared
  * 
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -103,7 +106,7 @@ public class TreeViewTestOrig8u60b5 {
 
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }
@@ -349,8 +352,9 @@ public class TreeViewTestOrig8u60b5 {
         TreeItem<String> newChild3 = new TreeItem<String>("New Child 3");
         newRoot.setExpanded(true);
         newRoot.getChildren().setAll(newChild1, newChild2, newChild3);
-        treeView.setRoot(root);
-        
+        // JW: error in test setup - meant to set new root
+//        treeView.setRoot(root);
+        treeView.setRoot(newRoot);
         treeView.getSelectionModel().select(2);
         assertEquals(newChild2, treeView.getSelectionModel().getSelectedItem());
     }
@@ -3284,6 +3288,7 @@ public class TreeViewTestOrig8u60b5 {
         assertEquals(4, (int)sm.getSelectedItem().getValue());
 
         sl.dispose();
+        fail("TBD:  dynamic loading of children - can't test selection state when done in runLater" );
     }
 
     private TreeItem<Integer> createTreeItem(final int index) {
@@ -3296,7 +3301,9 @@ public class TreeViewTestOrig8u60b5 {
             public ObservableList<TreeItem<Integer>> getChildren() {
                 if (isFirstTimeChildren) {
                     isFirstTimeChildren = false;
-                    super.getChildren().setAll(buildChildren(this));
+                    Platform.runLater(() -> {
+                        super.getChildren().setAll(buildChildren(this));
+                    }); 
                 }
                 return super.getChildren();
             }
