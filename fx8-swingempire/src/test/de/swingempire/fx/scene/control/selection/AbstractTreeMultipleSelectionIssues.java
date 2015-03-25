@@ -21,11 +21,15 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
@@ -49,7 +53,11 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
      * the list of values of the treeItems in a default branch.
      */
     private ObservableList<String> rawItems;
+
     
+//--------------------
+    
+//-------------------    
     @Test
     public void testNullRoot() {
         TreeView view = createEmptyView();
@@ -87,7 +95,6 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     /**
      * Regression testing: rt_37632
      * 
-     * Not yet implemented
      */
     @Test
     public void testReplaceRootMustClearSelectionState_37632() {
@@ -162,7 +169,145 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         getView().setRoot(null);
         assertEmptySelection();
     }
+
+    @Test
+    public void testSelectedOnReplaceItemWithSelectedItemInSubtree() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("child-with-selected-child", true);
+        int index = 3;
+        setItem(index - 1, child);
+        // first grandchild
+        int selected = index + 1;
+        assertEquals("sanity", child.getChildren().get(0), getView().getTreeItem(selected));
+        getSelectionModel().select(selected);
+        TreeItem other = createBranch("replacing-child");
+        setItem(index - 1, other);
+        assertEquals(-1, getSelectedIndex());
+    }
+//-------------- test selected on replacing selected item
     
+    /**
+     * PENDING JW:
+     * Single child replaced ... what should happen?
+     * What's wrong with doing the same as with list? that is do nothing
+     * for a single replace?
+     * 
+     * It was less the _what_ than the actual doing it!
+     * 
+     * below is a bunch of tests that replace the selected item:
+     * - collapsed child with collapsed child
+     * - expanded child with collapsed child
+     * - collapsed child with expanded child
+     * - expanded child with expanded child: # of children on replacing child 
+     *      same/fewer/more
+     * 
+     */
+    @Test
+    public void testSetCollapsedChildAtExpanded() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child", true);
+        int index = 3;
+        setItem(index -1, child);
+        getSelectionModel().select(index);
+        TreeItem collapsedChild = createBranch("another-single-replaced");
+        setItem(index -1, collapsedChild);
+        assertEquals(index, getSelectedIndex());
+        assertEquals(collapsedChild, getSelectedItem());
+    }
+    
+    @Test 
+    public void testSetExpandedChildAtExpandedFewer() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        setItem(index -1, child);
+        getSelectionModel().select(index);
+        // replacing child has fewer children 
+        TreeItem expandedChild = createBranch("another-single-replaced");
+        expandedChild.getChildren().remove(0);
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has fewer children and both expanded", 
+                child.getChildren().size() - 1, expandedChild.getChildren().size());
+        setItem(index -1, expandedChild);
+        
+        assertEquals(index, getSelectedIndex());
+        assertEquals(expandedChild, getSelectedItem());
+    }   
+    
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * greater # of items as the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedMore() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        setItem(index -1, child);
+        getSelectionModel().select(index);
+        TreeItem expandedChild = createBranch("another-single-replaced");
+        // replacingChild has more children
+        expandedChild.getChildren().add(createItem("excess grandChild"));
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has more children and both expanded", 
+                child.getChildren().size() + 1, expandedChild.getChildren().size());
+        setItem(index -1, expandedChild);
+        
+        assertEquals(index, getSelectedIndex());
+        assertEquals(expandedChild, getSelectedItem());
+    }
+
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * more items than the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedSame() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        setItem(index -1, child);
+        getSelectionModel().select(index);
+        // replacingChild has same # of children
+        TreeItem expandedChild = createBranch("another-single-replaced");
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: same # of children and both expanded", 
+                child.getChildren().size(), expandedChild.getChildren().size());
+        setItem(index -1, expandedChild);
+
+        assertEquals(index, getSelectedIndex());
+        assertEquals(expandedChild, getSelectedItem());
+    }
+    
+    @Test
+    public void testSetCollapsedChildAtCollapsed() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child");
+        int index = 3;
+        getSelectionModel().select(index);
+        setItem(index - 1, child);
+        assertEquals(index, getSelectedIndex());
+        assertEquals(child, getSelectedItem());
+    }
+    
+    /**
+     */
+    @Test 
+    public void testSetExpandedChildAtCollapsed() {
+        getView().setShowRoot(true);
+        TreeItem child = createBranch("single-replaced-child", true);
+        int index = 3;
+        getSelectionModel().select(index);
+        setItem(index -1, child);
+        assertEquals(index, getSelectedIndex());
+        assertEquals(child, getSelectedItem());
+    }
+    
+
+//--------------end test selected on replacing    
     
     /**
      * Regression testing: 

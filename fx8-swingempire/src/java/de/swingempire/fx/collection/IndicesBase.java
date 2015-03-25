@@ -222,8 +222,11 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * doClearIndicesInRange(from, removedSize);
      * doShiftLeft(from, removedSize);
      * </code></pre>
-     *  
+     * 
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
+     * 
+     * <p> PENDING JW: check 0 range!
+     *  
      * @param from
      * @param removedSize
      */
@@ -256,8 +259,11 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
      * The index is a coordinates in 
      * backing list. The operation is
      * equivalent to increasing the index values by addedSize.
-     *  
+     * 
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
+     *  
+     * <p> PENDING JW: check 0 range!
+     * 
      * @param from
      * @param removedSize
      */

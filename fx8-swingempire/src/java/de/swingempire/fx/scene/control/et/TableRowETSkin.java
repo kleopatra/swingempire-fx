@@ -4,9 +4,12 @@
  */
 package de.swingempire.fx.scene.control.et;
 
+import java.lang.ref.Reference;
+
 import javafx.event.EventDispatchChain;
 import javafx.event.EventTarget;
 import javafx.scene.control.Cell;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
@@ -28,7 +31,8 @@ public class TableRowETSkin<T> extends TableRowSkin<T> implements EventTarget {
         TablePosition<T, ?> focused = tableView.getFocusModel().getFocusedCell();
         if (focused != null && focused.getTableColumn() != null) {
             TableColumn<T, ?> column = focused.getTableColumn();
-            Cell<?> cell = cellsMap.get(column);
+            Reference<TableCell<T, ?>> cellReference = cellsMap.get(column);
+            Cell<?> cell = cellReference != null ? cellReference.get() : null;
             if (cell != null) {
                 cell.buildEventDispatchChain(tail);
             }

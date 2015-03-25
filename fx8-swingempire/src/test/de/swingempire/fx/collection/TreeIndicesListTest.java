@@ -237,9 +237,11 @@ public class TreeIndicesListTest {
         rootChildren.setAll(createItems(rawItems.subList(3, 6)));
         assertEquals("indices on replaced children must be cleared", 0, indicesList.size());
     }
+    
+//----------------- test single replace
+    
     /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
+     * Replace a single child before selected
      * Here we replace with a collapsed child
      */
     @Test
@@ -252,8 +254,7 @@ public class TreeIndicesListTest {
     }
     
     /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
+     * Replace a single child before selected
      * Here we replace with a expanded child
      */
     @Test
@@ -268,56 +269,147 @@ public class TreeIndicesListTest {
         assertEquals(expected, indicesList.get(0).intValue());
     }
     
+//-------------------------- tests for replacing selected treeItem    
     /**
      * PENDING JW:
      * Single child replaced ... what should happen?
-     * Here we replace with a collapsed child
-     * 
      * What's wrong with doing the same as with list? that is do nothing
      * for a single replace?
      * 
-     * It's less the _what_ than the actual doing it!
-     * @see IgnoreTreeDeferredIssue
+     * It was less the _what_ than the actual doing it!
+     * 
+     * below is a bunch of tests that replace the selected item:
+     * - collapsed child with collapsed child
+     * - expanded child with collapsed child
+     * - collapsed child with expanded child
+     * - expanded child with expanded child: # of children on replacing child 
+     *      same/fewer/more
+     * 
      */
     @Test
-    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
-    public void testSetCollapsedChildAt() {
-        TreeItemX child = createBranch("single-replaced-child");
-        int index = 3;
-        indicesList.setIndices(index);
-        rootChildren.set(index -1, child);
-//        assertFalse(indicesList.isEmpty());
-        if (!indicesList.isEmpty())
-            assertEquals(index, indicesList.get(0).intValue());
-        fail("TBD: need to specify what to do on setChildAt");
-    }
-    
-    /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
-     * Here we replace with a expanded child
-     * 
-     * It's less the _what_ than the actual doing it!
-     * 
-     * @see IgnoreTreeDeferredIssue
-     */
-    @Test 
-    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
-    public void testSetExpandedChildAt() {
+    public void testSetCollapsedChildAtExpanded() {
         TreeItemX child = createBranch("single-replaced-child");
         child.setExpanded(true);
         int index = 3;
-        indicesList.setIndices(index);
         rootChildren.set(index -1, child);
-//        assertFalse(indicesList.isEmpty());
+        indicesList.setIndices(index);
+        TreeItem collapsedChild = createBranch("another-single-replaced");
+        rootChildren.set(index -1, collapsedChild);
+        assertFalse(indicesList.isEmpty());
+        if (!indicesList.isEmpty())
+            assertEquals(index, indicesList.get(0).intValue());
+    }
+    
+    /**
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedFewer() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        // replacing child has fewer children 
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        expandedChild.getChildren().remove(0);
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has fewer children and both expanded", 
+                child.getExpandedDescendantCount() - 1, expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+        
+        assertFalse(indicesList.isEmpty());
         if (!indicesList.isEmpty()) {
             int intValue = indicesList.get(0).intValue();
             assertTrue("index must not be negative, was " , intValue >= 0);
             assertEquals("index must be unchanged", index, intValue);
         }
-        fail("TBD: need to specify what to do on setChildAt");
     }
     
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * greater # of items as the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedMore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        // replacingChild has more children
+        expandedChild.getChildren().add(createItem("excess grandChild"));
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has more children and both expanded", 
+                child.getExpandedDescendantCount() + 1, expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+        
+        assertFalse(indicesList.isEmpty());
+        if (!indicesList.isEmpty()) {
+            int intValue = indicesList.get(0).intValue();
+            assertTrue("index must not be negative, was " , intValue >= 0);
+            assertEquals("index must be unchanged", index, intValue);
+        }
+    }
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * more items than the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedSame() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        // replacingChild has same # of children
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: same # of children and both expanded", 
+                child.getExpandedDescendantCount(), expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+
+        assertFalse(indicesList.isEmpty());
+        if (!indicesList.isEmpty()) {
+            int intValue = indicesList.get(0).intValue();
+            assertTrue("index must not be negative, was " , intValue >= 0);
+            assertEquals("index must be unchanged", index, intValue);
+        }
+    }
+    
+    /**
+     * replace collapsed with collapsed item.
+     */
+    @Test
+    public void testSetCollapsedChildAtCollapsed() {
+        TreeItemX child = createBranch("single-replaced-child");
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(index -1, child);
+        assertFalse(indicesList.isEmpty());
+        if (!indicesList.isEmpty())
+            assertEquals(index, indicesList.get(0).intValue());
+    }
+    
+    /**
+     * replace expanded with collapsed item.
+     */
+    @Test 
+    public void testSetExpandedChildAtCollapsed() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        indicesList.setIndices(index);
+        rootChildren.set(index -1, child);
+        assertFalse(indicesList.isEmpty());
+        if (!indicesList.isEmpty()) {
+            int intValue = indicesList.get(0).intValue();
+            assertTrue("index must not be negative, was " , intValue >= 0);
+            assertEquals("index must be unchanged", index, intValue);
+        }
+    }
+    
+//-------------- end replacing selected
     @Test
     public void testRemoveFromCollapsedChild() {
         TreeItemX child = createBranch("expandedChild");
@@ -328,6 +420,7 @@ public class TreeIndicesListTest {
         assertEquals("index unchanged", index, indicesList.get(0).intValue());
     }
 
+    
     @Test
     public void testRemoveExpandedChild() {
         TreeItemX child = createBranch("expandedChild");

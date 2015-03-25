@@ -24,9 +24,12 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
@@ -242,13 +245,10 @@ public class TreeIndexMappedListTest {
         assertEquals("indices on replaced children must be cleared", 0, indicesList.size());
         assertEquals("eventcount", 1, report.getEventCount());
         assertTrue("singleRemoved ", wasSingleRemoved(report.getLastChange()));
-        
     }
-    /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
-     * Here we replace with a collapsed child
-     */
+
+//------------------ test replacing child
+    
     @Test
     public void testSetCollapsedChildBefore() {
         TreeItemX child = createBranch("single-replaced-child");
@@ -262,11 +262,6 @@ public class TreeIndexMappedListTest {
         assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
     }
     
-    /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
-     * Here we replace with a expanded child
-     */
     @Test
     public void testSetExpandedChildBefore() {
         TreeItemX child = createBranch("single-replaced-child");
@@ -282,18 +277,112 @@ public class TreeIndexMappedListTest {
         assertEquals("eventcount", 0, report.getEventCount());
         assertEquals("indexedItem unchanged", indexedItem, indexedItems.get(0));
     }
+
+//------------------ test single replaced of selected node
     
     /**
      * PENDING JW:
      * Single child replaced ... what should happen?
-     * Here we replace with a collapsed child
+     * What's wrong with doing the same as with list? that is do nothing
+     * for a single replace?
      * 
-     * It's less the _what_ than the actual doing it!
-     * @see IgnoreTreeDeferredIssue
+     * It was less the _what_ than the actual doing it!
+     * 
+     * below is a bunch of tests that replace the selected item:
+     * - collapsed child with collapsed child
+     * - expanded child with collapsed child
+     * - collapsed child with expanded child
+     * - expanded child with expanded child: # of children on replacing child 
+     *      same/fewer/more
+     * 
      */
     @Test
-    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
-    public void testSetCollapsedChildAt() {
+    public void testSetCollapsedChildAtExpanded() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        report.clear();
+        TreeItem collapsedChild = createBranch("another-single-replaced");
+        rootChildren.set(index -1, collapsedChild);
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+    }
+    
+    @Test 
+    public void testSetExpandedChildAtExpandedFewer() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        report.clear();
+        // replacing child has fewer children 
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        expandedChild.getChildren().remove(0);
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has fewer children and both expanded", 
+                child.getExpandedDescendantCount() - 1, expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+        
+        assertFalse(indicesList.isEmpty());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+    }   
+    
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * greater # of items as the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedMore() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        report.clear();
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        // replacingChild has more children
+        expandedChild.getChildren().add(createItem("excess grandChild"));
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: replacing child has more children and both expanded", 
+                child.getExpandedDescendantCount() + 1, expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+        
+        assertFalse(indicesList.isEmpty());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+        
+    }
+
+    /**
+     * Replace selected expanded child with an expanded child with 
+     * more items than the old.
+     */
+    @Test 
+    public void testSetExpandedChildAtExpandedSame() {
+        TreeItemX child = createBranch("single-replaced-child");
+        child.setExpanded(true);
+        int index = 3;
+        rootChildren.set(index -1, child);
+        indicesList.setIndices(index);
+        report.clear();
+        // replacingChild has same # of children
+        TreeItemX expandedChild = createBranch("another-single-replaced");
+        expandedChild.setExpanded(true);
+        assertEquals("sanity: same # of children and both expanded", 
+                child.getExpandedDescendantCount(), expandedChild.getExpandedDescendantCount());
+        rootChildren.set(index -1, expandedChild);
+
+        assertFalse(indicesList.isEmpty());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
+    }
+    
+    @Test
+    public void testSetCollapsedChildAtCollapsed() {
         TreeItemX child = createBranch("single-replaced-child");
         int index = 3;
         indicesList.setIndices(index);
@@ -301,22 +390,13 @@ public class TreeIndexMappedListTest {
         rootChildren.set(index -1, child);
         assertEquals(index, indicesList.get(0).intValue());
         assertEquals("eventcount", 1, report.getEventCount());
-        assertTrue("singleRemoved ", wasSingleReplaced(report.getLastChange()));
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
     
     /**
-     * PENDING JW:
-     * Single child replaced ... what should happen?
-     * Here we replace with a expanded child
-     * 
-     * Hmm ... can't see any difference to set(i, item) in list, or is there?
-     * 
-     * It's less the _what_ than the actual doing it!
-     * @see IgnoreTreeDeferredIssue
      */
     @Test 
-    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
-    public void testSetExpandedChildAt() {
+    public void testSetExpandedChildAtCollapsed() {
         TreeItemX child = createBranch("single-replaced-child");
         child.setExpanded(true);
         int index = 3;
@@ -324,14 +404,12 @@ public class TreeIndexMappedListTest {
         report.clear();
         rootChildren.set(index -1, child);
         assertFalse("indicesList must not be empty", indicesList.isEmpty());
-        if (!indicesList.isEmpty()) {
-            int intValue = indicesList.get(0).intValue();
-            assertTrue("index must not be negative, was " , intValue >= 0);
-            assertEquals("index must be unchanged", index, intValue);
-            assertEquals("eventcount", 0, report.getEventCount());
-        }
-        fail("TBD: need to specify what to do on setChildAt");
+        assertEquals(index, indicesList.get(0).intValue());
+        assertEquals("eventcount", 1, report.getEventCount());
+        assertTrue("singleReplaced ", wasSingleReplaced(report.getLastChange()));
     }
+    
+ // ----------- end test replace selected item
     
     @Test
     public void testRemoveFromCollapsedChild() {

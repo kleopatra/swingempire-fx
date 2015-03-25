@@ -386,10 +386,10 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
 
     private void replaced(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         // handle special case of "real" replaced, often size == 1
-//        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
-//            singleReplaced(source, c);
-//            return;
-//        }
+        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
+            singleReplaced(source, c);
+            return;
+        }
 
         int treeFrom = tree.getRow(source) + 1 + c.getFrom();
         int removedSize = 0;
@@ -428,7 +428,7 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
      */
     protected void singleReplaced(TreeItemX<T> source,
             Change<? extends TreeItem<T>> c) {
-        if (true) return;
+//        if (true) return;
         int treeFrom = tree.getRow(source) + 1 + c.getFrom();
         TreeItem<T> removedItem = c.getRemoved().get(0);
         int removedSize = ((TreeItemX<T>) removedItem).getExpandedDescendantCount();
@@ -439,9 +439,15 @@ public class TreeIndicesList<T> extends IndicesBase<T> {
             // by another single expanded item
             return;
         }
+        // update starts at item following the single replaced
+        treeFrom++;
+        removedSize--;
+        addedSize--;
         // clear indices of removed descandants
-        doClearIndicesInRange(treeFrom , removedSize - 1);
+        doClearIndicesInRange(treeFrom, removedSize);
         int diff = addedSize - removedSize;
+        // PENDING JW: same size? check if doShift
+        // handles range 0 ..
         if (diff < 0) {
             doShiftLeft(treeFrom, diff);
         } else {

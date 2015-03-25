@@ -34,7 +34,6 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
@@ -603,6 +602,16 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
 
     //-------------------- items modification    
     
+    @Test
+    public void testSelectedOnSetItemAtSelected() {
+        int selected = 3;
+        getSelectionModel().select(selected);
+        assertEquals(selected, getSelectedIndex());
+        Object replacing = createItem("replacedItem");
+        setItem(selected, replacing);
+        assertEquals("index unchanged on replacing selected", selected, getSelectedIndex());
+        assertEquals("item changed to replacing", replacing, getSelectedItem());
+    }
     
     @Test
     public void testSelectedOnSetItemAtSecondary() {

@@ -240,14 +240,14 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     }
 
     /**
-     * This is called for a removed or replaced change in the backingList.
+     * This is called for a removed change in the backingList.
      * <p>
      * PENDING this is more or less a copy of the _old_ (incorrect)
      * implementation in IndexMappedList - review! Probably can't handle
      * discontinous removes.
      * 
      * @param source the treeItem that send the change
-     * @param c the change
+     * @param c the change with its cursor set to a subchange with wasRemoved
      */
     private void removedItems(TreeItemX<T> source, Change<? extends TreeItem<T>> c) {
         int treeFrom = backingTree.getRow(source) + 1 + c.getFrom();
@@ -278,6 +278,11 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
      * @param c
      */
     private void replacedItems(TreeItemX<T> parent, Change<? extends TreeItem<T>> c) {
+        // handle special case of "real" replaced, often size == 1
+        if (c.getAddedSize() == 1 && c.getAddedSize() == c.getRemovedSize()) {
+            singleReplaced(parent, c);
+            return;
+        }
         int treeFrom = backingTree.getRow(parent) + 1 + c.getFrom();
         int removedSize = 0;
         for (TreeItem<T> item : c.getRemoved()) {
@@ -308,6 +313,41 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
         removedItems(parent, c);
     }
 
+    /**
+     * Callback method when we received a wasReplaced with a single item.
+     * This implementation 
+     * - keeps index on item if it had been set
+     * - removes indices in subtree
+     * - shifts indices below as needed
+     * <p>
+     * Subclasses may override to configure the behaviour.
+     * <p>
+     * 
+     * <p>
+     * <p><strong>Note</strong>: needs to be called inside {@code beginChange()/endChange()} 
+     * 
+     * @param source
+     * @param c the change received from the backing data, its cursor set to subChange
+     *    of type wasReplaced
+     */
+    protected void singleReplaced(TreeItemX<T> source,
+            Change<? extends TreeItem<T>> c) {
+//        if (true) return;
+        int treeFrom = backingTree.getRow(source) + 1 + c.getFrom();
+        TreeItem<T> removedItem = c.getRemoved().get(0);
+        int removedSize = ((TreeItemX<T>) removedItem).getExpandedDescendantCount();
+        TreeItem<T> addedItem = c.getAddedSubList().get(0);
+        int addedSize = ((TreeItemX<T>) addedItem).getExpandedDescendantCount();
+        // handle the replaced single child itself
+        int index = getIndicesList().indexOf(treeFrom);
+        if (index > -1) {
+            nextSet(index, removedItem);
+        }
+//        if (addedSize == 1 && removedSize == 1) {
+//            return;
+//        }
+        
+    }
     protected SortHelper sortHelper = new SortHelper();
 
     /**

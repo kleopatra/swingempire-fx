@@ -43,13 +43,14 @@ public class TreeSelectionAndModification extends Application {
     
     
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
+            "setAtParentOfSelectedIndex",
             "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", 
             "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected",
             "removeGrandParent", "toggleRoot"};
     // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
+    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.DELETE, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
             KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, 
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, 
             null, null, null, null, null, null, null};
     private int count;
     
@@ -73,12 +74,29 @@ public class TreeSelectionAndModification extends Application {
             if (node == null || node.getParent() == null) return;
             node.getParent().getChildren().remove(node);
         });
+        actions.put("setAtParentOfSelectedIndex", f -> {
+            int selectedIndex = f.getSelectionModel().getSelectedIndex();
+            TreeItem child = f.getTreeItem(selectedIndex);
+            // need a selected grandchild
+            if (child == null || child.getParent() == null || child.getParent().getParent() == null) return;
+            TreeItem grandParent = child.getParent().getParent();
+            int childIndex = grandParent.getChildren().indexOf(child.getParent());
+            TreeItem otherBranch = createBranch(count++ + "replacedParentOfSelected", f);
+            grandParent.getChildren().set(childIndex, otherBranch);
+            
+        });
         actions.put("setAtSelectedIndex", f -> {
-            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
-            if (node == null || node.getParent() == null) return;
-            int index = node.getParent().getChildren().indexOf(node);
-            node.getParent().getChildren().set(index, createItem(count++ +"set-newItem", f));
-//            printSelectionState("setAtSelected", f);
+            int selectedIndex = f.getSelectionModel().getSelectedIndex();
+            TreeItem child = f.getTreeItem(selectedIndex);
+            if (child == null || child.getParent() == null) return;
+            TreeItem parent = child.getParent();
+            int childIndex = parent.getChildren().indexOf(child);
+            parent.getChildren().set(childIndex, createItem(count++ + " set-newItem", f));
+//            TreeItem node = (TreeItem) f.getSelectionModel().getSelectedItem();
+//            if (node == null || node.getParent() == null) return;
+//            int index = node.getParent().getChildren().indexOf(node);
+//            node.getParent().getChildren().set(index, createItem(count++ +"set-newItem", f));
+////            printSelectionState("setAtSelected", f);
         });
         actions.put("removeAll(3, 5, 7)", f -> {
             ObservableList children = f.getRoot().getChildren();

@@ -725,7 +725,11 @@ public class TreeViewTestSimple8u60b5 {
         itSupport.getChildren().remove(mikeGraham);
         assertEquals(itSupport, treeView.getFocusModel().getFocusedItem());
         assertEquals(itSupport, treeView.getSelectionModel().getSelectedItem());
-        assertTrue(itSupport.isLeaf());
+        
+        //PENDING JW: test assumption is incorrect: itSupport had 3 children, removed 1
+        assertTrue("expected itSupport as leaf, childcount: " + itSupport.getChildren().size(), 
+                itSupport.isLeaf());
+        // PENDING JW: how is expanded effected by leafness?
         assertTrue(!itSupport.isExpanded());
     }
     

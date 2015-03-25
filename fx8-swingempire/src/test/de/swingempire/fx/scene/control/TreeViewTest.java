@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -18,9 +19,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.util.TreeModificationReport;
 import static org.junit.Assert.*;
 
 /**
@@ -29,6 +33,10 @@ import static org.junit.Assert.*;
  * 
  * fixed for 8u60, changesset:
  * http://hg.openjdk.java.net/openjfx/8u-dev/rt/rev/83f197be0dcf
+ * 
+ * verified fix, closed issue.
+ * 
+ * ----------------
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -47,6 +55,77 @@ public class TreeViewTest {
 
     private TreeView tree;
 
+    /**
+     * 32620 is about misbehaviour in CheckBoxTreeItem (recursive up/down 
+     * updates didn't work properly with a custom selected provider - they
+     * still don't but maybe something changed?) 
+     */
+    @Test
+    public void testLeafExpanded() {
+        // code comment in expandedProperty:
+        // We don't fire expanded events for leaf nodes (RT-32620)
+        // test in TreeViewTest test_rt28114 (ignored to due not yet done) has lines
+        // the first is incorrect anyway, but assuming it were true by having 
+        // removed all children children while it was expanded - should we expect
+        // a change of the expanded property?
+//        assertTrue(itSupport.isLeaf());
+//        assertTrue(!itSupport.isExpanded());
+        TreeItem child = createSubTree("child");
+        child.setExpanded(true);
+        tree.getRoot().getChildren().set(2, child);
+        assertFalse("node with children is not a leaf", child.isLeaf());
+        assertTrue(child.isExpanded());
+        child.getChildren().clear();
+        assertTrue("node without children is a leaf", child.isLeaf());
+        assertTrue("expanded state unrelated to leaf state", child.isExpanded());
+        TreeModificationReport report = new TreeModificationReport(child);
+        child.setExpanded(false);
+        // we can modify the expanded property of a node
+        assertFalse(child.isExpanded());
+        // but must not fire an expanded event
+        assertEquals(0, report.getEventCount());
+    }
+    
+//-------------------- CheckBoxTreeItem    
+    /**
+     * CheckBoxTreeItem must update parent state when modifying the
+     * children list.
+     * 
+     * Reported
+     * https://javafx-jira.kenai.com/browse/RT-40349
+     */
+    @Test
+    @ConditionalIgnore(condition = IgnoreReported.class)
+    public void testCheckBoxTreeItemDataModification() {
+        CheckBoxTreeItem checkBoxRoot = createCheckBoxSubTree("checked-root");
+        checkBoxRoot.setExpanded(true);
+        tree.setRoot(checkBoxRoot);
+        CheckBoxTreeItem child = (CheckBoxTreeItem) checkBoxRoot.getChildren().get(2);
+        child.setSelected(true);
+        assertTrue(checkBoxRoot.isIndeterminate());
+        root.getChildren().remove(child);
+        assertFalse("root must update its check state on modifications to children list", 
+                checkBoxRoot.isIndeterminate());
+    }
+    protected CheckBoxTreeItem createCheckBoxItem(Object item) {
+        return new CheckBoxTreeItem(item);
+    }
+
+    protected ObservableList<CheckBoxTreeItem> createCheckBoxItems(ObservableList other) {
+        ObservableList items = FXCollections.observableArrayList();
+        other.stream().forEach(item -> items.add(createCheckBoxItem(item)));
+        return items;
+    }
+
+    protected CheckBoxTreeItem createCheckBoxSubTree(Object item) {
+        CheckBoxTreeItem child = createCheckBoxItem(item);
+        child.getChildren().setAll(createCheckBoxItems(rawItems));
+        return child;
+    }
+
+    
+    
+//---------------------- tests around 30661    
     @Test
     public void testRowLessThanExpandedItemCount() {
         TreeItem child = createSubTree("child");
@@ -55,31 +134,6 @@ public class TreeViewTest {
         assertTrue("row of item must be less than expandedItemCount, but was: " + tree.getRow(grandChild), 
                 tree.getRow(grandChild) < tree.getExpandedItemCount());
     }
-    
-    @Test
-    public void testRowOfGrandChildParentCollapsedUpdatedOnInsertAbove() {
-        int grandIndex = 2;
-        int childIndex = 3;
-        TreeItem child = createSubTree("addedChild2");
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        root.getChildren().add(childIndex, child);
-        int rowOfGrand = tree.getRow(grandChild);
-        root.getChildren().add(childIndex -1, createSubTree("other"));
-        assertEquals(rowOfGrand + 1, tree.getRow(grandChild));
-    }
-    
-    @Test
-    public void testRowOfGrandChildParentCollapsedUpdatedOnInsertAboveWithoutAccess() {
-        int grandIndex = 2;
-        int childIndex = 3;
-        TreeItem child = createSubTree("addedChild2");
-        TreeItem grandChild = (TreeItem) child.getChildren().get(grandIndex);
-        root.getChildren().add(childIndex, child);
-        int rowOfGrand = 7; //tree.getRow(grandChild);
-        root.getChildren().add(childIndex, createSubTree("other"));
-        assertEquals(rowOfGrand + 1, tree.getRow(grandChild));
-    }
-    
     
     @Test
     public void testRowOfGrandChildParentExpandedUpdatedOnInsertAbove() {
@@ -129,7 +183,9 @@ public class TreeViewTest {
         // grandChild not visible, row coordinate in tree is not available
         assertEquals("grandChild not visible", -1, row);
         // the other way round: if we get a row, expect the item at the row be the grandChild
-        assertEquals(grandChild, tree.getTreeItem(row));
+        // decision was to return -1 if not visible, so the following line is an
+        // incorrect assumption
+//        assertEquals(grandChild, tree.getTreeItem(row));
     }
 
     @Test

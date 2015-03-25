@@ -175,6 +175,9 @@ public class TreeBasedSelectionHelper<T> {
      * tree but no longer after the change. Could only be a removed, either
      * plain or as part of a replaced - doesn't make a difference (?).
      * <p>
+     * Replaced or removed does make a difference if we want to keep the 
+     * selectedIndex unchanged on setting the item!
+     * <p>
      * We need to find the subtree it was contained in (now removed!) and 
      * select a sibling of the subtree or the source itself, if there are no
      * siblings.
@@ -184,11 +187,27 @@ public class TreeBasedSelectionHelper<T> {
      */
     protected void selectedItemChanged(TreeItemX<T> source,
             Change<? extends TreeItem<T>> c) {
+        TreeItem<T> oldSelectedItem = selectionModel.getSelectedItem();
+        boolean found = false;
         c.reset();
         while(c.next()) {
-            if (c.wasRemoved()) {
+            if (c.wasReplaced()) {
                 for (int i = 0; i < c.getRemovedSize(); i++) {
                     if (isInSubtree(c.getRemoved().get(i))) {
+                        selectedItemReplaced(source, c);
+                        if (found) 
+                            throw new IllegalStateException("old item found in more than one subchange " + c);
+                        found = true;
+                        break;
+                    }
+                }
+                
+            } else if (c.wasRemoved()) {
+                for (int i = 0; i < c.getRemovedSize(); i++) {
+                    if (isInSubtree(c.getRemoved().get(i))) {
+                        if (found) 
+                            throw new IllegalStateException("old item found in more than one subchange " + c);
+                        found = true;
                         selectedItemRemoved(source, c);
                         break;
                     }
@@ -197,6 +216,20 @@ public class TreeBasedSelectionHelper<T> {
         }
     }
 
+    protected void selectedItemReplaced(TreeItemX<T> source,
+            Change<? extends TreeItem<T>> c) {
+        int treeFrom = treeView.getRow(source) + 1 + c.getFrom();
+        if (c.getRemovedSize() == 1 && c.getAddedSize() == 1) {
+            // single replace (not entirely safe, could be a 
+            // setAll with a single new element
+            selectionModel.select(treeFrom);
+        } 
+//        else if (c.getAddedSize() == c.getList().size()) {
+//            // all changed
+//            selectionModel.clearSelection();
+//        }
+        
+    }
     /**
      * 
      * @param source the parent of the change
@@ -208,8 +241,9 @@ public class TreeBasedSelectionHelper<T> {
             Change<? extends TreeItem<T>> c) {
         TreeItem<T> newSelectedItem;
         if (c.wasReplaced()) {
+            throw new IllegalStateException("expected a raw removed but got: " + c);
             // PENDING: what to do? here we select parent.. arbitrary
-            newSelectedItem = source;
+//            newSelectedItem = source;
         } else if (c.wasRemoved()) {
             if (c.getList().isEmpty() ) {
                 newSelectedItem = source;
