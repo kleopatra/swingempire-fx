@@ -25,6 +25,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
+import static javafx.scene.input.KeyCombination.*;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -42,16 +43,42 @@ import de.swingempire.fx.util.DebugUtils;
 public class TreeSelectionAndModification extends Application {
     
     
-    String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
+    String[] actionKeys = {
+            "insertAt0", "removeAt0", 
+            "insertAtSelectedIndex", "setAtSelectedIndex", "removeAtSelectedIndex",
+            "insertBranchAtSelected", "setBranchAtSelected",
             "setAtParentOfSelectedIndex",
-            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", 
-            "clearRoot", "resetInitial", "insertBranchAtSelected", "setBranchAtSelected",
-            "removeGrandParent", "toggleRoot"};
-    // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.DELETE, KeyCode.F3, KeyCode.F4, KeyCode.F5, 
-            KeyCode.F6, KeyCode.F7, KeyCode.F8, KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, 
-            null, null, null, null, null, null, null};
+            "removeGrandParent", 
+            "removeAll(3, 5, 7)",  
+            "clearRoot", "toggleRoot",
+            "resetInitial", 
+            
+            };
+    // PENDING - how to trigger a single event?
+    // if we have bindings to both the key and the modifier, the action 
+    // with the combination is triggered multiple times
+    // the error was in the eventHandler: need to use keyCombination(match)
+    // to decide if to triggers the action 
+    KeyCode[] keys = {
+            KeyCode.F1, KeyCode.F2, 
+            KeyCode.INSERT, KeyCode.ENTER, KeyCode.DELETE, 
+            KeyCode.INSERT, KeyCode.ENTER, 
+            KeyCode.F5, 
+            KeyCode.F8, 
+            KeyCode.F9, 
+            KeyCode.F10, KeyCode.F11, 
+            KeyCode.F12};
+    KeyCombination.Modifier[] modifiers = {
+            null, null, // at0
+            null, null, null, // atSelected
+            SHORTCUT_DOWN, SHORTCUT_DOWN, // branchAtSelected
+            null, 
+            null, 
+            null, 
+            null, null, 
+            null
+            };
+
     private int count;
     
     protected Map<String, Consumer<TreeView>> createActions() {
@@ -175,8 +202,8 @@ public class TreeSelectionAndModification extends Application {
     protected void configureActions(TreeView facade, Map<String, Consumer<TreeView>> actionMap, Map<KeyCodeCombination, String> inputMap) {
         inputMap.forEach((combi, s) -> {
             Consumer c = actionMap.get(s);
-            facade.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-                if (e.getCode() == combi.getCode()) {
+            facade.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
+                if (combi.match(e)) { //e.getCode() == combi.getCode()) {
                     c.accept(facade);   
                     // PENDING JW: without consuming we get weird selection in TableView?
                     e.consume();

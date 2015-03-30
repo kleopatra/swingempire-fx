@@ -60,8 +60,7 @@ import javafx.stage.Stage;
  */
 public class TableFocusedCell extends Application {
     private final ObservableList<Locale> data =
-            FXCollections.observableArrayList(Locale.getAvailableLocales()
-                    );
+            FXCollections.observableArrayList(Locale.getAvailableLocales());
    
     private final TableView<Locale> table = new TableView<>(data);
     
@@ -69,9 +68,9 @@ public class TableFocusedCell extends Application {
     public void start(Stage stage) {
         stage.setTitle("Table FocusedCell Bug");
         // add a listener to see loosing the column
-//        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
-//            LOG.info("old/new " + oldValue + "\n  " + newValue);
-//        });
+        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
+            LOG.info("old/new " + oldValue + "\n " + newValue);
+        });
         TableColumn<Locale, String> language = new TableColumn<>(
                 "Language");
         language.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));
@@ -85,6 +84,7 @@ public class TableFocusedCell extends Application {
         // make column available after initial selection
         table.setEditable(true);
         country.setCellFactory(TextFieldTableCell.forTableColumn());
+        language.setCellFactory(TextFieldTableCell.forTableColumn());
 
         
         table.setItems(data);

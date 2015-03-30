@@ -188,8 +188,9 @@ public class FileTreeXExample extends Application {
                 // needs to be queued for building, otherwise listener might
                 // get confused by interleaved treeModification events
                 // on expansion
-                Platform.runLater(() -> super.getChildren().setAll(buildChildren(this)));
-//                super.getChildren().setAll(buildChildren(this));
+                Platform.runLater(() -> {
+                    super.getChildren().setAll(buildChildren(this));
+                        });
             }
             return super.getChildren();
         }

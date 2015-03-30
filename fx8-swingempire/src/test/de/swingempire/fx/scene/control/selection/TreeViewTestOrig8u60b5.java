@@ -3301,8 +3301,8 @@ public class TreeViewTestOrig8u60b5 {
             public ObservableList<TreeItem<Integer>> getChildren() {
                 if (isFirstTimeChildren) {
                     isFirstTimeChildren = false;
+                    super.getChildren().setAll(buildChildren(this));
                     Platform.runLater(() -> {
-                        super.getChildren().setAll(buildChildren(this));
                     }); 
                 }
                 return super.getChildren();
