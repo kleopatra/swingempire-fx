@@ -33,6 +33,9 @@ import com.sun.javafx.scene.control.skin.CellSkinBase;
 import com.sun.javafx.scene.control.skin.TableRowSkinBase;
 import com.sun.javafx.scene.control.skin.TreeTableViewSkin;
 
+/**
+ * Copy of core TreeTableRowSkin, 8u60b5
+ */
 public class TreeTableRowSkinX<T> extends TableRowSkinBase<TreeItem<T>, TreeTableRow<T>, TreeTableRowBehavior<T>, TreeTableCell<T,?>> {
 
     /***************************************************************************

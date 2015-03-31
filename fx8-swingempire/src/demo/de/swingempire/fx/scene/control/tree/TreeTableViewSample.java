@@ -21,6 +21,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.ProgressBarTreeTableCell;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -85,42 +86,24 @@ public class TreeTableViewSample extends Application implements Runnable {
         TreeTableColumn<Employee, String> empColumn = new TreeTableColumn<>(
                 "Employee");
         empColumn.setPrefWidth(150);
-        empColumn.setCellValueFactory(
-                // expects a TableColumn, can't use in TreeTableColumn
-                //new PropertyValueFactory("name"));
-                (TreeTableColumn.CellDataFeatures<Employee, String> cdf)
-                -> {
-//                    LOG.info("param: " + cdf.getValue());
-                    return cdf.getValue().getValue().nameProperty();
-//                    return new ReadOnlyStringWrapper(cdf.getValue().getValue().getName());
-                    }
-        );
-        TreeTableColumn<Employee, Boolean> selectedColumn = new TreeTableColumn<>("check");
-//        selectedColumn.setCellValueFactory
-//        empColumn.setCellFactory(CheckBoxTreeTableCell.forTreeTableView());
-        
-        
-//        TreeTableColumn<Employee, Double> salaryColumn = new TreeTableColumn<>(
-//                "Salary");
-//        salaryColumn.setPrefWidth(190);
-//        /*
-//         * salaryColumn.setCellValueFactory(
-//         * (TreeTableColumn.CellDataFeatures<Employee, String> param) -> new
-//         * ReadOnlyDoubleWrapper(param.getValue().getValue().getEmail()) );
-//         */
-//        salaryColumn.setCellFactory(ProgressBarTreeTableCell
-//                .<Employee> forTreeTableColumn());
+        empColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
+        TreeTableColumn<Employee, Double> salaryColumn = new TreeTableColumn<>(
+                "Salary");
+        salaryColumn.setPrefWidth(190);
+        /*
+         * salaryColumn.setCellValueFactory(
+         * (TreeTableColumn.CellDataFeatures<Employee, String> param) -> new
+         * ReadOnlyDoubleWrapper(param.getValue().getValue().getEmail()) );
+         */
+        salaryColumn.setCellFactory(ProgressBarTreeTableCell
+                .<Employee> forTreeTableColumn());
         root2.getChildren().add(root);
 
         TreeTableView<Employee> treeTableView = new TreeTableView<>(root2);
-        treeTableView.getColumns().setAll(empColumn); //, salaryColumn);
-        treeTableView.setRowFactory(f -> new CheckBoxTreeTableRowHack<>());
+        treeTableView.getColumns().setAll(empColumn, salaryColumn);
+//        treeTableView.setRowFactory(item -> new CheckBoxTreeTableRowHack<>());
+        treeTableView.setRowFactory(item -> new CheckBoxTreeTableRow<>());
         
-//        Button button = new Button("log treeColumn");
-//        button.setOnAction(e -> {
-//            LOG.info("treecolumn: " + treeTableView.getTreeColumn());
-//            
-//        });
         sceneRoot.getChildren().addAll(treeTableView); //, button);
         stage.setScene(scene);
         stage.show();
@@ -194,7 +177,6 @@ public class TreeTableViewSample extends Application implements Runnable {
         public String toString() {
             return getName();
         }
-        
         
     }
 
