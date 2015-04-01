@@ -17,16 +17,54 @@ import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 //import javafx.scene.control.cell.CellUtils;
 import javafx.util.Callback;
-import javafx.util.StringConverter;
 
 import com.sun.javafx.scene.control.skin.TreeTableRowSkin;
 
+import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
+import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell.DefaultTreeTableCellSkin;
+
 /**
+ * Support custom graphic for Tree/TableRow. Here in particular a checkBox.
+ * http://stackoverflow.com/q/29300551/203657
+ * <p>
+ * Basic idea: implement custom TreeTableRow that set's its graphic to the 
+ * graphic/checkBox. Doesn't work: layout is broken, graphic appears
+ * over the text. All fine if we set the graphic to the TreeItem that's
+ * shown. Possible as long as the treeItem doesn't have a graphic of
+ * its own.
+ * <p>
+ * Basic problem:
+ * <li> TableRowSkinBase seems to be able to cope: has protected method
+ *   graphicsProperty that should be implemented to return the graphic 
+ *   if any. That graphic is added to the children list and sized/located
+ *   in layoutChildren. 
+ * <li> are added the graphic/disclosureNode as needed before
+ *   calling super.layoutChildren,  
+ * <li> graphic/disclosure are placed inside the leftPadding of the tableCell
+ *   that is the treeColumn
+ * <li> TreeTableCellSkin must cooperate in taking into account the graphic/disclosure 
+ *   when calculating its leftPadding
+ * <li> cellSkin is hard-coded to use the TreeItem's graphic (vs. the rowCell's)   
+ *
+ * PENDING JW: 
+ * <li>- would expect to not alter the scenegraph during layout (might lead to
+ *   endless loops or not) but done frequently in core code   
+ * <p> 
+ *  
+ * Outline of the solution as implemented:
+ * <li> need a TreeTableCell with a custom skin
+ * <li> override leftPadding in skin to add row graphic if available
+ * <li> need CheckBoxTreeTableRow that sets its graphic to checkBox (or a combination
+ *   of checkBox and treeItem's)
+ * <li> need custom rowSkin that implements graphicProperty to return the row graphic  
+ *    
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * @see DefaultTreeTableCell
+ * @see DefaultTreeTableCellSkin
+ * 
  */
 public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
 
@@ -37,8 +75,6 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
     private BooleanProperty indeterminateProperty;
     
     public CheckBoxTreeTableRow() {
-        // getSelectedProperty as anonymous inner class to deal with situation
-        // where the user is using CheckBoxTreeItem instances in their tree
         this(item -> {
             if (item instanceof CheckBoxTreeItem<?>) {
                 return ((CheckBoxTreeItem<?>)item).selectedProperty();
@@ -51,26 +87,10 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
             final Callback<TreeItem<T>, ObservableValue<Boolean>> getSelectedProperty) {
         this.getStyleClass().add("check-box-tree-cell");
         setSelectedStateCallback(getSelectedProperty);
-        
         checkBox = new CheckBox();
         checkBox.setAlignment(Pos.TOP_LEFT);
-        checkBox.setAllowIndeterminate(false);
-        checkBox.setManaged(false);
-        // by default the graphic is null until the cell stops being empty
     }
 
-    public CheckBoxTreeTableRow(
-            final Callback<TreeItem<T>, ObservableValue<Boolean>> getSelectedProperty, 
-            final StringConverter<TreeItem<T>> converter) {
-        this(getSelectedProperty, converter, null);
-    }
-
-    private CheckBoxTreeTableRow(
-            final Callback<TreeItem<T>, ObservableValue<Boolean>> getSelectedProperty, 
-            final StringConverter<TreeItem<T>> converter, 
-            final Callback<TreeItem<T>, ObservableValue<Boolean>> getIndeterminateProperty) {
-    }
-    
     // --- selected state callback property
     private ObjectProperty<Callback<TreeItem<T>, ObservableValue<Boolean>>> 
             selectedStateCallback = 
@@ -100,25 +120,16 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
     }
     
     /** {@inheritDoc} */
-    @Override public void updateItem(T item, boolean empty) {
+    @Override protected void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
         
         if (empty) {
             setText(null);
             setGraphic(null);
         } else {
-//            StringConverter<TreeItem<T>> c = getConverter();
-//            
             TreeItem<T> treeItem = getTreeItem();
-            // PENDING JW: this is nuts .. certainly will pose problems
-            // when re-using the cell
-            treeItem.setGraphic(checkBox);
-//            
-//            // update the node content
-////            setText(c != null ? c.toString(treeItem) : (treeItem == null ? "" : treeItem.toString()));
-//            checkBox.setGraphic(treeItem == null ? null : treeItem.getGraphic());
-//            setGraphic(checkBox);
-//            
+            checkBox.setGraphic(treeItem == null ? null : treeItem.getGraphic());
+            setGraphic(checkBox);
             // uninstall bindings
             if (booleanProperty != null) {
                 checkBox.selectedProperty().unbindBidirectional((BooleanProperty)booleanProperty);
@@ -128,7 +139,7 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
             }
 
             // install new bindings.
-            // We special case things when the TreeItem is a CheckBoxTreeItem
+            // this can only handle TreeItems of type CheckBoxTreeItem
             if (treeItem instanceof CheckBoxTreeItem) {
                 CheckBoxTreeItem<T> cbti = (CheckBoxTreeItem<T>) treeItem;
                 booleanProperty = cbti.selectedProperty();
@@ -141,58 +152,45 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
             }
         }
         
-        
     }
-
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new CheckBoxTreeTableRowSkin(this);
+        return new CheckBoxTreeTableRowSkin<>(this);
     }
 
-
-    public static class CheckBoxTreeTableRowSkin extends TreeTableRowSkinX {
+    public static class CheckBoxTreeTableRowSkin<S> extends TreeTableRowSkin<S> {
         protected ObjectProperty<Node> checkGraphic;
-        private Circle shape;
 
         /**
          * @param control
          */
-        public CheckBoxTreeTableRowSkin(TreeTableRow control) {
+        public CheckBoxTreeTableRowSkin(TreeTableRow<S> control) {
             super(control);
-            shape = new Circle(10, Color.ALICEBLUE);
-//            updateChildren();
         }
 
-        
+        /**
+         * Note: this is implicitly called from the constructor of LabeledSkinBase.
+         * At that time, checkGraphic is not yet instantiated. So we do it here,
+         * still having to create it at least twice. That'll be a problem if 
+         * anybody would listen to changes ...
+         */
         @Override
         protected ObjectProperty<Node> graphicProperty() {
-//            super.graphicProperty();
-            boolean checkCreated = false;
             if (checkGraphic == null) {
-                checkCreated = true;
                 checkGraphic = new SimpleObjectProperty<Node>(this, "checkGraphic");
             }
-            CheckBoxTreeTableRow treeTableRow = getTableRow();
+            CheckBoxTreeTableRow<S> treeTableRow = getTableRow();
             if (treeTableRow.getTreeItem() == null) {
                 checkGraphic.set(null);   
             } else {
-                TreeItem item = getTableRow().getTreeItem();
-                if (checkCreated) {
-                    
-                }
-//                LOG.info("created check for " + checkCreated + "  " +((item != null) ? item.getValue() : null));
-                checkGraphic.set(treeTableRow.checkBox);
+                checkGraphic.set(treeTableRow.getGraphic());
             }
-//            LOG.info("isIgnoreGraphic" + isIgnoreGraphic() + " managed? " + treeTableRow.checkBox.isManaged());
             return checkGraphic;
         }
 
-        protected void updateChildren() {
-            super.updateChildren();
-        }
-        protected CheckBoxTreeTableRow getTableRow() {
-            return (CheckBoxTreeTableRow) super.getSkinnable();
+        protected CheckBoxTreeTableRow<S> getTableRow() {
+            return (CheckBoxTreeTableRow<S>) super.getSkinnable();
         }
     }
     

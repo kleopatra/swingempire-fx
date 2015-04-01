@@ -11,30 +11,39 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.Skin;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.ProgressBarTreeTableCell;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
 
 /**
  * CheckBoxTreeItem/CheckBoxTreeCell not for TreeTableView?
- * 
  * http://stackoverflow.com/q/29300551/203657
+ * <p>
+ * Example from question, changed to 
  * 
- * 
+ * <li> have tree item graphics on folders
+ * <li> use TreeTableCells with DefaultTreeTableSkin to cope with row graphics
+ * <li> use CheckBoxTreeTableRow to install/manage a checkbox with its selected/
+ *      indeterminate properties bound to the CheckBoxTreeItem.
+ *    
+ * <p>
+ * removed salary updating code - the progressBarTreeTableCell only serves for
+ * demonstrating how to set a skin that copes with row graphic.
+ *      
  * @author Jeanette Winzenburg, Berlin
  */
-public class TreeTableViewSample extends Application implements Runnable {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class TreeTableViewSample extends Application {
 
     List<Employee> employees = Arrays.<Employee> asList(new Employee(
             "Ethan Williams", 30.0), new Employee("Emma Jones", 10.0),
@@ -42,21 +51,11 @@ public class TreeTableViewSample extends Application implements Runnable {
                     50.0), new Employee("Rodger York", 20.0), new Employee(
                     "Susan Collins", 70.0));
 
-    /*
-     * private final ImageView depIcon = new ImageView ( new
-     * Image(getClass().getResourceAsStream("department.png")) );
-     */
     final CheckBoxTreeItem<Employee> root = new CheckBoxTreeItem<>(
-            new Employee("Sales Department", 0.0));
+            new Employee("Sales Department", 0.0), new Circle(10, Color.RED));
     
     final CheckBoxTreeItem<Employee> root2 = new CheckBoxTreeItem<>(
-            new Employee("Departments", 0.0));
-    
-//    TreeItem<Employee> root = new TreeItem<>(
-//            new Employee("Sales Department", 0.0));
-//
-//    TreeItem<Employee> root2 = new TreeItem<>(
-//            new Employee("Departments", 0.0));
+            new Employee("Departments", 0.0), new Circle(10, Color.BLUE));
 
     public static void main(String[] args) {
         Application.launch(TreeTableViewSample.class, args);
@@ -64,16 +63,6 @@ public class TreeTableViewSample extends Application implements Runnable {
 
     @Override
     public void start(Stage stage) {
-//        CheckBoxTreeCell c;
-//        TreeTableRow d;
-
-//        CheckBox rootBox2 = new CheckBox();
-//        rootBox2.setAlignment(Pos.TOP_CENTER);
-//        root2.setGraphic(rootBox2);
-//        CheckBox rootBox = new CheckBox();
-//        LOG.info(rootBox.getAlignment() + "");
-//        rootBox.setAlignment(Pos.TOP_CENTER);
-//        root.setGraphic(rootBox);
         root.setExpanded(true);
         employees.stream().forEach((employee) -> {
             root.getChildren().add(new CheckBoxTreeItem<>(employee));
@@ -87,16 +76,22 @@ public class TreeTableViewSample extends Application implements Runnable {
                 "Employee");
         empColumn.setPrefWidth(150);
         empColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
+        empColumn.setCellFactory(p -> new DefaultTreeTableCell<>());
         TreeTableColumn<Employee, Double> salaryColumn = new TreeTableColumn<>(
                 "Salary");
         salaryColumn.setPrefWidth(190);
-        /*
-         * salaryColumn.setCellValueFactory(
-         * (TreeTableColumn.CellDataFeatures<Employee, String> param) -> new
-         * ReadOnlyDoubleWrapper(param.getValue().getValue().getEmail()) );
-         */
-        salaryColumn.setCellFactory(ProgressBarTreeTableCell
-                .<Employee> forTreeTableColumn());
+        // all cell types must have a skin that copes with row graphics
+        salaryColumn.setCellFactory(e -> {
+            TreeTableCell cell = new ProgressBarTreeTableCell() {
+
+                @Override
+                protected Skin<?> createDefaultSkin() {
+                    return new DefaultTreeTableCell.DefaultTreeTableCellSkin<>(this);
+                }
+                
+            };
+            return cell;
+        });
         root2.getChildren().add(root);
 
         TreeTableView<Employee> treeTableView = new TreeTableView<>(root2);
@@ -107,29 +102,6 @@ public class TreeTableViewSample extends Application implements Runnable {
         sceneRoot.getChildren().addAll(treeTableView); //, button);
         stage.setScene(scene);
         stage.show();
-//        ScheduledExecutorService executorService = Executors
-//                .newScheduledThreadPool(1);
-//        executorService.scheduleAtFixedRate(this, 3, 10, TimeUnit.SECONDS);
-
-    }
-
-    @Override
-    public void run() {
-        root2.getValue().setSalary(calcSalary(root));
-    }
-
-    public double calcSalary(TreeItem<Employee> t) {
-        Double salary = 0.0;
-        if (!t.isLeaf()) {
-
-            ObservableList<TreeItem<Employee>> al = t.getChildren();
-            for (int i = 0; i < al.size(); i++) {
-                TreeItem<Employee> get = al.get(i);
-                salary += calcSalary(get);
-            }
-            t.getValue().setSalary(salary);
-        }
-        return salary += t.getValue().getSalary();
     }
 
     public class Employee {
