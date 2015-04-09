@@ -121,7 +121,6 @@ public class DefaultTreeTableCell<S, T> extends TreeTableCell<S, T> {
             return view.getVisibleLeafColumns().indexOf(column) == 0;
         }
         
-        
     }
 
 }

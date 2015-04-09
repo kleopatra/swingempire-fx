@@ -23,6 +23,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.cell.CheckBoxTreeTableRow;
 import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
 
 /**

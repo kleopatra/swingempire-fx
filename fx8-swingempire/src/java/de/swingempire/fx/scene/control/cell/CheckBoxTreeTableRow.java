@@ -2,7 +2,7 @@
  * Created on 29.03.2015
  *
  */
-package de.swingempire.fx.scene.control.tree;
+package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
@@ -21,9 +21,6 @@ import javafx.scene.control.TreeTableRow;
 import javafx.util.Callback;
 
 import com.sun.javafx.scene.control.skin.TreeTableRowSkin;
-
-import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
-import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell.DefaultTreeTableCellSkin;
 
 /**
  * Support custom graphic for Tree/TableRow. Here in particular a checkBox.
@@ -120,7 +117,8 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
     }
     
     /** {@inheritDoc} */
-    @Override protected void updateItem(T item, boolean empty) {
+    @Override 
+    protected void updateItem(T item, boolean empty) {
         super.updateItem(item, empty);
         
         if (empty) {
