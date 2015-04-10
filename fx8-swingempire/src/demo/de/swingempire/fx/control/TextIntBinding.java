@@ -4,6 +4,10 @@
  */
 package de.swingempire.fx.control;
 
+import java.text.NumberFormat;
+import java.util.function.UnaryOperator;
+import java.util.logging.Logger;
+
 import javafx.application.Application;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
@@ -29,7 +33,24 @@ public class TextIntBinding extends Application {
      */
     private Parent getContent() {
         TextField price = new TextField();
-        TextFormatter<Double> priceFormatter = new TextFormatter<>(new DoubleStringConverter());
+        NumberFormat format = NumberFormat.getNumberInstance();
+        UnaryOperator<TextFormatter.Change> filter = c -> {
+            if (c.isContentChange()) {
+                try {
+                    // not really good: format accepts the text as long as 
+                    // it can parse its beginning
+                    format.parse(c.getControlNewText());
+                    return c;
+                } catch (Exception ex) {
+                    LOG.info("rejected" + c.getControlText() + "/" + c.getControlNewText());
+                    return null; 
+                }
+            }
+            return c;
+        };
+        TextFormatter<Double> priceFormatter = new TextFormatter<Double>(
+                new DoubleStringConverter(), 0.,
+                filter);
         price.setTextFormatter(priceFormatter);
         TextField quantity = new TextField();
         TextFormatter<Integer> quantityFormatter = new TextFormatter<>(new IntegerStringConverter());
@@ -48,7 +69,6 @@ public class TextIntBinding extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // TODO Auto-generated method stub
         Scene scene = new Scene(getContent());
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -57,4 +77,8 @@ public class TextIntBinding extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger.getLogger(TextIntBinding.class
+            .getName());
 }
