@@ -175,16 +175,17 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
          */
         @Override
         protected ObjectProperty<Node> graphicProperty() {
-            if (checkGraphic == null) {
-                checkGraphic = new SimpleObjectProperty<Node>(this, "checkGraphic");
-            }
-            CheckBoxTreeTableRow<S> treeTableRow = getTableRow();
-            if (treeTableRow.getTreeItem() == null) {
-                checkGraphic.set(null);   
-            } else {
-                checkGraphic.set(treeTableRow.getGraphic());
-            }
-            return checkGraphic;
+            return getSkinnable().graphicProperty();
+//            if (checkGraphic == null) {
+//                checkGraphic = new SimpleObjectProperty<Node>(this, "checkGraphic");
+//            }
+//            CheckBoxTreeTableRow<S> treeTableRow = getTableRow();
+//            if (treeTableRow.getTreeItem() == null) {
+//                checkGraphic.set(null);   
+//            } else {
+//                checkGraphic.set(treeTableRow.getGraphic());
+//            }
+//            return checkGraphic;
         }
 
         protected CheckBoxTreeTableRow<S> getTableRow() {
