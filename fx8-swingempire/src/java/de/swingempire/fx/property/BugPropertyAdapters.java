@@ -119,7 +119,6 @@ public class BugPropertyAdapters {
         
     }
 
-    
     public static BooleanProperty booleanProperty(final Property<Boolean> property) {
         if (property == null) {
             throw new NullPointerException("Property cannot be null");

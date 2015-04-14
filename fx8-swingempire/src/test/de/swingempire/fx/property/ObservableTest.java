@@ -40,6 +40,11 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableTest {
 
+    
+//--------------------------
+    
+    
+//-------------- identity vs. equality    
     /**
      * Invalidation not fired on same value.
      */

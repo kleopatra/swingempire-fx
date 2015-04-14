@@ -158,34 +158,21 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
     }
 
     public static class CheckBoxTreeTableRowSkin<S> extends TreeTableRowSkin<S> {
-        protected ObjectProperty<Node> checkGraphic;
 
-        /**
-         * @param control
-         */
         public CheckBoxTreeTableRowSkin(TreeTableRow<S> control) {
             super(control);
         }
 
         /**
-         * Note: this is implicitly called from the constructor of LabeledSkinBase.
-         * At that time, checkGraphic is not yet instantiated. So we do it here,
-         * still having to create it at least twice. That'll be a problem if 
-         * anybody would listen to changes ...
+         * Returns the tableRow graphicProperty.
+         * 
+         * Note: While this is implicitly called from the constructor 
+         * of LabeledSkinBase, it doesn't matter as we don't alias the
+         * property but return it directly.
          */
         @Override
         protected ObjectProperty<Node> graphicProperty() {
             return getSkinnable().graphicProperty();
-//            if (checkGraphic == null) {
-//                checkGraphic = new SimpleObjectProperty<Node>(this, "checkGraphic");
-//            }
-//            CheckBoxTreeTableRow<S> treeTableRow = getTableRow();
-//            if (treeTableRow.getTreeItem() == null) {
-//                checkGraphic.set(null);   
-//            } else {
-//                checkGraphic.set(treeTableRow.getGraphic());
-//            }
-//            return checkGraphic;
         }
 
         protected CheckBoxTreeTableRow<S> getTableRow() {
