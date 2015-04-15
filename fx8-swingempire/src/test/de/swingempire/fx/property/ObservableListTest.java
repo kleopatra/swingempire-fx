@@ -4,10 +4,7 @@
  */
 package de.swingempire.fx.property;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
@@ -24,22 +21,17 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
 
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.control.ImmutableObservableList;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;
@@ -47,7 +39,6 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.InvalidationReport;
 import de.swingempire.fx.util.ListChangeReport;
-
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -60,6 +51,30 @@ import static org.junit.Assert.*;
 public class ObservableListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    
+//--------------- quick test of ImmutableObservableList
+    
+    @Test
+    public void testImmutableObservableList() {
+        ObservableList data = createObservableList(true);
+        ImmutableObservableList immutable = new ImmutableObservableList<>(data);
+        ListChangeReport report = new ListChangeReport(immutable);
+        immutable.setBackingList(null);
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected single removed", wasSingleRemoved(report.getLastChange()));
+        report.clear();
+        immutable.setBackingList(data);
+        assertEquals(1, report.getEventCount());
+        assertTrue("expected singe added", wasSingleAdded(report.getLastChange()));
+        report.clear();
+        ObservableList other = FXCollections.observableArrayList("onxe", "tewo", "other");
+        immutable.setBackingList(other);
+        assertEquals(1, report.getEventCount());
+        report.prettyPrint();
+        assertTrue("expected single replaced", wasSingleReplaced(report.getLastChange()));
+    }
+    
+//----------------    
 
     /**
      * Sanity ... removing last implies that getFrom == size!! that is
@@ -76,7 +91,7 @@ public class ObservableListTest {
         Change c = report.getLastChange();
         c.next();
         assertEquals(lastIndex, c.getFrom());
-        report.prettyPrint();
+//        report.prettyPrint();
     }
     /**
      * Sanity ...
