@@ -4,16 +4,19 @@
  */
 package de.swingempire.fx.property;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -21,6 +24,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.util.Callback;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -52,6 +56,96 @@ public class ObservableListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     
+    // ---------------
+
+    /**
+     * Testing #events on update: from OTN
+     * updated fired only once, OP expected 3 - reason being that
+     * InvalidationListeners are notified only when value gets invalid,
+     * changing an invalid value has no effect until it's forced to
+     * validate (by accessing it or registering a ChangeListener)
+     */
+    @Test
+    public void testRowNotification() {
+        final ObservableList<Row> rows = FXCollections
+                .observableArrayList(new Callback<Row, Observable[]>() {
+
+                    @Override
+                    public Observable[] call(Row item) {
+                        return new Observable[] { item.nameProperty() };
+                    }
+                });
+
+        rows.addListener(new ListChangeListener<Row>() {
+
+            @Override
+            public void onChanged(
+                    ListChangeListener.Change<? extends Row> change) {
+                while (change.next()) {
+                    
+                    if (change.wasUpdated()) {
+//                        System.out.println("" + change.getList().get(change.getFrom()));
+                        
+                    }
+                }
+                change.reset();
+//                FXUtils.prettyPrint(change);
+            }
+        });
+
+        Row r = new Row("Dummy");
+
+        rows.add(r); // -> onChanged
+
+        r.setName("Hello"); // -> onChanged
+        r.setName("World"); // -> NO onChanged ???
+        r.setName("Hi"); // -> NO onChanged ???
+
+    }
+    
+    public static class Row { //implements Serializable {  
+        
+        private final SimpleStringProperty name = new SimpleStringProperty(this, "name", "");  
+      
+        public Row() {  
+            this("");  
+        }  
+      
+        public Row(String name) {  
+            this.name.set(name);  
+//            this.name.addListener((cource, old, value) -> {
+//                
+//            });
+//            this.name.addListener(new ChangeListener<Boolean>() {  
+//                
+//                @Override  
+//                public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {  
+//                     // just empty!  
+//                }  
+//            });  
+
+        }  
+      
+        public String getName() {  
+            return name.get();  
+        }  
+      
+        public void setName(String name) {  
+            this.name.set(name);  
+        }  
+      
+        public SimpleStringProperty nameProperty() {  
+            return name;  
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }  
+        
+        
+    }
+    
 //--------------- quick test of ImmutableObservableList
     
     @Test
@@ -70,7 +164,7 @@ public class ObservableListTest {
         ObservableList other = FXCollections.observableArrayList("onxe", "tewo", "other");
         immutable.setBackingList(other);
         assertEquals(1, report.getEventCount());
-        report.prettyPrint();
+//        report.prettyPrint();
         assertTrue("expected single replaced", wasSingleReplaced(report.getLastChange()));
     }
     

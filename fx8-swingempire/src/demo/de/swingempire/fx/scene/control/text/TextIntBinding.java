@@ -2,7 +2,7 @@
  * Created on 08.04.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.text;
 
 import java.text.NumberFormat;
 import java.util.function.UnaryOperator;
