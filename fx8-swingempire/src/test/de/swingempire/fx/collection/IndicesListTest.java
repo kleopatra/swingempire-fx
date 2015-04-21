@@ -6,6 +6,7 @@ package de.swingempire.fx.collection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -31,11 +32,11 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.sun.javafx.collections.SortHelper;
 
-import de.swingempire.fx.collection.IndicesList;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
@@ -688,7 +689,8 @@ public class IndicesListTest {
     }
     
     /**
-     * Test notification on setAll if there are already set.
+     * Test notification on setAll if there are already set indices.
+     * Changed implementation due to RT-39776, test assumption incorrect.
      */
     @Test
     public void testSetAllNotificationIfHasSet() {
@@ -701,6 +703,41 @@ public class IndicesListTest {
         assertEquals(1, report.getEventCount());
         Change c = report.getLastChange();
         assertEquals(4, getChangeCount(c, ChangeType.ADDED));
+    }
+    
+    /**
+     * Optimized contains (same as core in selectedIndicesSeq), need to 
+     * test if still working.
+     * 
+     * https://javafx-jira.kenai.com/browse/RT-39776
+     * 
+     */
+    @Test
+    public void testContains() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        for (int i : indices) {
+            assertTrue("index must be contained: " + i, indicesList.contains(i));
+        }
+    }
+    
+    /**
+     * Optimized contains (same as core in selectedIndicesSeq), need to 
+     * test if still working.
+     * 
+     * https://javafx-jira.kenai.com/browse/RT-39776
+     * 
+     */
+    @Test
+    public void testContainsNot() {
+        int[] indices = new int[] { 3, 5, 1};
+        indicesList.addIndices(indices);
+        report.clear();
+        int[] notContained = new int[] {0, 7, 4, 2};
+        for (int i : notContained) {
+            assertFalse("index must not be contained: " + i, indicesList.contains(i));
+        }
     }
     
     @Test
@@ -889,6 +926,20 @@ public class IndicesListTest {
     @Test
     public void testInitial() {
         assertEquals(0, indicesList.size());
+    }
+    
+    /**
+     * Sanity: properties of BitSet.
+     */
+    @Test
+    public void testBitSet() {
+        BitSet bitSet = new BitSet();
+        int index = 500;
+        bitSet.set(index);
+        assertTrue(bitSet.get(index));
+        assertEquals(1, bitSet.cardinality());
+        assertEquals(index + 1, bitSet.length());
+        assertFalse(bitSet.get(index * 2));
     }
     
     @Before

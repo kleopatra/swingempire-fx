@@ -4,13 +4,10 @@
  */
 package de.swingempire.fx.collection;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import javafx.collections.ObservableListBase;
 
@@ -51,6 +48,16 @@ import javafx.collections.ObservableListBase;
 public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
 
     protected BitSet bitSet;
+    
+    //-------- fields for performance experiments: currently unused
+    private static boolean PERFORM = false;
+    private boolean valid;
+    private int firstSetIndex;
+    private int lastSetIndex;
+    private int lastGetListIndex;
+    private int lastGetBitSetIndex;
+    //-------- end fields for performance experiments
+    
     /**
      * Sets the given indices. All previously set indices that are not
      * in the given list are
@@ -76,17 +83,28 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
 
     /**
      * Sets all indices. 
-     * 
-     * PENDING JW: notification on already set?
+     * <p>
+     * PENDING JW: notification on already set? Delegates to 
+     * setIndices which handles the correct notification .. but:
+     * very slow! Alternative implementation: clears all and block-sets
+     * all. Perfomant, fires a replaced. Acceptable?
      * 
      */
     public void setAllIndices() {
         if (getSourceSize() == 0) return;
-        int[] indices = new int[getSourceSize()];
-        for (int i = 0; i < indices.length; i++) {
-            indices[i] = i;
-        }
-        setIndices(indices);
+        // performance optimized verstion: clear all then select all
+        beginChange();
+        clearAllIndices();
+        bitSet.set(0, getSourceSize(), true);
+        nextAdd(0, getSourceSize());
+        endChange();
+        // code below delegates to setIndices, handles correct notification
+        // but is very slow.
+//        int[] indices = new int[getSourceSize()];
+//        for (int i = 0; i < indices.length; i++) {
+//            indices[i] = i;
+//        }
+//        setIndices(indices);
     }
 
     /**
@@ -123,7 +141,11 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     public void clearAllIndices() {
         beginChange();
         for (int i = size() -1 ; i >= 0; i--) {
-            int value = get(i);
+//            int value = get(i);
+            // performance op: don't go through get
+            // bitSet lenght is updated automatically, 
+            // last set at length - 1
+            int value = bitSet.length() - 1;
             bitSet.clear(value);
             nextRemove(i, value);
         }
@@ -255,17 +277,17 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     }
 
     /**
-     * Shifts all bits above from by addedSize to the right. 
-     * The index is a coordinates in 
+     * Shifts all bits above and equal from by addedSize to the right. 
+     * The index is a coordinate in 
      * backing list. The operation is
      * equivalent to increasing the index values by addedSize.
      * 
      * <p><strong>Note</strong>: needs to be called inside {@code beginChange()} 
      *  
-     * <p> PENDING JW: check 0 range!
+     * <p> PENDING JW: check 0 range! 
      * 
-     * @param from
-     * @param removedSize
+     * @param from index in backing list
+     * @param addedSize the size to add to each index value of the bitSet
      */
     protected void doShiftRight(int from, int addedSize) {
         // loop bitset from back to from
@@ -293,44 +315,126 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
     
     /**
      * {@inheritDoc} <p>
-     * access with off range index is programming error, better
-     * throw
+     * Access with off range index is programming error, better
+     * throw.
+     * <p>
+     * 
+     * Note: core (as of 8u60b11) still accepts indices outside our own size,
+     * shouldn't 
+     * <p>
+     * PENDING JW: optimize (?) for RT-39776 - performance issue on access.
      * 
      * @return the value of this if index in valid range
      *  @throws IndexOutOfBoundsException if index off range
      */
     @Override
-    public Integer get(int index) {
+    public Integer get(int listIndex) {
         // PENDING JW: it is wrong to use size of source list as upper boundary
         // get() defined only on _our_ size!
-        if (index < 0 || index >= size()) // return -1;
+        if (listIndex < 0 || listIndex >= size()) // return -1;
             throw new IndexOutOfBoundsException("index must be not negative "
-                    + "and less than size " + size() + ", but was: " + index);
-        // PENDING JW: following lines simply copied from MultipleSelectionModelBase
-        // we are looking for the nth bit set
-        // double check needed because guard of valid range was incorrect
-        // (checked against itemsSize instead of our size)
-        //        for (int pos = 0, val = bitSet.nextSetBit(0);
-        //             val >= 0 || pos == index;
-        //             pos++, val = bitSet.nextSetBit(val+1)) {
-        //            if (pos == index) return val;
-        //        }
-        // this is functionally equivalent to the above, except for
-        // throwing if we don't find the value - must succeed if the index
-        // is valid
+                    + "and less than size " + size() + ", but was: " + listIndex);
+        // PENDING JW: following line is for experimenting with performance
+        // removed again: we access get during change/notification
+        // at that time access state is inherently invalid - don't!
+        if (PERFORM) {
+            return doGet(listIndex);
+        }    
         int pos = 0;
         int val = bitSet.nextSetBit(0);
-        while (pos < index) {
+        while (pos < listIndex) {
             pos++;
             val = bitSet.nextSetBit(val + 1);
         }
         if (val <0) {
             throw new IllegalStateException("wrongy! learn to use BitSet "
-                    + "- must find set bit for valid index: " + index);
+                    + "- must find set bit for valid index: " + listIndex);
         }
         return val;
+    }
+
+    /**
+     * Performance optimized (sic! or not) version of get. Not used.
+     * 
+     * @param listIndex must be in valid 
+     * @return
+     */
+    private Integer doGet(int listIndex) {
+        validate();
+        if (listIndex == 0) {
+            lastGetListIndex = 0;
+            lastGetBitSetIndex = firstSetIndex;
+        } else if (listIndex == size() - 1) {
+            lastGetListIndex = listIndex;
+            lastGetBitSetIndex = lastSetIndex;
+        } else if (listIndex == lastGetListIndex) {
+            // nothing to do, querying the same index as last time
+        } else {
+            int pos = lastGetListIndex;
+            int value = lastGetBitSetIndex;
+            if (listIndex > lastGetListIndex) {
+                // move forward from last
+                while (pos < listIndex) {
+                    pos++;
+                    value = bitSet.nextSetBit(value + 1);
+                }
+            } else { // listIndex <lastGetBitSetIndex
+                // move backwards from last
+                while (pos > listIndex) {
+                    pos--;
+                    value = bitSet.previousSetBit(value - 1);
+                }
+            }
+            lastGetListIndex = pos;
+            lastGetBitSetIndex = value;
+            if (value <0) {
+                throw new IllegalStateException("wrongy! learn to use BitSet "
+                        + "- must find set bit for valid index: " + listIndex);
+            }
+        }
+        return lastGetBitSetIndex;
+    }
+
+    
+    /**
+     * 
+     */
+    private void validate() {
+        if (valid) return;
+        int size = size();
+        if (size == 0) {
+            firstSetIndex = -1;
+            lastSetIndex = -1;
+            lastGetListIndex = -1;
+            lastGetBitSetIndex = -1;
+        } else {
+            lastSetIndex = bitSet.length() - 1;
+            if (size == 1) {
+                firstSetIndex = lastSetIndex;
+            } else {
+                firstSetIndex = bitSet.nextSetBit(0);
+            }
+            lastGetListIndex = 0;
+            lastGetBitSetIndex = firstSetIndex;
+        }
+        valid = true;
+    }
+
+    @Override 
+    public boolean contains(Object o) {
+        if (o instanceof Number) {
+            Number n = (Number) o;
+            int index = n.intValue();
+
+            return index >= 0 && index < bitSet.length() &&
+                    bitSet.get(index);
         }
 
+        return false;
+    }
+
+    
+    
     @Override
     public int size() {
         return bitSet.cardinality();

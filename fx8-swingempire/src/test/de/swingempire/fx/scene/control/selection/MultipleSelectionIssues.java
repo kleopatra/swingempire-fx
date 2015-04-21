@@ -88,7 +88,52 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * to init if needed.
      */
     protected StageLoader loader;
+    
+    /**
+     * Testing fix for https://javafx-jira.kenai.com/browse/RT-39776
+     * Code looks like not returning the correct value. 
+     * Does because intermediate call to get (during creating change notification)
+     * Intention or side-effect?
+     */
+    @Test
+    public void testSelectedIndicesGetInOrder() {
+        if (!multipleMode) return;
+        int initialFirst = 4;
+        int[] initial = new int[] {initialFirst, 5};
+        
+        getSelectionModel().selectIndices(initialFirst, initial);
+        int index = 0;
+        assertEquals(initialFirst, getSelectedIndices().get(index).intValue());
+        getSelectionModel().clearSelection();
+        int first = 1;
+        int[] indices = new int[] {first, initialFirst - 1};
+        getSelectionModel().select(first);
+        getSelectionModel().select(initialFirst - 1);
+        assertEquals(indices[1], getSelectedIndices().get(index + 1).intValue());
+    }
 
+    /**
+     * Incorrect change on clearSelection. 
+     * Fails for 8u60b5.
+     * Seems to be fixed in 8u60b11
+     * (by looking at the code, index is taken correctly)
+     */
+    @Test
+    public void testNotificationClearSelected() {
+        if (!multipleMode) return;
+        int initialFirst = 4;
+        int[] initial = new int[] {initialFirst, 5};
+        getSelectionModel().selectIndices(initialFirst, initial);
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getSelectionModel().clearSelection();
+//        report.prettyPrint();
+        assertTrue(wasSingleRemoved(report.getLastChange()));
+        Change c = report.getLastChange();
+        c.next();
+        for (int i : initial) {
+            assertTrue("index must be contained in removed: " + i, c.getRemoved().contains(i));
+        }
+    }
 //---------- notification from selectedItems/Indices
     
     /**
