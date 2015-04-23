@@ -43,6 +43,55 @@ public class ObservableTest {
     
 //--------------------------
     
+    @Test
+    public void testBidiOperatorBindingPlusAnother() {
+        int initial1 = 2;
+        IntegerProperty p1 = new SimpleIntegerProperty(initial1);
+        IntegerProperty p2 = new SimpleIntegerProperty(1);
+        ChangeListener<Number> update2 = (source, old, value) -> {
+            p2.set(value.intValue() * 2);
+        };
+        ChangeListener<Number> update1 = (source, old, value) -> {
+            p1.set(value.intValue() / 2);
+        };
+        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        
+        ObjectProperty<Number> number = new SimpleObjectProperty<>(0);
+        number.bindBidirectional(p1);
+        assertEquals(initial1, number.get());
+        int five = 6;
+        // set value on binding
+        number.set(five);
+        assertEquals(five, p1.get());
+        assertEquals(2 * five, p2.get());
+        
+        // set value on any of the properties must update binding
+        p2.set(five);
+        assertEquals(five / 2, p1.get());
+        assertEquals(p1.get(), number.get());
+    }
+    
+    @Test
+    public void testBidiOperatorBinding() {
+        IntegerProperty p1 = new SimpleIntegerProperty(0);
+        IntegerProperty p2 = new SimpleIntegerProperty(1);
+        ChangeListener<Number> update2 = (source, old, value) -> {
+            p2.set(value.intValue() * 2);
+        };
+        ChangeListener<Number> update1 = (source, old, value) -> {
+            p1.set(value.intValue() / 2);
+        };
+        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        int five = 6;
+        // set value on p1
+        p1.set(five);
+        assertEquals(five, p1.get());
+        assertEquals(2 * five, p2.get());
+        
+        // the other way round
+        p2.set(five);
+        assertEquals(five / 2, p1.get());
+    }
     
 //-------------- identity vs. equality    
     /**
