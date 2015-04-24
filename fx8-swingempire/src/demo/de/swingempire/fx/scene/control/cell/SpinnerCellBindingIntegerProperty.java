@@ -6,7 +6,6 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.property.BidirectionalBinding;
 import javafx.application.Application;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.IntegerProperty;
@@ -23,14 +22,27 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.property.BidirectionalBinding;
 
 /**
  * bidi-binding of expression - doesn't work, not supported?
  * http://stackoverflow.com/q/29807105/203657
  * 
  * It's similar to bidi-converter - couldn't make it.
+ * 
+ * Used BidirectionalBinding - working, but something fishy still: if 
+ * Spinner is of type Integer (requires binding to valXX.asObject), there
+ * are strange not-workings. Can't nail it, though, tests with isolated
+ * spinnerValueFactory is just fine.
+ * 
+ * Solution: as used in doSomething(someProperty.asObject) we create a local
+ * reference that's weakly listened to in the bidi-binding - soon garbage
+ * collected. So .. DONT!
+ * - create and keep a strong reference
+ * - use a weakly typed Spinner
  */
 public class SpinnerCellBindingIntegerProperty extends Application {
     @Override
@@ -39,23 +51,49 @@ public class SpinnerCellBindingIntegerProperty extends Application {
         final TableView<MyBean> tableView = new TableView<>();
         final TableColumn<MyBean, Integer> colA = new TableColumn<>("Col A");
         final TableColumn<MyBean, Integer> colB = new TableColumn<>("Col B");
-
-        colA.setCellFactory(col -> new SpinnerCell<MyBean, Integer>());
-        colA.setCellValueFactory(new PropertyValueFactory<MyBean, Integer>("valA"));
-
-        colB.setCellFactory(col -> new SpinnerCell<MyBean, Integer>(2));
-        colB.setCellValueFactory(new PropertyValueFactory<MyBean, Integer>("valB"));
-
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.setItems(FXCollections.observableArrayList(new MyBean(1)));
+//
+//        colA.setCellFactory(col -> new SpinnerCell<MyBean, Integer>());
+//        colA.setCellValueFactory(new PropertyValueFactory<MyBean, Integer>("valA"));
+//
+//        colB.setCellFactory(col -> new SpinnerCell<MyBean, Integer>(2));
+//        colB.setCellValueFactory(new PropertyValueFactory<MyBean, Integer>("valB"));
+//
+//        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+//        tableView.setItems(FXCollections.observableArrayList(new MyBean(1)));
         tableView.getColumns().addAll(colA, colB);
 
-        Spinner<Number> spinnerA = new Spinner<>(0, 100, 1);
-        Spinner<Number> spinnerB = new Spinner<>(0, 100, 2);
-        MyBean bean = new MyBean(2);
-        spinnerA.getValueFactory().valueProperty().bindBidirectional(bean.valAProperty());
+        stage.setScene(new Scene(new VBox(tableView, createSpinnerBar(2)), 500, 300));
+//        stage.setScene(new Scene(new VBox(tableView, spinnerA, spinnerB, labelA, labelB), 500, 300));
+        stage.show();
+    }
+
+    ObjectProperty<Integer> valAObjectProperty;
+    protected HBox createSpinnerBar(int initial) {
+        Spinner<Integer> spinnerA = new Spinner<>(0, 100, 1);
+//        Spinner<Number> spinnerB = new Spinner<>(0, 100, 2);
+        MyBean bean = new MyBean(initial);
+        valAObjectProperty = bean.valAProperty().asObject();
+        ObjectProperty<Integer> spinnerAValue = spinnerA.getValueFactory().valueProperty();
+        spinnerAValue.bindBidirectional(valAObjectProperty);
+        Label labelA = new Label();
+        StringBinding tA = new StringBinding() {
+            {
+                bind(bean.valAProperty());
+            }
+
+            @Override
+            protected String computeValue() {
+                LOG.info("in aa binding?");
+                return String.valueOf(bean.valAProperty().getValue());
+            }
+        };
+        labelA.textProperty().bind(tA);
+
+        spinnerAValue.set(6);
+        spinnerA.getValueFactory().increment(1);
+        LOG.info("" + valAObjectProperty + "/" + spinnerAValue);
         
-        spinnerA.getValueFactory().valueProperty().addListener((source, old, value) -> {
+        spinnerAValue.addListener((source, old, value) -> {
             LOG.info("got valueChange from spinnerA: " + value);
         }) ;
         
@@ -63,7 +101,14 @@ public class SpinnerCellBindingIntegerProperty extends Application {
             LOG.info("got valueChange from valA: " + value);
             
         });
-        spinnerB.getValueFactory().valueProperty().bindBidirectional(bean.valBProperty());
+        valAObjectProperty.addListener((source, old, value) -> {
+            LOG.info("got valueChange from valA.asObject: " + value);
+            
+        });
+        ObjectProperty<Integer> valBObjectProperty = bean.valBProperty().asObject();
+//        ObjectProperty<Number> spinnerBValue = spinnerB.getValueFactory().valueProperty();
+//        spinnerBValue.bindBidirectional(bean.valBProperty());
+//        LOG.info("" + valBObjectProperty + "/" + spinnerBValue);
         
         Label labelB = new Label();
         StringBinding tB = new StringBinding() {
@@ -78,21 +123,10 @@ public class SpinnerCellBindingIntegerProperty extends Application {
             }
         };
         labelB.textProperty().bind(tB);
-        Label labelA = new Label();
-        StringBinding tA = new StringBinding() {
-            {
-                bind(bean.valAProperty());
-            }
 
-            @Override
-            protected String computeValue() {
-                LOG.info("in aa binding?");
-                return String.valueOf(bean.valAProperty().getValue());
-            }
-        };
-        labelA.textProperty().bind(tA);
-        stage.setScene(new Scene(new VBox(tableView, spinnerA, spinnerB, labelA, labelB), 500, 300));
-        stage.show();
+        
+        HBox external = new HBox(spinnerA, labelA, labelB);
+        return external;
     }
 
     public static void main(String[] args) {

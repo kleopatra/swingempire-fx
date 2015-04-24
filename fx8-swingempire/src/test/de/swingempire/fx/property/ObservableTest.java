@@ -22,6 +22,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,7 @@ import org.junit.runners.JUnit4;
 import de.swingempire.fx.scene.control.cell.Person22463;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.InvalidationReport;
+
 import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static org.junit.Assert.*;
 
@@ -42,7 +45,75 @@ public class ObservableTest {
 
     
 //--------------------------
-    
+
+    @Test
+    public void testIntegerSpinner() {
+        int initial1 = 2;
+        IntegerProperty p1 = new SimpleIntegerProperty(initial1);
+        SpinnerValueFactory<Integer> spinner = new IntegerSpinnerValueFactory(0, 50);
+        ObjectProperty<Integer> number = spinner.valueProperty();
+        number.bindBidirectional(p1.asObject());
+        assertEquals("sanity: initial value on bind source unchanged", initial1, p1.get());
+        assertEquals("sanity: initial value on bind target taken from source", initial1, number.get().intValue());
+        
+    }
+    @Test
+    public void testBidiOperatorBindingIntegerSpinner() {
+        int initial1 = 2;
+        IntegerProperty p1 = new SimpleIntegerProperty(initial1);
+        IntegerProperty p2 = new SimpleIntegerProperty(1);
+        ChangeListener<Number> update2 = (source, old, value) -> {
+            p2.set(value.intValue() * 2);
+        };
+        ChangeListener<Number> update1 = (source, old, value) -> {
+            p1.set(value.intValue() / 2);
+        };
+        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        
+        SpinnerValueFactory<Integer> spinner = new IntegerSpinnerValueFactory(0, 50);
+        ObjectProperty<Integer> number = spinner.valueProperty();
+        number.bindBidirectional(p1.asObject());
+        assertEquals("sanity: initial value on bind source unchanged", initial1, p1.get());
+        assertEquals("sanity: initial value on bind target taken from source", initial1, number.get().intValue());
+        int five = 6;
+        // set value on binding
+        number.set(five);
+        assertEquals(five, p1.get());
+        assertEquals(2 * five, p2.get());
+        
+        // set value on any of the properties must update binding
+        p2.set(five);
+        assertEquals(five / 2, p1.get());
+        assertEquals(p1.get(), number.get().intValue());
+    }
+    @Test
+    public void testBidiOperatorBindingPlusAnotherInteger() {
+        int initial1 = 2;
+        IntegerProperty p1 = new SimpleIntegerProperty(initial1);
+        IntegerProperty p2 = new SimpleIntegerProperty(1);
+        ChangeListener<Number> update2 = (source, old, value) -> {
+            p2.set(value.intValue() * 2);
+        };
+        ChangeListener<Number> update1 = (source, old, value) -> {
+            p1.set(value.intValue() / 2);
+        };
+        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        
+        ObjectProperty<Integer> number = new SimpleObjectProperty<>(0);
+        number.bindBidirectional(p1.asObject());
+        assertEquals("sanity: initial value on bind source unchanged", initial1, p1.get());
+        assertEquals("sanity: initial value on bind target taken from source", initial1, number.get().intValue());
+        int five = 6;
+        // set value on binding
+        number.set(five);
+        assertEquals(five, p1.get());
+        assertEquals(2 * five, p2.get());
+        
+        // set value on any of the properties must update binding
+        p2.set(five);
+        assertEquals(five / 2, p1.get());
+        assertEquals(p1.get(), number.get().intValue());
+    }
     @Test
     public void testBidiOperatorBindingPlusAnother() {
         int initial1 = 2;
@@ -58,7 +129,8 @@ public class ObservableTest {
         
         ObjectProperty<Number> number = new SimpleObjectProperty<>(0);
         number.bindBidirectional(p1);
-        assertEquals(initial1, number.get());
+        assertEquals("sanity: initial value on bind source unchanged", initial1, p1.get());
+        assertEquals("sanity: initial value on bind target taken from source", initial1, number.get().intValue());
         int five = 6;
         // set value on binding
         number.set(five);
