@@ -26,7 +26,8 @@ import javafx.stage.Stage;
 import de.swingempire.fx.demobean.Person;
 
 /**
- * @author Jeanette Winzenburg, Berlin
+ * Bind disable property of commit/cancel button to actual change. 
+ * http://stackoverflow.com/q/29935643/203657
  */
 public class ManualBufferingDemo extends Application {
 
@@ -43,11 +44,15 @@ public class ManualBufferingDemo extends Application {
             buffer.commit();
         });
         save.disableProperty().bind(Bindings.not(buffer.bufferingProperty()));
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> {
+           buffer.flush(); 
+        });
         listView.getSelectionModel().selectedItemProperty().addListener((source, old, current) -> {
             buffer.setSubject(current.lastNameProperty());
         });
-        
-        VBox content = new VBox(listView, lastName, save);
+        cancel.disableProperty().bind(Bindings.not(buffer.bufferingProperty()));
+        VBox content = new VBox(listView, lastName, save, cancel);
         return content;
     }
 
@@ -105,21 +110,7 @@ public class ManualBufferingDemo extends Application {
             buffering.set(buffer);
         }
     }
-    public static class BufferedProperty<T> extends ObjectPropertyBase<T> {
 
-        @Override
-        public Object getBean() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-        
-    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setScene(new Scene(getContent()));
