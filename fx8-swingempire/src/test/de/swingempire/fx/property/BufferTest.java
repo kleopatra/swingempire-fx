@@ -108,6 +108,20 @@ public class BufferTest {
     }
     
     @Test
+    public void testSubjectWhileBuffering() {
+        buffer.setSubject(property);
+        String value = "newValue";
+        buffer.set(value);
+        assertTrue(buffer.isBuffering());
+        StringProperty other = new SimpleStringProperty("dooh");
+        buffer.setSubject(other);
+        assertTrue(buffer.isBound());
+        assertEquals(other.get(), buffer.get());
+        // JW: goodies doesn't touch the buffering state
+        assertFalse(buffer.isBuffering());
+    }
+    
+    @Test
     public void testSubject() {
         buffer.setSubject(property);
         assertTrue(buffer.isBound());

@@ -98,15 +98,15 @@ public class TreeEdit extends Application {
         tree.requestFocus();
         tree.getRoot().getChildren().add(newItem);
         tree.getSelectionModel().select(row);
-//        tree.layout();
+        tree.layout();
         // no effect
-//        tree.scrollTo(row);
+        tree.scrollTo(row);
         // doesn't work
 //        tree.refresh();
         tree.edit(newItem);
         // not enough time
-        Platform.runLater(() -> {
-        });
+//        Platform.runLater(() -> {
+//        });
         // hard-coded delay
         // still unreliable and horrible user-experiencs 
 //        PauseTransition p = new PauseTransition( Duration.millis( 10 ) );

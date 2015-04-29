@@ -155,7 +155,7 @@ public class BufferedObjectProperty<T> extends ObjectPropertyBase<T> {
     }
 
     /**
-     * Rebinds itselt to the buffered propety if buffering. Does nothing if not
+     * Rebinds itselt to the buffered property if buffering. Does nothing if not
      * buffering.
      */
     protected void flush() {
