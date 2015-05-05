@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleStringProperty;
@@ -56,7 +55,6 @@ public class ManualBufferingDemo extends Application {
         return content;
     }
 
-    
     public static class BufferedTextInput {
 
         private ReadOnlyBooleanWrapper buffering;
