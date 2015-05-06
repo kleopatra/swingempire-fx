@@ -17,7 +17,19 @@ import javafx.stage.Stage;
 import de.swingempire.fx.demobean.Person;
 
 /**
+ * Impossible to reliably start editing after
+ * inserting an item.
+ * 
+ * http://stackoverflow.com/q/29863095/203657
+ * 
+ * In TableView, only showing if calling scrollTo(row) before
+ * starting the edit, hack same (call tableView.laoyut()).
+ * 
+ * http://stackoverflow.com/q/30060978/203657
+ * 
+ * 
  * @author Jeanette Winzenburg, Berlin
+ * @see TreeEdit
  */
 public class TableEdit extends Application {
 
@@ -38,8 +50,10 @@ public class TableEdit extends Application {
             table.getItems().add(person);
             table.getSelectionModel().select(person);
             table.requestFocus();
-//            table.layout();
-            table.edit(table.getItems().size() - 1, table.getColumns().get(0));
+            int row = table.getItems().size() - 1;
+            table.scrollTo(row);
+            table.layout();
+            table.edit(row, table.getColumns().get(0));
         });
         VBox box = new VBox(table, button);
         return box;

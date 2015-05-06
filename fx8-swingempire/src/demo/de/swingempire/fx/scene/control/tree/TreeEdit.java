@@ -40,8 +40,12 @@ import javafx.util.converter.DefaultStringConverter;
  * <p>
  * Note: neither Plaform.runlater nor adding a hard-coded delay
  * work reliably.
+ * 
+ * Bug reported (by OP, for TreeView):
+ * https://javafx-jira.kenai.com/browse/RT-40661
+ * 
+ * @see TableEdit
  */
-
 public class TreeEdit extends Application {
 
     private TreeView<String> tree;
