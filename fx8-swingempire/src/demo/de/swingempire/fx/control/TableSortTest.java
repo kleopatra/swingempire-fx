@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.sun.javafx.scene.traversal.TraversalEngine;
+
 import javafx.application.Application;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
@@ -42,6 +44,7 @@ public final  class TableSortTest extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        TraversalEngine e;
         Collections.shuffle(values);
         ObservableList<NumericCombo> immutable = 
                 FXCollections.unmodifiableObservableList(values);
