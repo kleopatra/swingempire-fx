@@ -7,7 +7,9 @@ package de.swingempire.fx.control;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
 import java.util.logging.Logger;
+import java.util.spi.LocaleServiceProvider;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -31,7 +33,6 @@ public class DatePickerExample extends Application {
      * @return
      */
     private Parent getContent() {
-        
         DatePicker picker = new DatePicker();
         picker.valueProperty().addListener((p, oldValue, newValue) -> {
             if (newValue == null) return;
@@ -63,6 +64,7 @@ public class DatePickerExample extends Application {
         Scene scene = new Scene(getContent());
         scene.getStylesheets().add(getClass().getResource("comboboxsize.css").toExternalForm());
         primaryStage.setScene(scene);
+        primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
 
     }

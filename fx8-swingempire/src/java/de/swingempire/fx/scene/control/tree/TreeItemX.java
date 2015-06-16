@@ -270,7 +270,7 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
         try {
             Field field = clazz.getDeclaredField("children");
             field.setAccessible(true);
-            ObservableList<TreeItem<T>> replaceChildren = createChildren();
+            ObservableList<TreeItem<T>> replaceChildren = createAndWireChildren();
             field.set(this, replaceChildren);
             aliasChildren = replaceChildren;
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -279,14 +279,27 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
     }
 
     /**
+     * Creates and returns children list and registers childrenListener.
      * @return
      */
-    protected ObservableList<TreeItem<T>> createChildren() {
-        ObservableList<TreeItem<T>> list = FXCollections.observableArrayList();
-        list.addListener(childrenListener);
+    protected ObservableList<TreeItem<T>> createAndWireChildren() {
+        ObservableList<TreeItem<T>> list = createChildrenList();
+        list.addListener(getChildrenListener());
         return list;
     }
 
+    /**
+     * Creates and returns the list of children.
+     * @return
+     */
+    protected ObservableList<TreeItem<T>> createChildrenList() {
+        return FXCollections.observableArrayList();
+    }
+
+    protected ListChangeListener<TreeItem<T>> getChildrenListener() {
+        return childrenListener;
+    }
+    
 //--------------- constructors from super    
     public TreeItemX() {
         super();

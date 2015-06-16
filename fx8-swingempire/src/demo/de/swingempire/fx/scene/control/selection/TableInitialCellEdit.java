@@ -66,6 +66,7 @@ public class TableInitialCellEdit extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
+//        TabOrderHelper h;
         Scene scene = new Scene(getContent());
         scene.focusOwnerProperty().addListener((s, old, value) -> System.out.println(value));
         primaryStage.setScene(scene);
