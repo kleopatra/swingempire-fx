@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.tree;
 
 import java.util.concurrent.Callable;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -42,6 +43,7 @@ public class FilterableTreeItemSample extends Application {
             Parent root = createContents();
             Scene scene = new Scene(root, 800, 600);
             stage.setScene(scene);
+            stage.setTitle(FXUtils.version()); 
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
