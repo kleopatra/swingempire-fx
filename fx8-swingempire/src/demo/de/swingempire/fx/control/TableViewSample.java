@@ -49,6 +49,7 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * Example from tutorial. 
@@ -82,7 +83,39 @@ public class TableViewSample extends Application {
         // plain TextFieldTableCell
         // Note: TextFieldTableCell either needs a converter
         Callback<TableColumn<Person, String>, TableCell<Person, String>> 
-            coreTextFieldCellFactory = p -> new TextFieldTableCell<>(new DefaultStringConverter());
+            coreTextFieldCellFactory = p -> new TextFieldTableCell(new DefaultStringConverter()) {
+                // all this editing related tests are for 
+                // http://stackoverflow.com/q/31509059/203657
+                // editing is terminated somehow internally (no notification)
+                // when resizing the containing window such that
+                // none of the rows are visible
+                {
+                    editingProperty().addListener((source, ov, nv) -> LOG.info("editing: " + nv + getItem())); 
+                    parentProperty().addListener((source, ov, nv) -> LOG.info("parent: " + nv + getItem())); 
+                }
+
+                @Override
+                public void startEdit() {
+                    super.startEdit();
+                    LOG.info("started: " + isEditing() + getItem());
+                }
+
+                @Override
+                public void cancelEdit() {
+                    LOG.info("before cancel: " + isEditing() + getItem());
+                    super.cancelEdit();
+                }
+
+                @Override
+                public void updateItem(Object item, boolean empty) {
+                    super.updateItem(item, empty);
+//                    LOG.info("update: " + isEditing() + getItem() + "/" + item);
+                }
+                
+                
+                
+                
+            };
         // or use the convenience factory method
 //        Callback<TableColumn<Person, String>, TableCell<Person, String>> 
 //            coreTextFieldCellFactory = TextFieldTableCell.forTableColumn();
@@ -501,6 +534,7 @@ public class TableViewSample extends Application {
         Stylesheet s;
         scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
         stage.setScene(scene);
+        stage.setTitle(FXUtils.version());
         stage.show();
     }
 
