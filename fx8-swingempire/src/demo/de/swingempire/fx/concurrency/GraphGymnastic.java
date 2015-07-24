@@ -26,7 +26,7 @@ import javafx.stage.Stage;
  * Working on the live-scenegraph - how to?
  * http://stackoverflow.com/q/31605531/203657
  * 
- * answer accepted
+ * 
  */
 public class GraphGymnastic extends Application {
     final ExecutorService serv = Executors.newFixedThreadPool(2);
