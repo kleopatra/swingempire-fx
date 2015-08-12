@@ -15,8 +15,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
@@ -29,7 +27,6 @@ import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
@@ -39,7 +36,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin.FakeFocusTextField;
 import com.sun.javafx.scene.control.skin.ComboBoxPopupControl;
 import com.sun.javafx.scene.control.skin.ListViewSkin;
 import com.sun.javafx.scene.control.skin.VirtualContainerBase;
@@ -72,6 +68,9 @@ import de.swingempire.fx.property.PathAdapter;
  * <li> removed updateListViewItems/updateComboBoxItems 
  * <li> TODO: verify that updateListViewItems is replaced by listening to itemsProperty
  * <li> re-enabled popup layout by invoking super methods as needed 
+ * 
+ * PENDING:
+ * adjust to pulled-up (into ComboBoxPopupControl/Base) methods 
  * 
  * @author Jeanette Winzenburg, Berlin
  */

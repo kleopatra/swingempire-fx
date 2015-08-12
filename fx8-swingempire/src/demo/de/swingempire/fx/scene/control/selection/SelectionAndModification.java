@@ -292,6 +292,7 @@ public class SelectionAndModification extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());
+        scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F10), () -> LOG.info("got accelerator "));
         primaryStage.setScene(scene);
         primaryStage.setTitle(System.getProperty("java.version"));
         primaryStage.show();

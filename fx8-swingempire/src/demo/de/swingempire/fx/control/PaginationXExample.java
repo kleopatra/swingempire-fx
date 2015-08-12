@@ -7,11 +7,8 @@ package de.swingempire.fx.control;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.skin.PaginationSkin;
-
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
-import javafx.print.PrinterJob;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -24,11 +21,17 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import com.sun.javafx.scene.control.skin.PaginationSkin;
+
+import de.swingempire.fx.scene.control.pagination.PaginationRefSkin;
+
 /**
  * from oracle tutorial
  * http://docs.oracle.com/javase/8/javafx/user-interface-tutorial/pagination.htm#JFXUI459
+ * 
+ * modified as test driver for PaginationXSkin
  */
-public class PaginationExample extends Application {
+public class PaginationXExample extends Application {
     
     private Pagination pagination;
 //    String[] fonts = new String[]{};
@@ -45,7 +48,7 @@ public class PaginationExample extends Application {
     public VBox createPage(int pageIndex) {        
         VBox box = new VBox(5);
         int page = pageIndex * itemsPerPage();
-        for (int i = page; i< fonts.size() && i < page + itemsPerPage(); i++) {
+        for (int i = page; i < fonts.size() && i < page + itemsPerPage(); i++) {
             Label font = new Label(fonts.get(i));  // (fonts[i]);
             box.getChildren().add(font);
         }
@@ -54,7 +57,6 @@ public class PaginationExample extends Application {
  
     @Override
     public void start(final Stage stage) throws Exception {
-        ProgressIndicator p;
         // restrict to 4 pages
         fonts = Font.getFamilies(); //.subList(0, 60); //.toArray(fonts);
         
@@ -65,7 +67,8 @@ public class PaginationExample extends Application {
             // http://stackoverflow.com/q/31540001/203657
             @Override
             protected Skin createDefaultSkin() {
-                return new CustomPaginationSkin(this);
+                return new PaginationRefSkin(this);
+//                return new CustomPaginationSkin(this);
             }
         };
         pagination.setStyle("-fx-border-color:red;");
@@ -82,11 +85,6 @@ public class PaginationExample extends Application {
         stage.setTitle("PaginationSample");
         stage.show();
         
-        // unrelated: 
-        // config the print dialog somehow?
-        // http://stackoverflow.com/q/31648415/203657 ask for showing printers only
-//        final PrinterJob printerJob = PrinterJob.createPrinterJob();
-//        boolean ret = printerJob.showPrintDialog(stage); 
     }
  
     /**
@@ -159,6 +157,6 @@ public class PaginationExample extends Application {
          
     }
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(PaginationExample.class
+    private static final Logger LOG = Logger.getLogger(PaginationXExample.class
             .getName());
 }
