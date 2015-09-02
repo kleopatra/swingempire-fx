@@ -28,6 +28,7 @@ import javafx.stage.StageStyle;
  * 
  * can't reproduce in jdk8u60b18 (which is older than the 
  * release 51)
+ * can't reproduce in release 8u60 (it's b23?)
  */
 public class ComboInSecondary extends Application {
 
