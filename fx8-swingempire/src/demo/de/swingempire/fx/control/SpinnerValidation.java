@@ -13,6 +13,7 @@ import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -21,6 +22,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
 /**
@@ -60,6 +62,13 @@ public class SpinnerValidation extends Application {
                 0, 10000, Integer.parseInt(INITAL_VALUE)));
         spinner.setEditable(true);
         spinner.getEditor().setTextFormatter(priceFormatter);
+        
+        spinner.focusedProperty().addListener((s, ov, nv) -> {
+            commitEditorText(spinner);
+//            spinner.getEditor().commitValue();
+            LOG.info("focused spinnerValue/modelValue/editor " 
+                    + getState(spinner));
+        });
 //        spinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(
 //                0, 10000, Integer.parseInt(INITAL_VALUE)));
         
@@ -106,12 +115,34 @@ public class SpinnerValidation extends Application {
 
         grid.add(new Label("Spinner:"), 0, row);
         grid.add(spinner, 1, row);
+        Button dummy = new Button("Dummy - focus");
+        grid.add(dummy, 0, 1);
 
         Scene scene = new Scene(grid, 350, 300);
 
         stage.setTitle("Hello Spinner");
         stage.setScene(scene);
         stage.show();
+    }
+    private String getState(Spinner spinner) {
+        return spinner.getValue() + " / " + spinner.getValue() + " / "
+                + spinner.getEditor().getText();
+
+    }
+    /**
+     * c&p from Spinner
+     */
+    private <T> void commitEditorText(Spinner<T> spinner) {
+        if (!spinner.isEditable()) return;
+        String text = spinner.getEditor().getText();
+        SpinnerValueFactory<T> valueFactory = spinner.getValueFactory();
+        if (valueFactory != null) {
+            StringConverter<T> converter = valueFactory.getConverter();
+            if (converter != null) {
+                T value = converter.fromString(text);
+                valueFactory.setValue(value);
+            }
+        }
     }
     
     @SuppressWarnings("unused")
