@@ -23,7 +23,6 @@ import org.junit.runners.JUnit4;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-
 import static org.junit.Assert.*;
 
 /**
@@ -63,7 +62,9 @@ public class PathPropertyTest {
         String email = "dummy";
         root.get().setEmail(email);
         assertEquals(email, path.get());
-        path.set("other");
+        String other = "other";
+        path.set(other);
+        assertEquals(other, root.get().getEmail());
     }
 
     @Test

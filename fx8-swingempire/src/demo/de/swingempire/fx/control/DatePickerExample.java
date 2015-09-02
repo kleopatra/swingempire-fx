@@ -4,22 +4,22 @@
  */
 package de.swingempire.fx.control;
 
+import java.net.URL;
+import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import java.util.spi.LocaleServiceProvider;
 
-import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.util.FXUtils;
 
 /**
  * WeekOfDay from DatePicker.
@@ -33,7 +33,7 @@ public class DatePickerExample extends Application {
      * @return
      */
     private Parent getContent() {
-        DatePicker picker = new DatePicker();
+        DatePicker picker = new DatePicker(LocalDate.now());
         picker.valueProperty().addListener((p, oldValue, newValue) -> {
             if (newValue == null) return;
             WeekFields fields = WeekFields.of(Locale.getDefault());
@@ -43,7 +43,22 @@ public class DatePickerExample extends Application {
             int weekBased = newValue.get(fields.weekOfWeekBasedYear());
             LOG.info("week/Based " + week + "/" + weekBased);
         });
-        BorderPane pane = new BorderPane(picker);
+        // quick try: select text on focusGained
+        // http://stackoverflow.com/q/32349533/203657
+        picker.focusedProperty().addListener((source, ov, nv) -> 
+            {
+                // requires wrapper, otherwise nothing selected
+                // note: this differs from plain textField behaviour
+                // that's all selected automatically
+                Platform.runLater(() -> {
+                    picker.getEditor().selectAll();
+                });
+            });
+        TextField field = new TextField("domething to focus");
+//        BorderPane pane = new BorderPane();
+//        pane.setTop(field);
+//        pane.setBottom(picker);
+        VBox pane = new VBox(10, picker, field);
         // quick check for menubar: how to get to menubar from menuItem/menu?
 //        Menu menu = new Menu("dummy menu");
 //        MenuItem menuItem = new MenuItem("dummy");
@@ -59,6 +74,9 @@ public class DatePickerExample extends Application {
         return pane;
     }
 
+    public void initialize(URL arg0, ResourceBundle arg1) {
+        
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(getContent());

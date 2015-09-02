@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.table.toggle;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
@@ -39,6 +40,7 @@ public class PeopleController {
     @SuppressWarnings("unchecked")
     @FXML
     public void initialize() {
+        System.out.println("on fx? " + Platform.isFxApplicationThread());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue()
                 .nameProperty());
         previewColumn
