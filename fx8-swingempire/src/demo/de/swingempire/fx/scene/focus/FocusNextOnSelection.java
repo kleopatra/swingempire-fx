@@ -22,7 +22,6 @@ import javafx.stage.Stage;
 import com.sun.javafx.scene.traversal.Direction;
 
 import de.swingempire.fx.util.FXUtils;
-
 /**
  * Transfer focus programmatically.
  * 
@@ -43,6 +42,7 @@ public class FocusNextOnSelection extends Application {
      * @return
      */
     private Parent getContent() {
+        
         ObservableList<String> items = FXCollections.observableArrayList("one", "two", "thress");
         ComboBox<String> combo = new ComboBox<>(items);
         combo.getSelectionModel().selectedItemProperty().addListener((source, ov, nv) -> {

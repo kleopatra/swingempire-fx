@@ -54,7 +54,6 @@ public class PaginationExample extends Application {
  
     @Override
     public void start(final Stage stage) throws Exception {
-        ProgressIndicator p;
         // restrict to 4 pages
         fonts = Font.getFamilies(); //.subList(0, 60); //.toArray(fonts);
         

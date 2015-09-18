@@ -51,7 +51,6 @@ public class ProgressIndicatorConfig extends Application {
 
         public MyProgressIndicatorSkin(ProgressIndicator control) {
             super(control);
-            KeyCombination k;
         }
 
         @Override

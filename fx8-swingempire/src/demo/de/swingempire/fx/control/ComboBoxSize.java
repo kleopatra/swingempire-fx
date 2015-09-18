@@ -23,7 +23,7 @@ public class ComboBoxSize extends Application {
      * @return
      */
     private Parent getContent() {
-        ObservableList<String> items = FXCollections.observableArrayList("Some longish item ... the only one");
+        ObservableList<String> items = FXCollections.observableArrayList("Some longish item that is the only one");
         ComboBox<String> box = new ComboBox<>(items);
         box.setValue(items.get(0));
         return box;

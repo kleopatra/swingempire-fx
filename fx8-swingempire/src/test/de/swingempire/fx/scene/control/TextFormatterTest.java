@@ -1,0 +1,137 @@
+/*
+ * Created on 18.09.2015
+ *
+ */
+package de.swingempire.fx.scene.control;
+
+import java.util.function.UnaryOperator;
+
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
+
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+
+import static org.junit.Assert.*;
+
+/**
+ * @author Jeanette Winzenburg, Berlin
+ */
+@RunWith(JUnit4.class)
+//@SuppressWarnings({ "unchecked", "rawtypes" })
+public class TextFormatterTest {
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+
+    @ClassRule
+    public static TestRule classRule = new JavaFXThreadingRule();
+
+    /**
+     * Test interaction between spinner/valuefactory and textFormatter
+     * in editor. 
+     */
+    @Test
+    public void testSpinnerAndFormatter() {
+        Spinner<Integer> spinner = new Spinner<>();
+        TextFormatter<Integer> formatter = new TextFormatter<Integer>(
+                new IntegerStringConverter(), 0);
+//                filter);
+
+        SpinnerValueFactory.IntegerSpinnerValueFactory factory = new SpinnerValueFactory.IntegerSpinnerValueFactory(
+                0, 10000, 0);
+        spinner.setValueFactory(factory);
+        spinner.setEditable(true);
+        spinner.getEditor().setTextFormatter(formatter);
+        assertSame(formatter.getValueConverter(), factory.getConverter());
+    }
+    
+    /**
+     * Doc error: undocumented IllegalStateException if StringConverter is null.
+     */
+    @Test
+    public void testTextFormatterConstructors() {
+        new TextFormatter((UnaryOperator)null);
+        new TextFormatter((StringConverter) null);
+        new TextFormatter<Integer>(null, 5);
+    }
+    /**
+     * Test interaction between textFormatter and textField.
+     * Here we change the value in formatter and verify update 
+     * of text in field.
+     */
+    @Test
+    public void testTextFormatterValueChange() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        String updatedValue = "updated";
+        formatter.setValue(updatedValue);
+        assertEquals("field must be updated on value change", updatedValue, field.getText());
+    }
+
+    /**
+     * Test interaction between textFormatter and textField.
+     * Change text in field, test effect on formatter.
+     * 
+     * Unexpected (missing doc): setText effectively commits!
+     */
+    @Test
+    public void testTextFormatterSetText() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        String updatedValue = "updated";
+        field.setText(updatedValue);
+        // undocumented: setText updates value in formatter
+        // assertEquals("formatter unchanged on setting text", initialValue, formatter.getValue());
+        assertEquals("formatter must be updated on setting text", updatedValue, formatter.getValue());
+    }
+    
+    /**
+     * Test interaction between textFormatter and textField.
+     * Change text in field, test effect on formatter.
+     * 
+     * field.appendText doesn't commit
+     */
+    @Test
+    public void testTextFormatterAppendText() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        String updatedValue = "updated";
+        field.appendText(updatedValue);
+        assertEquals("formatter unchanged on appending text", initialValue, formatter.getValue());
+        field.commitValue();
+        assertEquals("formatter must be updated on text commit", initialValue + updatedValue, formatter.getValue());
+    }
+    
+    /**
+     * Test interaction between textFormatter and textField.
+     * Setting textFormatter updates text in field.
+     */
+    @Test
+    public void testTextFormatterSet() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        assertEquals("field must be updated on setting formatter", initialValue, field.getText());
+    }
+    
+    
+}

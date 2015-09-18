@@ -17,8 +17,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -63,8 +63,17 @@ public class SpinnerValidation extends Application {
         spinner.setEditable(true);
         spinner.getEditor().setTextFormatter(priceFormatter);
         
+        Label spinnerValue = new Label(spinner.getEditor().getText());
+        spinner.getValueFactory().valueProperty().addListener((s, ov, nv) -> {
+            spinnerValue.setText(spinner.getValueFactory().getConverter().toString(nv));
+        });
+        
+        Label editorValue = new Label(spinner.getEditor().getText());
+        priceFormatter.valueProperty().addListener((s, ov, nv) -> {
+            editorValue.setText(priceFormatter.getValueConverter().toString(nv));
+        } );
         spinner.focusedProperty().addListener((s, ov, nv) -> {
-            commitEditorText(spinner);
+//            commitEditorText(spinner);
 //            spinner.getEditor().commitValue();
             LOG.info("focused spinnerValue/modelValue/editor " 
                     + getState(spinner));
@@ -74,30 +83,7 @@ public class SpinnerValidation extends Application {
         
         EventHandler<KeyEvent> enterKeyEventHandler;
 
-        enterKeyEventHandler = new EventHandler<KeyEvent>() {
-
-            @Override
-            public void handle(KeyEvent event) {
-
-                // handle users "enter key event"
-                if (event.getCode() == KeyCode.ENTER) {
-
-                    try {
-                        // yes, using exception for control is a bad solution
-                        // ;-)
-                        Integer.parseInt(spinner.getEditor().textProperty()
-                                .get());
-                    } catch (NumberFormatException e) {
-
-                        // show message to user: "only numbers allowed"
-
-                        // reset editor to INITAL_VALUE
-                        spinner.getEditor().textProperty().set(INITAL_VALUE);
-                    }
-                }
-            }
-        };
-
+        // DONT use low-level events for validation
         // note: use KeyEvent.KEY_PRESSED, because KeyEvent.KEY_TYPED is to
         // late, spinners
         // SpinnerValueFactory reached new value before key released an
@@ -116,8 +102,32 @@ public class SpinnerValidation extends Application {
         grid.add(new Label("Spinner:"), 0, row);
         grid.add(spinner, 1, row);
         Button dummy = new Button("Dummy - focus");
-        grid.add(dummy, 0, 1);
+        row++;
+        grid.add(dummy, 0, row);
 
+        row++;
+        grid.add(new Label("Spinner value: " ), 0, row);
+        grid.add(spinnerValue, 1, row);
+        
+        row++;
+        grid.add(new Label("editor value: " ), 0, row);
+        grid.add(editorValue, 1, row);
+        
+        TextField field = new TextField();
+        TextFormatter fieldFormatter = new TextFormatter(TextFormatter.IDENTITY_STRING_CONVERTER, "initial");
+        field.setTextFormatter(fieldFormatter);
+        
+        // plain TextField with formatter commits on focusLost
+        Label fieldValue = new Label(field.getText());
+        row++;
+        fieldFormatter.valueProperty().addListener((s, ov, nv) -> {
+            fieldValue.setText(fieldFormatter.getValueConverter().toString(nv));
+        } );
+        grid.add(field, 1, row);
+        row++;
+        grid.add(new Label("field value: "), 0, row);
+        grid.add(fieldValue, 1, row);
+        
         Scene scene = new Scene(grid, 350, 300);
 
         stage.setTitle("Hello Spinner");
