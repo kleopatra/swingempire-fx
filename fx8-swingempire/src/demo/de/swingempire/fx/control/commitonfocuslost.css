@@ -1,0 +1,3 @@
+.combo-box {
+    -fx-skin: "de.swingempire.fx.control.CommitOnFocusLostComboSkin";
+}

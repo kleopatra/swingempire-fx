@@ -31,6 +31,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
@@ -82,43 +83,43 @@ public class TableViewSample extends Application {
         TabPane tabPane = new TabPane();
         // plain TextFieldTableCell
         // Note: TextFieldTableCell either needs a converter
-        Callback<TableColumn<Person, String>, TableCell<Person, String>> 
-            coreTextFieldCellFactory = p -> new TextFieldTableCell(new DefaultStringConverter()) {
-                // all this editing related tests are for 
-                // http://stackoverflow.com/q/31509059/203657
-                // editing is terminated somehow internally (no notification)
-                // when resizing the containing window such that
-                // none of the rows are visible
-                {
-                    editingProperty().addListener((source, ov, nv) -> LOG.info("editing: " + nv + getItem())); 
-                    parentProperty().addListener((source, ov, nv) -> LOG.info("parent: " + nv + getItem())); 
-                }
-
-                @Override
-                public void startEdit() {
-                    super.startEdit();
-                    LOG.info("started: " + isEditing() + getItem());
-                }
-
-                @Override
-                public void cancelEdit() {
-                    LOG.info("before cancel: " + isEditing() + getItem());
-                    super.cancelEdit();
-                }
-
-                @Override
-                public void updateItem(Object item, boolean empty) {
-                    super.updateItem(item, empty);
-//                    LOG.info("update: " + isEditing() + getItem() + "/" + item);
-                }
-                
-                
-                
-                
-            };
-        // or use the convenience factory method
 //        Callback<TableColumn<Person, String>, TableCell<Person, String>> 
-//            coreTextFieldCellFactory = TextFieldTableCell.forTableColumn();
+//            coreTextFieldCellFactory = p -> new TextFieldTableCell(new DefaultStringConverter()) {
+//                // all this editing related tests are for 
+//                // http://stackoverflow.com/q/31509059/203657
+//                // editing is terminated somehow internally (no notification)
+//                // when resizing the containing window such that
+//                // none of the rows are visible
+//                {
+//                    editingProperty().addListener((source, ov, nv) -> LOG.info("editing: " + nv + getItem())); 
+//                    parentProperty().addListener((source, ov, nv) -> LOG.info("parent: " + nv + getItem())); 
+//                }
+//
+//                @Override
+//                public void startEdit() {
+//                    super.startEdit();
+//                    LOG.info("started: " + isEditing() + getItem());
+//                }
+//
+//                @Override
+//                public void cancelEdit() {
+//                    LOG.info("before cancel: " + isEditing() + getItem());
+//                    super.cancelEdit();
+//                }
+//
+//                @Override
+//                public void updateItem(Object item, boolean empty) {
+//                    super.updateItem(item, empty);
+////                    LOG.info("update: " + isEditing() + getItem() + "/" + item);
+//                }
+//                
+//                
+//                
+//                
+//            };
+        // or use the convenience factory method
+        Callback<TableColumn<Person, String>, TableCell<Person, String>> 
+            coreTextFieldCellFactory = TextFieldTableCell.forTableColumn();
         addTab(tabPane, "Core", coreTextFieldCellFactory);
         
         // issue: no focus indication
@@ -132,6 +133,11 @@ public class TableViewSample extends Application {
                 (TableColumn<Person, String> p) -> new EditingCell();
         addTab(tabPane, "Tutorial editingCell", editingCellFactory);
 
+        // editing cell using TextFormatter
+        Callback<TableColumn<Person, String>, TableCell<Person, String>> formatterFactory = 
+                (TableColumn<Person, String> p) -> new TextFormatterTableCell(TextFormatter.IDENTITY_STRING_CONVERTER);
+        addTab(tabPane, "Formatter", formatterFactory);
+        
         // enhanced core textFieldCell with notion of terminate
         // Note: stopped working as of jdk8_u20
         Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
@@ -153,7 +159,9 @@ public class TableViewSample extends Application {
         }
 
     /**
-     * This is original of the tutorial example.
+     * This is original of the tutorial example. 
+     * No longer:
+     * - changed to create/wire listener only once
      * 
      * Issues: 
      * - commits on focuslost to external control, not when clicking 
@@ -210,6 +218,8 @@ public class TableViewSample extends Application {
             } else {
                 if (isEditing()) {
                     if (textField != null) {
+                        // not really needed?
+                        // must (?) be done in createTextField 
                         textField.setText(getString());
                     }
                     setText(null);
@@ -225,24 +235,30 @@ public class TableViewSample extends Application {
             commitEdit(textField.getText());
         }
 
+        /**
+         * Note: changed tutorial
+         */
         private void createTextField() {
             // re-create the field on each edit, why?
+//            textField = new TextField();//getString());
+            // seems to work as expected (modulo not committing
+            // when clicking inside the table into another row)
             if (textField == null) {
-            }
-            textField = new TextField(getString());
+                textField = new TextField(); //getString());
             // missing keybindings to esc/enter
             textField.focusedProperty().addListener(
                     (ObservableValue<? extends Boolean> arg0, Boolean arg1,
                             Boolean arg2) -> {
                         if (!arg2) {
-                            LOG.info("lost focus, editing? " + isEditing());
-//                            commitEdit();
-                             commitEdit(textField.getText());
+//                            LOG.info("lost focus, editing? " + isEditing());
+                            commitEdit();
+//                             commitEdit(textField.getText());
                         }
                     });
-            textField.setText(getString());
             textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()
                     * 2);
+            }
+            textField.setText(getString());
         }
 
         private String getString() {
@@ -470,7 +486,7 @@ public class TableViewSample extends Application {
         // side-testing: focus not updated correctly
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
-            LOG.info("old/new " + oldValue + "\n  " + newValue);
+//            LOG.info("old/new " + oldValue + "\n  " + newValue);
 //            LOG.info("anchor? " + table.getProperties().get("anchor"));
         });
         TableColumn<Person, String> firstNameCol = new TableColumn<>(
@@ -491,7 +507,7 @@ public class TableViewSample extends Application {
         
         ListProperty<TableColumn> columnsList = new SimpleListProperty(table.getColumns());
         ListChangeListener<? super TableColumn> columnsListener = c -> {
-            LOG.info("got change from colunns");
+//            LOG.info("got change from colunns");
         };
         columnsList.addListener(columnsListener);
         
@@ -543,7 +559,7 @@ public class TableViewSample extends Application {
     }
 
 
-    @SuppressWarnings("unused")
-    static final Logger LOG = Logger.getLogger(TableViewSample.class
-            .getName());
+//    @SuppressWarnings("unused")
+//    static final Logger LOG = Logger.getLogger(TableViewSample.class
+//            .getName());
 }

@@ -19,6 +19,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import static javafx.beans.binding.StringExpression.*;
 /**
  * Commit on focusLost. Not supported in core, needs manual listening
  * to focusedProperty and the custom code to transfer the text into
@@ -56,12 +57,14 @@ public class SpinnerCommitOnFocusLostByTextFormatter extends Application
         // bidi-bind the values
         factory.valueProperty().bindBidirectional(formatter.valueProperty());
         
-        Label spinnerValue = new Label(spinner.getEditor().getText());
-        spinner.valueProperty().addListener((source, ov, nv) -> {
-            LOG.info("old/new value" + ov + " / " + nv);
-            spinnerValue.setText(factory.getConverter().toString(nv));
-            
-        });
+        Label spinnerValue = new Label(); //spinner.getEditor().getText());
+        spinnerValue.textProperty().bind(stringExpression(factory.valueProperty()));
+//        Bindings.bindBidirectional(spinnerValue.textProperty(), factory.valueProperty(), factory.getConverter());
+//        spinner.valueProperty().addListener((source, ov, nv) -> {
+//            LOG.info("old/new value" + ov + " / " + nv);
+//            spinnerValue.setText(factory.getConverter().toString(nv));
+//            
+//        });
 //        spinner.focusedProperty().addListener((s, ov, nv) -> {
 //            commitEditorText(spinner);
 //            // no effect
