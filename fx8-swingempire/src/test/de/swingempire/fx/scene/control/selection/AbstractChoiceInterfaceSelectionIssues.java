@@ -14,6 +14,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ContextMenu;
@@ -42,7 +43,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDynamicI
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreExternalError;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSeparatorSelect;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
-import de.swingempire.fx.util.ChangeReport;
+
 import static org.junit.Assert.*;
 
 /**
@@ -56,8 +57,29 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     extends SelectionIssues<V, W>{
 
     
+    
     // ---------- test combo issues
 
+    /**
+     * Base testing of an issue seen in ComboBoxTableCell:
+     * have an edit commit listener and remove the selected item
+     * (aka: new value)
+     */
+    @Test
+    public void testRemoveSelectedIndexThatIsLast() {
+        items.remove(1, items.size());
+        assertEquals("", 1, items.size());
+        // select uncontained
+        getSelectionModel().select("dummy");
+        ChangeListener l = (source, ov, nv) -> {
+            LOG.info("items: " + items + ov + nv);
+//            assertSame("removing last item", items.get(0), nv);
+            items.remove(nv);
+        };
+        getSelectionModel().selectedItemProperty().addListener(l);
+        getSelectionModel().select(0);
+    }
+    
     /**
      * RT_39908: replacing item before selected shifts 
      * selection towards the end. 
@@ -652,9 +674,9 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         getSelectionModel().select(index);
         Object item = items.get(index);
         items.remove(index);
-        assertEquals(-1, getSelectionModel().getSelectedIndex());
-        assertEquals(null, getSelectionModel().getSelectedItem());
         assertEquals(getChoiceView().getValue(), getSelectionModel().getSelectedItem());
+        assertEquals(null, getSelectionModel().getSelectedItem());
+        assertEquals(-1, getSelectionModel().getSelectedIndex());
         assertTrue("displayText must be empty, but was: " + getDisplayText() , isEmptyDisplayText());
     }
     
