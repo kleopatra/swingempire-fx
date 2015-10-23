@@ -10,10 +10,12 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextFormatter.Change;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -23,7 +25,6 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-
 import static org.junit.Assert.*;
 
 /**
@@ -39,10 +40,43 @@ public class TextFormatterTest {
     public static TestRule classRule = new JavaFXThreadingRule();
 
     /**
+     * Replace the text of the control with a text in the filter which is
+     * longer than the current.
+     */
+    @Test
+    public void testFormatterReplaceFilter() {
+        String initial = "dummy";
+        String replace = "1dummy1";
+        UnaryOperator<Change> filter = c -> {
+            if (c.isContentChange()) {
+                c.setText(replace);
+                c.setRange(0, initial.length());
+            }
+            return c;
+        };
+        TextField field = new TextField(initial);
+        field.setTextFormatter(new TextFormatter(filter));
+        field.replaceText(initial.length(), initial.length(), initial);
+        assertEquals(replace, field.getText());
+    }
+    /**
+     * Sanitiy test of semantics of replace: can replace with longer
+     */
+    @Test
+    public void testReplaceText() {
+        String initial = "dummy";
+        TextField field = new TextField(initial);
+        String replace = initial + initial;
+        field.replaceText(0, initial.length(), replace);
+        assertEquals(replace, field.getText());
+    }
+    
+    /**
      * Test interaction between spinner/valuefactory and textFormatter
      * in editor. 
      */
     @Test
+    @Ignore
     public void testSpinnerAndFormatter() {
         Spinner<Integer> spinner = new Spinner<>();
         TextFormatter<Integer> formatter = new TextFormatter<Integer>(
@@ -61,6 +95,7 @@ public class TextFormatterTest {
      * Doc error: undocumented IllegalStateException if StringConverter is null.
      */
     @Test
+    @Ignore
     public void testTextFormatterConstructors() {
         new TextFormatter((UnaryOperator)null);
         new TextFormatter((StringConverter) null);

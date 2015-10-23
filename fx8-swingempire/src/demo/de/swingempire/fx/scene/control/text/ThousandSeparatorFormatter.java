@@ -19,7 +19,6 @@ import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 
 /**
- * @author Jeanette Winzenburg, Berlin
  */
 public class ThousandSeparatorFormatter extends Application {
 
