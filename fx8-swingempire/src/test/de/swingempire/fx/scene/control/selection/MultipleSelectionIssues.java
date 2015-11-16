@@ -13,6 +13,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.transformation.SortedList;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
@@ -31,6 +32,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static org.junit.Assert.*;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
@@ -88,7 +91,36 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * to init if needed.
      */
     protected StageLoader loader;
+
     
+    /**
+     * A variant of incorrect handling of discontinous list modifications, reported
+     * in openfx mailinglist
+     * http://mail.openjdk.java.net/pipermail/openjfx-dev/2015-October/018093.html
+     * 
+     * Here we adjusted the test to our infrastructure, hopefully being able to pull up into 
+     * MultipleSelectionIssues.
+     * 
+     */
+    @Test
+    public void testSortedAddDiscontinous() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        SortedList<String> sortedItems = new SortedList<>(items);
+        sortedItems.setComparator(String::compareTo);
+        setItems(sortedItems);
+        
+        String two = "2";
+        items.add(two);
+        getSelectionModel().selectFirst();
+        assertEquals("sanity: selectFirst working", two, getSelectedItem());
+        items.addAll("1", "3");
+        
+        assertEquals("seletedItem must be unchanged after adding", two, getSelectedItem());
+        assertEquals("selectedItems must contain single element", 1, getSelectedItems().size());
+        assertEquals("selectedItems must contain selected item", two, getSelectedItems().get(0));
+    }
+
+
     /**
      * Testing fix for https://javafx-jira.kenai.com/browse/RT-39776
      * Code looks like not returning the correct value. 

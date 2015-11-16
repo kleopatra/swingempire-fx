@@ -23,10 +23,10 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-
 import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnchor;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
@@ -834,6 +834,24 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
     @ConditionalIgnore(condition = IgnoreTreeFocus.class)
     public void testFocusMultipleRemoves() {
         super.testFocusMultipleRemoves();
+    }
+    
+    
+    
+    /**
+     *  Overridden to ignore: no way to use a sortedList as children
+     */
+    @Test
+    @Override
+    @ConditionalIgnore(condition = IgnoreTreeDeferredIssue.class)
+    public void testSortedAddDiscontinous() {
+        super.testSortedAddDiscontinous();
+    }
+
+    @Override
+    protected TreeView createView(ObservableList items) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**

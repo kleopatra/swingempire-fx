@@ -147,6 +147,8 @@ public class TableViewSample extends Application {
         Callback boundEditingCellFactory = p -> new BoundEditingCell();
         addTab(tabPane, "Bounding Editing", boundEditingCellFactory);
 
+        addTab(tabPane, "Wrapping Listener", wrapWithListener());
+        
         // binding approach (not editable) vs. plain subclassing
         Callback<TableColumn<Person, String>, TableCell<Person, String>> bound = 
                 (TableColumn<Person, String> p) -> new BoundTableCell();
@@ -158,6 +160,38 @@ public class TableViewSample extends Application {
             return tabPane;
         }
 
+    /**
+     * Trying to use the cell's focused property
+     * http://stackoverflow.com/q/33422616/203657
+     * 
+     * @return
+     */
+    private Callback<TableColumn<Person, String>, TableCell<Person, String>> wrapWithListener() {
+        Callback delegate = TextFieldTableCell.forTableColumn();
+        Callback actual = p -> {
+            TableCell cell = (TableCell) delegate.call(p);
+            // the focused property of a cell is used only in cell selection mode
+            cell.tableViewProperty().addListener((source, ov, table) -> {
+                if (table != null) {
+                    ((TableView<Person>) table).getSelectionModel().setCellSelectionEnabled(true);
+                    
+                }
+            });
+            cell.focusedProperty().addListener((s, ov, nv) ->{
+                LOG.info("focus change: " + nv + " / " + cell.getItem());
+                if (nv) {
+                    Node owner = null;
+                    if (cell.getScene() != null) {
+                        owner = cell.getScene().getFocusOwner();
+                    }
+                    LOG.info("is focusOwner? " + (owner == cell) + " " + owner);
+                }
+            });
+            return cell;
+        };
+        return actual;
+    }
+    
     /**
      * This is original of the tutorial example. 
      * No longer:
@@ -426,7 +460,6 @@ public class TableViewSample extends Application {
         // button allows to hide all columns, then impossible to show them again
         // http://stackoverflow.com/q/26141262/203657
         table.setTableMenuButtonVisible(true);
-        
         setCellFactories(table, coreTextFieldCellFactory);
         final TextField addFirstName = new TextField();
         addFirstName.setPromptText("First Name");
@@ -559,7 +592,7 @@ public class TableViewSample extends Application {
     }
 
 
-//    @SuppressWarnings("unused")
-//    static final Logger LOG = Logger.getLogger(TableViewSample.class
-//            .getName());
+    @SuppressWarnings("unused")
+    static final Logger LOG = Logger.getLogger(TableViewSample.class
+            .getName());
 }
