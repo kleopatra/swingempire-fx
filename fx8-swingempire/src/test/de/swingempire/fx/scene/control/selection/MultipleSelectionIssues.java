@@ -34,7 +34,6 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static org.junit.Assert.*;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
@@ -46,6 +45,7 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocError
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
@@ -98,9 +98,81 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * in openfx mailinglist
      * http://mail.openjdk.java.net/pipermail/openjfx-dev/2015-October/018093.html
      * 
+     * reported: 
+     * https://bugs.openjdk.java.net/browse/JDK-8141124
+     * 
      * Here we adjusted the test to our infrastructure, hopefully being able to pull up into 
      * MultipleSelectionIssues.
      * 
+     * Additions seem to have been correct (more or less, in simple contexts like this) in 8u45,
+     * failing in 8u60. 
+     */
+    @Test
+    public void testSortedAddDiscontinousIndex() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        SortedList<String> sortedItems = new SortedList<>(items);
+        sortedItems.setComparator(String::compareTo);
+        setItems(sortedItems);
+        
+        String two = "2";
+        items.add(two);
+        getSelectionModel().selectFirst();
+        assertEquals("sanity: selectFirst working", two, getSelectedItem());
+        assertEquals(0, getSelectedIndex());
+        ListChangeReport report = new ListChangeReport(sortedItems);
+        items.addAll("1", "3");
+        Change c = report.getLastChange();
+//        while(c.next()) {
+//            FXUtils.prettyPrint(c);
+//        }
+//        // illegal access of getFrom()
+//        assertEquals("where?", -100, c.getFrom());
+        assertEquals("seletedItem must be unchanged after adding", two, getSelectedItem());
+        assertEquals("selectedIndex must be old + 1", 1, getSelectedIndex());
+        assertEquals("selectedIndices must contain single element", 1, getSelectedIndices().size());
+        assertEquals("selectedIndices must contain selected index", 1, (int) getSelectedIndices().get(0));
+    }
+ 
+    /**
+     * Snippet to explain the incorrect handling of disjoint list changes in 
+     * XXSelectionModels.
+     */
+    private void snippet8141124(Change c) {
+        // 8u45 variant:
+        while(c.next()) {
+            if (c.wasAdded() || c.wasRemoved()) {
+                int shift = c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
+                // adjusting indices for each sub-change
+                // error: firing events on selectedIndices _before_ 
+                // processing of changes from items notification is complete
+                shiftSelection(c.getFrom(), shift, null);
+            }
+        }
+        // 8u60 variant:
+        int shift = 0;
+        while (c.next()) {
+            if (c.wasAdded() || c.wasRemoved()) {
+                // summing up intervals from multiple sub-changes
+                // error: disjoint intervals are smudged into one interval
+                shift += c.wasAdded() ? c.getAddedSize() : -c.getRemovedSize();
+            }
+        }
+        // adjusting indices to summed-up shift
+        // additional error: invalid access of c.getFrom - 
+        // here it points to the last sub-change which in the concrete example
+        // is _after_ the selected index, thus not updating selection at all
+        shiftSelection(c.getFrom(), shift, null);
+    }
+    
+    
+    /**
+     * Does nothing, just keeping the compiler happy with snippet
+     */
+    private void shiftSelection(int from, int shift, Object object) {
+    }
+
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8141124
      */
     @Test
     public void testSortedAddDiscontinous() {
@@ -113,13 +185,87 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         items.add(two);
         getSelectionModel().selectFirst();
         assertEquals("sanity: selectFirst working", two, getSelectedItem());
+        ListChangeReport report = new ListChangeReport(sortedItems);
         items.addAll("1", "3");
-        
+        Change c = report.getLastChange();
+//        while(c.next()) {
+//            FXUtils.prettyPrint(c);
+//        }
+//        // illegal access of getFrom()
+//        assertEquals("where?", -100, c.getFrom());
         assertEquals("seletedItem must be unchanged after adding", two, getSelectedItem());
         assertEquals("selectedItems must contain single element", 1, getSelectedItems().size());
         assertEquals("selectedItems must contain selected item", two, getSelectedItems().get(0));
     }
 
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8141124
+     */
+    @Test
+    public void testSortedAddDiscontinousNotificationItems() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        SortedList<String> sortedItems = new SortedList<>(items);
+        sortedItems.setComparator(String::compareTo);
+        setItems(sortedItems);
+        
+        String two = "2";
+        items.add(two);
+        getSelectionModel().selectFirst();
+        assertEquals("sanity: selectFirst working", two, getSelectedItem());
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        items.addAll("1", "3");
+        assertEquals("no change in selectedItems", 0, report.getEventCount());
+    }
+    
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8141124
+     */
+    @Test
+    public void testSortedAddDiscontinousNotificationIndices() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        SortedList<String> sortedItems = new SortedList<>(items);
+        sortedItems.setComparator(String::compareTo);
+        setItems(sortedItems);
+        
+        String two = "2";
+        items.add(two);
+        getSelectionModel().selectFirst();
+        assertEquals("sanity: selectFirst working", 0, getSelectedIndex());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        items.addAll("1", "3");
+        assertEquals("single change in selectedIndices", 1, report.getEventCount());
+    }
+    
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8141124
+     * 
+     * Trying to make the error in 8u45 show up: it fires multiple changes 
+     * on selectedIndices (in multiple mode)
+     * 
+     */
+    @Test
+    public void testSortedAddDiscontinousNotificationIndices8u45() {
+        if (!multipleMode) return;
+        ObservableList<String> items = FXCollections.observableArrayList();
+        SortedList<String> sortedItems = new SortedList<>(items);
+        sortedItems.setComparator(String::compareTo);
+        setItems(sortedItems);
+        
+        items.setAll("2", "4");
+        getSelectionModel().selectAll();
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        items.addAll("1", "3");
+        assertEquals("single change in selectedIndices", 1, report.getEventCount());
+    }
+
+    
+    @Test
+    public void testRemoveList() {
+        ObservableList items = FXCollections.observableArrayList("1", "2", "3");
+        ListChangeReport report = new ListChangeReport(items);
+        items.removeAll("1", "3");
+        report.prettyPrintAll();
+    }
 
     /**
      * Testing fix for https://javafx-jira.kenai.com/browse/RT-39776
