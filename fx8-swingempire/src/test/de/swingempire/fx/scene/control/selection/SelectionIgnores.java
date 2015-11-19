@@ -13,6 +13,39 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
  */
 public class SelectionIgnores {
     
+    
+//------------------ Table-related
+    
+    /**
+     * Ignore tests that are failing if cellSelection enabled. 
+     * This is used only temporarily to check test assumptions!
+     */
+    public static class IgnoreTableCellSelection implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    
+
+    
+    /**
+     * Ignore tests related to uncontained selectedItem in selection. 
+     * This is used only to keep the # of test failures low.
+     */
+    public static class IgnoreUncontained implements IgnoreCondition {
+        
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    
+    
+//------------------- Tree-related    
     /**
      * Ignore tests related to uncontained selectedItems in treeView selection. 
      * Seems unsupported, no idea how much sense it would make

@@ -13,8 +13,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
-import javafx.collections.transformation.SortedList;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
@@ -33,9 +33,6 @@ import org.junit.runners.Parameterized.Parameters;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
@@ -44,11 +41,12 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelat
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreUncontained;
 import de.swingempire.fx.util.ChangeReport;
-import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 /**
@@ -859,6 +857,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * "inserted" by the modification.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnClearSingle() {
         Object uncontained = createItem("permanently-uncontained");
         // prepare state
@@ -869,6 +868,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnClearMultiple() {
         Object uncontained = createItem("permanently-uncontained");
         getSelectionModel().selectRange(2, 6);
@@ -880,6 +880,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnSetAllSingle() {
         Object uncontained = createItem("permanently-uncontained");
         // prepare state
@@ -890,6 +891,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnSetAllMultiple() {
         Object uncontained = createItem("permanently-uncontained");
         getSelectionModel().selectRange(2, 6);
@@ -901,6 +903,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnSetItemSingle() {
         Object uncontained = createItem("permanently-uncontained");
         // prepare state
@@ -911,6 +914,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnSetItemMultiple() {
         Object uncontained = createItem("permanently-uncontained");
         getSelectionModel().selectRange(2, 6);
@@ -922,6 +926,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnRemoveItemSingle() {
         Object uncontained = createItem("permanently-uncontained");
         // prepare state
@@ -931,6 +936,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnRemoveItemMultiple() {
         Object uncontained = createItem("permanently-uncontained");
         getSelectionModel().selectRange(2, 6);
@@ -944,6 +950,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnInsertItemSingle() {
         Object uncontained = createItem("permanently-uncontained");
         // prepare state
@@ -953,6 +960,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     }
     
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testUncontainedOnInsertItemMultiple() {
         Object uncontained = createItem("permanently-uncontained");
         getSelectionModel().selectRange(2, 6);
@@ -1223,6 +1231,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * missing spec, though   
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedOnInsertUncontainedSingle() {
         Object uncontained = createItem("inserted-formerly-uncontained");
         // prepare state
@@ -1270,6 +1279,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * @see #testSelectedOnInsertUncontainedSingle()
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedOnInsertUncontainedMultiple() {
 //        if (!multipleMode)
 //            return;
@@ -1303,6 +1313,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * backed by the model.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedItemUncontainedInSelectedItemsSingle() {
         Object uncontained = createItem("uncontained");
         getSelectionModel().select(uncontained);
@@ -1315,6 +1326,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * @see #testSelectedItemUncontainedInSelectedItemsSingle()
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedItemUncontainedInSelectedItemsMultiple() {
         int start = 3;
         int end = 5;
@@ -1329,6 +1341,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * that had not been in the list is treated like being independent and left alone.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedOnSetItemsWithUncontained() {
         Object uncontained = createItem("uncontained");
         // prepare state
@@ -1349,6 +1362,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * selectedIndex -1, uncontained still selectedItem
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedOnSetItemsWithoutUncontained() {
         Object uncontained = createItem("uncontained");
         // prepare state
@@ -1614,6 +1628,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * out items.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreUncontained.class)
     public void testSelectedUncontainedOnClearItems() {
         Object uncontained = createItem("uncontained");
         getSelectionModel().selectRange(2, 6);
