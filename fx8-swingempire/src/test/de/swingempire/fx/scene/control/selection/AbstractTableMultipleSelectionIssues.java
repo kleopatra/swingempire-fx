@@ -47,7 +47,7 @@ public abstract class AbstractTableMultipleSelectionIssues<V extends TableView> 
     
     @Override
     @Test
-    @ConditionalIgnore(condition = IgnoreTableCellSelection.class)
+//    @ConditionalIgnore(condition = IgnoreTableCellSelection.class)
     public void testClearSelectionAtInvalidIndex() {
         int start = 2;
         int end = 6;
@@ -458,9 +458,9 @@ public abstract class AbstractTableMultipleSelectionIssues<V extends TableView> 
     public static Collection selectionModes() {
         List params = Arrays.asList(new Object[][] { 
 //              { false, false }, 
-//              { false, true}, 
+              { false, true}, 
 //              { true, false }, 
-              { true, true},  
+//              { true, true},  
          });
          return params;
     }

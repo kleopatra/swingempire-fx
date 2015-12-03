@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -17,6 +18,14 @@ import javafx.util.StringConverter;
 
 
 /**
+ * Experimenting with commit triggers:
+ * 
+ * <li> combo action is coupled to selection
+ * <li> value is coupled to selection
+ * <li> navigation selects, thus triggering all of the above!
+ * 
+ * For now, this is only not-editable. Editable highlight more issues ...
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class FComboBoxTableCell<S, T> extends TableCell<S, T> {
@@ -28,6 +37,8 @@ public class FComboBoxTableCell<S, T> extends TableCell<S, T> {
     private boolean ignoreCommit;
 
     private ChangeListener<T> selectionListener;
+    
+    private InvalidationListener showingListener;
     /**
      * Creates a default {@link ComboBoxTableCell} instance with the given items
      * being used to populate the {@link ComboBox} when it is shown.
@@ -69,8 +80,17 @@ public class FComboBoxTableCell<S, T> extends TableCell<S, T> {
         setConverter(converter != null ? converter : CellUtils.<T>defaultStringConverter());
         selectionListener = (source, ov, nv) -> {
             if (isEditing()) {
+                // experiment: add/remove listener on startEdit/first selection change
+                // not working better than core selection listener!
                 source.removeListener(selectionListener);
                 commitEdit(nv);
+            }
+        };
+        // core fix for navigation/old item issues: listen to showingProperty
+        // bad side-effects, see my comments in 
+        showingListener = s -> {
+            if (!comboBox.isShowing()) {
+                commitEdit(comboBox.getSelectionModel().getSelectedItem());
             }
         };
     }
@@ -99,7 +119,12 @@ public class FComboBoxTableCell<S, T> extends TableCell<S, T> {
         super.startEdit();
         setText(null);
         setGraphic(comboBox);
-        comboBox.getSelectionModel().selectedItemProperty().addListener(selectionListener);
+        comboBox.requestFocus();
+//       experiment with adding/removing selectionListener on a per-edit base
+        // no improvement
+//        comboBox.getSelectionModel().selectedItemProperty().addListener(selectionListener);
+
+        // below are experiments with removing items while editing, weird errors
         /* listening to selectedItem: stacktrace on remove last item in 
          Exception in thread "JavaFX Application Thread" java.lang.IndexOutOfBoundsException
         at com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList.subList(ReadOnlyUnbackedObservableList.java:136)
@@ -159,6 +184,11 @@ public class FComboBoxTableCell<S, T> extends TableCell<S, T> {
         ComboBox<T> comboBox = new ComboBox<T>(items);
         comboBox.converterProperty().bind(converter);
         comboBox.setMaxWidth(Double.MAX_VALUE);
+        // core fix for commit on navigating is to commit on hiding:
+//        comboBox.showingProperty().addListener(showingListener);
+        
+        // experiment with ignore flag to tackle multiple commits
+        // - only partly working
 //        comboBox.getSelectionModel().selectedItemProperty()
 //        comboBox.valueProperty()
 //                .addListener((ov, oldValue, newValue) -> {

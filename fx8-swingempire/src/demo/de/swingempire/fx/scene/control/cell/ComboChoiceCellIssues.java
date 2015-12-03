@@ -11,10 +11,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -32,11 +30,16 @@ import de.swingempire.fx.util.FXUtils;
  * 
  * Combo must not commit on navigating drop-down, reported:
  * https://bugs.openjdk.java.net/browse/JDK-8138683
+ * fixed: listening to showing instead of selection
+ * 
+ * Note: showing is a whacky indicator, commented the issue
  * 
  * Combo must commit on selecting old value
- * https://bugs.openjdk.java.net/browse/JDK-8138683
+ * https://bugs.openjdk.java.net/browse/JDK-8138688
+ * fixed: listening to showing instead of selection
  * 
  * Combo must cope with modification of items in edit handler
+ * https://bugs.openjdk.java.net/browse/JDK-8138747
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -54,10 +57,11 @@ public class ComboChoiceCellIssues extends Application {
         plain.setCellValueFactory(new PropertyValueFactory("strokeType"));
         table.getColumns().addAll(plain);
         
-//        TableColumn<Shape, StrokeType> combo = new TableColumn<>("Combo");
-//        combo.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        combo.setCellFactory(ComboBoxTableCell.forTableColumn(StrokeType.values()));
-//        
+        TableColumn<Shape, StrokeType> combo = new TableColumn<>("Combo");
+        combo.setCellValueFactory(new PropertyValueFactory("strokeType"));
+        combo.setCellFactory(ComboBoxTableCell.forTableColumn(StrokeType.values()));
+        table.getColumns().addAll(combo);
+        
 //        TableColumn<Shape, StrokeType> choice = new TableColumn<>("Choice");
 //        choice.setCellValueFactory(new PropertyValueFactory("strokeType"));
 //        choice.setCellFactory(ChoiceBoxTableCell.forTableColumn(StrokeType.values()));
@@ -88,21 +92,22 @@ public class ComboChoiceCellIssues extends Application {
 //        });
 //        table.getColumns().addAll(choiceWithHandler);
 
-//        TableColumn<Shape, StrokeType> comboFix = new TableColumn<>("fixed Combo");
-//        comboFix.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        comboFix.setCellFactory(c -> new FixedComboBoxTableCell<>(StrokeType.values()));
-//
-        TableColumn<Shape, StrokeType> comboFixWithHandler = new TableColumn<>("fixed ComboHandler");
-        comboFixWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
-        ObservableList<StrokeType> modifiableFixed = FXCollections.observableArrayList(StrokeType.values());
-        comboFixWithHandler.setCellFactory(c -> new FComboBoxTableCell<>(modifiableFixed));
-        comboFixWithHandler.setOnEditCommit(ev -> {
-            LOG.info("counter: " + count++ + ev.getNewValue());
-            if (ev.getNewValue() == null) return;
-            ev.getRowValue().setStrokeType(ev.getNewValue());
-            modifiableFixed.remove(ev.getNewValue());
-        });
-        table.getColumns().addAll(comboFixWithHandler);
+        TableColumn<Shape, StrokeType> comboFix = new TableColumn<>("fixed Combo");
+        comboFix.setCellValueFactory(new PropertyValueFactory("strokeType"));
+        comboFix.setCellFactory(c -> new FComboBoxTableCell<>(StrokeType.values()));
+        table.getColumns().addAll(comboFix);
+        
+//        TableColumn<Shape, StrokeType> comboFixWithHandler = new TableColumn<>("fixed ComboHandler");
+//        comboFixWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
+//        ObservableList<StrokeType> modifiableFixed = FXCollections.observableArrayList(StrokeType.values());
+//        comboFixWithHandler.setCellFactory(c -> new FComboBoxTableCell<>(modifiableFixed));
+//        comboFixWithHandler.setOnEditCommit(ev -> {
+//            LOG.info("counter: " + count++ + ev.getNewValue());
+//            if (ev.getNewValue() == null) return;
+//            ev.getRowValue().setStrokeType(ev.getNewValue());
+//            modifiableFixed.remove(ev.getNewValue());
+//        });
+//        table.getColumns().addAll(comboFixWithHandler);
         
         Parent content = new BorderPane(table);
         return content;
