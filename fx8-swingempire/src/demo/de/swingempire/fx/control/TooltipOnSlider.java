@@ -23,6 +23,8 @@ import javafx.stage.Stage;
 
 import com.sun.javafx.scene.control.skin.SliderSkin;
 
+import de.swingempire.fx.scene.control.slider.XSliderSkin;
+
 /**
  * http://stackoverflow.com/a/34057532/203657
  * convert mouse location to value - not really easy!
@@ -47,11 +49,13 @@ public class TooltipOnSlider extends Application {
         // force an axis to be used
         slider.setShowTickMarks(true);
         slider.setShowTickLabels(true);
-        slider.setSnapToTicks(false); 
+//        slider.setSnapToTicks(true); 
         slider.setMajorTickUnit(5);
         
+        slider.setOrientation(Orientation.VERTICAL);
         // hacking around the bugs in a custom skin
 //        slider.setSkin(new MySliderSkin(slider));
+        slider.setSkin(new XSliderSkin(slider));
 
         Label label = new Label();
         Popup popup = new Popup();
@@ -66,7 +70,8 @@ public class TooltipOnSlider extends Application {
             if (useAxis) {
                 // James: use axis to convert value/position
                 Point2D locationInAxis = axis.sceneToLocal(e.getSceneX(), e.getSceneY());
-                double mouseX = locationInAxis.getX() ;
+                boolean isHorizontal = slider.getOrientation() == Orientation.HORIZONTAL;
+                double mouseX = isHorizontal ? locationInAxis.getX() : locationInAxis.getY() ;
                 double value = axis.getValueForDisplay(mouseX).doubleValue() ;
                 if (value >= slider.getMin() && value <= slider.getMax()) {
                     label.setText("" + value);
@@ -100,7 +105,7 @@ public class TooltipOnSlider extends Application {
         root.setBottom(valueLabel);
         primaryStage.setScene(new Scene(root, 350, 100));
         primaryStage.show();
-        primaryStage.setTitle("useAxis: " + useAxis + " mySkin: " + (slider.getSkin() instanceof MySliderSkin));
+        primaryStage.setTitle("useAxis: " + useAxis + " mySkin: " + slider.getSkin().getClass().getSimpleName());
     }
 
     
@@ -174,18 +179,13 @@ public class TooltipOnSlider extends Application {
                 invokeSetField("thumbTop", thumbTop);
                 
                 // positionThumb(false);
+                // calc in position thumb is correct: takes offset into account
                 invokeMethod("positionThumb", false);
-                // layout track - original ... possible but unnecessarily complex
-                // it's filling the complete width 
+                // layout track - original ... 
                 track.resizeRelocate((int)(trackStart - trackRadius),
                         trackTop ,
                         (int)(trackLength + trackRadius + trackRadius),
                         trackHeight);
-                // simplifying seems to work
-                //track.resizeRelocate((int)(x),
-                //          trackTop ,
-                //          (int)(w),
-                //          trackHeight);
                 // layout tick line
                 if (showTickMarks) {
                     tickLine.setLayoutX(trackStart);
@@ -199,10 +199,20 @@ public class TooltipOnSlider extends Application {
                     }
                     tickLine = null;
                 }
+                
+//                Slider s = getSkinnable();
+//                boolean horizontal = true;
+//                double thumbLeft = 0;
+//                double relValue = (s.getValue() - s.getMin()) /(s.getMax() - s.getMin());
+//                final double endX = (horizontal) ? 
+//                        trackStart + trackLength * relValue - thumbWidth/2 
+//                        : thumbLeft;
+
             } else {
                 super.layoutChildren(x, y, w, h);
             }
         }
+
 
         /**
          * Calc the offset of track start (extracted for convience).
