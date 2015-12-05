@@ -319,10 +319,11 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
             double trackAreaHeight = Math.max(trackHeight,thumbHeight);
             double totalHeightNeeded = trackAreaHeight  + ((showTickMarks) ? trackToTickGap+tickLineHeight : 0);
             double startY = y + ((h - totalHeightNeeded)/2); // center slider in available height vertically
-//            trackLength = snapSize(w - thumbWidth);
-//            trackStart = snapPosition(x + (thumbWidth/2));
-            trackLength = snapSize(w - 2 * trackRadius);
-            trackStart = snapPosition(x + trackRadius);
+            // calculate offset with thumb guarantees that the thumb fits at min/max
+            trackLength = snapSize(w - thumbWidth);
+            trackStart = snapPosition(x + (thumbWidth/2));
+//            trackLength = snapSize(w - 2 * trackRadius);
+//            trackStart = snapPosition(x + trackRadius);
             double trackTop = (int)(startY + ((trackAreaHeight-trackHeight)/2));
             thumbTop = (int)(startY + ((trackAreaHeight-thumbHeight)/2));
 

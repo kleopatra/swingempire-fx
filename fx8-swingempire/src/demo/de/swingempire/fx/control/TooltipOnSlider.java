@@ -52,10 +52,10 @@ public class TooltipOnSlider extends Application {
 //        slider.setSnapToTicks(true); 
         slider.setMajorTickUnit(5);
         
-        slider.setOrientation(Orientation.VERTICAL);
+//        slider.setOrientation(Orientation.VERTICAL);
         // hacking around the bugs in a custom skin
-//        slider.setSkin(new MySliderSkin(slider));
-        slider.setSkin(new XSliderSkin(slider));
+        slider.setSkin(new MySliderSkin(slider));
+//        slider.setSkin(new XSliderSkin(slider));
 
         Label label = new Label();
         Popup popup = new Popup();
@@ -130,8 +130,9 @@ public class TooltipOnSlider extends Application {
                 //getBehavior().trackPress(e, (e.getX() / trackLength));
 
                 double trackLength = invokeGetField("trackLength");
-                double trackStart = invokeGetField("trackStart");
-                double mouseX = snapPosition(e.getX());
+//                double trackStart = invokeGetField("trackStart");
+                double trackStart = getTrackRadius(track);
+                double mouseX = e.getX(); //snapPosition(e.getX());
                 double position;
                 if (mouseX < trackStart) {
                     position = 0;
@@ -140,6 +141,7 @@ public class TooltipOnSlider extends Application {
                 } else {
                    position = (mouseX - trackStart) / trackLength;
                 }
+                LOG.info("" + position + "/" + e);
                 getBehavior().trackPress(e, position);
                 invokeSetField("trackClicked", false);
             });
@@ -166,13 +168,13 @@ public class TooltipOnSlider extends Application {
                 double trackAreaHeight = Math.max(trackHeight,thumbHeight);
                 double totalHeightNeeded = trackAreaHeight  + ((showTickMarks) ? trackToTickGap+tickLineHeight : 0);
                 double startY = y + ((h - totalHeightNeeded)/2); // center slider in available height vertically
-                // original: incorrect tracklength
-                // double trackLength = snapSize(w - thumbWidth);
-                double trackLength = snapSize(w - 2 * trackRadius);
+                // original: tracklength calculated with thumb
+                 double trackLength = snapSize(w - thumbWidth);
+//                double trackLength = snapSize(w - 2 * trackRadius);
                 invokeSetField("trackLength", trackLength);
-                // original: incorrect track offset
-                // double trackStart = snapPosition(x + (thumbWidth/2));
-                double trackStart = snapPosition(x + trackRadius);
+                // original: track offset calculated with thum
+                 double trackStart = snapPosition(x + (thumbWidth/2));
+//                double trackStart = snapPosition(x + trackRadius);
                 invokeSetField("trackStart", trackStart);
                 double trackTop = (int)(startY + ((trackAreaHeight-trackHeight)/2));
                 double thumbTop = (int)(startY + ((trackAreaHeight-thumbHeight)/2));
@@ -199,14 +201,6 @@ public class TooltipOnSlider extends Application {
                     }
                     tickLine = null;
                 }
-                
-//                Slider s = getSkinnable();
-//                boolean horizontal = true;
-//                double thumbLeft = 0;
-//                double relValue = (s.getValue() - s.getMin()) /(s.getMax() - s.getMin());
-//                final double endX = (horizontal) ? 
-//                        trackStart + trackLength * relValue - thumbWidth/2 
-//                        : thumbLeft;
 
             } else {
                 super.layoutChildren(x, y, w, h);

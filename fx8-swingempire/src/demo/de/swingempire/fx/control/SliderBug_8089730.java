@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import de.swingempire.fx.control.TooltipOnSlider.MySliderSkin;
+import de.swingempire.fx.scene.control.slider.XSliderSkin;
 
 /**
  * Slider: slider value differs from selected real value
@@ -26,7 +27,7 @@ public class SliderBug_8089730 extends Application {
 
         Slider s = new Slider();
 //        s.setSkin(new MySliderSkin(s)); 
-       
+        s.setSkin(new XSliderSkin(s));
         s.setMinWidth(500.0);
         s.setPrefWidth(500.0);
         s.setMax(200.0);
