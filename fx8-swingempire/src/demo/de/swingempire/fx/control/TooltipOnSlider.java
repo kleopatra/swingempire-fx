@@ -16,14 +16,13 @@ import javafx.scene.Scene;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 import com.sun.javafx.scene.control.skin.SliderSkin;
-
-import de.swingempire.fx.scene.control.slider.XSliderSkin;
 
 /**
  * http://stackoverflow.com/a/34057532/203657
@@ -123,15 +122,16 @@ public class TooltipOnSlider extends Application {
          */
         protected void installListeners() {
             StackPane track = (StackPane) getSkinnable().lookup(".track");
-            track.setOnMousePressed(e -> {
+            track.setOnMousePressed(me -> {
                 invokeSetField("trackClicked", true);
                 // original:
                 // incorrect because radius not taken into account
                 //getBehavior().trackPress(e, (e.getX() / trackLength));
 
                 double trackLength = invokeGetField("trackLength");
-//                double trackStart = invokeGetField("trackStart");
-                double trackStart = getTrackRadius(track);
+                double trackStart = invokeGetField("trackStart");
+//                double trackStart = getTrackRadius(track);
+                MouseEvent e = me.copyFor(getSkinnable(), getSkinnable());
                 double mouseX = e.getX(); //snapPosition(e.getX());
                 double position;
                 if (mouseX < trackStart) {
@@ -168,12 +168,15 @@ public class TooltipOnSlider extends Application {
                 double trackAreaHeight = Math.max(trackHeight,thumbHeight);
                 double totalHeightNeeded = trackAreaHeight  + ((showTickMarks) ? trackToTickGap+tickLineHeight : 0);
                 double startY = y + ((h - totalHeightNeeded)/2); // center slider in available height vertically
+                double sideOff = Math.max(thumbWidth, 50);
                 // original: tracklength calculated with thumb
-                 double trackLength = snapSize(w - thumbWidth);
+//                double trackLength = snapSize(w - thumbWidth);
+                 double trackLength = snapSize(w - sideOff);
 //                double trackLength = snapSize(w - 2 * trackRadius);
                 invokeSetField("trackLength", trackLength);
                 // original: track offset calculated with thum
-                 double trackStart = snapPosition(x + (thumbWidth/2));
+//                double trackStart = snapPosition(x + (thumbWidth/2));
+                 double trackStart = snapPosition(x + (sideOff/2));
 //                double trackStart = snapPosition(x + trackRadius);
                 invokeSetField("trackStart", trackStart);
                 double trackTop = (int)(startY + ((trackAreaHeight-trackHeight)/2));
