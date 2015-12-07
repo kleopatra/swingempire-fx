@@ -7,6 +7,7 @@ package de.swingempire.fx.chart;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.Parent;
@@ -46,9 +47,11 @@ public class AxisInvalidate extends Application {
             
             double axisHeight = axis.prefHeight(-1);
             axis.resizeRelocate(0, getHeight() /4, getWidth(), axisHeight);
-            
+            axis.requestAxisLayout();
             double pixelOnAxis = axis.getDisplayPosition(value.getValue());
-            LOG.info("" + pixelOnAxis);
+            Platform.runLater(() -> {
+                LOG.info("diff " + (pixelOnAxis - axis.getDisplayPosition(value.getValue())));
+            });
             thumb.relocate(pixelOnAxis, getHeight() /4);
             
         }
