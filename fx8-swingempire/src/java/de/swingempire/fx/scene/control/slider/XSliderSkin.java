@@ -346,7 +346,8 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         double pixelOnAxis = tickLine.getDisplayPosition(getSkinnable().getValue());
         
         // ideally we want to use axis api in positioning the thumb
-        // unfortunately, the axis' internal state is not yet updated
+        // works well for resizing, doesn't work when max/min window
+        // then the axis' internal state is not yet updated
         // it's only marked invalid, the actual update happens in the next
         // layout pass. 
         // options:
