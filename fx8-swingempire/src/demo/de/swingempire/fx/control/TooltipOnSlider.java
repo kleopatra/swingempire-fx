@@ -109,30 +109,22 @@ public class TooltipOnSlider extends Application {
 
     
     /**
-     * Trying to get down to the slight offset.
+     * Trying to work around down to the slight offset.
      */
     public static class MySliderSkin extends SliderSkin {
-
-        // hard-copy of hard-coded value in super
-        double trackToTickGap = 2;
         
         /**
-         * Hook for replacing mouseListener installed by super.
-         * Here only doing so for mousePressed on track.
+         * Hook for replacing the mouse pressed handler that's installed by super.
          */
         protected void installListeners() {
             StackPane track = (StackPane) getSkinnable().lookup(".track");
             track.setOnMousePressed(me -> {
                 invokeSetField("trackClicked", true);
-                // original:
-                // incorrect because radius not taken into account
-                //getBehavior().trackPress(e, (e.getX() / trackLength));
-
                 double trackLength = invokeGetField("trackLength");
                 double trackStart = invokeGetField("trackStart");
-//                double trackStart = getTrackRadius(track);
+                // convert coordinates into slider
                 MouseEvent e = me.copyFor(getSkinnable(), getSkinnable());
-                double mouseX = e.getX(); //snapPosition(e.getX());
+                double mouseX = e.getX(); 
                 double position;
                 if (mouseX < trackStart) {
                     position = 0;
@@ -141,96 +133,9 @@ public class TooltipOnSlider extends Application {
                 } else {
                    position = (mouseX - trackStart) / trackLength;
                 }
-                LOG.info("" + position + "/" + e);
                 getBehavior().trackPress(e, position);
                 invokeSetField("trackClicked", false);
             });
-        }
-
-        @Override
-        protected void layoutChildren(double x, double y, double w, double h) {
-            StackPane thumb = (StackPane) getSkinnable().lookup(".thumb");
-            StackPane track = (StackPane) getSkinnable().lookup(".track");
-            NumberAxis tickLine = (NumberAxis) getSkinnable().lookup(".axis");
-            boolean showTickMarks = getSkinnable().isShowTickLabels() || getSkinnable().isShowTickMarks();
-            // calculate the available space
-            // resize thumb to preferred size
-            double thumbWidth = snapSize(thumb.prefWidth(-1));
-            invokeSetField("thumbWidth", thumbWidth);
-            double thumbHeight = snapSize(thumb.prefHeight(-1));
-            invokeSetField("thumbHeight", thumbHeight);
-            thumb.resize(thumbWidth, thumbHeight);
-            // we are assuming the is common radius's for all corners on the track
-            double trackRadius = getTrackRadius(track);
-            if (getSkinnable().getOrientation() == Orientation.HORIZONTAL) {
-                double tickLineHeight =  (showTickMarks) ? tickLine.prefHeight(-1) : 0;
-                double trackHeight = snapSize(track.prefHeight(-1));
-                double trackAreaHeight = Math.max(trackHeight,thumbHeight);
-                double totalHeightNeeded = trackAreaHeight  + ((showTickMarks) ? trackToTickGap+tickLineHeight : 0);
-                double startY = y + ((h - totalHeightNeeded)/2); // center slider in available height vertically
-                double sideOff = Math.max(thumbWidth, 50);
-                // original: tracklength calculated with thumb
-//                double trackLength = snapSize(w - thumbWidth);
-                 double trackLength = snapSize(w - sideOff);
-//                double trackLength = snapSize(w - 2 * trackRadius);
-                invokeSetField("trackLength", trackLength);
-                // original: track offset calculated with thum
-//                double trackStart = snapPosition(x + (thumbWidth/2));
-                 double trackStart = snapPosition(x + (sideOff/2));
-//                double trackStart = snapPosition(x + trackRadius);
-                invokeSetField("trackStart", trackStart);
-                double trackTop = (int)(startY + ((trackAreaHeight-trackHeight)/2));
-                double thumbTop = (int)(startY + ((trackAreaHeight-thumbHeight)/2));
-                invokeSetField("thumbTop", thumbTop);
-                
-                // positionThumb(false);
-                // calc in position thumb is correct: takes offset into account
-                invokeMethod("positionThumb", false);
-                // layout track - original ... 
-                track.resizeRelocate((int)(trackStart - trackRadius),
-                        trackTop ,
-                        (int)(trackLength + trackRadius + trackRadius),
-                        trackHeight);
-                // layout tick line
-                if (showTickMarks) {
-                    tickLine.setLayoutX(trackStart);
-                    tickLine.setLayoutY(trackTop+trackHeight+trackToTickGap);
-                    tickLine.resize(trackLength, tickLineHeight);
-                    tickLine.requestAxisLayout();
-                } else {
-                    if (tickLine != null) {
-                        tickLine.resize(0,0);
-                        tickLine.requestAxisLayout();
-                    }
-                    tickLine = null;
-                }
-
-            } else {
-                super.layoutChildren(x, y, w, h);
-            }
-        }
-
-
-        /**
-         * Calc the offset of track start (extracted for convience).
-         */
-        protected double getTrackRadius(StackPane track) {
-            double trackRadius = track.getBackground() == null ? 0 : track.getBackground().getFills().size() > 0 ?
-                    track.getBackground().getFills().get(0).getRadii().getTopLeftHorizontalRadius() : 0;
-            return trackRadius;
-        }
-
-        //------from here: hacking around scope of super fields/methods
-        private void invokeMethod(String string, boolean b) {
-            Class clazz = SliderSkin.class;
-            try {
-                Method method = clazz.getDeclaredMethod(string, Boolean.TYPE);
-                method.setAccessible(true);
-                method.invoke(this, b);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
 
         private double invokeGetField(String name) {
@@ -268,6 +173,7 @@ public class TooltipOnSlider extends Application {
         }
         
     }
+    
     public static void main(String[] args) {
         launch(args);
     }
