@@ -10,14 +10,22 @@ package de.swingempire.fx.scene.control.slider;
  *
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javafx.animation.Transition;
+import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
+import javafx.scene.chart.Axis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
@@ -25,9 +33,8 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.behavior.SliderBehavior;
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-
+import com.sun.javafx.tk.Toolkit;
 /**
  * Copy of SliderSkin as starting point to experiment with using NumberAxis always.
  * 
@@ -48,13 +55,10 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     private double trackLength;
     private double thumbTop;
     private double thumbLeft;
-    private double preDragThumbPos;
-    private Point2D dragStart; // in skin coordinates
 
     private StackPane thumb;
     private StackPane track;
     private boolean trackClicked = false;
-//    private double visibleAmount = 16;
 
     public XSliderSkin(Slider slider) {
         super(slider, new XSliderBehavior(slider));
@@ -86,90 +90,102 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         thumb.setAccessibleRole(AccessibleRole.THUMB);
         track = new StackPane();
         track.getStyleClass().setAll("track");
-//        horizontal = getSkinnable().isVertical();
 
         getChildren().clear();
         getChildren().addAll(track, thumb);
         setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
         
-//        MouseEvent e;
-//        tickLine.setOnMousePressed(me -> {
-//            trackClicked = true;
-//            if (getSkinnable().getOrientation() == Orientation.HORIZONTAL) {
-//                double curValue = tickLine.getValueForDisplay(me.getX()).doubleValue();
-//                double position = curValue / (getSkinnable().getMax() - getSkinnable().getMin());
-//                getSkinnable().adjustValue(curValue);
-////                getBehavior().trackPress(me, position);
-//            }
-//            trackClicked = false;
-//        });
         track.setOnMousePressed(e -> {
             if (!thumb.isPressed()) {
                 trackClicked = true;
-                
-                double curValue = getValueFromMouseEvent(e);
-                // could do it directly (or enhance SkinBehaviour to take the value
-//                getSkinnable().adjustValue(curValue);
-                // delegate to XSliderBehavior (does additional stuff like guaranteing focus
-                getBehavior().valueUpdateByTrack(curValue);
-                // roundabout way ... give the relative position
-//                double position = (curValue - getSkinnable().getMin()) / (getSkinnable().getMax() - getSkinnable().getMin());
-//                getBehavior().trackPress(me, position);
+                getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
                 trackClicked = false;
             }
         });
         
         track.setOnMouseDragged(e -> {
             if (!thumb.isPressed()) {
-
-                double curValue = getValueFromMouseEvent(e);
-                // could do it directly (or enhance SkinBehaviour to take the value
-//                getSkinnable().adjustValue(curValue);
-                // delegate to XSliderBehavior (does additional stuff like guaranteing focus
-                getBehavior().valueUpdateByTrack(curValue);
-                // roundabout way ... give the relative position
-//                double position = (curValue - getSkinnable().getMin()) / (getSkinnable().getMax() - getSkinnable().getMin());
-//                getBehavior().trackPress(me, position);
-
-                //                if (getSkinnable().getOrientation() == Orientation.HORIZONTAL) {
-//                    getBehavior().trackPress(me, (me.getX() / trackLength));
-//                } else {
-//                    getBehavior().trackPress(me, (me.getY() / trackLength));
-//                }
+                getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
             }
         });
 
         thumb.setOnMousePressed(e -> {
-            double curValue = getValueFromMouseEvent(e);
-            getBehavior().thumbPressed(curValue);
-//            getBehavior().thumbPressed(me, 0.0f);
-//            dragStart = thumb.localToParent(me.getX(), me.getY());
-//            preDragThumbPos = (getSkinnable().getValue() - getSkinnable().getMin()) /
-//                    (getSkinnable().getMax() - getSkinnable().getMin());
+            getBehavior().thumbPressed(getValueFromMouseEvent(e));
         });
 
         thumb.setOnMouseReleased(e -> {
-            double curValue = getValueFromMouseEvent(e);
-            getBehavior().thumbReleased(curValue);
-//            getBehavior().thumbReleased(me);
+            getBehavior().thumbReleased(getValueFromMouseEvent(e));
         });
 
         thumb.setOnMouseDragged(e -> {
-            double curValue = getValueFromMouseEvent(e);
-            getBehavior().thumbDragged(curValue);
-
-//            Point2D cur = thumb.localToParent(me.getX(), me.getY());
-//            double dragPos = (getSkinnable().getOrientation() == Orientation.HORIZONTAL)?
-//                cur.getX() - dragStart.getX() : -(cur.getY() - dragStart.getY());
-//            getBehavior().thumbDragged(me, preDragThumbPos + dragPos / trackLength);
+            getBehavior().thumbDragged(getValueFromMouseEvent(e));
         });
+        
+        getSkinnable().getProperties().put("count", new SimpleDoubleProperty());
+
     }
 
+    /**
+     * Returns the slider value that corresponds to the mouseEvent.
+     * The given event is converted to cooredinates of the axis, such that it
+     * doesn't matter to which child component it had been delivered originally.
+     *  
+     * @param e a mouseEvent delivered to any child of the slider (or the slider itself)
+     * @return the value that corresponds to the mouse location.
+     */
     protected double getValueFromMouseEvent(MouseEvent e) {
         MouseEvent me = e.copyFor(tickLine, tickLine);
         double mouseValue = getSkinnable().getOrientation() == Orientation.HORIZONTAL ? me.getX() : me.getY();
         double curValue = tickLine.getValueForDisplay(mouseValue).doubleValue();
         return curValue;
+    }
+
+    /**
+     * Called when ever either min, max or value changes, so thumb's layoutX, Y is recomputed.
+     * 
+     * PENDING JW: would love to use the axis coodinate transformation to position the thumb.
+     * works fine except when max (or back to intermediate size) the window:
+     * the axis seems to not be relayouted thus showing the thumb at the wrong position.
+     */
+    void positionThumb(final boolean animate) {
+        
+        Slider s = getSkinnable();
+        if (s.getValue() > s.getMax()) return;// this can happen if we are bound to something 
+        double pixelOnAxis = tickLine.getDisplayPosition(s.getValue());
+        boolean horizontal = s.getOrientation() == Orientation.HORIZONTAL;
+        double endX = horizontal ? trackStart + pixelOnAxis - thumbWidth/2 : thumbLeft;
+        double endY = horizontal ? thumbTop :
+            trackStart + pixelOnAxis - thumbWidth/2;
+        // commented lines is option 3. as described in layoutChildren
+//        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
+//                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
+//        final double endY = (horizontal) ? thumbTop :
+//            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
+//                (s.getMax() - s.getMin()))); //  - thumbHeight/2
+        
+        if (animate) {
+            // lets animate the thumb transition
+            final double startX = thumb.getLayoutX();
+            final double startY = thumb.getLayoutY();
+            Transition transition = new Transition() {
+                {
+                    setCycleDuration(Duration.millis(200));
+                }
+    
+                @Override protected void interpolate(double frac) {
+                    if (!Double.isNaN(startX)) {
+                        thumb.setLayoutX(startX + frac * (endX - startX));
+                    }
+                    if (!Double.isNaN(startY)) {
+                        thumb.setLayoutY(startY + frac * (endY - startY));
+                    }
+                }
+            };
+            transition.play();
+        } else {
+            thumb.setLayoutX(endX);
+            thumb.setLayoutY(endY);
+        }
     }
 
     StringConverter<Number> stringConverterWrapper = new StringConverter<Number>() {
@@ -184,7 +200,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     
      private void setShowTickMarks(boolean ticksVisible, boolean labelsVisible) {
         showTickMarks = (ticksVisible || labelsVisible);
-        Slider slider = getSkinnable();
         if (tickLine == null) {
             // initial setup
             tickLine = createAxis(ticksVisible, labelsVisible);
@@ -207,9 +222,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         tickLine.setUpperBound(slider.getMax());
         tickLine.setLowerBound(slider.getMin());
         tickLine.setTickUnit(slider.getMajorTickUnit());
-//        tickLine.setTickLabelsVisible(labelsVisible);
-//        tickLine.setTickMarkVisible(ticksVisible);
-//        tickLine.setMinorTickVisible(ticksVisible);
         // add 1 to the slider minor tick count since the axis draws one
         // less minor ticks than the number given.
         tickLine.setMinorTickCount(Math.max(slider.getMinorTickCount(),0) + 1);
@@ -265,44 +277,12 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     }
 
     /**
-     * Called when ever either min, max or value changes, so thumb's layoutX, Y is recomputed.
+     * Layout code unchanged except for 
+     * <li> laying out the axis always
+     * <li> positioning the thumb at the end of method
      */
-    void positionThumb(final boolean animate) {
-        Slider s = getSkinnable();
-        if (s.getValue() > s.getMax()) return;// this can happen if we are bound to something 
-        boolean horizontal = s.getOrientation() == Orientation.HORIZONTAL;
-        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
-                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
-        final double endY = (horizontal) ? thumbTop :
-            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
-                (s.getMax() - s.getMin()))); //  - thumbHeight/2
-        
-        if (animate) {
-            // lets animate the thumb transition
-            final double startX = thumb.getLayoutX();
-            final double startY = thumb.getLayoutY();
-            Transition transition = new Transition() {
-                {
-                    setCycleDuration(Duration.millis(200));
-                }
-
-                @Override protected void interpolate(double frac) {
-                    if (!Double.isNaN(startX)) {
-                        thumb.setLayoutX(startX + frac * (endX - startX));
-                    }
-                    if (!Double.isNaN(startY)) {
-                        thumb.setLayoutY(startY + frac * (endY - startY));
-                    }
-                }
-            };
-            transition.play();
-        } else {
-            thumb.setLayoutX(endX);
-            thumb.setLayoutY(endY);
-        }
-    }
-
-    @Override protected void layoutChildren(final double x, final double y,
+    @Override 
+    protected void layoutChildren(final double x, final double y,
             final double w, final double h) {
          // calculate the available space
         // resize thumb to preferred size
@@ -322,17 +302,9 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
             // calculate offset with thumb guarantees that the thumb fits at min/max
             trackLength = snapSize(w - thumbWidth);
             trackStart = snapPosition(x + (thumbWidth/2));
-//            trackLength = snapSize(w - 2 * trackRadius);
-//            trackStart = snapPosition(x + trackRadius);
             double trackTop = (int)(startY + ((trackAreaHeight-trackHeight)/2));
             thumbTop = (int)(startY + ((trackAreaHeight-thumbHeight)/2));
 
-            positionThumb(false);
-            // layout track
-            track.resizeRelocate((int)(trackStart - trackRadius),
-                                 trackTop ,
-                                 (int)(trackLength + trackRadius + trackRadius),
-                                 trackHeight);
             // layout tick line
             if (tickLine != null) {  //showTickMarks) {
                 tickLine.setLayoutX(trackStart);
@@ -340,27 +312,24 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 tickLine.resize(trackLength, tickLineHeight);
                 tickLine.requestAxisLayout();
             }
-//            else {
-//                if (tickLine != null) {
-//                    tickLine.resize(0,0);
-//                    tickLine.requestAxisLayout();
-//                }
-//                tickLine = null;
-//            }
+//            positionThumb(false);
+            // layout track
+            track.resizeRelocate((int)(trackStart - trackRadius),
+                                 trackTop ,
+                                 (int)(trackLength + trackRadius + trackRadius),
+                                 trackHeight);
         } else {
             double tickLineWidth = (showTickMarks) ? tickLine.prefWidth(-1) : 0;
             double trackWidth = snapSize(track.prefWidth(-1));
             double trackAreaWidth = Math.max(trackWidth,thumbWidth);
             double totalWidthNeeded = trackAreaWidth  + ((showTickMarks) ? trackToTickGap+tickLineWidth : 0) ;
             double startX = x + ((w - totalWidthNeeded)/2); // center slider in available width horizontally
-//            trackLength = snapSize(h - thumbHeight);
-//            trackStart = snapPosition(y + (thumbHeight/2));
-            trackLength = snapSize(h - 2* trackRadius);
-            trackStart = snapPosition(y + trackRadius);
+            trackLength = snapSize(h - thumbHeight);
+            trackStart = snapPosition(y + (thumbHeight/2));
             double trackLeft = (int)(startX + ((trackAreaWidth-trackWidth)/2));
             thumbLeft = (int)(startX + ((trackAreaWidth-thumbWidth)/2));
 
-            positionThumb(false);
+//            positionThumb(false);
             // layout track
             track.resizeRelocate(trackLeft,
                                  (int)(trackStart - trackRadius),
@@ -373,16 +342,42 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 tickLine.resize(tickLineWidth, trackLength);
                 tickLine.requestAxisLayout();
             } 
-//            else {
-//                if (tickLine != null) {
-//                    tickLine.resize(0,0);
-//                    tickLine.requestAxisLayout();
-//                }
-//                tickLine = null;
-//            }
         }
+        double pixelOnAxis = tickLine.getDisplayPosition(getSkinnable().getValue());
+        
+        // ideally we want to use axis api in positioning the thumb
+        // unfortunately, the axis' internal state is not yet updated
+        // it's only marked invalid, the actual update happens in the next
+        // layout pass. 
+        // options:
+        // 1. force layout by invoking protected method (NumberAxis is final
+        // , can't extend
+        // 2. delay the thumb locating until next layout (runLater)
+        // 3. not use axis in thumb locating
+        // this is option 1.
+        if (tickLine != null) {
+            // force internal update ... 
+            forceAxisLayout();
+        }
+        // this is option 2. (move positioning up into
+        Platform.runLater(() -> {
+            // wait with thumb positioning until axis has updated itself
+        });
+        // PENDING JW: 
+        positionThumb(false);
     }
 
+    private void forceAxisLayout() {
+        Class clazz = Axis.class;
+        try {
+            Method method = clazz.getDeclaredMethod("layoutChildren");
+            method.setAccessible(true);
+            method.invoke(tickLine);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
     double minTrackLength() {
         return 2*thumb.prefWidth(-1);
     }
