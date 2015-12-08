@@ -146,22 +146,26 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
      * PENDING JW: would love to use the axis coodinate transformation to position the thumb.
      * works fine except when max (or back to intermediate size) the window:
      * the axis seems to not be relayouted thus showing the thumb at the wrong position.
+     * 
+     * Needs https://bugs.openjdk.java.net/browse/JDK-8144920 fixed, until then
+     * we don't use the axis conversion but keep the manual calc.
      */
     void positionThumb(final boolean animate) {
         
         Slider s = getSkinnable();
         if (s.getValue() > s.getMax()) return;// this can happen if we are bound to something 
-        double pixelOnAxis = tickLine.getDisplayPosition(s.getValue());
         boolean horizontal = s.getOrientation() == Orientation.HORIZONTAL;
-        double endX = horizontal ? trackStart + pixelOnAxis - thumbWidth/2 : thumbLeft;
-        double endY = horizontal ? thumbTop :
-            trackStart + pixelOnAxis - thumbWidth/2;
+        // PENDING JW: use commented lines once the bug on axis is fixed.
+//        double pixelOnAxis = tickLine.getDisplayPosition(s.getValue());
+//        double endX = horizontal ? trackStart + pixelOnAxis - thumbWidth/2 : thumbLeft;
+//        double endY = horizontal ? thumbTop :
+//            trackStart + pixelOnAxis - thumbWidth/2;
         // commented lines is option 3. as described in layoutChildren
-//        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
-//                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
-//        final double endY = (horizontal) ? thumbTop :
-//            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
-//                (s.getMax() - s.getMin()))); //  - thumbHeight/2
+        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
+                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
+        final double endY = (horizontal) ? thumbTop :
+            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
+                (s.getMax() - s.getMin()))); //  - thumbHeight/2
         
         if (animate) {
             // lets animate the thumb transition
@@ -343,11 +347,13 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 tickLine.requestAxisLayout();
             } 
         }
-        double pixelOnAxis = tickLine.getDisplayPosition(getSkinnable().getValue());
+        // debugging - keep a little while
+        //double pixelOnAxis = tickLine.getDisplayPosition(getSkinnable().getValue());
         
         // ideally we want to use axis api in positioning the thumb
         // works - kindof - the not-working isn't so obvious - for resizing, 
         // doesn't work at all when max/min window (it's blatantly obvious)
+        // requires https://bugs.openjdk.java.net/browse/JDK-8144920 to be fixed
         // then the axis' internal state is not yet updated
         // it's only marked invalid, the actual update happens in the next
         // layout pass. 
@@ -357,18 +363,21 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         // 2. delay the thumb locating until next layout (runLater)
         // 3. not use axis in thumb locating
         // this is option 1.
-        if (tickLine != null) {
-            // force internal update ... 
-            forceAxisLayout();
-        }
-        // this is option 2. (move positioning up into
-        Platform.runLater(() -> {
-            // wait with thumb positioning until axis has updated itself
-        });
-        // PENDING JW: 
+//        if (tickLine != null) {
+//            // force internal update ... 
+//            forceAxisLayout();
+//        }
+//        // this is option 2. (move positioning up into
+//        Platform.runLater(() -> {
+//            // wait with thumb positioning until axis has updated itself
+//        });
         positionThumb(false);
     }
 
+    /**
+     * Debugging: force a layout round. Needs reflective access to
+     * axis' layoutChildren (NumberAxis is final!)
+     */
     private void forceAxisLayout() {
         Class clazz = Axis.class;
         try {

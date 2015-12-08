@@ -47,7 +47,8 @@ public class AxisInvalidate extends Application {
             
             double axisHeight = axis.prefHeight(-1);
             axis.resizeRelocate(0, getHeight() /4, getWidth(), axisHeight);
-            axis.requestAxisLayout();
+            // doesn't make a difference, shouldn't be needed anyway
+            //axis.requestAxisLayout();
             double pixelOnAxis = axis.getDisplayPosition(value.getValue());
             Platform.runLater(() -> {
                 LOG.info("diff " + (pixelOnAxis - axis.getDisplayPosition(value.getValue())));
