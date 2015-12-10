@@ -85,56 +85,6 @@ public class TooltipOnSlider extends Application {
 //        BorderPane root = new BorderPane(slider);
 //        root.setBottom(valueLabel);
         VBox root = new VBox(slider, valueLabel);
-        Label pixelForValue = new Label("pixel: ");
-        Button show = new Button("show pixelForValue");
-        Task task = new Task() {
-
-            @Override
-            protected Object call() throws Exception {
-                for (int i = 0; i < 10000; i++) {
-                    updateValue(i);
-//                    LOG.info("running " + i);
-                    Thread.sleep(1000);
-                }
-                return null;
-            }
-            
-        };
-        task.valueProperty().addListener((s, o, nv) -> {
-          NumberAxis axis = (NumberAxis) slider.lookup(".axis");
-          double pix = axis.getDisplayPosition(slider.getValue());
-          LOG.info("" + primaryStage.isMaximized() + " " + pix);
-//          pixelForValue.setText("pixel: " + pix); 
-////            pixelForValue.setText("" + nv);
-        });
-        primaryStage.maximizedProperty().addListener(o -> {
-            NumberAxis axis = (NumberAxis) slider.lookup(".axis");
-            double pix = axis.getDisplayPosition(slider.getValue());
-            LOG.info("max changed: " + pix);
-            if (show.isDisable()) return;
-            show.setDisable(true);
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
-        });
-        show.setOnAction(e -> {
-            show.setDisable(true);
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.start();
-//            NumberAxis axis = (NumberAxis) slider.lookup(".axis");
-//            double pix = axis.getDisplayPosition(slider.getValue());
-//            pixelForValue.setText("pixel: " + pix); 
-        });
-        HBox view = new HBox(show, pixelForValue);
-//        BorderPane view = new BorderPane(pixelForValue);
-//        view.setLeft(show);
-        root.getChildren().add(view);
-//        DoubleProperty countProperty = (DoubleProperty)slider.getProperties().get("count");
-//        if (countProperty != null) {
-//            layoutCount.textProperty().bind(countProperty.asString());
-//            root.setTop(layoutCount);  
-//        }
         primaryStage.setScene(new Scene(root, 350, 100));
         primaryStage.show();
         primaryStage.setTitle("useAxis: " + useAxis + " mySkin: " + slider.getSkin().getClass().getSimpleName());

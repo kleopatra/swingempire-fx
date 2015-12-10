@@ -46,7 +46,10 @@ public class AxisConversionBug extends Application {
                 axis.resize(axisWidth, axis.getHeight());
                 // following doen't make a difference
                 // axis.requestAxisLayout();
-                region.requestLayout();
+                // region.requestLayout();
+                // workaround suggested by Vadim in bug report
+                // works fine
+                axis.layout();
                 double positionAfter = axis.getDisplayPosition(50);
                 LOG.info("position before/after resize: " + positionBefore + 
                         " / " + positionAfter + " width: " + axis.getWidth()) ;

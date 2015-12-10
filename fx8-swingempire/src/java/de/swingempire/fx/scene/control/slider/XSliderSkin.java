@@ -149,6 +149,8 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
      * 
      * Needs https://bugs.openjdk.java.net/browse/JDK-8144920 fixed, until then
      * we don't use the axis conversion but keep the manual calc.
+     * Added the workaround from the bug-report (calling tickLine.layout() in layoutChildren())
+     * seems to do the trick.
      */
     void positionThumb(final boolean animate) {
         
@@ -156,16 +158,17 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         if (s.getValue() > s.getMax()) return;// this can happen if we are bound to something 
         boolean horizontal = s.getOrientation() == Orientation.HORIZONTAL;
         // PENDING JW: use commented lines once the bug on axis is fixed.
-//        double pixelOnAxis = tickLine.getDisplayPosition(s.getValue());
-//        double endX = horizontal ? trackStart + pixelOnAxis - thumbWidth/2 : thumbLeft;
-//        double endY = horizontal ? thumbTop :
-//            trackStart + pixelOnAxis - thumbWidth/2;
+        double pixelOnAxis = tickLine.getDisplayPosition(s.getValue());
+        double endX = horizontal ? trackStart + pixelOnAxis - thumbWidth/2 : thumbLeft;
+        double endY = horizontal ? thumbTop :
+            trackStart + pixelOnAxis - thumbWidth/2;
+
         // commented lines is option 3. as described in layoutChildren
-        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
-                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
-        final double endY = (horizontal) ? thumbTop :
-            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
-                (s.getMax() - s.getMin()))); //  - thumbHeight/2
+//        final double endX = (horizontal) ? trackStart + (((trackLength * ((s.getValue() - s.getMin()) /
+//                (s.getMax() - s.getMin()))) - thumbWidth/2)) : thumbLeft;
+//        final double endY = (horizontal) ? thumbTop :
+//            snappedTopInset() + trackLength - (trackLength * ((s.getValue() - s.getMin()) /
+//                (s.getMax() - s.getMin()))); //  - thumbHeight/2
         
         if (animate) {
             // lets animate the thumb transition
@@ -371,6 +374,8 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
 //        Platform.runLater(() -> {
 //            // wait with thumb positioning until axis has updated itself
 //        });
+        // workaround from Vadim (bug report)
+        tickLine.layout();
         positionThumb(false);
     }
 
