@@ -5,6 +5,8 @@
 package de.swingempire.fx.control;
 
 import java.lang.reflect.Field;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
@@ -25,6 +27,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import com.sun.javafx.scene.control.skin.SliderSkin;
 
@@ -84,8 +87,33 @@ public class TooltipOnSlider extends Application {
         valueLabel.textProperty().bind(slider.valueProperty().asString());
 //        BorderPane root = new BorderPane(slider);
 //        root.setBottom(valueLabel);
-        VBox root = new VBox(slider, valueLabel);
-        primaryStage.setScene(new Scene(root, 350, 100));
+        
+        // testing xsliderskin
+        StringConverter<Double> customConverter = new StringConverter<Double>() {
+            NumberFormat format = NumberFormat.getNumberInstance();
+            @Override
+            public String toString(Double value) {
+                return "x:" + format.format(value);
+            }
+
+            @Override
+            public Double fromString(String string) {
+                try {
+                    return (Double) format.parse(string);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return 0.;
+            }
+            
+        };
+        Button convert = new Button("converter");
+        convert.setOnAction(e -> {
+            slider.setLabelFormatter(slider.getLabelFormatter() == null ? 
+                    customConverter : null);
+        });
+        VBox root = new VBox(10, slider, valueLabel, convert);
+        primaryStage.setScene(new Scene(root)); //, 350, 100));
         primaryStage.show();
         primaryStage.setTitle("useAxis: " + useAxis + " mySkin: " + slider.getSkin().getClass().getSimpleName());
     }

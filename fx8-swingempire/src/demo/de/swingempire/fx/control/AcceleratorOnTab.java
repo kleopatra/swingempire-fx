@@ -31,6 +31,9 @@ import javafx.stage.Stage;
  *  <li> install happens at the time of control.setContextMenu
  *  <li> the workaround in the bug report handles duplicates, but not foreign
  *  
+ *  <p>
+ *  Note though, that accelerators in Swing's popup don't work at all!
+ *  https://docs.oracle.com/javase/tutorial/uiswing/components/menu.html
  */
 public class AcceleratorOnTab extends Application {
 

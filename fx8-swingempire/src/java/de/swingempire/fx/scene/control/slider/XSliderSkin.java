@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 
 import javafx.animation.Transition;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -91,8 +93,9 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         track = new StackPane();
         track.getStyleClass().setAll("track");
 
+        tickLine = createAxis();
         getChildren().clear();
-        getChildren().addAll(track, thumb);
+        getChildren().addAll(tickLine, track, thumb);
         setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
         
         track.setOnMousePressed(e -> {
@@ -121,8 +124,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
             getBehavior().thumbDragged(getValueFromMouseEvent(e));
         });
         
-        getSkinnable().getProperties().put("count", new SimpleDoubleProperty());
-
     }
 
     /**
@@ -195,6 +196,10 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         }
     }
 
+    /**
+     * Need the wrapper due to type mismatch: NumberAxis has a converter<Number>
+     * slider has converter<Double>
+     */
     StringConverter<Number> stringConverterWrapper = new StringConverter<Number>() {
         Slider slider = getSkinnable();
         @Override public String toString(Number object) {
@@ -207,12 +212,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     
      private void setShowTickMarks(boolean ticksVisible, boolean labelsVisible) {
         showTickMarks = (ticksVisible || labelsVisible);
-        if (tickLine == null) {
-            // initial setup
-            tickLine = createAxis(ticksVisible, labelsVisible);
-            getChildren().clear();
-            getChildren().addAll(tickLine, track, thumb);
-        }
         tickLine.setTickLabelsVisible(labelsVisible);
         tickLine.setTickMarkVisible(ticksVisible);
         tickLine.setMinorTickVisible(ticksVisible);
@@ -221,7 +220,7 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         getSkinnable().requestLayout();
     }
 
-    protected NumberAxis createAxis(boolean ticksVisible, boolean labelsVisible) {
+    protected NumberAxis createAxis() {
         Slider slider = getSkinnable();
         NumberAxis tickLine = new NumberAxis();
         tickLine.setAutoRanging(false);
@@ -232,13 +231,24 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         // add 1 to the slider minor tick count since the axis draws one
         // less minor ticks than the number given.
         tickLine.setMinorTickCount(Math.max(slider.getMinorTickCount(),0) + 1);
-        if (slider.getLabelFormatter() != null) {
-            tickLine.setTickLabelFormatter(stringConverterWrapper);
-        }
+        // JW: cant bind directly, type mismatch
+        // tickLine.tickLabelFormatterProperty().bind(slider.labelFormatterProperty());
+//        if (slider.getLabelFormatter() != null) {
+//            tickLine.setTickLabelFormatter(stringConverterWrapper);
+//        }
+        /*
+         * Conditional binding: use sliders if not null, otherwise
+         * let axis' default converter do the job
+         */
+        ObjectBinding<StringConverter<Number>> b = Bindings
+                .when(slider.labelFormatterProperty().isNotNull())
+                .then(stringConverterWrapper)
+                .otherwise((StringConverter<Number>) null);
+        tickLine.tickLabelFormatterProperty().bind(b);
         return tickLine;
     }
 
-    @Override protected void handleControlPropertyChanged(String p) {
+     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
         Slider slider = getSkinnable();
         if ("ORIENTATION".equals(p)) {
@@ -272,14 +282,15 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 getSkinnable().requestLayout();
             }
         } else if ("TICK_LABEL_FORMATTER".equals(p)) {
-            if (tickLine != null) {
-                if (slider.getLabelFormatter() == null) {
-                    tickLine.setTickLabelFormatter(null);
-                } else {
-                    tickLine.setTickLabelFormatter(stringConverterWrapper);
-                    tickLine.requestAxisLayout();
-                }
-            }
+            // no need to do anything, we bind
+//            if (tickLine != null) {
+//                if (slider.getLabelFormatter() == null) {
+//                    tickLine.setTickLabelFormatter(null);
+//                } else {
+//                    tickLine.setTickLabelFormatter(stringConverterWrapper);
+//                    tickLine.requestAxisLayout();
+//                }
+//            }
         }
     }
 
