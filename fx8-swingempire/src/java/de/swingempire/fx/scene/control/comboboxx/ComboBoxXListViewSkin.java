@@ -316,9 +316,14 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         }
     }
 
-    private void updateEditable() {
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected void updateEditable() {
+        if (comboBox == null) return;
         TextField newTextField = comboBox.getEditor();
-
+//        if (newTextField == null) return;
         if (!comboBox.isEditable()) {
             // remove event filters
             if (textField != null) {
@@ -592,7 +597,11 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
 
     private String initialTextFieldValue = null;
 
-    private TextField getEditableInputNode() {
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected TextField getEditableInputNode() {
         if (textField != null)
             return textField;
 
@@ -629,7 +638,11 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         return textField;
     }
 
-    private void updateDisplayNode() {
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected void updateDisplayNode() {
         // PENDING JW: as of 8u40b7, this is may be called too early
         // that is before installing the buttoncell
         // hacking around by silently returning
@@ -732,8 +745,11 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         return comboBox.getPromptText() == null
                 || comboBox.getPromptText().isEmpty();
     }
-
-    private void setTextFromTextFieldIntoComboBoxValue() {
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected void setTextFromTextFieldIntoComboBoxValue() {
         if (!comboBox.isEditable())
             return;
 
@@ -1028,6 +1044,24 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(ComboBoxXListViewSkin.class.getName());
+
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected TextField getEditor() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * PENDING JW: formal fix of scope, untested
+     */
+    @Override
+    protected StringConverter<T> getConverter() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     /***************************************************************************
      * * Support classes * *

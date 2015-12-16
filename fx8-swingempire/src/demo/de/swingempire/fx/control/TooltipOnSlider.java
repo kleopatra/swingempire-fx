@@ -50,16 +50,19 @@ import de.swingempire.fx.scene.control.slider.XSliderSkin;
 public class TooltipOnSlider extends Application {
 
     private boolean useAxis;
-    private boolean started;
+    double lowerBound = 5;
+    double upperBound = 25;
+    double initialValue = 15;
+    double majorTickUnit = 5;
     @Override
     public void start(Stage primaryStage) {
-        Slider slider = new Slider(5, 25, 15);
+        Slider slider = new Slider(lowerBound, upperBound, initialValue);
         useAxis = true;
         // force an axis to be used
         slider.setShowTickMarks(true);
         slider.setShowTickLabels(true);
 //        slider.setSnapToTicks(true); 
-        slider.setMajorTickUnit(5);
+        slider.setMajorTickUnit(10);
         
 //        slider.setOrientation(Orientation.VERTICAL);
         // hacking around the bugs in a custom skin
@@ -112,8 +115,23 @@ public class TooltipOnSlider extends Application {
             slider.setLabelFormatter(slider.getLabelFormatter() == null ? 
                     customConverter : null);
         });
-        VBox root = new VBox(10, slider, valueLabel, convert);
-        primaryStage.setScene(new Scene(root)); //, 350, 100));
+        Button lower = new Button("lower");
+        lower.setOnAction(e -> {
+            double min = slider.getMin();
+            slider.setMin(min < 0 ? lowerBound : -lowerBound);
+        });
+        Button upper = new Button("upper");
+        upper.setOnAction(e -> {
+            double max = slider.getMax();
+            slider.setMax(max > upperBound ? upperBound : 2 * upperBound);
+        });
+        Button snapTicks = new Button("snap to ticks");
+        snapTicks.setOnAction(e -> {
+            slider.setSnapToTicks(!slider.isSnapToTicks());
+        });
+        VBox root = new VBox(10, slider, valueLabel, 
+                convert, lower, upper, snapTicks);
+        primaryStage.setScene(new Scene(root, 350, 400));
         primaryStage.show();
         primaryStage.setTitle("useAxis: " + useAxis + " mySkin: " + slider.getSkin().getClass().getSimpleName());
     }

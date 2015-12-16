@@ -10,24 +10,15 @@ package de.swingempire.fx.scene.control.slider;
  *
  */
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javafx.animation.Transition;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Orientation;
-import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
-import javafx.scene.chart.Axis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
@@ -36,20 +27,23 @@ import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-import com.sun.javafx.tk.Toolkit;
+
 /**
  * Copy of SliderSkin as starting point to experiment with using NumberAxis always.
- * 
+ * <p>
  * Region/css based skin for Slider
-*/
+ * <p>
+ * PENDING JW:
+ * - when/where to call requestLayout on skinnable (or any of the children managed
+ * by this)? We can bind the properties of the contained children to the slider's
+ * properties. If we did, do we still need to listen to changes 
+ * so that we manually request layout?
+ */
 public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
 
-    /** Track if slider is vertical/horizontal and cause re layout */
-//    private boolean horizontal;
-    private NumberAxis tickLine = null;
+    // layout
     private double trackToTickGap = 2;
 
-    private boolean showTickMarks;
     private double thumbWidth;
     private double thumbHeight;
 
@@ -58,15 +52,26 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     private double thumbTop;
     private double thumbLeft;
 
+    // managed children
     private StackPane thumb;
     private StackPane track;
+    private NumberAxis tickLine;
     private boolean trackClicked = false;
+
+    private boolean showTickMarks;
 
     public XSliderSkin(Slider slider) {
         super(slider, new XSliderBehavior(slider));
 
         initialize();
+        // PENDING JW: why this? Isn't a layout pass automatically triggered
+        // after instantiating the skin?
         slider.requestLayout();
+        
+        // handling snapToTick change (axis has nothing similar)
+        registerChangeListener(slider.snapToTicksProperty(), "SNAP_TO_TICKS");
+        
+        // handling property changes - really needed, even if bound to axis?
         registerChangeListener(slider.minProperty(), "MIN");
         registerChangeListener(slider.maxProperty(), "MAX");
         registerChangeListener(slider.valueProperty(), "VALUE");
@@ -75,27 +80,17 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         registerChangeListener(slider.showTickLabelsProperty(), "SHOW_TICK_LABELS");
         registerChangeListener(slider.majorTickUnitProperty(), "MAJOR_TICK_UNIT");
         registerChangeListener(slider.minorTickCountProperty(), "MINOR_TICK_COUNT");
-        registerChangeListener(slider.labelFormatterProperty(), "TICK_LABEL_FORMATTER");
+//        registerChangeListener(slider.labelFormatterProperty(), "TICK_LABEL_FORMATTER");
     }
 
     private void initialize() {
-        thumb = new StackPane() {
-            @Override
-            public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
-                switch (attribute) {
-                    case VALUE: return getSkinnable().getValue();
-                    default: return super.queryAccessibleAttribute(attribute, parameters);
-                }
-            }
-        };
-        thumb.getStyleClass().setAll("thumb");
-        thumb.setAccessibleRole(AccessibleRole.THUMB);
-        track = new StackPane();
-        track.getStyleClass().setAll("track");
-
-        tickLine = createAxis();
+        thumb = createThumb();
+        track = createTrack();
+        tickLine = createTickLine();
+        
         getChildren().clear();
         getChildren().addAll(tickLine, track, thumb);
+        
         setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
         
         track.setOnMousePressed(e -> {
@@ -124,6 +119,58 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
             getBehavior().thumbDragged(getValueFromMouseEvent(e));
         });
         
+    }
+
+    protected StackPane createThumb() {
+        StackPane thumb = new StackPane() {
+            @Override
+            public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+                switch (attribute) {
+                    case VALUE: return getSkinnable().getValue();
+                    default: return super.queryAccessibleAttribute(attribute, parameters);
+                }
+            }
+        };
+        thumb.getStyleClass().setAll("thumb");
+        thumb.setAccessibleRole(AccessibleRole.THUMB);
+        return thumb;
+    }
+
+    protected StackPane createTrack() {
+        StackPane track = new StackPane();
+        track.getStyleClass().setAll("track");
+        return track;
+    }
+
+    protected NumberAxis createTickLine() {
+        Slider slider = getSkinnable();
+        NumberAxis tickLine = new NumberAxis();
+        tickLine.setAutoRanging(false);
+        tickLine.setSide(slider.getOrientation() == Orientation.VERTICAL ? Side.RIGHT : (slider.getOrientation() == null) ? Side.RIGHT: Side.BOTTOM);
+        tickLine.upperBoundProperty().bind(slider.maxProperty());
+//        tickLine.setUpperBound(slider.getMax());
+        tickLine.lowerBoundProperty().bind(slider.minProperty());
+//        tickLine.setLowerBound(slider.getMin());
+        
+        tickLine.setTickUnit(slider.getMajorTickUnit());
+        // add 1 to the slider minor tick count since the axis draws one
+        // less minor ticks than the number given.
+        tickLine.setMinorTickCount(Math.max(slider.getMinorTickCount(),0) + 1);
+        // JW: cant bind directly, type mismatch
+        // tickLine.tickLabelFormatterProperty().bind(slider.labelFormatterProperty());
+//        if (slider.getLabelFormatter() != null) {
+//            tickLine.setTickLabelFormatter(stringConverterWrapper);
+//        }
+        /*
+         * Conditional binding: use sliders if not null, otherwise
+         * let axis' default converter do the job
+         */
+        ObjectBinding<StringConverter<Number>> b = Bindings
+                .when(slider.labelFormatterProperty().isNotNull())
+                .then(stringConverterWrapper)
+                .otherwise((StringConverter<Number>) null);
+        tickLine.tickLabelFormatterProperty().bind(b);
+        return tickLine;
     }
 
     /**
@@ -220,33 +267,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         getSkinnable().requestLayout();
     }
 
-    protected NumberAxis createAxis() {
-        Slider slider = getSkinnable();
-        NumberAxis tickLine = new NumberAxis();
-        tickLine.setAutoRanging(false);
-        tickLine.setSide(slider.getOrientation() == Orientation.VERTICAL ? Side.RIGHT : (slider.getOrientation() == null) ? Side.RIGHT: Side.BOTTOM);
-        tickLine.setUpperBound(slider.getMax());
-        tickLine.setLowerBound(slider.getMin());
-        tickLine.setTickUnit(slider.getMajorTickUnit());
-        // add 1 to the slider minor tick count since the axis draws one
-        // less minor ticks than the number given.
-        tickLine.setMinorTickCount(Math.max(slider.getMinorTickCount(),0) + 1);
-        // JW: cant bind directly, type mismatch
-        // tickLine.tickLabelFormatterProperty().bind(slider.labelFormatterProperty());
-//        if (slider.getLabelFormatter() != null) {
-//            tickLine.setTickLabelFormatter(stringConverterWrapper);
-//        }
-        /*
-         * Conditional binding: use sliders if not null, otherwise
-         * let axis' default converter do the job
-         */
-        ObjectBinding<StringConverter<Number>> b = Bindings
-                .when(slider.labelFormatterProperty().isNotNull())
-                .then(stringConverterWrapper)
-                .otherwise((StringConverter<Number>) null);
-        tickLine.tickLabelFormatterProperty().bind(b);
-        return tickLine;
-    }
 
      @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
@@ -260,15 +280,15 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
             // only animate thumb if the track was clicked - not if the thumb is dragged
             positionThumb(trackClicked);
         } else if ("MIN".equals(p) ) {
-            if (/*showTickMarks && */ tickLine != null) {
-                tickLine.setLowerBound(slider.getMin());
-            }
-            getSkinnable().requestLayout();
+//            if (/*showTickMarks && */ tickLine != null) {
+//                tickLine.setLowerBound(slider.getMin());
+//            }
+//            getSkinnable().requestLayout();
         } else if ("MAX".equals(p)) {
-            if (/*showTickMarks && */tickLine != null) {
-                tickLine.setUpperBound(slider.getMax());
-            }
-            getSkinnable().requestLayout();
+//            if (/*showTickMarks && */tickLine != null) {
+//                tickLine.setUpperBound(slider.getMax());
+//            }
+//            getSkinnable().requestLayout();
         } else if ("SHOW_TICK_MARKS".equals(p) || "SHOW_TICK_LABELS".equals(p)) {
             setShowTickMarks(slider.isShowTickMarks(), slider.isShowTickLabels());
         }  else if ("MAJOR_TICK_UNIT".equals(p)) {
@@ -291,6 +311,10 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
 //                    tickLine.requestAxisLayout();
 //                }
 //            }
+        } else if ("SNAP_TO_TICKS".equals(p)) {
+            if (slider.isSnapToTicks()) {
+                slider.adjustValue(slider.getValue());
+            }
         }
     }
 
@@ -302,6 +326,7 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
     @Override 
     protected void layoutChildren(final double x, final double y,
             final double w, final double h) {
+//        LOG.info("layout ...");
          // calculate the available space
         // resize thumb to preferred size
         thumbWidth = snapSize(thumb.prefWidth(-1));
@@ -328,7 +353,7 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 tickLine.setLayoutX(trackStart);
                 tickLine.setLayoutY(trackTop+trackHeight+trackToTickGap);
                 tickLine.resize(trackLength, tickLineHeight);
-                tickLine.requestAxisLayout();
+//                tickLine.requestAxisLayout();
             }
 //            positionThumb(false);
             // layout track
@@ -358,7 +383,7 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 tickLine.setLayoutX(trackLeft+trackWidth+trackToTickGap);
                 tickLine.setLayoutY(trackStart);
                 tickLine.resize(tickLineWidth, trackLength);
-                tickLine.requestAxisLayout();
+//                tickLine.requestAxisLayout();
             } 
         }
         // debugging - keep a little while
@@ -390,21 +415,6 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         positionThumb(false);
     }
 
-    /**
-     * Debugging: force a layout round. Needs reflective access to
-     * axis' layoutChildren (NumberAxis is final!)
-     */
-    private void forceAxisLayout() {
-        Class clazz = Axis.class;
-        try {
-            Method method = clazz.getDeclaredMethod("layoutChildren");
-            method.setAccessible(true);
-            method.invoke(tickLine);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
     double minTrackLength() {
         return 2*thumb.prefWidth(-1);
     }
