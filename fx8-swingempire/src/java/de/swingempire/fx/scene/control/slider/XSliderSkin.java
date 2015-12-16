@@ -311,11 +311,11 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
 //                    tickLine.requestAxisLayout();
 //                }
 //            }
-        } else if ("SNAP_TO_TICKS".equals(p)) {
-            if (slider.isSnapToTicks()) {
-                slider.adjustValue(slider.getValue());
+            } else if ("SNAP_TO_TICKS".equals(p)) {
+                if (slider.isSnapToTicks()) {
+                    slider.adjustValue(slider.getValue());
+                }
             }
-        }
     }
 
     /**
