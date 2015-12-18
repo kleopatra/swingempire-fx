@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -24,6 +25,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 /**
  * http://stackoverflow.com/q/34316254/203657
@@ -43,6 +46,7 @@ import javafx.util.Callback;
  */
 public class ComboBoxCellFactoryTest extends Application {
 
+    ComboBox<String> combo;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -53,17 +57,38 @@ public class ComboBoxCellFactoryTest extends Application {
         Scene scene = new Scene(content, 400, 300);
         stage.setScene(scene);
         stage.show();
+        installShowingListener(combo);
+    }
+
+    /**
+     * Quick check on suggested fix for (is: refresh list on showing)
+     * https://bugs.openjdk.java.net/browse/JDK-8145588
+     * 
+     * doesn't work (as expected) - not updated when navigating
+     * @param combo2
+     */
+    private void installShowingListener(ComboBox<String> combo2) {
+        combo.valueProperty().addListener((s, ov, nv) -> {
+            LOG.info("value changed " + nv);
+        });
+        ComboBoxListViewSkin skin = (ComboBoxListViewSkin) combo2.getSkin();
+        combo.showingProperty().addListener((s, ov, nv) -> {
+            if (nv) {
+                ListView list = skin.getListView();
+                list.refresh();
+            }
+        });
     }
 
     IntegerProperty created = new SimpleIntegerProperty();
     public Parent createContent() {
         Pane content = new VBox(10);
 
-        ComboBox<String> combo = new ComboBox<String>();
+        combo = new ComboBox<String>();
         // ComboBoxX<String> combo = new ComboBoxX<String>();
-        combo.setItems(FXCollections.observableArrayList("Item 1", "Item 2")); // ,
-                                                                               // "Item 3",
-                                                                               // "Item 4"));
+        combo.setItems(FXCollections.observableArrayList("Item 1", "Item 2", //)); // ,
+                                                                                "Item 3",
+                                                                                "Item 4"));
         combo.getSelectionModel().selectLast();
         combo.setCellFactory(createCell(combo));
 
@@ -99,7 +124,7 @@ public class ComboBoxCellFactoryTest extends Application {
 
         Label createdLabel = new Label();
         createdLabel.textProperty().bind(created.asString());
-        content.getChildren().addAll(numberList, createdLabel);
+        content.getChildren().addAll(combo, createdLabel);
         return content;
     }
 
@@ -139,8 +164,8 @@ public class ComboBoxCellFactoryTest extends Application {
                             setText(null);
                             setGraphic(null);
                         } else {
-                            // boolean selected = combo.getValue().equals(item);
-                            boolean selected = isSelected();
+                             boolean selected = combo.getValue().equals(item);
+//                            boolean selected = isSelected();
                             // boolean selected = isFocused();
                             rectangle.setFill(selected ? Color.GREENYELLOW
                                     : Color.RED);
