@@ -2,22 +2,34 @@
  * Created on 13.11.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.corefix709;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import de.swingempire.fx.scene.control.selection.SimpleListSelectionModel;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
 /**
  * Asked on SO:
  * 
  * http://stackoverflow.com/q/26913280/203657
+ * 
+ * Here we concentrate on presumed fix for ListView
+ * https://bugs.openjdk.java.net/browse/JDK-8089709
+ * 
+ * Status:
+ * - permutation replaced by added/removed changes
+ * - sequence of subchanges incorrect: must be ordered by getFrom - reopened issue
+ * - subchanges should be concatenated if possible: fix doesn't
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -26,26 +38,31 @@ public class SelectedIndicesOnItemsModified extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // orig SO
-        ObservableList<Integer> items = FXCollections.observableArrayList(1, 2, 3, 4); 
-//        ObservableList<Integer> items = FXCollections.observableArrayList(1, 2, 3, 4, 5, 6);
-        TableView<Integer> table = new TableView<>(items);
-        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        // orig SO
-        table.getSelectionModel().selectRange(2, 4);
-//        table.getSelectionModel().selectIndices(2, 4, 5);
-        System.out.println("indices before modification: " + table.getSelectionModel().getSelectedIndices());
-        ListView<Integer> list = new ListView<>(items);
+        ObservableList<String> items = FXCollections.observableArrayList("F1", "F2", "F3", "F4"); 
+        // variant: more items
+//        ObservableList<String> items = FXCollections.observableArrayList(
+//                "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8");
+        ListView<String> list = new ListView<>(items);
         // variant: use SimpleListSelectionModel
-        list.setSelectionModel(new SimpleListSelectionModel<>(list));
+//        list.setSelectionModel(new SimpleListSelectionModel<>(list));
+        // variant: use fixed core model
+        list.setSelectionModel(new ListViewBitSelectionModelCorefix709<>(list));
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         // orig SO
         list.getSelectionModel().selectRange(2, 4);
-//        list.getSelectionModel().selectIndices(2, 4, 5);
-        
-        new PrintingListChangeListener("TableView indices ", table.getSelectionModel().getSelectedIndices());        
+        // variant: disjoint selection
+//        list.getSelectionModel().selectIndices(2, 4, 6);
+        List<Integer> copy = new ArrayList<>();
+        Bindings.bindContent(copy, list.getSelectionModel().getSelectedIndices());
+        System.out.println("bound: " + copy);
         new PrintingListChangeListener("ListView indices ", list.getSelectionModel().getSelectedIndices());  
-        items.add(0, 111);
-//        items.removeAll(2, 4);
+        items.add(0, "A111");
+//        items.add(3, "A111");
+//        items.set(4, "A111");
+//        items.remove(3);
+//        items.removeAll("F2", "F4");
+//        System.out.println("list after mod: " + items);
+        System.out.println("bound after: " + copy);
     }
 
     public static void main(String[] args) {

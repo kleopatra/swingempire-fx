@@ -27,6 +27,7 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.sun.javafx.collections.ObservableListWrapper;
 
 import de.swingempire.fx.collection.FilteredListX;
 import de.swingempire.fx.demobean.Person;
@@ -47,6 +48,37 @@ public class TransformationListTest {
 
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    
+    // ----------- check what happens with add/remove
+
+    @Test
+    public void testReplace() {
+        List backing = createPersons();
+        MyObservableList list = new MyObservableList(backing);
+        ListChangeReport report = new ListChangeReport(list);
+        Person p = new Person("replaced-first", "replaced-last", "none");
+        list.replace(2, p);
+        report.prettyPrintAll();
+    }
+    
+    public static class MyObservableList<E> extends ObservableListWrapper<E> {
+
+        public E replace(int index, E value) {
+            beginChange();
+            E old = remove(index);
+            add(index, value);
+            endChange();
+            return old;
+        }
+        
+        /**
+         * @param list
+         */
+        public MyObservableList(List<E> list) {
+            super(list);
+        }
+
+    }
     
 //-------------- filteredListX
     @Test
