@@ -140,8 +140,9 @@ public class TableViewSample extends Application {
         
         // enhanced core textFieldCell with notion of terminate
         // Note: stopped working as of jdk8_u20
+        // really, permanantly? needs XTableView to work!
         Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
-        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory);
+        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory, true);
         
         // testing binding approach from SO - not really working
         Callback boundEditingCellFactory = p -> new BoundEditingCell();
@@ -189,7 +190,7 @@ public class TableViewSample extends Application {
             });
             return cell;
         };
-        return actual;
+        return delegate;
     }
     
     /**
