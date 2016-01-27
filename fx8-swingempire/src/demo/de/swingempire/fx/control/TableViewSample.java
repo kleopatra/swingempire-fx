@@ -174,7 +174,7 @@ public class TableViewSample extends Application {
             // the focused property of a cell is used only in cell selection mode
             cell.tableViewProperty().addListener((source, ov, table) -> {
                 if (table != null) {
-                    ((TableView<Person>) table).getSelectionModel().setCellSelectionEnabled(true);
+//                    ((TableView<Person>) table).getSelectionModel().setCellSelectionEnabled(true);
                     
                 }
             });
@@ -190,7 +190,7 @@ public class TableViewSample extends Application {
             });
             return cell;
         };
-        return delegate;
+        return actual;
     }
     
     /**
@@ -285,7 +285,7 @@ public class TableViewSample extends Application {
                     (ObservableValue<? extends Boolean> arg0, Boolean arg1,
                             Boolean arg2) -> {
                         if (!arg2) {
-//                            LOG.info("lost focus, editing? " + isEditing());
+                            LOG.info("lost focus, editing? " + isEditing());
                             commitEdit();
 //                             commitEdit(textField.getText());
                         }
