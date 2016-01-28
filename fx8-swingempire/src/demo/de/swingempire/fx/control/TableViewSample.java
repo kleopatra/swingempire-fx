@@ -44,7 +44,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
 
-import com.sun.javafx.css.Stylesheet;
+//import com.sun.javafx.css.Stylesheet;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
@@ -140,8 +140,8 @@ public class TableViewSample extends Application {
         
         // enhanced core textFieldCell with notion of terminate
         // Note: stopped working as of jdk8_u20
-        Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
-        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory);
+//        Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
+//        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory, true);
         
         // testing binding approach from SO - not really working
         Callback boundEditingCellFactory = p -> new BoundEditingCell();
@@ -580,7 +580,6 @@ public class TableViewSample extends Application {
         final Parent vbox = createContent();
         BorderPane pane = new BorderPane(vbox);
         Scene scene = new Scene(pane);
-        Stylesheet s;
         scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle(FXUtils.version());
