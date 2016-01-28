@@ -16,14 +16,13 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.control.skin.TableRowSkinBase;
 
-//import com.sun.javafx.scene.control.skin.TableRowSkin;
-
 /**
  * Skin that updates child cells in an InvalidationListener if
  * super's changeListener can't (that is if oldItem.equals(newItem)).
  *  
  * @author Jeanette Winzenburg, Berlin
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class TableRowSkinX<T> extends TableRowSkin<T> {
 
     private WeakReference<T> oldItemRef;
@@ -75,7 +74,7 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
 //------------ hacking around super fields changed to package/private in jdk9
     
     private List<TableCell> invokeGetCells() {
-        Class target = TableRowSkinBase.class;
+        Class<?> target = TableRowSkinBase.class;
         try {
             Field field = target.getDeclaredField("cells");
             field.setAccessible(true);
@@ -88,7 +87,7 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
     }
     
     private void invokeSetField(String name, boolean value) {
-        Class target = TableRowSkinBase.class;
+        Class<?> target = TableRowSkinBase.class;
         try {
             Field field = target.getDeclaredField(name);
             field.setAccessible(true);
