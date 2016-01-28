@@ -6,8 +6,6 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.skin.TableRowSkin;
-
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableRow;
 

@@ -5,13 +5,18 @@
 package de.swingempire.fx.scene.control.cell;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.util.List;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.skin.TableRowSkin;
+import javafx.scene.control.skin.TableRowSkinBase;
 
-import com.sun.javafx.scene.control.skin.TableRowSkin;
+//import com.sun.javafx.scene.control.skin.TableRowSkin;
 
 /**
  * Skin that updates child cells in an InvalidationListener if
@@ -24,6 +29,8 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
     private WeakReference<T> oldItemRef;
     private InvalidationListener itemInvalidationListener;
     private WeakInvalidationListener weakItemInvalidationListener;
+    
+    private List<TableCell> cellsAlias;
     /**
      * @param tableRow
      */
@@ -40,6 +47,8 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
         };
         weakItemInvalidationListener = new WeakInvalidationListener(itemInvalidationListener);
         tableRow.itemProperty().addListener(weakItemInvalidationListener);
+        
+        cellsAlias = invokeGetCells();
     }
     
     /**
@@ -47,7 +56,8 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
      * C&P'ed code from TableRowSkinBase.
      */
     private void forceCellUpdate() {
-        updateCells = true;
+        invokeSetField("updateCells", true);
+//        updateCells = true;
         getSkinnable().requestLayout();
 
         // update the index of all children cells (RT-29849).
@@ -57,9 +67,36 @@ public class TableRowSkinX<T> extends TableRowSkin<T> {
         // issue highlighted in RT-33602, where the table cell had the correct
         // item whilst the row had the old item.
         final int newIndex = getSkinnable().getIndex();
-        for (int i = 0, max = cells.size(); i < max; i++) {
-            cells.get(i).updateIndex(newIndex);
+        for (int i = 0, max = cellsAlias.size(); i < max; i++) {
+            cellsAlias.get(i).updateIndex(newIndex);
         }
    }
+    
+//------------ hacking around super fields changed to package/private in jdk9
+    
+    private List<TableCell> invokeGetCells() {
+        Class target = TableRowSkinBase.class;
+        try {
+            Field field = target.getDeclaredField("cells");
+            field.setAccessible(true);
+            return (List<TableCell>) field.get(this);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private void invokeSetField(String name, boolean value) {
+        Class target = TableRowSkinBase.class;
+        try {
+            Field field = target.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(this, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
     
 }
