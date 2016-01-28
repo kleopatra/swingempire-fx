@@ -63,6 +63,7 @@ import de.swingempire.fx.util.FXUtils;
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableViewSample extends Application {
+    String dummy = "just testing branch";
     private final ObservableList<Person> data =
             FXCollections.observableArrayList(
                     new Person("Jacob", "Smith", "jacob.smith@example.com"),
