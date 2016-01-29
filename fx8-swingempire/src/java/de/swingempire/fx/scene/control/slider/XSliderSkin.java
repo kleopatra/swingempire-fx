@@ -12,6 +12,8 @@ package de.swingempire.fx.scene.control.slider;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.SliderBehavior;
+
 import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -20,13 +22,12 @@ import javafx.geometry.Side;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.AccessibleRole;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
-
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
 /**
  * Copy of SliderSkin as starting point to experiment with using NumberAxis always.
@@ -38,8 +39,10 @@ import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
  * by this)? We can bind the properties of the contained children to the slider's
  * properties. If we did, do we still need to listen to changes 
  * so that we manually request layout?
+ * 
+ * Use as example for adapt to jdk9 (still with access to com.sun.**!)
  */
-public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
+public class XSliderSkin extends SkinBase<Slider> {
 
     // layout
     private double trackToTickGap = 2;
@@ -60,65 +63,18 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
 
     private boolean showTickMarks;
 
+    private final XSliderBehavior behavior;
+
     public XSliderSkin(Slider slider) {
-        super(slider, new XSliderBehavior(slider));
+        super(slider);
+        behavior = new XSliderBehavior(slider);
 
         initialize();
         // PENDING JW: why this? Isn't a layout pass automatically triggered
         // after instantiating the skin?
         slider.requestLayout();
         
-        // handling snapToTick change (axis has nothing similar)
-        registerChangeListener(slider.snapToTicksProperty(), "SNAP_TO_TICKS");
-        
-        // handling property changes - really needed, even if bound to axis?
-        registerChangeListener(slider.minProperty(), "MIN");
-        registerChangeListener(slider.maxProperty(), "MAX");
-        registerChangeListener(slider.valueProperty(), "VALUE");
-        registerChangeListener(slider.orientationProperty(), "ORIENTATION");
-        registerChangeListener(slider.showTickMarksProperty(), "SHOW_TICK_MARKS");
-        registerChangeListener(slider.showTickLabelsProperty(), "SHOW_TICK_LABELS");
-        registerChangeListener(slider.majorTickUnitProperty(), "MAJOR_TICK_UNIT");
-        registerChangeListener(slider.minorTickCountProperty(), "MINOR_TICK_COUNT");
-//        registerChangeListener(slider.labelFormatterProperty(), "TICK_LABEL_FORMATTER");
-    }
-
-    private void initialize() {
-        thumb = createThumb();
-        track = createTrack();
-        tickLine = createTickLine();
-        
-        getChildren().clear();
-        getChildren().addAll(tickLine, track, thumb);
-        
-        setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
-        
-        track.setOnMousePressed(e -> {
-            if (!thumb.isPressed()) {
-                trackClicked = true;
-                getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
-                trackClicked = false;
-            }
-        });
-        
-        track.setOnMouseDragged(e -> {
-            if (!thumb.isPressed()) {
-                getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
-            }
-        });
-
-        thumb.setOnMousePressed(e -> {
-            getBehavior().thumbPressed(getValueFromMouseEvent(e));
-        });
-
-        thumb.setOnMouseReleased(e -> {
-            getBehavior().thumbReleased(getValueFromMouseEvent(e));
-        });
-
-        thumb.setOnMouseDragged(e -> {
-            getBehavior().thumbDragged(getValueFromMouseEvent(e));
-        });
-        
+        registerPropertyListeners(slider);
     }
 
     protected StackPane createThumb() {
@@ -267,9 +223,92 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
         getSkinnable().requestLayout();
     }
 
+//     /**
+//      * Register listeners to properties on slider (old style)
+//      * @param slider
+//      */
+//     private void registerPropertyListeners(Slider slider) {
+//         // handling snapToTick change (axis has nothing similar)
+//         registerChangeListener(slider.snapToTicksProperty(), "SNAP_TO_TICKS");
+//         
+//         // handling property changes - really needed, even if bound to axis?
+//         registerChangeListener(slider.minProperty(), "MIN");
+//         registerChangeListener(slider.maxProperty(), "MAX");
+//         registerChangeListener(slider.valueProperty(), "VALUE");
+//         registerChangeListener(slider.orientationProperty(), "ORIENTATION");
+//         registerChangeListener(slider.showTickMarksProperty(), "SHOW_TICK_MARKS");
+//         registerChangeListener(slider.showTickLabelsProperty(), "SHOW_TICK_LABELS");
+//         registerChangeListener(slider.majorTickUnitProperty(), "MAJOR_TICK_UNIT");
+//         registerChangeListener(slider.minorTickCountProperty(), "MINOR_TICK_COUNT");
+////         registerChangeListener(slider.labelFormatterProperty(), "TICK_LABEL_FORMATTER");
+//     }
 
-     @Override protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
+     /**
+      * register property listeners, new style.
+      * @param slider
+      */
+     private void registerPropertyListeners(Slider control) {
+         // nothing to do, use binding
+//         registerChangeListener(control.minProperty(), e -> {
+//             
+//             if (/*showTickMarks && */tickLine != null) {
+//                 tickLine.setLowerBound(control.getMin());
+//             }
+//             getSkinnable().requestLayout();
+//         });
+         // nothing to do, use binding
+//         registerChangeListener(control.maxProperty(), e -> {
+//             if (/*showTickMarks && */tickLine != null) {
+//                 tickLine.setUpperBound(control.getMax());
+//             }
+//             getSkinnable().requestLayout();
+//         });
+         registerChangeListener(control.valueProperty(), e -> {
+             // only animate thumb if the track was clicked - not if the thumb is dragged
+             positionThumb(trackClicked);
+         });
+         registerChangeListener(control.orientationProperty(), e -> {
+             if (/*showTickMarks && */ tickLine != null) {
+                 tickLine.setSide(control.getOrientation() == Orientation.VERTICAL ? Side.RIGHT : (control.getOrientation() == null) ? Side.RIGHT: Side.BOTTOM);
+             }
+             getSkinnable().requestLayout();
+         });
+         registerChangeListener(control.showTickMarksProperty(), e -> setShowTickMarks(control.isShowTickMarks(), control.isShowTickLabels()));
+         registerChangeListener(control.showTickLabelsProperty(), e -> setShowTickMarks(control.isShowTickMarks(), control.isShowTickLabels()));
+         registerChangeListener(control.majorTickUnitProperty(), e -> {
+             if (tickLine != null) {
+                 tickLine.setTickUnit(control.getMajorTickUnit());
+                 getSkinnable().requestLayout();
+             }
+         });
+         registerChangeListener(control.minorTickCountProperty(), e -> {
+             if (tickLine != null) {
+                 tickLine.setMinorTickCount(Math.max(control.getMinorTickCount(), 0) + 1);
+                 getSkinnable().requestLayout();
+             }
+         });
+         // nothing to do, use binding
+//         registerChangeListener(control.labelFormatterProperty(), e -> {
+//             if (tickLine != null) {
+//                 if (control.getLabelFormatter() == null) {
+//                     tickLine.setTickLabelFormatter(null);
+//                 } else {
+//                     tickLine.setTickLabelFormatter(stringConverterWrapper);
+//                     tickLine.requestAxisLayout();
+//                 }
+//             }
+//         });
+         registerChangeListener(control.snapToTicksProperty(), e -> {
+             if (control.isSnapToTicks()) {
+                 control.adjustValue(control.getValue());
+             }
+             
+         });
+     }
+
+//     @Override 
+     protected void handleControlPropertyChanged(String p) {
+//        super.handleControlPropertyChanged(p);
         Slider slider = getSkinnable();
         if ("ORIENTATION".equals(p)) {
             if (/*showTickMarks && */tickLine != null) {
@@ -317,6 +356,49 @@ public class XSliderSkin extends BehaviorSkinBase<Slider, XSliderBehavior> {
                 }
             }
     }
+
+     private XSliderBehavior getBehavior() {
+         return behavior;
+     }
+     
+     private void initialize() {
+         thumb = createThumb();
+         track = createTrack();
+         tickLine = createTickLine();
+         
+         getChildren().clear();
+         getChildren().addAll(tickLine, track, thumb);
+         
+         setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
+         
+         track.setOnMousePressed(e -> {
+             if (!thumb.isPressed()) {
+                 trackClicked = true;
+                 getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
+                 trackClicked = false;
+             }
+         });
+         
+         track.setOnMouseDragged(e -> {
+             if (!thumb.isPressed()) {
+                 getBehavior().valueUpdateByTrack(getValueFromMouseEvent(e));
+             }
+         });
+
+         thumb.setOnMousePressed(e -> {
+             getBehavior().thumbPressed(getValueFromMouseEvent(e));
+         });
+
+         thumb.setOnMouseReleased(e -> {
+             getBehavior().thumbReleased(getValueFromMouseEvent(e));
+         });
+
+         thumb.setOnMouseDragged(e -> {
+             getBehavior().thumbDragged(getValueFromMouseEvent(e));
+         });
+         
+     }
+
 
     /**
      * Layout code unchanged except for 

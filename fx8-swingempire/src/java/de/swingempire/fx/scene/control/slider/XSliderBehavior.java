@@ -4,9 +4,9 @@
  */
 package de.swingempire.fx.scene.control.slider;
 
-import javafx.scene.control.Slider;
-
 import com.sun.javafx.scene.control.behavior.SliderBehavior;
+
+import javafx.scene.control.Slider;
 
 /**
  * Experimenting with using NumberAxis for all value/coordinate mapping.
@@ -36,6 +36,14 @@ public class XSliderBehavior extends SliderBehavior {
         getControl().adjustValue(value);
     }
     
+    /**
+     * Rename of super.getNode(). PENDING JW: cleanup
+     * @return
+     */
+    private Slider getControl() {
+        return getNode();
+    }
+
     public void thumbPressed(double value) {
         if (!getControl().isFocused()) getControl().requestFocus();
         getControl().setValueChanging(true);
