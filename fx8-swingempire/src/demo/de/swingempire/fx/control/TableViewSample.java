@@ -140,9 +140,9 @@ public class TableViewSample extends Application {
         addTab(tabPane, "Formatter", formatterFactory);
         
         // enhanced core textFieldCell with notion of terminate
-        // Note: stopped working as of jdk8_u20
-//        Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
-//        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory, true);
+        // Note: stopped working as of jdk8_u20 - not really (?), must use XTable!
+        Callback xTextFieldCellFactory = p -> new XTextFieldTableCell<>(new DefaultStringConverter());
+        addTab(tabPane, "xTextFieldCell", xTextFieldCellFactory, true);
         
         // testing binding approach from SO - not really working
         Callback boundEditingCellFactory = p -> new BoundEditingCell();
@@ -179,14 +179,17 @@ public class TableViewSample extends Application {
                 }
             });
             cell.focusedProperty().addListener((s, ov, nv) ->{
-                LOG.info("focus change: " + nv + " / " + cell.getItem());
-                if (nv) {
-                    Node owner = null;
-                    if (cell.getScene() != null) {
-                        owner = cell.getScene().getFocusOwner();
-                    }
-                    LOG.info("is focusOwner? " + (owner == cell) + " " + owner);
+                if (!nv) {
+                LOG.info("focus change: " + nv + " / " + cell.getItem() + " / " + cell.isEditing());
+                new RuntimeException("who-is-calling? \n").printStackTrace();
                 }
+//                if (nv) {
+//                    Node owner = null;
+//                    if (cell.getScene() != null) {
+//                        owner = cell.getScene().getFocusOwner();
+//                    }
+//                    LOG.info("is focusOwner? " + (owner == cell) + " " + owner);
+//                }
             });
             return cell;
         };
@@ -285,7 +288,7 @@ public class TableViewSample extends Application {
                     (ObservableValue<? extends Boolean> arg0, Boolean arg1,
                             Boolean arg2) -> {
                         if (!arg2) {
-//                            LOG.info("lost focus, editing? " + isEditing());
+                            LOG.info("lost focus, editing? " + isEditing());
                             commitEdit();
 //                             commitEdit(textField.getText());
                         }

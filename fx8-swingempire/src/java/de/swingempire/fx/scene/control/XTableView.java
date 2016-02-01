@@ -10,7 +10,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 
-import com.sun.javafx.scene.control.skin.TableViewSkin;
 
 /**
  * Extended TableView that supports terminating an edit.

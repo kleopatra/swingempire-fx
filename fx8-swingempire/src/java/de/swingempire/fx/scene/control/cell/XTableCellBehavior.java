@@ -6,13 +6,14 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.TableCellBehavior;
+
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.XTableView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
-
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-
-import de.swingempire.fx.scene.control.XTableView;
+import javafx.scene.input.MouseEvent;
 
 /**
  * Trying to intercept the selection process to not cancel an edit.
@@ -40,39 +41,86 @@ import de.swingempire.fx.scene.control.XTableView;
  *   consistency across across cell containers)
  * - so now we override the latter and try terminate edits   
  *       
+ *       
+ * JDK9: no longer working - editing already stopped - now really running into canceled by 
+ * cell.focused?      
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
 
     /**
-     * @param control
+     * @param cell
      */
-    public XTableCellBehavior(TableCell<S, T> control) {
-        super(control);
+    public XTableCellBehavior(TableCell<S, T> cell) {
+        super(cell);
+//        if (cell.getTableView() != null) {
+//            cell.getTableView().getSelectionModel().setCellSelectionEnabled(true);
+//        }
+//        cell.tableViewProperty().addListener((source, ov, table) -> {
+//            if (table != null) {
+//                ((TableView<Person>) table).getSelectionModel().setCellSelectionEnabled(true);
+//                
+//            }
+//        });
+        cell.focusedProperty().addListener((s, ov, nv) ->{
+            if (!nv) {
+            LOG.info("focus change: " + nv + " / " + cell.getItem() + " / " + cell.isEditing());
+            new RuntimeException("who-is-calling? \n").printStackTrace();
+            }
+//            if (nv) {
+//                Node owner = null;
+//                if (cell.getScene() != null) {
+//                    owner = cell.getScene().getFocusOwner();
+//                }
+//                LOG.info("is focusOwner? " + (owner == cell) + " " + owner);
+//            }
+        });
     }
     
+    /**
+     * Tries to terminate edits if containing table is of type
+     * XTableView.
+     */
+    protected void tryTerminateEdit() {
+        TableCell<S, T> cell = getNode();
+        TableView<S> table = cell.getTableColumn().getTableView();
+        if (table instanceof XTableView) {
+            ((XTableView<S>) table).terminateEdit();
+        }
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (true) return;
+        super.mousePressed(e);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (true) return;
+        super.mouseReleased(e);
+    }
+
+    @Override
+    protected void doSelect(double x, double y, MouseButton button,
+            int clickCount, boolean shiftDown, boolean shortcutDown) {
+        if (true) return;
+        super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
+    }
+
     /**
      * This method is called in jdk8_u5. Signature changed
      * in jdk8_u20.
      * 
      * @param e
      */
-//    @Override
-//    protected void simpleSelect(MouseEvent e) {
-//        tryTerminateEdit();
-//        super.simpleSelect(e);
-//    }
-    /**
-     * Tries to terminate edits if containing table is of type
-     * XTableView.
-     */
-    protected void tryTerminateEdit() {
-        TableCell<S, T> cell = getControl();
-        TableView<S> table = cell.getTableColumn().getTableView();
-        if (table instanceof XTableView) {
-            ((XTableView<S>) table).terminateEdit();
-        }
+    @Override
+    protected void simpleSelect(MouseButton button, int clickCount, boolean alreadySelected) {
+        if (true) return;
+        LOG.info("editing: " + getNode().getItem() + " / " + getNode().getTableView().getEditingCell());
+        tryTerminateEdit();
+        super.simpleSelect(button, clickCount, alreadySelected);
     }
 
     /**
@@ -86,7 +134,8 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
     @Override
     protected void handleClicks(MouseButton button, int clickCount,
             boolean isAlreadySelected) {
-        tryTerminateEdit();
+//        tryTerminateEdit();
+        if (true) return;
         super.handleClicks(button, clickCount, isAlreadySelected);
     }
 

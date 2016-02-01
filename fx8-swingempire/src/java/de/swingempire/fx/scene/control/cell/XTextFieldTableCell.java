@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import de.swingempire.fx.scene.control.XTableView;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.Skin;
@@ -18,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.StringConverter;
-import de.swingempire.fx.scene.control.XTableView;
 
 
 
@@ -112,10 +112,17 @@ public class XTextFieldTableCell<S, T> extends TextFieldTableCell<S, T> {
      * <b>NOTE</b>: XTableCellSkin is HIGHLY version-dependent! The 
      * implementation for version jdk8_u5 doesn't compile for jdk8_u20 (and
      * the other way round)
+     * 
+     * <p>
+     * 
+     * Newest version (jdk9) uses a hack - XHackTableCellSkin that extends
+     * from the concrete TableCellSkin (due to not being able to extend
+     * TableCellSkinBase - https://bugs.openjdk.java.net/browse/JDK-8148573 )
      */
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new XTableCellSkin<S, T>(this);
+        return new XHackTableCellSkin<S, T>(this);
+//        return new XTableCellSkin<S, T>(this);
     }
 
 
