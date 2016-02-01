@@ -53,13 +53,26 @@ public class XSliderBehavior extends SliderBehavior {
         getControl().setValue(value);    
     }
     
+    /**
+     * Implemented to first adjust the value and then call valueChanging.
+     * Core does it the other way round, leading to 
+     * http://stackoverflow.com/q/35129670/203657
+     * 
+     * The drawback is that listeners to value which want to do stuff
+     * only if the adjusting is false will not be notified (the
+     * change had happened before)
+     *  
+     * @param value
+     */
     public void thumbReleased(double value) {
         // simply delegate to method with mouseEvent (isnÄt used anyway
-        thumbReleased(null);
+//        thumbReleased(null);
 //        getControl().setValueChanging(false);
 //        if (getControl().isSnapToTicks()) {
 //            // can't, snapping is private
 //            getControl().setValue(snapValueToTicks(getControl().getValue()));
 //        }
+        getControl().adjustValue(value);
+        getControl().setValueChanging(false);
     }
 }
