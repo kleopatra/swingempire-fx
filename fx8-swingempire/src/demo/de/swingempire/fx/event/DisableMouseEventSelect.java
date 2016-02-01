@@ -6,6 +6,8 @@ package de.swingempire.fx.event;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.TableCellBehavior;
+
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -25,6 +27,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableCellSkinBase;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -34,14 +37,13 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-import com.sun.javafx.scene.control.skin.TableCellSkinBase;
-
 /**
  * In custom cell with canvas, left (primary) button doesn't select (intended)
  * but right (secondary) button does select.
  * 
  * http://stackoverflow.com/q/28376103/203657
+ * 
+ * JDK 9: where's contextMenuRequested (formerly: behaviorBase?)
  */
 public class DisableMouseEventSelect extends Application {
     private TableView<Person> table = new TableView<Person>();
@@ -69,94 +71,97 @@ public class DisableMouseEventSelect extends Application {
             setGraphic(null);
         }
     }
-
-    class MySpecialCellSkin extends TableCellSkinBase {
-        private final TableColumn tableColumn;
-
-        public MySpecialCellSkin(TableCell tableCell) {
-            super(tableCell, new MySpecialCellBehavior(tableCell));
-            // doesn't make a difference
-            //consumeMouseEvents(true);
-            this.tableColumn = tableCell.getTableColumn();
-            super.init(tableCell);
-        }
-
-        @Override protected BooleanProperty columnVisibleProperty() {
-            return tableColumn.visibleProperty();
-        }
-
-        @Override protected ReadOnlyDoubleProperty columnWidthProperty() {
-            return tableColumn.widthProperty();
-        }
-        
-    }
     
-    class MySpecialCellBehavior extends TableCellBehavior {
+    // commented as of JDK9: context menu handling moved from behaviour to ...?
 
-        public MySpecialCellBehavior(TableCell control) {
-            super(control);
-            control.addEventHandler(KeyEvent.ANY, e -> {
-                LOG.info("got key? " + e);
-            });
-        }
-
-
-
-        @Override
-        public void contextMenuRequested(ContextMenuEvent e) {
-            LOG.info("got contextMenu?" + e);
-            super.contextMenuRequested(e);
-        }
-
-
-        @Override
-        protected void doSelect(double x, double y, MouseButton button,
-                int clickCount, boolean shiftDown, boolean shortcutDown) {
-            if (button == MouseButton.SECONDARY) return;
-            super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
-        }
-
-    }
-
-    class MySpecialCell extends MyTableCell {
-        // parent type doesn't make a difference
-//    class MySpecialCell extends TableCell<Person, String> {
-        Canvas canvas = new Canvas(200.0, 12.0);
-        // unrelated to canvas
-        Label label = new Label();
-        public MySpecialCell() {
-            super(null);
-            canvas.setMouseTransparent(true);
-            addEventFilter(MouseEvent.ANY, e -> e.consume());
-            // move Jonathan's code from table to cell level:
-            // need to consume contextMenuEvents as well
-//            addEventFilter(ContextMenuEvent.ANY, e -> e.consume());
-        }
-
-        @Override
-        protected void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(null);
-            if (! empty) {
-//                label.setText(item);
-//                setGraphic(label);
-                canvas.getGraphicsContext2D().strokeText(item, 5.0, 10.0);
-                setGraphic(canvas);
-            } else {
-                setGraphic(null);
-            }
-        }
-
-        @Override
-        protected Skin<?> createDefaultSkin() {
-            return new MySpecialCellSkin(this);
-        }
-        
-        
-    }
+//    class MySpecialCellSkin extends TableCellSkinBase {
+//        private final TableColumn tableColumn;
+//
+//        public MySpecialCellSkin(TableCell tableCell) {
+//            super(tableCell, new MySpecialCellBehavior(tableCell));
+//            // doesn't make a difference
+//            //consumeMouseEvents(true);
+//            this.tableColumn = tableCell.getTableColumn();
+//            super.init(tableCell);
+//        }
+//
+//        @Override protected BooleanProperty columnVisibleProperty() {
+//            return tableColumn.visibleProperty();
+//        }
+//
+//        @Override protected ReadOnlyDoubleProperty columnWidthProperty() {
+//            return tableColumn.widthProperty();
+//        }
+//        
+//    }
+//    
+//    class MySpecialCellBehavior extends TableCellBehavior {
+//
+//        public MySpecialCellBehavior(TableCell control) {
+//            super(control);
+//            control.addEventHandler(KeyEvent.ANY, e -> {
+//                LOG.info("got key? " + e);
+//            });
+//        }
+//
+//
+//
+//        @Override
+//        public void contextMenuRequested(ContextMenuEvent e) {
+//            LOG.info("got contextMenu?" + e);
+//            super.contextMenuRequested(e);
+//        }
+//
+//
+//        @Override
+//        protected void doSelect(double x, double y, MouseButton button,
+//                int clickCount, boolean shiftDown, boolean shortcutDown) {
+//            if (button == MouseButton.SECONDARY) return;
+//            super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
+//        }
+//
+//    }
+//
+//    class MySpecialCell extends MyTableCell {
+//        // parent type doesn't make a difference
+////    class MySpecialCell extends TableCell<Person, String> {
+//        Canvas canvas = new Canvas(200.0, 12.0);
+//        // unrelated to canvas
+//        Label label = new Label();
+//        public MySpecialCell() {
+//            super(null);
+//            canvas.setMouseTransparent(true);
+//            addEventFilter(MouseEvent.ANY, e -> e.consume());
+//            // move Jonathan's code from table to cell level:
+//            // need to consume contextMenuEvents as well
+////            addEventFilter(ContextMenuEvent.ANY, e -> e.consume());
+//        }
+//
+//        @Override
+//        protected void updateItem(String item, boolean empty) {
+//            super.updateItem(item, empty);
+//            setText(null);
+//            if (! empty) {
+////                label.setText(item);
+////                setGraphic(label);
+//                canvas.getGraphicsContext2D().strokeText(item, 5.0, 10.0);
+//                setGraphic(canvas);
+//            } else {
+//                setGraphic(null);
+//            }
+//        }
+//
+//        @Override
+//        protected Skin<?> createDefaultSkin() {
+//            return new MySpecialCellSkin(this);
+//        }
+//        
+//        
+//    }
 
     @Override
     public void start(Stage stage) throws Exception{
+        ContextMenuEvent e;
         Scene scene = new Scene(new Group());
         stage.setTitle("Table View Sample");
         stage.setWidth(450);
@@ -165,6 +170,9 @@ public class DisableMouseEventSelect extends Application {
         final Label label = new Label("Address Book");
         label.setFont(new Font("Arial", 20));
 
+        ContextMenu tableContext = new ContextMenu();
+        tableContext.getItems().add(new MenuItem("my world on table"));
+        table.setContextMenu(tableContext);
         table.setEditable(true);
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -187,7 +195,7 @@ public class DisableMouseEventSelect extends Application {
         emailCol.setMinWidth(200);
         emailCol.setCellValueFactory(
                 new PropertyValueFactory<Person, String>("email"));
-        emailCol.setCellFactory(param -> new MySpecialCell());
+//        emailCol.setCellFactory(param -> new MySpecialCell());
 
         table.setItems(data);
         table.getColumns().addAll(firstNameCol, lastNameCol, emailCol);
