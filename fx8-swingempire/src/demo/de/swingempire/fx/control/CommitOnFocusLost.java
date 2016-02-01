@@ -70,6 +70,7 @@ public class CommitOnFocusLost extends Application {
         ComboBox<String> comboBox = new ComboBox(items);
         comboBox.setConverter(IDENTITY_STRING_CONVERTER);
         comboBox.setEditable(true);
+        // don't need in jdk9b99 JDK-8120120 (aka RT-21454) and JDK-8136838 are fixed
         TextFormatter<String> formatter = new TextFormatter<>(comboBox.getConverter());
         comboBox.getEditor().setTextFormatter(formatter);
         if (bind) {
