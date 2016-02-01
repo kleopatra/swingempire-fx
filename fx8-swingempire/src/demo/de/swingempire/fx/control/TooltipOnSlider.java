@@ -9,10 +9,10 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.SliderBehavior;
+
+import de.swingempire.fx.scene.control.slider.XSliderSkin;
 import javafx.application.Application;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -20,18 +20,13 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.skin.SliderSkin;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-
-import com.sun.javafx.scene.control.skin.SliderSkin;
-
-import de.swingempire.fx.scene.control.slider.XSliderSkin;
 
 /**
  * http://stackoverflow.com/a/34057532/203657
@@ -176,6 +171,7 @@ public class TooltipOnSlider extends Application {
      */
     public static class MySliderSkin extends SliderSkin {
         
+        SliderBehavior behaviorAlias;
         /**
          * Hook for replacing the mouse pressed handler that's installed by super.
          */
@@ -196,11 +192,28 @@ public class TooltipOnSlider extends Application {
                 } else {
                    position = (mouseX - trackStart) / trackLength;
                 }
+                // no longer exposed
                 getBehavior().trackPress(e, position);
                 invokeSetField("trackClicked", false);
             });
         }
 
+        private SliderBehavior getBehavior() {
+            if (behaviorAlias == null) {
+                Class clazz = SliderSkin.class;
+                try {
+                    Field field = clazz.getDeclaredField("behavior");
+                    field.setAccessible(true);
+                    behaviorAlias = (SliderBehavior) field.get(this);
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                
+            }
+            return behaviorAlias;
+        }
+        
         private double invokeGetField(String name) {
             Class clazz = SliderSkin.class;
             Field field;
