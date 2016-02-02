@@ -19,14 +19,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
-import com.sun.javafx.scene.control.skin.TableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
-
-import de.swingempire.fx.scene.control.selection.TableInitialCellEdit;
 
 public class TableColumnLocationExample extends Application {
 
@@ -60,9 +58,10 @@ public class TableColumnLocationExample extends Application {
      */
     private void buttonsPerHeader(TableView<Person> table, Pane root) {
         if (!(table.getSkin() instanceof TableViewSkinBase)) return;
-        TableViewSkinBase skin = (TableViewSkinBase) table.getSkin();
-        TableHeaderRow headerRow = skin.getTableHeaderRow();
+        MyTableViewSkin skin = (MyTableViewSkin) table.getSkin();
+        TableHeaderRow headerRow = skin.getTableHeader();
         for (TableColumn col : table.getColumns()) {
+            // Lookup method didn't make it into the public, Bug or feature?
             TableColumnHeader header = headerRow.getColumnHeaderFor(col);
             Button button = new Button(col.getText());
 
@@ -178,6 +177,38 @@ public class TableColumnLocationExample extends Application {
 
     }
 
+    /**
+     * Override to get access to TableHeaderRow.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+public static class MyTableViewSkin<T> extends TableViewSkin<T> {
+
+    private TableHeaderRow header;
+    
+    /**
+     * @param control
+     */
+    public MyTableViewSkin(TableView<T> control) {
+        super(control);
+    }
+
+    /**
+     * Implemented to grab header. Super method is 
+     * package and final.
+     * @return
+     */
+    public TableHeaderRow getTableHeader() {
+        return header;
+    }
+    @Override
+    protected TableHeaderRow createTableHeaderRow() {
+        header = super.createTableHeaderRow();
+        return header;
+    }
+    
+    
+}
     public static void main(String[] args) {
         launch(args);
     }
