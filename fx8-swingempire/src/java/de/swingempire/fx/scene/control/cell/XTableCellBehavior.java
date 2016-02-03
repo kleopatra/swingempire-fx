@@ -8,12 +8,10 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.TableCellBehavior;
 
-import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 
 /**
  * Trying to intercept the selection process to not cancel an edit.
@@ -43,39 +41,16 @@ import javafx.scene.input.MouseEvent;
  *       
  *       
  * JDK9: no longer working - editing already stopped - now really running into canceled by 
- * cell.focused?      
+ * cell.focused? No - is bug in InputMap: removing mappings installed by super behavior
+ * aren't completely removed. On disposing the old behavior, we need to remove the
+ * left-over mappings as well.    
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
 
-    /**
-     * @param cell
-     */
     public XTableCellBehavior(TableCell<S, T> cell) {
         super(cell);
-//        if (cell.getTableView() != null) {
-//            cell.getTableView().getSelectionModel().setCellSelectionEnabled(true);
-//        }
-//        cell.tableViewProperty().addListener((source, ov, table) -> {
-//            if (table != null) {
-//                ((TableView<Person>) table).getSelectionModel().setCellSelectionEnabled(true);
-//                
-//            }
-//        });
-        cell.focusedProperty().addListener((s, ov, nv) ->{
-            if (!nv) {
-            LOG.info("focus change: " + nv + " / " + cell.getItem() + " / " + cell.isEditing());
-            new RuntimeException("who-is-calling? \n").printStackTrace();
-            }
-//            if (nv) {
-//                Node owner = null;
-//                if (cell.getScene() != null) {
-//                    owner = cell.getScene().getFocusOwner();
-//                }
-//                LOG.info("is focusOwner? " + (owner == cell) + " " + owner);
-//            }
-        });
     }
     
     /**
@@ -90,38 +65,18 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         }
     }
     
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (true) return;
-        super.mousePressed(e);
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (true) return;
-        super.mouseReleased(e);
-    }
-
-    @Override
-    protected void doSelect(double x, double y, MouseButton button,
-            int clickCount, boolean shiftDown, boolean shortcutDown) {
-        if (true) return;
-        super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
-    }
-
     /**
      * This method is called in jdk8_u5. Signature changed
      * in jdk8_u20.
      * 
      * @param e
      */
-    @Override
-    protected void simpleSelect(MouseButton button, int clickCount, boolean alreadySelected) {
-        if (true) return;
-        LOG.info("editing: " + getNode().getItem() + " / " + getNode().getTableView().getEditingCell());
-        tryTerminateEdit();
-        super.simpleSelect(button, clickCount, alreadySelected);
-    }
+//    @Override
+//    protected void simpleSelect(MouseButton button, int clickCount, boolean alreadySelected) {
+//        LOG.info("editing: " + getNode().getItem() + " / " + getNode().getTableView().getEditingCell());
+//        tryTerminateEdit();
+//        super.simpleSelect(button, clickCount, alreadySelected);
+//    }
 
     /**
      * This method is introduced in jdk8_u20. It's the editing
@@ -134,12 +89,9 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
     @Override
     protected void handleClicks(MouseButton button, int clickCount,
             boolean isAlreadySelected) {
-//        tryTerminateEdit();
-        if (true) return;
+        tryTerminateEdit();
         super.handleClicks(button, clickCount, isAlreadySelected);
     }
-
-
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(XTableCellBehavior.class

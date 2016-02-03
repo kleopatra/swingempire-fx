@@ -4,7 +4,9 @@
  */
 package de.swingempire.fx.util;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -18,12 +20,14 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
+import javafx.event.EventType;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
 import com.sun.glass.ui.Robot;
+import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
@@ -41,6 +45,43 @@ public class FXUtils {
 
     public final static String ANCHOR_KEY = "anchor";
 
+// -------------- reflection: BEWARE - don't use for production!
+    
+    /**
+     * This is a hack around InputMap not cleaning up internals on removing mappings.
+     * We remove MousePressed/MouseReleased/MouseDragged mappings from the internal map.
+     * Beware: obviously this is dirty!
+     * 
+     * @param inputMap
+     */
+    public static void cleanupInputMap(InputMap<?> inputMap, EventType... types) {
+        Map eventTypeMappings = (Map) invokeGetFieldValue(InputMap.class, inputMap, "eventTypeMappings");
+        for (EventType eventType : types) {
+            eventTypeMappings.remove(eventType);
+        }
+    }
+
+    
+    /**
+     * Reflectively access hidden field's value.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the field name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetFieldValue(Class declaringClass, Object target, String name) {
+        try {
+            Field field = declaringClass.getDeclaredField(name);
+            field.setAccessible(true);
+            return field.get(target);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    
 // -------------- aggregates
     
     public static <T>  Collector<T, ?, ObservableList<T>> toObservableList() {
