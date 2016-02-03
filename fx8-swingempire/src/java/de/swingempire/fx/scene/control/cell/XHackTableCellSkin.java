@@ -4,12 +4,12 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
 import static de.swingempire.fx.util.FXUtils.*;
+
 import javafx.scene.control.TableCell;
 import javafx.scene.control.skin.TableCellSkin;
 import javafx.scene.input.MouseEvent;

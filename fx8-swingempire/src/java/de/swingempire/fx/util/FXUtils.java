@@ -50,6 +50,7 @@ public class FXUtils {
     /**
      * This is a hack around InputMap not cleaning up internals on removing mappings.
      * We remove MousePressed/MouseReleased/MouseDragged mappings from the internal map.
+     * <p>
      * Beware: obviously this is dirty!
      * 
      * @param inputMap

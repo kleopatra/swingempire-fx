@@ -32,7 +32,7 @@ import javafx.stage.Stage;
  * Posted to SO:
  * http://stackoverflow.com/q/35156039/203657
  * 
- * Same as table, stand-alone.
+ * Same as table, stand-alone - contains the InputMap cleanup hack.
  * 
  * @author Jeanette Winzenburg, Berlin
  */

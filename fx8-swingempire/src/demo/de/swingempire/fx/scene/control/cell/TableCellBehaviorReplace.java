@@ -34,6 +34,8 @@ import javafx.stage.Stage;
  * Posted to SO:
  * http://stackoverflow.com/q/35156039/203657
  * 
+ * stand-alone, contains InputMap cleanup hack
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableCellBehaviorReplace extends Application {
