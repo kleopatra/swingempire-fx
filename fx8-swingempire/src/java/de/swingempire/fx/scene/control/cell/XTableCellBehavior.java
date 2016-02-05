@@ -15,35 +15,43 @@ import javafx.scene.input.MouseButton;
 
 /**
  * Trying to intercept the selection process to not cancel an edit.
+ * <p>
+ * Sketch of interplay of the collaborators:
+ * https://www.flickr.com/photos/65941667@N02/6004789460/in/photostream/
  * 
+ * <p>
  * Issues:
- * - the control of editing is centered completely inside the cell itself
- * - there's no way to get hold of the actual editing cell, it's only the
+ * <li> the control of editing is centered completely inside the cell itself
+ * <li> there's no way to get hold of the actual editing cell, it's only the
  *   TablePosition of the cell that's available
- * - on mousePressed (actually simpleSelect) this behaviour is playing
+ * <li> on mousePressed (actually simpleSelect) this behaviour is playing
  *   squash: the table is the wall, the target is the editing fellow cell
  *   whose edit is rudely cancelled
- * - with the current api, this behaviour can't do much better: table's
+ * <li> with the current api, this behaviour can't do much better: table's
  *   api is too weak, one method only  
- * - hack here: add api to tableView that supports the notion of 
+ * <li> hack here: add api to tableView that supports the notion of 
  *   terminate an edit and use it (note: needs cooperation of all cells
  *   in the table) 
- * - astonished: _why_ the need to cancel (or otherwise end an edit anywhere
+ * <li> astonished: _why_ the need to cancel (or otherwise end an edit anywhere
  *   outside this cell) - shouldn't the selection/focus update automagically
  *   trigger the other cell to update its editing?
+ * </ul>  
  *   
+ * <p>  
  * Didn't compile in jdk8_u20 (joy of hacking ;-) : 
- * - simpleSelect method signature changed
- * - edit handling at the end of former simpleSelect was extracted
+ * <li> simpleSelect method signature changed
+ * <li> edit handling at the end of former simpleSelect was extracted
  *   to handleClicks (method in CellBehaviour, probably good move for
  *   consistency across across cell containers)
- * - so now we override the latter and try terminate edits   
+ * <li> so now we override the latter and try terminate edits   
  *       
- *       
+ * <p>      
  * JDK9: no longer working - editing already stopped - now really running into canceled by 
  * cell.focused? No - is bug in InputMap: removing mappings installed by super behavior
  * aren't completely removed. On disposing the old behavior, we need to remove the
  * left-over mappings as well.    
+ * 
+ * <p> 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
