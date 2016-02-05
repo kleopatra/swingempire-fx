@@ -18,6 +18,10 @@ import javafx.scene.input.MouseButton;
  * <p>
  * Sketch of interplay of the collaborators:
  * https://www.flickr.com/photos/65941667@N02/6004789460/in/photostream/
+ * <p>
+ * 
+ * old suggestion for enhanced api
+ * https://community.oracle.com/thread/2264713?tstart=0
  * 
  * <p>
  * Issues:
