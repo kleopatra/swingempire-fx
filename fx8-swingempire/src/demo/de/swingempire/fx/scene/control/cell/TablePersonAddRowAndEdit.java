@@ -7,12 +7,8 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.PathAdapter;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,23 +19,45 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
 
 /**
+ * http://stackoverflow.com/q/35279377/203657
+ * 
+ * Problem: starting edit of newly added item - not started. Looks like the table
+ * is not-yet ready when listening to changes. At that time the cells are not yet
+ * updated to new content, making the target cell (still old!) appear not editable
+ * thus not starting.
+ * 
+ * What doesn't work:
+ * 
+ * - table.layout();
+ * - table.requestLayout();
+ * - toolkit.firePulse
+ * - Platform.runlater
+ * 
+ * Currently the only way is to introduce a real delay, f.i. by a timeline.
+ * There must be something else.
+ * 
+ * <p>
+ * 
+ * Update: table.layout _is_ working, provided the table's skin has registered its
+ * listener to the items _before_ we do so.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class TablePersonAddRowAndEdit extends Application {
 
     private PersonStandIn standIn = new PersonStandIn();
     private final ObservableList<Person> data =
+            // Person from Tutorial - with Properties exposed!
             FXCollections.observableArrayList(
                     new Person("Jacob", "Smith", "jacob.smith@example.com"),
                     new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
@@ -49,16 +67,12 @@ public class TablePersonAddRowAndEdit extends Application {
                     , standIn
                     );
 
-    private static boolean startEditInAdder = true;
-    
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+   
     private Parent getContent() {
 
-//        TableView<Person> table = new XTableView<>();
         TableView<Person> table = new TableView<>();
         table.setItems(data);
         table.setEditable(true);
-//        table.getSelectionModel().setCellSelectionEnabled(true);
         
         TableColumn<Person, String> firstName = new TableColumn<>("First Name");
         firstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
@@ -68,17 +82,20 @@ public class TablePersonAddRowAndEdit extends Application {
             while (c.next()) {
                 // true added only
                 if (c.wasAdded() && ! c.wasRemoved()) {
-//                    Toolkit.getToolkit().firePulse();
-                    Platform.runLater(() -> {
-                        System.out.println("added: " + c.getList().get(c.getFrom()));
-                        if (!startEditInAdder)
-                            table.edit(c.getFrom(), firstName);
-                    });
+                    // force the re-layout before starting the edit
+                    table.layout();
+                    table.edit(c.getFrom(), firstName);
                     return;
                 }
-            }
+            };
         };
-        table.getItems().addListener(l);
+        // install the listener to the items after the skin has registered
+        // its own
+        ChangeListener skinListener = (src, ov, nv) -> {
+            table.getItems().removeListener(l);
+            table.getItems().addListener(l);
+        };
+        table.skinProperty().addListener(skinListener);
         
         table.getColumns().addAll(firstName);
         
@@ -86,25 +103,17 @@ public class TablePersonAddRowAndEdit extends Application {
         add.setOnAction(e -> {
             int standInIndex = table.getItems().indexOf(standIn);
             int index = standInIndex < 0 ? table.getItems().size() : standInIndex;
+            index =1;
             Person person = createNewItem("edit", index);
-//            table.getSelectionModel().clearAndSelect(lastReal);
-//            table.getFocusModel().focus(index);
-//            table.requestFocus();
             table.getItems().add(index, person);
-//            table.refresh();
-//            System.out.println("lastReal/size " + index + " / " +table.getItems().size());
-//            System.out.println("lastRealItem/before " + table.getItems().get(index) + " / " + table.getItems().get(index -1));
-            // this looks like a bug: need to pass-in the index _before_ the index of 
-            // the newly created
-            if (startEditInAdder) {
-                table.edit(index, firstName);
-            }
             
         });
         Button edit = new Button("Edit");
         edit.setOnAction(e -> {
-            int lastReal = table.getItems().size() -2;
-            table.edit(lastReal, firstName);
+            int index = 1;//table.getItems().size() -2;
+            table.scrollTo(index);
+            table.requestFocus();
+            table.edit(index, firstName);
         });
         HBox buttons = new HBox(10, add, edit);
         BorderPane content = new BorderPane(table);
@@ -112,51 +121,56 @@ public class TablePersonAddRowAndEdit extends Application {
         return content;
     }
     
+    public static class TTableView<S> extends TableView<S> {
+
+        /**
+         * Overridden to force a layout before calling super.
+         */
+        @Override
+        public void edit(int row, TableColumn<S, ?> column) {
+            layout();
+            super.edit(row, column);
+        }
+        
+    }
+    
+    /**
+     * A cell that can handle not-editable items. Has to update its
+     * editability based on the rowItem. Must be done in updateItem
+     * (tried a listener to the tableRow's item, wasn't good enough - doesn't
+     * get notified reliably)
+     * 
+     */
     public static class MyTextFieldCell<S> extends TextFieldTableCell<S, String> {
-//    public static class MyTextFieldCell<S> extends XTextFieldTableCell<S, String> {
 
         private Button button;
-        
-        private PathAdapter adapter;
-        
-        
-        
-        private ChangeListener pathListener = (src, ov, nv) -> {
-            if (nv instanceof StandIn) {
-                LOG.info(" standin at " + getIndex() + isEmpty());
-                if (getIndex() >= 0) {
-//                    new RuntimeException("whoiscalling \n").printStackTrace();
-                    System.out.println("index not yet updated: cell/items " + getIndex() + " / " + getTableView().getItems().indexOf(nv));
-                }
-            }
-            if (isEmpty() || nv instanceof StandIn) {
-                setEditable(false);
-            } else {
-                setEditable(true);
-            }
-//            setEditable(!(nv instanceof StandIn) );
-        };
         
         public MyTextFieldCell() {
             super(new DefaultStringConverter());
             ContextMenu menu = new ContextMenu();
             menu.getItems().add(createMenuItem());
             setContextMenu(menu);
-            ReadOnlyProperty<TableRow<S>> row = tableRowProperty();
-            Callback<TableRow<S>, ObjectProperty<S>> factory = r -> r.itemProperty();
-            adapter = new PathAdapter(factory);
-            adapter.setRoot(tableRowProperty());
-            adapter.addListener(pathListener);
         }
         
         private boolean isStandIn() {
             return getTableRow() != null && getTableRow().getItem() instanceof StandIn;
         }
-
+        
+        /**
+         * Update cell's editable based on the rowItem.
+         */
+        private void doUpdateEditable() {
+            if (isEmpty() || isStandIn()) {
+                setEditable(false);
+            } else {
+                setEditable(true);
+            }
+        }
+        
         @Override
         public void updateItem(String item, boolean empty) {
-            setGraphic(null);
             super.updateItem(item, empty);
+            doUpdateEditable();
             if (isStandIn()) {
                 if (isEditing()) {
                     LOG.info("shouldn't be editing - has StandIn");
@@ -165,62 +179,39 @@ public class TablePersonAddRowAndEdit extends Application {
                 if (button == null) {
                     button = createButton();
                 }
-//                setText(null);
-//                setGraphic(button);
+                setText(null);
+                setGraphic(button);
             } 
         }
-
+        
         private Button createButton() {
             Button b = new Button("Add");
             b.setOnAction(e -> {
-                int lastReal = getTableView().getItems().size() -1;
-                S person = createNewItem("edit", lastReal);
-                getTableView().getItems().add(lastReal, person);
-                getTableView().refresh();
-                System.out.println("lastReal/size " + lastReal + " / " +getTableView().getItems().size());
-                System.out.println("lastRealItem/before " + getTableView().getItems().get(lastReal) + " / " + getTableView().getItems().get(lastReal -1));
-                // this looks like a bug: need to pass-in the index _before_ the index of 
-                // the newly created
-                if (startEditInAdder) {
-                    getTableView().edit(lastReal-1, getTableColumn());
-                }
+                int index = getTableView().getItems().size() -1;
+                getTableView().getItems().add(index, createNewItem("button", index));
             });
             return b;
         }
+        
         private MenuItem createMenuItem() {
-            // TODO Auto-generated method stub
             MenuItem item = new MenuItem("Add");
             item.setOnAction(e -> {
                 if (isStandIn()) return;
-                int lastReal = getIndex();
-                S person = createNewItem("menu", lastReal);
-                getTableView().getItems().add(lastReal, person);
-                System.out.println("lastReal/size " + lastReal + " / " +getTableView().getItems().size());
-                System.out.println("lastRealItem/before " + getTableView().getItems().get(lastReal) + " / " + getTableView().getItems().get(lastReal -1));
-                // this looks like a bug: need to pass-in the index _before_ the index of 
-                // the newly created
-                if (startEditInAdder) {
-                    getTableView().edit(lastReal-1, getTableColumn());
-                }
+                int index = getIndex();
+                getTableView().getItems().add(index, createNewItem("menu", index));
             });
             return item;
         }
 
-
-        /**
-         * @param string
-         * @return
-         */
-        private S createNewItem(String string, int lastReal) {
-            return (S) new Person("free" + lastReal, "free" + lastReal, "free");
+        
+        private S createNewItem(String text, int index) {
+            return (S) new Person(text + index, text + index, text);
         }
 
-        
-        
     }
 
-    private Person createNewItem(String string, int lastReal) {
-        return new Person("free" + lastReal, "free" + lastReal, "free");
+    private Person createNewItem(String text, int index) {
+        return new Person(text + index, text + index, text);
     }
 
     @Override

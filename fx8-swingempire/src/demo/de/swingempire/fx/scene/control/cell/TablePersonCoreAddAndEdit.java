@@ -11,10 +11,13 @@ import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
@@ -36,12 +39,25 @@ public class TablePersonCoreAddAndEdit extends Application {
         
         Button addAndEdit = new Button("AddAndEdit");
         addAndEdit.setOnAction(e -> {
-            int insertIndex = 1;
+            int selected = table.getSelectionModel().getSelectedIndex();
+            int insertIndex = selected < 0 ? 0 : selected;
             table.getItems().add(insertIndex, new Dummy());
             table.edit(insertIndex,  column);
         });
+        
+        Button scrollAndEdit = new Button("ScrollAndEdit");
+        scrollAndEdit.setOnAction(e -> {
+            int selected = table.getSelectionModel().getSelectedIndex();
+            int insertIndex = selected < 0 ? 0 : selected;
+            table.requestFocus();
+            table.scrollTo(insertIndex);
+            table.layout();
+            table.edit(insertIndex,  column);
+        });
+        
+        HBox buttons = new HBox(10, addAndEdit, scrollAndEdit);
         BorderPane content = new BorderPane(table);
-        content.setBottom(addAndEdit);
+        content.setBottom(buttons);
         return content;
     }
     
@@ -61,5 +77,6 @@ public class TablePersonCoreAddAndEdit extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
 
 }

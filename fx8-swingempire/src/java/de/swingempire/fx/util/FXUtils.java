@@ -5,6 +5,8 @@
 package de.swingempire.fx.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -15,22 +17,21 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 
-import javafx.application.Platform;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.event.EventType;
-import javafx.collections.ObservableList;
-import javafx.geometry.Point2D;
-import javafx.scene.control.ListView;
-import javafx.util.Callback;
-
 import com.sun.glass.ui.Robot;
 import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
+import javafx.application.Platform;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
+import javafx.event.EventType;
+import javafx.geometry.Point2D;
+import javafx.scene.control.ListView;
+import javafx.util.Callback;
 
 /**
  * Collection of static utility methods (mostly for debugging)
@@ -77,6 +78,44 @@ public class FXUtils {
             field.setAccessible(true);
             return field.get(target);
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Reflectively access hidden method's value without parameters.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the method name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetMethodValue(Class declaringClass, Object target, String name) {
+        try {
+            Method field = declaringClass.getDeclaredMethod(name);
+            field.setAccessible(true);
+            return field.invoke(target);
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Reflectively access hidden method value with a single parameter.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the field name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetMethodValue(Class declaringClass, Object target, String name, Class paramType, Object param) {
+        try {
+            Method field = declaringClass.getDeclaredMethod(name, paramType);
+            field.setAccessible(true);
+            return field.invoke(target, param);
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return null;
