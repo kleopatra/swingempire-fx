@@ -20,50 +20,27 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
- * http://stackoverflow.com/a/25742558/203657
- * 
- * force 2 scrollbars to same value
- * 
- * OP's self-solution was a listener - why not bind?
- * Accepted answer does use binding ...
- * <p>
- * Note: back-binding doesn't work (and didn't in jdk8)
- * 
  * http://stackoverflow.com/q/35392740/203657
  * detect when virtualized onctrol scrolled to bottom
  * 
  * Would expect a scrollTo eventHandler to be notified, but isn't?
  */
-public class SynchScrollBars extends Application {
+public class ScrollToHandlerTable extends Application {
     private final ObservableList<Locale> data =
             FXCollections.observableArrayList(Locale.getAvailableLocales()
                     );
    
     private final TableView<Locale> table = new TableView<>(data);
-    private final TableView<Locale> table2 = new TableView<>(data);
-    
+   
     
     @Override
     public void start(Stage stage) {
         stage.setTitle("Table FocusedCell Bug");
         configureTable(table);
-        configureTable(table2);
         Button leftScrollTo = new Button("left scrollto middle");
         leftScrollTo.setOnAction(e -> {
             table.scrollTo(table.getItems().size() /2);
         });
-        Button rightScrollTo = new Button("right scrollto middle");
-        rightScrollTo.setOnAction(e -> {
-            table2.scrollTo(table2.getItems().size() /2);
-        });
-        HBox root = new HBox(leftScrollTo, table, table2, rightScrollTo);
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
-        // install after skin has been created
-        ScrollBar one =  (ScrollBar) table.lookup(".scroll-bar");
-        ScrollBar other = (ScrollBar) table2.lookup(".scroll-bar");
-        other.valueProperty().bindBidirectional(one.valueProperty());
         
         table.setOnScrollTo(e -> {
             LOG.info("" + e);
@@ -71,6 +48,10 @@ public class SynchScrollBars extends Application {
         table.setOnScroll(e -> {
             LOG.info("" + e);
         });
+        HBox root = new HBox(leftScrollTo, table);
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
     }
 
     protected void configureTable(TableView<Locale> table) {
@@ -87,6 +68,6 @@ public class SynchScrollBars extends Application {
         launch(args);
     }
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(SynchScrollBars.class
+    private static final Logger LOG = Logger.getLogger(ScrollToHandlerTable.class
             .getName());
 }
