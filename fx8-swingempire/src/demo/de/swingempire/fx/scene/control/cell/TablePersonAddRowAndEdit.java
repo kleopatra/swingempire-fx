@@ -96,7 +96,6 @@ public class TablePersonAddRowAndEdit extends Application {
             table.getItems().addListener(l);
         };
         table.skinProperty().addListener(skinListener);
-        
         table.getColumns().addAll(firstName);
         
         Button add = new Button("AddAndEdit");

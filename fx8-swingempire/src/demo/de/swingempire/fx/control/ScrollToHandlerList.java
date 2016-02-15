@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
@@ -47,6 +48,18 @@ public class ScrollToHandlerList extends Application {
         list.setOnScroll(e -> {
             LOG.info("" + e);
         });
+        // nor a onScroll handler ...
+        list.setOnScrollStarted(e -> {
+            LOG.info("" + e);
+        });
+        // nor a onScroll handler ...
+        list.setOnScrollFinished(e -> {
+            LOG.info("" + e);
+        });
+        list.addEventFilter(ScrollEvent.ANY, e -> {
+            LOG.info("in filter " + e);
+        });
+
         HBox root = new HBox(leftScrollTo, list);
         Scene scene = new Scene(root);
         stage.setScene(scene);
