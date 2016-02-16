@@ -38,9 +38,7 @@ public class XTableView<S> extends TableView<S> {
      */
     @Override
     public void edit(int row, TableColumn<S, ?> column) {
-//        setTerminatingCell(getEditingCell());
         super.edit(row, column);
-//        setTerminatingCell(null);
     }
 
     public void terminateEdit() {
@@ -52,7 +50,13 @@ public class XTableView<S> extends TableView<S> {
     
     /**
      * Returns a boolean indicating whether this table is currently editing.
-     * 
+     * <p>
+     * <b>Note</b> editingCell might be !null even if there is no tableCell in editing mode -
+     * this may happen if view.edit had been called with coordinates that are not visible
+     * of before the layout had been stabilized. 
+     * <p>
+     * see http://stackoverflow.com/q/35279377/203657
+     * <p>
      * PENDING JW: what's the exact semantics of editingCell? here we check
      * for null, what if != with row < 0 and tableColumn != null?
      * 
