@@ -4,19 +4,22 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
@@ -53,25 +56,26 @@ import javafx.stage.Stage;
 public class ComboCellIssuesContinued extends Application {
 
     
-    int count;
+//    int count;
     private Parent getContent() {
         
         ObservableList<Shape> items = FXCollections.observableArrayList(
                new Line(), new Rectangle(), new Arc());
    
         items.forEach(p -> p.setId(p.getClass().getSimpleName()));
+        List<String> names = items.stream().map(Node::getId).collect(Collectors.toList());
         TableView<Shape> table = new TableView<>(items);
         table.setEditable(true);
         TableColumn<Shape, String> plain = new TableColumn<>("Plain");
         plain.setCellValueFactory(new PropertyValueFactory("id"));
+        plain.setCellFactory(TextFieldTableCell.forTableColumn());
         table.getColumns().addAll(plain);
         
         TableColumn<Shape, String> combo = new TableColumn<>("Combo");
         combo.setCellValueFactory(new PropertyValueFactory("id"));
-//        combo.setCellFactory(ComboBoxTableCell.forTableColumn("someId", "other", "orNothing")));
         combo.setCellFactory(p -> {
-            ComboBoxTableCell tc = new ComboBoxTableCell("someId", "other", "orNothing");
-//            tc.setComboBoxEditable(true);
+            ComboBoxTableCell tc = new ComboBoxTableCell(names.toArray()); //"someId", "other", "orNothing");
+            tc.setComboBoxEditable(true);
             return tc;
         });
         table.getColumns().addAll(combo);
