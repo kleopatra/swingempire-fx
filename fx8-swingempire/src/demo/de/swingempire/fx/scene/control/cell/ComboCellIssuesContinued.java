@@ -12,14 +12,19 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
@@ -87,10 +92,66 @@ public class ComboCellIssuesContinued extends Application {
             tc.setComboBoxEditable(true);
             return tc;
         });
-        table.getColumns().addAll(combo);
+        table.getColumns().addAll(combo); 
+        
+        TableColumn<Shape, String> fixedCombo = new TableColumn<>("fixedCombo");
+        fixedCombo.setCellValueFactory(new PropertyValueFactory("id"));
+        fixedCombo.setCellFactory(p -> {
+            ComboBoxTableCell tc = new XComboBoxTableCell(names.toArray());
+            tc.setComboBoxEditable(true);
+            return tc;
+        });
+        table.getColumns().addAll(fixedCombo); 
       
-        Parent content = new BorderPane(table);
+        BorderPane content = new BorderPane(table);
+        
+        // quick check to verify combo's value == action == selected notiication 
+        ComboBox comboBox = new ComboBox(FXCollections.observableArrayList(names));
+        comboBox.setEditable(true);
+        comboBox.addEventHandler(KeyEvent.KEY_RELEASED, createKeyHandler("Handler "));
+        comboBox.addEventHandler(KeyEvent.KEY_PRESSED, createKeyHandler("Handler "));
+        comboBox.addEventFilter(KeyEvent.KEY_RELEASED, createKeyHandler("Filter "));
+        comboBox.addEventFilter(KeyEvent.KEY_PRESSED, createKeyHandler("Filter "));
+        
+        comboBox.addEventHandler(MouseEvent.MOUSE_RELEASED, createMouseHandler("Handler "));
+        comboBox.addEventHandler(MouseEvent.MOUSE_PRESSED, createMouseHandler("Handler "));
+        comboBox.addEventFilter(MouseEvent.MOUSE_RELEASED, createMouseHandler("Filter "));
+        comboBox.addEventFilter(MouseEvent.MOUSE_PRESSED, createMouseHandler("Filter "));
+        
+        comboBox.valueProperty().addListener((src, ov, nv) -> {
+            LOG.info("new value: " + nv);
+        });
+        comboBox.setOnAction(e -> {
+            LOG.info("action " + comboBox.getValue());
+        });
+        content.setBottom(comboBox);
         return content;
+    }
+
+    /**
+     * @param string
+     * @return
+     */
+    private EventHandler createMouseHandler(String text) {
+        return e -> {
+            LOG.info(text + e.getEventType() + " / " +e);
+            
+        };
+    }
+
+    /**
+     * @return
+     */
+    private EventHandler<? super KeyEvent> createKeyHandler(String text) {
+        return e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                // keyPressed- enter never reaches the combo
+                LOG.info(text + e.getEventType() + " / " +e);
+            } else if (e.getCode() == KeyCode.ESCAPE) {
+                // keyPressed esc if popup showing, esc is swallowed by hiding
+                LOG.info(text + e.getEventType() + " / " +e);
+            }
+        };
     }
 
     @Override
