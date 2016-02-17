@@ -42,7 +42,18 @@ import javafx.stage.Stage;
  * - suspected/actual: commit (aka: enter) without popup been visible doesn't commit
  * 
  * New:
+ * doesn't commit edited value
+ * https://bugs.openjdk.java.net/browse/JDK-8150041
+ * 
+ * New:
  * Combo must not throw NPE when clicking the dropdown arrow twice
+ * https://bugs.openjdk.java.net/browse/JDK-8150042
+ * 
+ * New:
+ * unexpected behavior on Esc/Enter after naviging the popup
+ * - popup open/navigate/esc must cancel (commits)
+ * - popup closed/navigate/enter must commit (does nothing)
+ * https://bugs.openjdk.java.net/browse/JDK-8150046
  * 
  * Combo must commit on selecting old value
  * https://bugs.openjdk.java.net/browse/JDK-8138688
@@ -54,9 +65,7 @@ import javafx.stage.Stage;
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboCellIssuesContinued extends Application {
-
-    
-//    int count;
+  
     private Parent getContent() {
         
         ObservableList<Shape> items = FXCollections.observableArrayList(
@@ -79,54 +88,7 @@ public class ComboCellIssuesContinued extends Application {
             return tc;
         });
         table.getColumns().addAll(combo);
-        
-//        TableColumn<Shape, StrokeType> choice = new TableColumn<>("Choice");
-//        choice.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        choice.setCellFactory(ChoiceBoxTableCell.forTableColumn(StrokeType.values()));
-        
-//        TableColumn<Shape, StrokeType> comboWithHandler = new TableColumn<>("ComboWithHandler");
-//        comboWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        ObservableList<StrokeType> modifiableCombos = FXCollections.observableArrayList(StrokeType.values());
-//        comboWithHandler.setCellFactory(ComboBoxTableCell.forTableColumn(modifiableCombos));
-//        comboWithHandler.setOnEditCommit(ev -> {
-//            LOG.info("counter: " + count++ + ev.getNewValue());
-//            ev.getRowValue().setStrokeType(ev.getNewValue());
-//            modifiableCombos.remove(ev.getNewValue());
-//            if (ev.getNewValue() != null) {
-//            }
-//        });
-//        table.getColumns().addAll(comboWithHandler);
-
-//        TableColumn<Shape, StrokeType> choiceWithHandler = new TableColumn<>("ChoiceWithHandler");
-//        choiceWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        ObservableList<StrokeType> modifiableChoices =FXCollections.observableArrayList(StrokeType.values());
-//        choiceWithHandler.setCellFactory(ChoiceBoxTableCell.forTableColumn(modifiableChoices));
-//        choiceWithHandler.setOnEditCommit(ev -> {
-//            LOG.info("counter: " + count++ + ev.getNewValue());
-//            if (ev.getNewValue() != null) {
-//                ev.getRowValue().setStrokeType(ev.getNewValue());
-//                modifiableChoices.remove(ev.getNewValue());
-//            }
-//        });
-//        table.getColumns().addAll(choiceWithHandler);
-//
-//        TableColumn<Shape, StrokeType> comboFix = new TableColumn<>("fixed Combo");
-//        comboFix.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        comboFix.setCellFactory(c -> new FComboBoxTableCell<>(StrokeType.values()));
-//        table.getColumns().addAll(comboFix);
-        
-//        TableColumn<Shape, StrokeType> comboFixWithHandler = new TableColumn<>("fixed ComboHandler");
-//        comboFixWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
-//        ObservableList<StrokeType> modifiableFixed = FXCollections.observableArrayList(StrokeType.values());
-//        comboFixWithHandler.setCellFactory(c -> new FComboBoxTableCell<>(modifiableFixed));
-//        comboFixWithHandler.setOnEditCommit(ev -> {
-//            LOG.info("counter: " + count++ + ev.getNewValue());
-//            if (ev.getNewValue() == null) return;
-//            ev.getRowValue().setStrokeType(ev.getNewValue());
-//            modifiableFixed.remove(ev.getNewValue());
-//        });
-//        table.getColumns().addAll(comboFixWithHandler);
-        
+      
         Parent content = new BorderPane(table);
         return content;
     }

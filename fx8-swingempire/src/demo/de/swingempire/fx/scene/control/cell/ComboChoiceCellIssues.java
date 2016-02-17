@@ -92,10 +92,10 @@ public class ComboChoiceCellIssues extends Application {
 //        });
 //        table.getColumns().addAll(choiceWithHandler);
 
-        TableColumn<Shape, StrokeType> comboFix = new TableColumn<>("fixed Combo");
-        comboFix.setCellValueFactory(new PropertyValueFactory("strokeType"));
-        comboFix.setCellFactory(c -> new FComboBoxTableCell<>(StrokeType.values()));
-        table.getColumns().addAll(comboFix);
+//        TableColumn<Shape, StrokeType> comboFix = new TableColumn<>("fixed Combo");
+//        comboFix.setCellValueFactory(new PropertyValueFactory("strokeType"));
+//        comboFix.setCellFactory(c -> new FComboBoxTableCell<>(StrokeType.values()));
+//        table.getColumns().addAll(comboFix);
         
 //        TableColumn<Shape, StrokeType> comboFixWithHandler = new TableColumn<>("fixed ComboHandler");
 //        comboFixWithHandler.setCellValueFactory(new PropertyValueFactory("strokeType"));
