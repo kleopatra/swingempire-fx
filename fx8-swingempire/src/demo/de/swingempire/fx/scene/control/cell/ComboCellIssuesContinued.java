@@ -19,6 +19,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -26,6 +28,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -124,7 +127,14 @@ public class ComboCellIssuesContinued extends Application {
         comboBox.setOnAction(e -> {
             LOG.info("action " + comboBox.getValue());
         });
-        content.setBottom(comboBox);
+        
+        TextField field = new TextField();
+//        field.setText(null);
+        LOG.info("text? " + (field.getText() == null));
+//        TextFormatter formatter = new TextFormatter(new ComboBoxTableCell().getConverter());
+//        field.setTextFormatter(formatter);
+        HBox bottom = new HBox(10, comboBox, field);
+        content.setBottom(bottom);
         return content;
     }
 
