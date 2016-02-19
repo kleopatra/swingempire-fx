@@ -72,6 +72,8 @@ import javafx.util.StringConverter;
  * 
  * Also: test driver for XComboBoxTableCell, both not/editable combo.
  * 
+ * @see XComboBoxTableCell
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboCellIssuesContinued extends Application {

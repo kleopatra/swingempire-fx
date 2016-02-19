@@ -30,6 +30,8 @@ import javafx.util.StringConverter;
  * to inject our combo to super! we could c&p the
  * whole class to stay clean ..
  * 
+ * @see ComboCellIssuesContinued
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
