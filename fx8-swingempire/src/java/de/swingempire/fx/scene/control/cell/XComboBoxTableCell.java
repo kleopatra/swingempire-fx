@@ -19,11 +19,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.StringConverter;
 
 /**
- * PoC (and WiP :-) to make a ComboBoxTableCell behave correctly. The basic part is
+ * Prototype to make a ComboBoxTableCell behave correctly. The basic part is
  * to install low-level listeners (keyHandler on both list and combo, mouseHandler
  * on list) that do the commit/cancel as appropriate.
  * <p>
- * Beware: going dirty with reflection to inject our combo to super! we could c&p the
+ * Details: https://github.com/kleopatra/swingempire-fx/wiki/ComboBoxTableCell
+ * 
+ * <p>
+ * Beware: this particular implementation is going dirty with reflection 
+ * to inject our combo to super! we could c&p the
  * whole class to stay clean ..
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -49,6 +53,12 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         
         invokeSetFieldValue(ComboBoxTableCell.class, this, "comboBox", comboBox);
         comboBox.skinProperty().addListener((src, ov, nv) -> {
+            // PENDING JW: take care of uninstall on replacing the skin?
+            // cells are re-created often, thus not probable
+            // in the longer run, would use a custom skin anyway?
+            
+            // have to wait until skin is installed to hook listeners
+            // particularly into the list in the popup
             installComboListeners(comboBox);
         } );
         
@@ -58,11 +68,6 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
      * Install the listeners after skin is installed on combo.
      */
     private void installComboListeners(ComboBox<T> comboBox) {
-        // JW: PENDING: need to reset the formatter if the converter changes!
-        // Doesn't work anyway ...initial value in textField is empty .. why?
-//        TextFormatter<T> formatter = new TextFormatter<>(getConverter());
-//        comboBox.getEditor().setTextFormatter(formatter);
-//        comboBox.valueProperty().bind(formatter.valueProperty());
         
         // alternative: update selection on text change
         comboBox.getEditor().textProperty().addListener((src, ov, nv) -> {
@@ -138,14 +143,6 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
             comboAlias.requestFocus();
         }
         
-        // using formatter .. doesn't work
-//        comboAlias.getSelectionModel().select(getItem());
-//        LOG.info("value after startEdit: " + comboAlias.getSelectionModel().getSelectedItem() + "/" + comboAlias.getValue());
-//        Object fromFormatter = comboAlias.getEditor().getTextFormatter().getValue(); 
-//        LOG.info("from formatter: " + fromFormatter);
-//        String string = getConverter().toString(comboAlias.getValue());
-//        int length = comboAlias.getEditor().getText().length();
-//        comboAlias.getEditor().replaceText(0, length, string);
     }
 
 // ------------------ just constructors from super
