@@ -11,7 +11,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.input.KeyCode;
@@ -39,13 +38,11 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
      * If this works out, should be taken over by super.
      * 
      */
-    private void installComboBox() {
+    private ComboBox<T> createAndInstallComboBox() {
         // create combo
         ComboBox<T> comboBox = new ComboBox<>(getItems());
         // just checking: the editor is always != null
         comboBox.converterProperty().bind(converterProperty());
-        comboAlias = comboBox;
-        
         
         comboBox.editableProperty().bind(comboBoxEditableProperty());
         comboBox.setMaxWidth(Double.MAX_VALUE);
@@ -54,6 +51,8 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         comboBox.skinProperty().addListener((src, ov, nv) -> {
             installComboListeners(comboBox);
         } );
+        
+        return comboBox;
     }
     /**
      * Install the listeners after skin is installed on combo.
@@ -65,7 +64,7 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
 //        comboBox.getEditor().setTextFormatter(formatter);
 //        comboBox.valueProperty().bind(formatter.valueProperty());
         
-        // alternative: commit on text change
+        // alternative: update selection on text change
         comboBox.getEditor().textProperty().addListener((src, ov, nv) -> {
             StringConverter<T> c = comboBox.getConverter();
             // PENDING: without converter (will not happen, cbtc enforces one)
@@ -76,8 +75,16 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
             comboBox.getSelectionModel().select(o);
         });
         
+        comboBox.getEditor().focusedProperty().addListener((src, ov, nv) -> {
+            if (!nv) {
+                // PENDING JW: doesn't fully work without XTableView/XTextFieldTableCell mech!
+                commitEdit(comboBox.getValue());
+            }
+        });
+        
         ComboBoxListViewSkin<T> skin = (ComboBoxListViewSkin<T>) comboBox.getSkin();
         ListView<T> list = (ListView<T>) skin.getPopupContent();
+        // PENDING JW: need to weed out the scroll bars as core does?
         list.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
             commitEdit(comboBox.getValue());
         });
@@ -124,10 +131,10 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
     @Override
     public void startEdit() {
         if (comboAlias == null) {
-            installComboBox();
+            comboAlias = createAndInstallComboBox();
         }
         super.startEdit();
-        if (isEditing()) {
+        if (isEditing() && comboAlias != null) {
             comboAlias.requestFocus();
         }
         
