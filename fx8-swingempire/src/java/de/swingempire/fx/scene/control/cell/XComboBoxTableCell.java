@@ -44,6 +44,7 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         ComboBox<T> comboBox = new ComboBox<>(getItems());
         // just checking: the editor is always != null
         comboBox.converterProperty().bind(converterProperty());
+        comboAlias = comboBox;
         
         
         comboBox.editableProperty().bind(comboBoxEditableProperty());
@@ -53,7 +54,6 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         comboBox.skinProperty().addListener((src, ov, nv) -> {
             installComboListeners(comboBox);
         } );
-        comboAlias = comboBox;
     }
     /**
      * Install the listeners after skin is installed on combo.
@@ -61,9 +61,21 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
     private void installComboListeners(ComboBox<T> comboBox) {
         // JW: PENDING: need to reset the formatter if the converter changes!
         // Doesn't work anyway ...initial value in textField is empty .. why?
-        TextFormatter formatter = new TextFormatter(getConverter());
-        comboBox.getEditor().setTextFormatter(formatter);
+//        TextFormatter<T> formatter = new TextFormatter<>(getConverter());
+//        comboBox.getEditor().setTextFormatter(formatter);
 //        comboBox.valueProperty().bind(formatter.valueProperty());
+        
+        // alternative: commit on text change
+        comboBox.getEditor().textProperty().addListener((src, ov, nv) -> {
+            StringConverter<T> c = comboBox.getConverter();
+            // PENDING: without converter (will not happen, cbtc enforces one)
+            // or if the converter returns null (aka: can't convert)
+            // effectively clears the selectionModel, not the value
+            // need to test!
+            T o = c != null ? c.fromString(nv) : null;
+            comboBox.getSelectionModel().select(o);
+        });
+        
         ComboBoxListViewSkin<T> skin = (ComboBoxListViewSkin<T>) comboBox.getSkin();
         ListView<T> list = (ListView<T>) skin.getPopupContent();
         list.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
@@ -77,7 +89,7 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
                 // then the user types something .. what does she want on pressing
                 // enter?
                 // commit-on-typing into textField? That would deselect
-                comboBox.getEditor().commitValue();
+                // implemented in a listener to the text property
                 commitEdit(comboBox.getValue());
             } else if (e.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
@@ -115,6 +127,18 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
             installComboBox();
         }
         super.startEdit();
+        if (isEditing()) {
+            comboAlias.requestFocus();
+        }
+        
+        // using formatter .. doesn't work
+//        comboAlias.getSelectionModel().select(getItem());
+//        LOG.info("value after startEdit: " + comboAlias.getSelectionModel().getSelectedItem() + "/" + comboAlias.getValue());
+//        Object fromFormatter = comboAlias.getEditor().getTextFormatter().getValue(); 
+//        LOG.info("from formatter: " + fromFormatter);
+//        String string = getConverter().toString(comboAlias.getValue());
+//        int length = comboAlias.getEditor().getText().length();
+//        comboAlias.getEditor().replaceText(0, length, string);
     }
 
 // ------------------ just constructors from super
@@ -149,7 +173,6 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
     }
 
     private StringConverter<T> getDefaultConverter() {
-        LOG.info("getting here?");
         return (StringConverter<T>) defaultConverter;
     }
     

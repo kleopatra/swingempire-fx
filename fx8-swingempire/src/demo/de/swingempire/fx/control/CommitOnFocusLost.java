@@ -79,6 +79,7 @@ public class CommitOnFocusLost extends Application {
         Label valueLabel = new Label(); 
         valueLabel.textProperty().bind(stringExpression(comboBox.valueProperty()));
         
+//        comboBox.getSelectionModel().select(items.get(0));
         String bound = bind ? " (bound): " : ": ";
         String labelText = "ComboBox" + bound;
 

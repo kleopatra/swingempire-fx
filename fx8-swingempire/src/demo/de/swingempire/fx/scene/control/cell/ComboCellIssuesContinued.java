@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -20,13 +21,11 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Arc;
@@ -34,6 +33,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 /**
  * Combo/Choice must be focused after starting edit, reported
@@ -110,16 +110,27 @@ public class ComboCellIssuesContinued extends Application {
         
         // quick check to verify combo's value == action == selected notiication 
         ComboBox comboBox = new ComboBox(FXCollections.observableArrayList(names));
-        comboBox.setEditable(true);
-        comboBox.addEventHandler(KeyEvent.KEY_RELEASED, createKeyHandler("Handler "));
-        comboBox.addEventHandler(KeyEvent.KEY_PRESSED, createKeyHandler("Handler "));
-        comboBox.addEventFilter(KeyEvent.KEY_RELEASED, createKeyHandler("Filter "));
-        comboBox.addEventFilter(KeyEvent.KEY_PRESSED, createKeyHandler("Filter "));
-        
-        comboBox.addEventHandler(MouseEvent.MOUSE_RELEASED, createMouseHandler("Handler "));
-        comboBox.addEventHandler(MouseEvent.MOUSE_PRESSED, createMouseHandler("Handler "));
-        comboBox.addEventFilter(MouseEvent.MOUSE_RELEASED, createMouseHandler("Filter "));
-        comboBox.addEventFilter(MouseEvent.MOUSE_PRESSED, createMouseHandler("Filter "));
+        boolean editable = true;
+        if (editable) {
+            comboBox.setEditable(true);
+            // update selection on change of text
+            ChangeListener<String> textListener = (src, ov, nv) -> {
+                LOG.info("getting text: " + ov + "/" + nv);
+                StringConverter c = comboBox.getConverter();
+                Object o = c != null ? c.fromString(nv) : nv;
+                comboBox.getSelectionModel().select(o);
+            };
+            comboBox.getEditor().textProperty().addListener(textListener);
+        }
+//        comboBox.addEventHandler(KeyEvent.KEY_RELEASED, createKeyHandler("Handler "));
+//        comboBox.addEventHandler(KeyEvent.KEY_PRESSED, createKeyHandler("Handler "));
+//        comboBox.addEventFilter(KeyEvent.KEY_RELEASED, createKeyHandler("Filter "));
+//        comboBox.addEventFilter(KeyEvent.KEY_PRESSED, createKeyHandler("Filter "));
+//        
+//        comboBox.addEventHandler(MouseEvent.MOUSE_RELEASED, createMouseHandler("Handler "));
+//        comboBox.addEventHandler(MouseEvent.MOUSE_PRESSED, createMouseHandler("Handler "));
+//        comboBox.addEventFilter(MouseEvent.MOUSE_RELEASED, createMouseHandler("Filter "));
+//        comboBox.addEventFilter(MouseEvent.MOUSE_PRESSED, createMouseHandler("Filter "));
         
         comboBox.valueProperty().addListener((src, ov, nv) -> {
             LOG.info("new value: " + nv);
