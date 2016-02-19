@@ -70,6 +70,8 @@ import javafx.util.StringConverter;
  * Combo must cope with modification of items in edit handler
  * https://bugs.openjdk.java.net/browse/JDK-8138747
  * 
+ * Also: test driver for XComboBoxTableCell, both not/editable combo.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboCellIssuesContinued extends Application {
@@ -97,7 +99,7 @@ public class ComboCellIssuesContinued extends Application {
         });
         table.getColumns().addAll(combo); 
         
-        TableColumn<Shape, String> fixedCombo = new TableColumn<>("fixedCombo");
+        TableColumn<Shape, String> fixedCombo = new TableColumn<>("fixedCombo (editable)");
         fixedCombo.setCellValueFactory(new PropertyValueFactory("id"));
         fixedCombo.setCellFactory(p -> {
             ComboBoxTableCell tc = new XComboBoxTableCell(names.toArray());
@@ -105,23 +107,33 @@ public class ComboCellIssuesContinued extends Application {
             return tc;
         });
         table.getColumns().addAll(fixedCombo); 
+        
+        TableColumn<Shape, String> fixedNotEditable = new TableColumn<>("fixedCombo (not editable)");
+        fixedNotEditable.setCellValueFactory(new PropertyValueFactory("id"));
+        fixedNotEditable.setCellFactory(p -> {
+            ComboBoxTableCell tc = new XComboBoxTableCell(names.toArray());
+            tc.setComboBoxEditable(false);
+            return tc;
+        });
+        table.getColumns().addAll(fixedNotEditable); 
       
         BorderPane content = new BorderPane(table);
         
         // quick check to verify combo's value == action == selected notiication 
+        // all below is just to analyse combo's behavior
         ComboBox comboBox = new ComboBox(FXCollections.observableArrayList(names));
-        boolean editable = true;
-        if (editable) {
-            comboBox.setEditable(true);
-            // update selection on change of text
-            ChangeListener<String> textListener = (src, ov, nv) -> {
-                LOG.info("getting text: " + ov + "/" + nv);
-                StringConverter c = comboBox.getConverter();
-                Object o = c != null ? c.fromString(nv) : nv;
-                comboBox.getSelectionModel().select(o);
-            };
-            comboBox.getEditor().textProperty().addListener(textListener);
-        }
+//        boolean editable = true;
+//        if (editable) {
+//            comboBox.setEditable(true);
+//            // update selection on change of text
+//            ChangeListener<String> textListener = (src, ov, nv) -> {
+//                LOG.info("getting text: " + ov + "/" + nv);
+//                StringConverter c = comboBox.getConverter();
+//                Object o = c != null ? c.fromString(nv) : nv;
+//                comboBox.getSelectionModel().select(o);
+//            };
+//            comboBox.getEditor().textProperty().addListener(textListener);
+//        }
 //        comboBox.addEventHandler(KeyEvent.KEY_RELEASED, createKeyHandler("Handler "));
 //        comboBox.addEventHandler(KeyEvent.KEY_PRESSED, createKeyHandler("Handler "));
 //        comboBox.addEventFilter(KeyEvent.KEY_RELEASED, createKeyHandler("Filter "));
@@ -139,12 +151,7 @@ public class ComboCellIssuesContinued extends Application {
             LOG.info("action " + comboBox.getValue());
         });
         
-        TextField field = new TextField();
-//        field.setText(null);
-        LOG.info("text? " + (field.getText() == null));
-//        TextFormatter formatter = new TextFormatter(new ComboBoxTableCell().getConverter());
-//        field.setTextFormatter(formatter);
-        HBox bottom = new HBox(10, comboBox, field);
+        HBox bottom = new HBox(10, comboBox);
         content.setBottom(bottom);
         return content;
     }
