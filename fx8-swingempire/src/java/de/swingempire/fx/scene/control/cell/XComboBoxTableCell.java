@@ -9,8 +9,9 @@ import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
+import javafx.scene.control.Skin;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.input.KeyCode;
@@ -30,6 +31,10 @@ import javafx.util.StringConverter;
  * to inject our combo to super! we could c&p the
  * whole class to stay clean ..
  * 
+ * <p>
+ * fixed in http://hg.openjdk.java.net/openjfx/9-dev/rt/rev/4d8a1695b277
+ * tiny glitch: no commit on clicking on item in list
+ * 
  * @see ComboCellIssuesContinued
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -47,9 +52,7 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
     private ComboBox<T> createAndInstallComboBox() {
         // create combo
         ComboBox<T> comboBox = new ComboBox<>(getItems());
-        // just checking: the editor is always != null
         comboBox.converterProperty().bind(converterProperty());
-        
         comboBox.editableProperty().bind(comboBoxEditableProperty());
         comboBox.setMaxWidth(Double.MAX_VALUE);
         
@@ -66,74 +69,92 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         
         return comboBox;
     }
+    
     /**
      * Install the listeners after skin is installed on combo.
      */
     private void installComboListeners(ComboBox<T> comboBox) {
         
         // alternative: update selection on text change
-        comboBox.getEditor().textProperty().addListener((src, ov, nv) -> {
-            StringConverter<T> c = comboBox.getConverter();
-            // PENDING: without converter (will not happen, cbtc enforces one)
-            // or if the converter returns null (aka: can't convert)
-            // effectively clears the selectionModel, not the value
-            // need to test!
-            T o = c != null ? c.fromString(nv) : null;
-            comboBox.getSelectionModel().select(o);
-        });
+        // the actual fix by Jonathan doesn't need this:
+        // text is committed directly out from the textField
+//        comboBox.getEditor().textProperty().addListener((src, ov, nv) -> {
+//            StringConverter<T> c = comboBox.getConverter();
+//            // PENDING: without converter (will not happen, cbtc enforces one)
+//            // or if the converter returns null (aka: can't convert)
+//            // effectively clears the selectionModel, not the value
+//            // need to test!
+//            T o = c != null ? c.fromString(nv) : null;
+//            comboBox.getSelectionModel().select(o);
+//        });
         
+        // implementing commitOnFocusLost
+        // Note JW: doesn't fully work without XTableView/XTextFieldTableCell mech!
         comboBox.getEditor().focusedProperty().addListener((src, ov, nv) -> {
             if (!nv) {
-                // PENDING JW: doesn't fully work without XTableView/XTextFieldTableCell mech!
-                commitEdit(comboBox.getValue());
+                //commitEdit(comboBox.getValue());
+                tryComboBoxCommit(comboBox);
             }
         });
         
-        ComboBoxListViewSkin<T> skin = (ComboBoxListViewSkin<T>) comboBox.getSkin();
-        ListView<T> list = (ListView<T>) skin.getPopupContent();
+        ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) comboBox.getSkin();
+        Node list = skin.getPopupContent();
         // PENDING JW: need to weed out the scroll bars as core does?
+        // without this handler, the edit isn't committed on clicking into
+        // the popup of an editable combo
         list.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
             commitEdit(comboBox.getValue());
-        });
-        list.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                // PENDING JW: not yet correct - 
-                //have to commit a potentially edited value in the textfield first
-                // needs more thought: if the popup is open, a value selected
-                // then the user types something .. what does she want on pressing
-                // enter?
-                // commit-on-typing into textField? That would deselect
-                // implemented in a listener to the text property
-                commitEdit(comboBox.getValue());
-            } else if (e.getCode() == KeyCode.ESCAPE) {
-                cancelEdit();
-            }
         });
         // filter release is what we get always ...  
         comboBox.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 // PENDING JW: not entirely certain if the textField 
                 // has already committed in all cased
-                commitEdit(comboBox.getValue());
+                // commitEdit(comboBox.getValue());
+                // fix by Jonathan
+                tryComboBoxCommit(comboBox);
             } else if (e.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
             }
             
         });
     }
-    
-    private static void invokeSetFieldValue(Class declaringClass, Object target, String name, Object value) {
-        try {
-            Field field = declaringClass.getDeclaredField(name);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+
+    /**
+     * This is the actual fix implemented in 
+     * http://hg.openjdk.java.net/openjfx/9-dev/rt/rev/4d8a1695b277
+     * 
+     * The idea is to commit directly out off the textField for an 
+     * editable box, so this can be called from all locations that
+     * are interpreted as a user commit gesture, f.i. in the
+     * enter handler (event filter on combo) or on focusLost.
+     */
+    private void tryComboBoxCommit(ComboBox<T> comboBox) {
+        StringConverter<T> c = comboBox.getConverter();
+        if (comboBox.isEditable() && c != null) {
+            T nv = c.fromString(comboBox.getEditor().getText());
+            commitEdit(nv);
+        } else {
+            commitEdit(comboBox.getValue());
         }
     }
+    
     /**
-     * Overridden to hook into creation of comboBox.
+     * Overridden to create and return XTableCellSkin. Takes care of
+     * commitOnFocusLost if another cell in the table is clicked.
+     * 
+     * For a stand-alone fix of ComboBoxTableCell, comment to
+     * return super.
+     */
+    @Override
+    protected Skin<?> createDefaultSkin() {
+        return new XHackTableCellSkin<>(this);
+//        return super.createDefaultSkin();
+    }
+    
+    /**
+     * Overridden to hook into creation of comboBox and 
+     * request focus onto the combo if editing started.
      */
     @Override
     public void startEdit() {
@@ -145,6 +166,17 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
             comboAlias.requestFocus();
         }
         
+    }
+
+    private static void invokeSetFieldValue(Class declaringClass, Object target, String name, Object value) {
+        try {
+            Field field = declaringClass.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 // ------------------ just constructors from super

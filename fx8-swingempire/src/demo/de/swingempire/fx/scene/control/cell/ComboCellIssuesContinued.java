@@ -19,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -87,10 +88,21 @@ public class ComboCellIssuesContinued extends Application {
         List<String> names = items.stream().map(Node::getId).collect(Collectors.toList());
         TableView<Shape> table = new TableView<>(items);
         table.setEditable(true);
+        
+        // edit events are targeted directly to the tableColumn, table doesn't see it
+        table.addEventHandler(CellEditEvent.ANY, e -> System.out.println("edit handler on table: " + e));
+        table.addEventFilter(CellEditEvent.ANY, e -> System.out.println("edit filter on table: " + e));
+        
         TableColumn<Shape, String> plain = new TableColumn<>("Plain");
         plain.setCellValueFactory(new PropertyValueFactory("id"));
         plain.setCellFactory(TextFieldTableCell.forTableColumn());
         table.getColumns().addAll(plain);
+        // edit events are targeted directly to the tableColumn, table doesn't see it
+        plain.addEventHandler(CellEditEvent.ANY, e -> System.out.println("edit handler on column: " + e));
+        plain.setOnEditCommit(e -> System.out.println("grabbing the commit"));
+        // column has no filter
+//        plain.addEventFilter(CellEditEvent.ANY, e -> System.out.println("edit filter on table: " + e));
+        
         
         TableColumn<Shape, String> combo = new TableColumn<>("Combo");
         combo.setCellValueFactory(new PropertyValueFactory("id"));
@@ -186,7 +198,7 @@ public class ComboCellIssuesContinued extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(getContent()));
+        primaryStage.setScene(new Scene(getContent(), 500, 300));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }
