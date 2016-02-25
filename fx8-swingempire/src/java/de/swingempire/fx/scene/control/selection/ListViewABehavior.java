@@ -39,6 +39,9 @@ import static javafx.scene.input.KeyCode.*;
 
 /**
  * 
+ * NOTE JW: this is jdk8 only - nothing done to get up to latest 8 version in a long time!
+ * 
+ * -------------------
  * Copy from 8u20 and changed to rely on selectionModel to cope with anchor. 
  * The driving force is to 
  * replace anchor handling here by anchor handling in selectionModel. See
