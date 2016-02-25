@@ -21,6 +21,12 @@ import javafx.scene.input.MouseEvent;
  * - so we hack super and call dispose.
  * - not good enough by itself, because inputMap doesn't clenaup internals on removing mappings
  * - until that's fixed, we need to reflectively remove the mapping from internals
+ * <p>
+ * 
+ * <b>Note</b>: a TableCell that's using this skin (or the un-hacked version XTableCellSkin
+ * once the extending bug is fixed)
+ * must also listen to a table's terminateEdit property (implemented in XTableView) and
+ * commit as appropriate!
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -57,6 +63,9 @@ public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T>  {
     private void replaceBehavior(XTableCellBehavior<S, T> xTableCellBehavior) {
         BehaviorBase<?> old = (BehaviorBase<?>) invokeGetFieldValue(TableCellSkin.class, this, "behavior");
         if (old != null) {
+            // alternatively: as long as the inputMap is not a public property of the
+            // Node, the behavior is the only collaborator, disposing all mapping might help:
+            old.getInputMap().dispose();
             // this removes all mappings, nothing left
             // old.getInputMap().dispose();
             // this removes the defaults (mappings are empty)
@@ -66,7 +75,7 @@ public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T>  {
             old.dispose();
             // the "something" is a left-over reference in InputMap's internals
             // need to hack out
-            cleanupInputMap(old.getInputMap(), MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_RELEASED);
+//            cleanupInputMap(old.getInputMap(), MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_RELEASED);
         }
         behaviorBase = new XTableCellBehavior<>(getSkinnable());
     }

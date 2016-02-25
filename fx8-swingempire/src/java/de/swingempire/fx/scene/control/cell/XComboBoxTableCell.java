@@ -139,18 +139,6 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         }
     }
     
-    /**
-     * Overridden to create and return XTableCellSkin. Takes care of
-     * commitOnFocusLost if another cell in the table is clicked.
-     * 
-     * For a stand-alone fix of ComboBoxTableCell, comment to
-     * return super.
-     */
-    @Override
-    protected Skin<?> createDefaultSkin() {
-        return new XHackTableCellSkin<>(this);
-//        return super.createDefaultSkin();
-    }
     
     /**
      * Overridden to hook into creation of comboBox and 
