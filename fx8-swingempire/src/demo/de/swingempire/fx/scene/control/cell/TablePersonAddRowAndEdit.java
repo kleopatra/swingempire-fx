@@ -69,7 +69,8 @@ public class TablePersonAddRowAndEdit extends Application {
 
    
     private Parent getContent() {
-
+//        InputMap m;
+//        ListViewSkin s;
         TableView<Person> table = new TableView<>();
         table.setItems(data);
         table.setEditable(true);

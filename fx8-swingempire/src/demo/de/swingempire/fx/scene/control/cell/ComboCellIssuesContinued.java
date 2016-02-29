@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -18,13 +17,15 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.PopupControl;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
+import javafx.scene.control.skin.ComboBoxPopupControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -34,7 +35,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 /**
  * Combo/Choice must be focused after starting edit, reported
@@ -135,7 +135,22 @@ public class ComboCellIssuesContinued extends Application {
         
         // quick check to verify combo's value == action == selected notiication 
         // all below is just to analyse combo's behavior
-        ComboBox comboBox = new ComboBox(FXCollections.observableArrayList(names));
+        ComboBox<?> comboBox = new ComboBox(FXCollections.observableArrayList(names));
+
+        // check if we can keep the popup open
+        // http://stackoverflow.com/q/35650600/203657 
+//        comboBox.setOnShown(e -> {
+//            ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) comboBox.getSkin();
+//            skin.setHideOnClick(false);
+//            // access reflectively
+//             PopupControl popup = (PopupControl) 
+//                     FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, skin, "getPopup");
+//
+//             popup.setConsumeAutoHidingEvents(false);
+//             popup.setAutoHide(false);
+////             popup.setAutoFix(true);
+//             popup.setHideOnEscape(false);
+//        });   
 //        boolean editable = true;
 //        if (editable) {
 //            comboBox.setEditable(true);
