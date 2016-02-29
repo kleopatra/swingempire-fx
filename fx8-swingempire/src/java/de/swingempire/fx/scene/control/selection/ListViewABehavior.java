@@ -301,7 +301,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * untested so far.
      */
     @Override public void mousePressed(MouseEvent e) {
-        super.mousePressed(e);
+        super.mousePressedInitial(e);
 // CHANGED JW: commented anchor setting        
 //        if (! e.isShiftDown() && ! e.isSynthesized()) {
 //            int index = getControl().getSelectionModel().getSelectedIndex();

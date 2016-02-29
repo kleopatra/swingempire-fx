@@ -79,7 +79,7 @@ public class PaginationRefBehavior extends BehaviorBase<Pagination> {
      **************************************************************************/
 
     @Override public void mousePressed(MouseEvent e) {
-        super.mousePressed(e);
+        super.mousePressedInitial(e);
         Pagination p = getControl();
         p.requestFocus();
     }

@@ -106,7 +106,7 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
      */
     @Override public void mousePressed(MouseEvent e) {
         ChoiceBoxX<T> choiceButton = getControl();
-        super.mousePressed(e);
+        super.mousePressedInitial(e);
         if (choiceButton.isFocusTraversable()) choiceButton.requestFocus();
     }
 

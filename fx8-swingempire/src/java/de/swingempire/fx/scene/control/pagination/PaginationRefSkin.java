@@ -662,7 +662,7 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
             getStyleClass().setAll("pagination-control");
 
             // redirect mouse events to behavior
-            addEventHandler(MouseEvent.MOUSE_PRESSED,  (e) -> getBehavior().mousePressed(e));
+            addEventHandler(MouseEvent.MOUSE_PRESSED,  (e) -> getBehavior().mousePressedInitial(e));
             addEventHandler(MouseEvent.MOUSE_RELEASED, (e) -> getBehavior().mouseReleased(e));
             addEventHandler(MouseEvent.MOUSE_ENTERED,  (e) -> getBehavior().mouseEntered(e));
             addEventHandler(MouseEvent.MOUSE_EXITED,   (e) -> getBehavior().mouseExited(e));
