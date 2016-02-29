@@ -54,11 +54,11 @@ public class ComboDigBlowInU40 extends Application {
             DebugUtils.printSelectionState(core);
         });
         
-        Pane xLane = new HBox(new Label("combo boxX"), box);
-        Pane coreLane = new HBox(new Label("combo core"), core);
+        Pane xLane = new HBox(10, new Label("combo boxX"), box);
+        Pane coreLane = new HBox(10, new Label("combo core"), core);
         
-        Pane buttonLane = new HBox(log);
-        return new VBox(xLane, coreLane, buttonLane);
+        Pane buttonLane = new HBox(10, log);
+        return new VBox(10, coreLane, xLane, buttonLane);
     }
     
     @Override

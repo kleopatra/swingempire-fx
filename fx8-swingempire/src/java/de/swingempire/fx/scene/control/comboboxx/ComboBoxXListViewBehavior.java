@@ -32,15 +32,22 @@ package de.swingempire.fx.scene.control.comboboxx;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.SelectionModel;
-
 import com.sun.javafx.scene.control.behavior.ComboBoxBaseBehavior;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import static javafx.scene.input.KeyCode.*;
 import static javafx.scene.input.KeyEvent.*;
 
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.SelectionModel;
+
+/**
+ * PENDING JW: suspect that copied only due to coupling - pre-9, behaviour expected
+ * ComboBoxListViewSkin. Still need it, because it expects control as ComboBox -
+ * here it's ComboBoxX, a complete re-write.
+ * 
+ * Plain C&P of core class?
+ */
 public class ComboBoxXListViewBehavior<T> extends ComboBoxBaseBehavior<T> {
 
     /***************************************************************************

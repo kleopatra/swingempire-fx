@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
+import de.swingempire.fx.scene.control.selection.ListViewAnchored;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -27,15 +29,11 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.skin.ComboBoxBaseSkin;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-
-import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
-
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
-import de.swingempire.fx.scene.control.selection.ListViewAnchored;
 
 /**
  * @author Jeanette Winzenburg, Berlin

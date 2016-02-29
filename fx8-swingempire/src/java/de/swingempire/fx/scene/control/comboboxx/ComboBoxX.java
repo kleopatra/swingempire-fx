@@ -13,6 +13,10 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.FakeFocusTextField;
+
+import de.swingempire.fx.property.BugPropertyAdapters;
+import de.swingempire.fx.property.PathAdapter;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -33,17 +37,11 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 //import javafx.scene.accessibility.Attribute;
 //import javafx.scene.accessibility.Role;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-
-import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-
-import de.swingempire.fx.property.BugPropertyAdapters;
-import de.swingempire.fx.property.PathAdapter;
-import de.swingempire.fx.util.DebugUtils;
 
 /**
  * C&P'ed core 8u20 to experiment with cleanup ideas.
@@ -465,7 +463,7 @@ public class ComboBoxX<T> extends ComboBoxBase<T> {
     public final ReadOnlyObjectProperty<TextField> editorProperty() { 
         if (editor == null) {
             editor = new ReadOnlyObjectWrapper<TextField>(this, "editor");
-            textField = new ComboBoxListViewSkin.FakeFocusTextField();
+            textField = new FakeFocusTextField();
             editor.set(textField);
         }
         return editor.getReadOnlyProperty(); 

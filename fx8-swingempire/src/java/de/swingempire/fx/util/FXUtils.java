@@ -103,6 +103,22 @@ public class FXUtils {
     }
     
     /**
+     * Reflectively access method without paramters.
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the method name
+     */
+    public static void invokeMethod(Class declaringClass, Object target, String name) {
+        try {
+            Method method = declaringClass.getDeclaredMethod(name);
+            method.setAccessible(true);
+            method.invoke(target);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    /**
      * Reflectively access hidden method value with a single parameter.
      * 
      * @param declaringClass the declaring class
