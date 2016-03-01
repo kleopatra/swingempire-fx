@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
+import java.lang.reflect.Field;
+
 /*
  * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
@@ -15,25 +17,33 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.Properties;
 import com.sun.javafx.scene.control.behavior.ComboBoxBaseBehavior;
 
 import de.swingempire.fx.property.PathAdapter;
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.css.Styleable;
 import javafx.event.ActionEvent;
 import javafx.event.EventTarget;
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PopupControl;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Skin;
+import javafx.scene.control.Skinnable;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.ComboBoxPopupControl;
 import javafx.scene.control.skin.ListViewSkin;
@@ -41,6 +51,7 @@ import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
@@ -79,7 +90,7 @@ import javafx.util.StringConverter;
  * <li> commented everything related to textField
  * <li> hacking around updateEditable
  * <li> hacking around updateDisplayNode
- * 
+ * <li> hacking around getBehavior being private api (rightly so!)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -304,7 +315,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         // even then we need to call updateEditable - which is package-private
         registerChangeListener(control.editableProperty(), e -> updateEditableHack());
 
-        PopupControl popup = invokeGetPopup();
+        injectPopup();
     }
 
     /**
@@ -313,25 +324,99 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
      * NPE in custom skins. Actually, the getter must be package private because Behavior
      * is internal, must not seep into public api. 
      * <p>
-     * One hack out here is to replace super's api by a custom (leaving the problem, though, 
-     * and there are other places that register handlers (f.i. on the arrow).
-     *  <p>
      *  
+     * hack around NPE on hiding: completely replace the popupControl that's
+     * created by super.
+     * The creation code for the popup is copied from core, it's access
+     * to behavior grabbing our custom behavior vs. using super's package
+     * private method.
+     * 
+     * Note: if the combo is editable, make sure the editability is set only 
+     * after the skin is installed!
+     * 
+     * <p>
+     * reported: 
+     * https://bugs.openjdk.java.net/browse/JDK-8150951
+     * 
+     * <p>
      * How to really solve this? Are the mousePressed(...) methods in XXBehavior to remain after
      * a complete move to InputMap? Suspect not: all should have custom semantic methods that
      * can be invoked by Mappings.   
      *  
-     * @return
      */
-    private PopupControl invokeGetPopup() {
-        PopupControl popup = (PopupControl) FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, this, "getPopup");
-//        popup.set
-        return popup;
+    private void injectPopup() {
+        PopupControl popup = new PopupControl() {
+            @Override public Styleable getStyleableParent() {
+                return getControl();
+            }
+            {
+                setSkin(new Skin<Skinnable>() {
+                    @Override public Skinnable getSkinnable() { return getControl(); }
+                    @Override public Node getNode() { return getPopupContent(); }
+                    @Override public void dispose() { }
+                });
+            }
+        };
+        popup.getStyleClass().add(Properties.COMBO_BOX_STYLE_CLASS);
+        popup.setConsumeAutoHidingEvents(false);
+        popup.setAutoHide(true);
+        popup.setAutoFix(true);
+        popup.setHideOnEscape(true);
+        popup.setOnAutoHide(e -> behavior.onAutoHide(popup));
+        popup.addEventHandler(MouseEvent.MOUSE_CLICKED, t -> {
+            // RT-18529: We listen to mouse input that is received by the popup
+            // but that is not consumed, and assume that this is due to the mouse
+            // clicking outside of the node, but in areas such as the
+            // dropshadow.
+            behavior.onAutoHide(popup);
+        });
+        popup.addEventHandler(WindowEvent.WINDOW_HIDDEN, t -> {
+            // Make sure the accessibility focus returns to the combo box
+            // after the window closes.
+            getSkinnable().notifyAccessibleAttributeChanged(AccessibleAttribute.FOCUS_NODE);
+        });
+
+        // Fix for RT-21207
+        // PENDING JW: do nothing .. needs further hacking
+        InvalidationListener layoutPosListener = o -> {
+//            popupNeedsReconfiguring = true;
+//            reconfigurePopup();
+        };
+        getSkinnable().layoutXProperty().addListener(layoutPosListener);
+        getSkinnable().layoutYProperty().addListener(layoutPosListener);
+        getSkinnable().widthProperty().addListener(layoutPosListener);
+        getSkinnable().heightProperty().addListener(layoutPosListener);
+
+        // RT-36966 - if skinnable's scene becomes null, ensure popup is closed
+        getSkinnable().sceneProperty().addListener(o -> {
+            if (((ObservableValue)o).getValue() == null) {
+                hide();
+            }
+        });
+        invokeSetPopup(popup);
     }
+    
+    private void invokeSetPopup(PopupControl popup) {
+        Class<?> declaringClass = ComboBoxPopupControl.class;
+        try {
+            Field field = declaringClass.getDeclaredField("popup");
+            field.setAccessible(true);
+            field.set(this, popup);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // keeping compiler happy ..
+    private ComboBoxBase<T> getControl() {
+        return getSkinnable();
+    }
+
 
     protected ComboBoxBaseBehavior<T> getXBehavior() {
         return behavior;
     }
+    
     private PathAdapter<SingleSelectionModel<T>, Number> selectedIndexPath;
     
     
