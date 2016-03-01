@@ -11,27 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreBehavior;
 import static org.junit.Assert.*;
 
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreBehavior;
+import de.swingempire.fx.util.FXUtils;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.Skin;
+
 /**
+ * PENDING JW: needs real update to jdk9 - until now only made the compiler 
+ * happy ;-)
+ * 
+ * -------
  * This adds bowel-testing of ListViewBehavior (instead of life behavior testing
  * with f.i. JemmyFx) - might break with any update version!
  * 
@@ -315,6 +319,8 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
     }
 
     /**
+     * PENDING JW: update to jdk9 api untested.
+     * 
      * Refectively invokes action method on behavior
      * 
      * @param name method name
@@ -324,8 +330,11 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
      */
     protected void invokeBehavior(String name) throws NoSuchMethodException,
         IllegalAccessException, InvocationTargetException {
-        BehaviorSkinBase skin = (BehaviorSkinBase) getView().getSkin();
-        BehaviorBase behavior = skin.getBehavior();
+        Skin<?> skin = (Skin<?>) getView().getSkin();
+        // jdk9
+        BehaviorBase behavior = (BehaviorBase) FXUtils.invokeGetFieldValue(skin.getClass(), skin, "behavior");
+        // jdk8
+//        BehaviorBase behavior = skin.getBehavior();
         Method method = behavior.getClass().getDeclaredMethod(name);
         method.setAccessible(true);
         method.invoke(behavior);
@@ -345,8 +354,10 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
      */
     protected void invokeBehavior(String name, boolean param) throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        BehaviorSkinBase skin = (BehaviorSkinBase) getView().getSkin();
-        BehaviorBase behavior = skin.getBehavior();
+        Skin<?> skin = (Skin<?>) getView().getSkin();
+        // jdk9
+        BehaviorBase behavior = (BehaviorBase) FXUtils.invokeGetFieldValue(skin.getClass(), skin, "behavior");
+//        BehaviorBase behavior = skin.getBehavior();
         Class<? extends BehaviorBase> behaviorClass = behavior.getClass();
         Method method = behaviorClass.getDeclaredMethod(name, boolean.class);
         method.setAccessible(true);
@@ -355,8 +366,10 @@ public abstract class AbstractListMultipleSelectionIssues<V extends ListView>
 
     protected void invokeKey(String name) throws Exception {
         if (!needsKey) return;
-        BehaviorSkinBase skin = (BehaviorSkinBase) getView().getSkin();
-        BehaviorBase behavior = skin.getBehavior();
+        Skin<?> skin = (Skin<?>) getView().getSkin();
+        // jdk9
+        BehaviorBase behavior = (BehaviorBase) FXUtils.invokeGetFieldValue(skin.getClass(), skin, "behavior");
+//        BehaviorBase behavior = skin.getBehavior();
         Class<? extends BehaviorBase> behaviorClass = behavior.getClass();
         Field field = behaviorClass.getDeclaredField(name);
         field.setAccessible(true);

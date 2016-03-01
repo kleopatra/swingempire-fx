@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 
@@ -27,6 +28,7 @@ public class ChoiceItemsView {
     @FXML
     private ChoiceBox<String> secondCB;
     public void init() {
+        JFXPanel p;
       Set<String> keySet = Charset.availableCharsets().keySet();
       List<String> list = new ArrayList<>(keySet);
       // smaller subset is just fine
