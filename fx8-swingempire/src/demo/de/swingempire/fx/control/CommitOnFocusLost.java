@@ -4,6 +4,12 @@
  */
 package de.swingempire.fx.control;
 
+import java.util.logging.Logger;
+
+import static javafx.beans.binding.StringExpression.*;
+import static javafx.scene.control.TextFormatter.*;
+
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,9 +26,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
-import static javafx.beans.binding.StringExpression.*;
-import static javafx.scene.control.TextFormatter.*;
 
 /**
  * Commit values in editable Spinner/ComboBox/TextField via TextFormatter.
@@ -57,6 +60,11 @@ public class CommitOnFocusLost extends Application {
         TextField control = new TextField();
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
         control.setTextFormatter(formatter);
+        control.focusedProperty().addListener((src, ov, nv) -> {
+            if (!nv) {
+                LOG.info("formatter/combo: " + formatter.getValue() + " / " + control.getText());
+            }
+        });
         Label valueLabel = new Label(); 
         valueLabel.textProperty().bind(stringExpression(formatter.valueProperty()));
 
@@ -73,6 +81,14 @@ public class CommitOnFocusLost extends Application {
         // don't need in jdk9b99 JDK-8120120 (aka RT-21454) and JDK-8136838 are fixed
         TextFormatter<String> formatter = new TextFormatter<>(comboBox.getConverter());
         comboBox.getEditor().setTextFormatter(formatter);
+        /* quick check: sequence of listener notification
+        * https://bugs.openjdk.java.net/browse/JDK-8151129
+        */ 
+        comboBox.focusedProperty().addListener((src, ov, nv) -> {
+            if (!nv) {
+                LOG.info("formatter/combo: " + formatter.getValue() + " / " + comboBox.getValue());
+            }
+        });
         if (bind) {
           comboBox.valueProperty().bindBidirectional(formatter.valueProperty());
         }
@@ -123,4 +139,8 @@ public class CommitOnFocusLost extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(CommitOnFocusLost.class.getName());
 }

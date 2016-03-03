@@ -92,6 +92,13 @@ public class XComboBoxTableCell<S, T> extends ComboBoxTableCell<S, T> {
         // Note JW: doesn't fully work without XTableView/XTextFieldTableCell mech!
         comboBox.getEditor().focusedProperty().addListener((src, ov, nv) -> {
             if (!nv) {
+                // Note: committing the combo's value is valid only if we had 
+                // updated the selection in the listener to the textProperty!
+                // Bug or feature: at the time of receiving the focusLost, the 
+                // text is not yet committed to the value
+                // https://bugs.openjdk.java.net/browse/JDK-8151129
+                // Note to self: that's probably the reason why a textFormatter
+                // didn't work at all!
                 //commitEdit(comboBox.getValue());
                 tryComboBoxCommit(comboBox);
             }

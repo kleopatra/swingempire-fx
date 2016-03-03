@@ -4,18 +4,20 @@
  */
 package de.swingempire.fx.scene.focus;
 
+import com.sun.javafx.scene.traversal.Algorithm;
+import com.sun.javafx.scene.traversal.Direction;
+import com.sun.javafx.scene.traversal.ParentTraversalEngine;
+import com.sun.javafx.scene.traversal.TraversalContext;
+
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.sun.javafx.scene.traversal.Algorithm;
-import com.sun.javafx.scene.traversal.Direction;
-import com.sun.javafx.scene.traversal.ParentTraversalEngine;
-import com.sun.javafx.scene.traversal.TraversalContext;
 
 /**
  * Requirement: configure focus traversal
@@ -44,7 +46,12 @@ public class FocusTraversal extends Application {
             public Node select(Node node, Direction dir,
                     TraversalContext context) {
                 Node next = trav(node, dir);
+//                System.out.println("owner? " + node);
                 return next;
+                // returning null will disable navigation inside the parent
+                // (but not outside, focus will move to parent's sibling if any)
+                // not really working, need to look somewhere else
+//                return null;
             }
             
             /**
@@ -90,7 +97,10 @@ public class FocusTraversal extends Application {
         ParentTraversalEngine engine = new ParentTraversalEngine(vb, algo);
         vb.setImpl_traversalEngine(engine);
 
+        VBox sibling = new VBox(new TextField("we are family!")); 
         vb.getChildren().addAll(button1, button2, button3);
+        
+//        HBox content = new HBox(vb, sibling);
         return vb;
     }
 

@@ -7,11 +7,13 @@ package de.swingempire.fx.junit;
 
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javax.swing.SwingUtilities;
+//import javafx.embed.swing.JFXPanel;
+//import javax.swing.SwingUtilities;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import com.sun.javafx.application.PlatformImpl;
 
 /**
 * A JUnit {@link Rule} for running tests on the JavaFX thread and performing
@@ -25,7 +27,15 @@ import org.junit.runners.model.Statement;
 * http://andrewtill.blogspot.de/2012/10/junit-rule-for-javafx-controller-testing.html
 * @author Andy Till
 *
-* Original.
+* Original is the one with instantiating a JFXPanel.
+* 
+* <p>
+* PENDING JW:
+* JDK9 - problem with running Swing on main
+* http://stackoverflow.com/q/35726049/203657
+* 
+* changed the rule to start up via PlatformUtils.start (instead of JFXPanel)
+* think about reverting
 */
 public class JavaFXThreadingRule implements TestRule {
 
@@ -79,14 +89,18 @@ public class JavaFXThreadingRule implements TestRule {
         protected void setupJavaFX() throws InterruptedException {
             long timeMillis = System.currentTimeMillis();
             final CountDownLatch latch = new CountDownLatch(1);
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    // initializes JavaFX environment
-                    new JFXPanel();
-                    latch.countDown();
-                }
+            PlatformImpl.startup(() -> {
+                latch.countDown();
             });
+            // --- commented original
+//            SwingUtilities.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // initializes JavaFX environment
+//                    new JFXPanel();
+//                    latch.countDown();
+//                }
+//            });
 //            System.out.println("javafx initialising...");
             latch.await();
 //            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");

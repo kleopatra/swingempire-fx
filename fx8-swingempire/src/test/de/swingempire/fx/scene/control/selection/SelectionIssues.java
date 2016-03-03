@@ -1069,6 +1069,10 @@ public abstract class SelectionIssues<V extends Control, T extends SelectionMode
 
     @Test
     public void testIsSelectedNegativeIndex() {
+        int selected = getSelectionModel().getSelectedIndex();
+        assertEquals("sanity: nothing selected", -1, selected);
+        Object item = getSelectionModel().getSelectedItem();
+        assertEquals("sanity: null selected", null, item);
         assertFalse("-1 must not be selected", getSelectionModel().isSelected(-1));
         assertFalse("-11 must not be selected", getSelectionModel().isSelected(-11));
     }

@@ -6,18 +6,15 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SingleSelectionModel;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
-
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
+import javafx.scene.control.skin.ComboBoxBaseSkin;
 
 /**
  * @author Jeanette Winzenburg, Berlin
