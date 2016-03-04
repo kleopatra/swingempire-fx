@@ -11,7 +11,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
@@ -19,16 +18,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 /**
  * http://stackoverflow.com/q/34316254/203657
@@ -76,7 +72,7 @@ public class ComboBoxCellFactoryTest extends Application {
         ComboBoxListViewSkin skin = (ComboBoxListViewSkin) combo2.getSkin();
         combo.showingProperty().addListener((s, ov, nv) -> {
             if (nv) {
-                ListView list = skin.getListView();
+                ListView list = (ListView) skin.getPopupContent();
                 list.refresh();
             }
         });
