@@ -8,6 +8,7 @@ import javafx.event.EventDispatchChain;
 import javafx.event.EventTarget;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.skin.TableRowSkin;
 
 /**
  * TableRow with extended event dispatch.
