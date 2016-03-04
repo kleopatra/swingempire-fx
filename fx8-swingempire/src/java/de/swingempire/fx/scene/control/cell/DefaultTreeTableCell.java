@@ -4,14 +4,13 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import com.sun.javafx.scene.control.skin.TreeTableCellSkin;
-
 import javafx.scene.Node;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.control.skin.TreeTableCellSkin;
 
 /**
  * TreeTableCell actually showing something. This is copied from TreeTableColumn plus
@@ -70,6 +69,8 @@ public class DefaultTreeTableCell<S, T> extends TreeTableCell<S, T> {
 
         /**
          * Overridden to adjust the padding returned by super for row graphic.
+         * 
+         * PENDING JW: hiddenn into package-private scope in java9
          */
         @Override
         protected double leftLabelPadding() {

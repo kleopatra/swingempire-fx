@@ -59,6 +59,9 @@ import javafx.util.Callback;
  *   of checkBox and treeItem's)
  * <li> need custom rowSkin that implements graphicProperty to return the row graphic  
  *    
+ * PENDING JW: doesn't compile due to package-private abstract methods - WAIT for fix 
+ * (is work-in-progress)   
+ *    
  * @author Jeanette Winzenburg, Berlin
  * 
  * @see DefaultTreeTableCell
