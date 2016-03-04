@@ -53,6 +53,8 @@ public class IssueRT_19227 extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+    // similar error in comboboxx
 //    final ComboBoxX testedComboBox = new ComboBoxX();
     final ComboBox testedComboBox = new ComboBox();
 
