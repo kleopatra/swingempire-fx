@@ -14,19 +14,16 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBuilder;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFieldBuilder;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 
 
 /**
@@ -44,7 +41,12 @@ import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
  * - expected: item at 3 highlighted
  * - actual: item at 0 highlighted
  * 
- * reported: https://javafx-jira.kenai.com/browse/RT-38927
+ * reported: 
+ * https://javafx-jira.kenai.com/browse/RT-38927
+ * in new bug coordinate:
+ * https://bugs.openjdk.java.net/browse/JDK-8087523
+ * 
+ * Still same in 9-ea-107 
  */
 public class IssueRT_19227 extends Application {
 
@@ -105,7 +107,7 @@ public class IssueRT_19227 extends Application {
     protected ListView getListView(Control box) {
         if (box instanceof ComboBox) {
             ComboBoxListViewSkin skin = (ComboBoxListViewSkin) box.getSkin();
-            ListView list = skin.getListView();
+            ListView list = (ListView) skin.getPopupContent();
             return list;
             
         }
@@ -117,10 +119,10 @@ public class IssueRT_19227 extends Application {
     private HBox getAddItemHBox() {
         HBox hb = new HBox();
         Label lb = new Label("Add item");
-        final TextField tf = TextFieldBuilder.create().prefWidth(50).build();
+        final TextField tf = new TextField(); //TextFieldBuilder.create().prefWidth(50).build();
         Label atLb = new Label("at pos");
-        final TextField tfPos = TextFieldBuilder.create().prefWidth(50).build();
-        Button bt = ButtonBuilder.create().text("Add!").build();
+        final TextField tfPos = new TextField();// TextFieldBuilder.create().prefWidth(50).build();
+        Button bt = new Button("Add"); //ButtonBuilder.create().text("Add!").build();
         bt.setOnAction(new EventHandler() {
 
             public void handle(Event t) {
