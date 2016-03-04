@@ -11,8 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.VBoxBuilder;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -56,7 +55,7 @@ public class ListSelectedItemRT_28637 extends Application {
             }
         });
 
-        Scene scene = new Scene(VBoxBuilder.create().children(listView, button, btnShow).build());
+        Scene scene = new Scene(new VBox(10, listView, button, btnShow));
         stage.setScene(scene);
         stage.show();
     }

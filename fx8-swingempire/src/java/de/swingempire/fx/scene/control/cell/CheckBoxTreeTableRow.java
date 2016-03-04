@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell.DefaultTreeTableCellSkin;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -14,13 +15,14 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
+import javafx.scene.control.skin.TableRowSkinBase;
+import javafx.scene.control.skin.TreeTableRowSkin;
 //import javafx.scene.control.cell.CellUtils;
 import javafx.util.Callback;
-
-import com.sun.javafx.scene.control.skin.TreeTableRowSkin;
 
 /**
  * Support custom graphic for Tree/TableRow. Here in particular a checkBox.
@@ -169,6 +171,10 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
          * Note: While this is implicitly called from the constructor 
          * of LabeledSkinBase, it doesn't matter as we don't alias the
          * property but return it directly.
+         * 
+         * PENDING JW: as of jdk9, this property is package-private, no 
+         * clean way to inject our own! Will be made protected, ongoing work in
+         * https://bugs.openjdk.java.net/browse/JDK-8148573
          */
         @Override
         protected ObjectProperty<Node> graphicProperty() {
@@ -179,6 +185,7 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
             return (CheckBoxTreeTableRow<S>) super.getSkinnable();
         }
     }
+    
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
