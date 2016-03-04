@@ -13,12 +13,20 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * https://bugs.openjdk.java.net/browse/JDK-8151129
+ * Combo commits edited text too late
+ * Spinner might be similar, can't tell without bug missing commitOnFocusLost fixed
+ * https://bugs.openjdk.java.net/browse/JDK-8150946
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class CommittedOnFocusLost extends Application {
@@ -47,7 +55,27 @@ public class CommittedOnFocusLost extends Application {
                      comboBox.getEditor().getText() + "=" + comboBox.getValue());
             }
         });
-        VBox box = new VBox(10, textField, comboBox);
+
+        // compare Spinner
+        Spinner spinner = new Spinner();
+        // normal setup of spinner
+        SpinnerValueFactory factory = new IntegerSpinnerValueFactory(0, 10000, 0);
+        spinner.setValueFactory(factory);
+        spinner.setEditable(true);
+        // hook in a formatter with the same properties as the factory
+//        TextFormatter sFormatter = new TextFormatter(factory.getConverter(), factory.getValue());
+//        control.getEditor().setTextFormatter(sFormatter);
+//        // bidi-bind the values
+//        if (bind)
+//            factory.valueProperty().bindBidirectional(formatter.valueProperty());
+        spinner.focusedProperty().addListener((src, ov, nv) -> {
+            if (!nv) {
+                System.out.println("spinner committed: " + 
+                     spinner.getEditor().getText() + "=" + spinner.getValue());
+            }
+        });
+        
+        VBox box = new VBox(10, textField, comboBox, spinner);
         return box;
     }
 
