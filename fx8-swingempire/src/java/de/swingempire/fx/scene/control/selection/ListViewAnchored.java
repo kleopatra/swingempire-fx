@@ -73,7 +73,7 @@ public class ListViewAnchored<T> extends ListView<T> {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new ListViewASkin<>(this);
+        return new ListViewASkin9<>(this);
     }
     
 }
