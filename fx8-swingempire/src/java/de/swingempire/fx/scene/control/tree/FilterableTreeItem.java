@@ -25,6 +25,9 @@ import javafx.event.Event;
 import javafx.scene.control.TreeItem;
 
 /**
+ * PENDING JW: doesn't compile in jdk9 - dig into problem?
+ * Didn't in 8 - ignore for now.
+ * 
  * An extension of {@link TreeItem} with the possibility to filter its children. To enable filtering 
  * it is necessary to set the {@link TreeItemPredicate}. If a predicate is set, then the tree item
  * will also use this predicate to filter its children (if they are of the type FilterableTreeItem).

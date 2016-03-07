@@ -14,6 +14,9 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
 /**
+ * PENDING JW: doesn't compile in jdk9 - dig into problem? 
+ * Didn't in 8 - ignore for now.
+ * 
  * Implement a TreeItem with a filterList containing the children.
  * Applied the approach from:
  * http://www.kware.net/?p=204
