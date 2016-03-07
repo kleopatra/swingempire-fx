@@ -8,8 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javafx.scene.control.ChoiceBox;
-
-import com.sun.javafx.scene.control.skin.ChoiceBoxSkin;
+import javafx.scene.control.skin.ChoiceBoxSkin;
 
 /**
  * Fix for RT-38724: update value on change of selectionModel.
@@ -20,17 +19,7 @@ public class ChoiceBoxSkinRT38724<T> extends ChoiceBoxSkin<T> {
 
     public ChoiceBoxSkinRT38724(ChoiceBox<T> control) {
         super(control);
-    }
-
-    @Override
-    protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-        if ("SELECTION_MODEL".equals(p)) {
-            // super called updateSelectionModel
-            // super forgot to call updateSelection
-            // invoking the latter here
-            invokeUpdateSelection();
-        }
+        registerChangeListener(control.selectionModelProperty(), e -> invokeUpdateSelection());
     }
 
     /**

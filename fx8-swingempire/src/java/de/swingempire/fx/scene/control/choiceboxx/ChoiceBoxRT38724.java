@@ -20,6 +20,10 @@ import javafx.scene.control.Skin;
  *   to super calling updateSelectionModel
  * </ul>
  * 
+ * <p>
+ * fixed in core 
+ * PENDING JW (at least the listener in ChoiceBox, what role does the skin play?)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ChoiceBoxRT38724<T> extends ChoiceBox<T> {
@@ -31,6 +35,11 @@ public class ChoiceBoxRT38724<T> extends ChoiceBox<T> {
     
     /**
      * Fix for RT38724: listening to selectionModel property and update value.
+     * 
+     * PENDING JW: what to do if choice' value is bound?
+     * - write value back into model?
+     * - do nothing? that's what happens here and in core, leaves model and
+     *   value out of synch ...
      */
     private void installListenerFix() {
         ChangeListener<SingleSelectionModel<T>> modelListener = (p, old, value) -> {

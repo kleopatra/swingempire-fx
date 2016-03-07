@@ -249,14 +249,14 @@ public class SelectionIgnores {
     
     /**
      * Ignore tests that require a custom selectionModel (doesn't make sense
-     * in adapters)
+     * in adapters?)
      * 
      */
     public static class IgnoreSetSelectionModel implements IgnoreCondition {
 
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }
