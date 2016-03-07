@@ -16,6 +16,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.comboboxx.CellUpdateItemAndSelected;
 import de.swingempire.fx.util.FXUtils;
 
 /**
@@ -89,6 +90,7 @@ public class ComboEditableSelectionColor extends Application {
     }
     
     public static void main(String[] args) {
+        CellUpdateItemAndSelected c;
         launch(args);
     }
 

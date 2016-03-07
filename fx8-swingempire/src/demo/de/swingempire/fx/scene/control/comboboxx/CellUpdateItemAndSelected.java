@@ -75,15 +75,24 @@ public class CellUpdateItemAndSelected extends Application {
                     setText(item == null ? "" : item.toString());
                     if (item != null) {
                         double value = item.doubleValue();
-                        setTextFill(isSelected() ? Color.WHITE
+                        boolean state = isSelected();
+//                        boolean state = isFocused();
+                        setTextFill(state ? Color.WHITE
                                 : value == 0 ? Color.BLACK
                                         : value < 0 ? Color.RED : Color.GREEN);
-                        if (isSelected()) {
+                        if (state) {
                             LOG.info("selected index/item: " + getIndex() + " / " + item);
                         }
                     }
                 }
 
+                @Override
+                public void updateSelected(boolean selected) {
+                    super.updateSelected(selected);
+                    updateItem(getItem(), isEmpty());
+                }
+
+                
             };
             return cell;
         });
