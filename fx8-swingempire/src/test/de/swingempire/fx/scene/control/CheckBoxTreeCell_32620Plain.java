@@ -28,6 +28,9 @@ import com.sun.javafx.runtime.VersionInfo;
  * a tree with CheckBoxTreeItems, then working as expected. But:
  * not updating parent state on modifications to the children list.
  * 
+ * problem missing update on list modification reported:
+ * https://bugs.openjdk.java.net/browse/JDK-8151390
+ * 
  */
 public class CheckBoxTreeCell_32620Plain extends Application {
 
@@ -54,8 +57,9 @@ public class CheckBoxTreeCell_32620Plain extends Application {
         
         tv.getRoot().getChildren().addAll(ls);
         tv.getRoot().setExpanded(true);
-        tv.setEditable(true);
         
+        tv.getSelectionModel().select(3);
+        ((CheckBoxTreeItem<String>) tv.getSelectionModel().getSelectedItem()).setSelected(true);
         tv.setCellFactory(CheckBoxTreeCell.forTreeView());
         BorderPane root = new BorderPane();
         root.setCenter(tv);
