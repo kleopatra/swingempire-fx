@@ -26,6 +26,8 @@ import com.sun.javafx.scene.control.behavior.KeyBinding;
 import com.sun.javafx.scene.control.skin.PaginationSkin;
 
 /**
+ * Not needed in jdk9 - ignore.
+ * 
  * Copy of PaginationBehavior.
  * 
  * Modified to expect skin of type PaginationXSkin.

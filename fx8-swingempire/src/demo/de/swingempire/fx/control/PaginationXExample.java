@@ -7,6 +7,7 @@ package de.swingempire.fx.control;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.pagination.PaginationRefSkin;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
@@ -15,15 +16,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.Skin;
+import javafx.scene.control.skin.PaginationSkin;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
-import com.sun.javafx.scene.control.skin.PaginationSkin;
-
-import de.swingempire.fx.scene.control.pagination.PaginationRefSkin;
 
 /**
  * from oracle tutorial

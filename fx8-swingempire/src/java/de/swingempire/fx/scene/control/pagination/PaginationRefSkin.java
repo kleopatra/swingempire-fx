@@ -16,6 +16,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+import com.sun.javafx.scene.control.behavior.PaginationBehavior;
+import com.sun.javafx.scene.control.skin.Utils;
+
+import static com.sun.javafx.scene.control.skin.resources.ControlResources.*;
+
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -33,6 +39,9 @@ import javafx.css.StyleableBooleanProperty;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.BooleanConverter;
+import javafx.css.converter.EnumConverter;
+import javafx.css.converter.SizeConverter;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -60,15 +69,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-import com.sun.javafx.css.converters.BooleanConverter;
-import com.sun.javafx.css.converters.EnumConverter;
-import com.sun.javafx.css.converters.SizeConverter;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-import com.sun.javafx.scene.control.skin.Utils;
-
-import static com.sun.javafx.scene.control.skin.resources.ControlResources.*;
-
 /**
+ * Formally updated to jdk9 (not tested)
+ * 
+ * -----------
  * Copy of PaginationSkin. 
  * 
  * Goal: refactor to allow custom navigation control.
@@ -79,7 +83,7 @@ import static com.sun.javafx.scene.control.skin.resources.ControlResources.*;
  * <li> replaced pagination field by access getSkinnable()
  * 
  */
-public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRefBehavior>  {
+public class PaginationRefSkin extends SkinBase<Pagination>  {
 
     private static final Duration DURATION = new Duration(125.0);
     private static final double SWIPE_THRESHOLD = 0.30;
@@ -110,8 +114,11 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
 
     private boolean animate = true;
 
-    public PaginationRefSkin(final Pagination pagination) {
-        super(pagination, new PaginationRefBehavior(pagination));
+    private final PaginationBehavior behavior;
+
+    public PaginationRefSkin(final Pagination control) {
+        super(control);
+        behavior = new PaginationBehavior(control);
 //        setManaged(false);
         clipRect = new Rectangle();
         getSkinnable().setClip(clipRect);
@@ -131,14 +138,30 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
 
         getChildren().addAll(currentStackPane, nextStackPane, getNavigation());
 
-        pagination.maxPageIndicatorCountProperty().addListener(o -> {
+        control.maxPageIndicatorCountProperty().addListener(o -> {
             resetIndiciesAndNav();
         });
 
-        registerChangeListener(pagination.widthProperty(), "WIDTH");
-        registerChangeListener(pagination.heightProperty(), "HEIGHT");
-        registerChangeListener(pagination.pageCountProperty(), "PAGE_COUNT");
-        registerChangeListener(pagination.pageFactoryProperty(), "PAGE_FACTORY");
+        registerChangeListener(control.widthProperty(), e -> clipRect.setWidth(getSkinnable().getWidth()));
+        registerChangeListener(control.heightProperty(), e -> clipRect.setHeight(getSkinnable().getHeight()));
+        registerChangeListener(control.pageCountProperty(), e -> resetIndiciesAndNav());
+        registerChangeListener(control.pageFactoryProperty(), e -> {
+            if (animate && timeline != null) {
+                // If we are in the middle of a page animation.
+                // Speedup and finish the animation then update the page factory.
+                timeline.setRate(8);
+                timeline.setOnFinished(arg0 -> {
+                    resetIndiciesAndNav();
+                });
+                return;
+            }
+            resetIndiciesAndNav();
+        });
+
+//        registerChangeListener(pagination.widthProperty(), "WIDTH");
+//        registerChangeListener(pagination.heightProperty(), "HEIGHT");
+//        registerChangeListener(pagination.pageCountProperty(), "PAGE_COUNT");
+//        registerChangeListener(pagination.pageFactoryProperty(), "PAGE_FACTORY");
 
         initializeSwipeAndTouchHandlers();
     }
@@ -578,29 +601,29 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
         return tooltipVisible;
     }
 
-    @Override protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-        if ("PAGE_FACTORY".equals(p)) {
-            if (animate && timeline != null) {
-                // If we are in the middle of a page animation.
-                // Speedup and finish the animation then update the page factory.
-                timeline.setRate(8);
-                timeline.setOnFinished(arg0 -> {
-                    resetIndiciesAndNav();
-                });
-                return;
-            }
-            resetIndiciesAndNav();
-        } else if ("PAGE_COUNT".equals(p)) {
-            resetIndiciesAndNav();
-        } else if ("WIDTH".equals(p)) {
-            clipRect.setWidth(getSkinnable().getWidth());
-        } else if ("HEIGHT".equals(p)) {
-            clipRect.setHeight(getSkinnable().getHeight());
-        }
-
-        getSkinnable().requestLayout();
-    }
+//    @Override protected void handleControlPropertyChanged(String p) {
+//        super.handleControlPropertyChanged(p);
+//        if ("PAGE_FACTORY".equals(p)) {
+//            if (animate && timeline != null) {
+//                // If we are in the middle of a page animation.
+//                // Speedup and finish the animation then update the page factory.
+//                timeline.setRate(8);
+//                timeline.setOnFinished(arg0 -> {
+//                    resetIndiciesAndNav();
+//                });
+//                return;
+//            }
+//            resetIndiciesAndNav();
+//        } else if ("PAGE_COUNT".equals(p)) {
+//            resetIndiciesAndNav();
+//        } else if ("WIDTH".equals(p)) {
+//            clipRect.setWidth(getSkinnable().getWidth());
+//        } else if ("HEIGHT".equals(p)) {
+//            clipRect.setHeight(getSkinnable().getHeight());
+//        }
+//
+//        getSkinnable().requestLayout();
+//    }
 
     @Override protected double computeMinWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
         double navigationWidth = getNavigation().isVisible() ? snapSize(getNavigation().minWidth(height)) : 0;
@@ -646,6 +669,9 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
         }
     }
 
+//    protected BehaviorBase getBehavior() {
+//        return behavior;
+//    }
     class NavigationControl extends StackPane {
 
         private HBox controlBox;
@@ -662,10 +688,12 @@ public class PaginationRefSkin extends BehaviorSkinBase<Pagination, PaginationRe
             getStyleClass().setAll("pagination-control");
 
             // redirect mouse events to behavior
-            addEventHandler(MouseEvent.MOUSE_PRESSED,  (e) -> getBehavior().mousePressedInitial(e));
-            addEventHandler(MouseEvent.MOUSE_RELEASED, (e) -> getBehavior().mouseReleased(e));
-            addEventHandler(MouseEvent.MOUSE_ENTERED,  (e) -> getBehavior().mouseEntered(e));
-            addEventHandler(MouseEvent.MOUSE_EXITED,   (e) -> getBehavior().mouseExited(e));
+//            addEventHandler(MouseEvent.MOUSE_PRESSED,  (e) -> getBehavior().mousePressedInitial(e));
+//            addEventHandler(MouseEvent.MOUSE_RELEASED, (e) -> getBehavior().mouseReleased(e));
+//            addEventHandler(MouseEvent.MOUSE_ENTERED,  (e) -> getBehavior().mouseEntered(e));
+//            addEventHandler(MouseEvent.MOUSE_EXITED,   (e) -> getBehavior().mouseExited(e));
+            // redirect mouse events to behavior
+            addEventHandler(MouseEvent.MOUSE_PRESSED, behavior::mousePressed);
 
             controlBox = new HBox();
             controlBox.getStyleClass().add("control-box");
