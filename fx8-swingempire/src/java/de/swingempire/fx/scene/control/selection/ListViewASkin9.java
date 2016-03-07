@@ -65,27 +65,27 @@ import javafx.scene.layout.StackPane;
  * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
  * - changed listening to use listProperty (to fix 15793)
  */
-public class ListViewASkin9<T> extends VirtualContainerBase9<ListView<T>, ListCell<T>> {
+public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>, ListCell<T>> {
 
  //--------------- hacking access   
-    protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
-        getVirtualScrollBar("getVbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-        getVirtualScrollBar("getHbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//        getVirtualFlow().getVbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//        getVirtualFlow().getHbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-    }
-    
-    protected VirtualScrollBar getVirtualScrollBar(String name) {
-        try {
-            Method method = VirtualFlow.class.getDeclaredMethod(name);
-            method.setAccessible(true);
-            return (VirtualScrollBar) method.invoke(getVirtualFlow());
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
+//        getVirtualScrollBar("getVbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+//        getVirtualScrollBar("getHbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+////        getVirtualFlow().getVbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+////        getVirtualFlow().getHbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+//    }
+//    
+//    protected VirtualScrollBar getVirtualScrollBar(String name) {
+//        try {
+//            Method method = VirtualFlow.class.getDeclaredMethod(name);
+//            method.setAccessible(true);
+//            return (VirtualScrollBar) method.invoke(getVirtualFlow());
+//        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
 ///------------ end hacking access
     
@@ -115,7 +115,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListView<T>, ListCe
      * Default constructor that installs core ListViewBehaviour.
      * @param listView
      */
-    public ListViewASkin9(final ListView<T> listView) {
+    public ListViewASkin9(final ListViewAnchored<T> listView) {
         this(listView, new ListViewABeahvior9<T>(listView));
 
     }
@@ -125,7 +125,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListView<T>, ListCe
      * @param listView
      * @param listViewBehavior
      */
-    public ListViewASkin9(ListView<T> listView,
+    public ListViewASkin9(ListViewAnchored<T> listView,
             ListViewABeahvior9<T> listViewBehavior) {
         super(listView);
         behavior = listViewBehavior;
@@ -159,8 +159,12 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListView<T>, ListCe
                 listView.requestFocus();
             }
         };
-        hackPackageAccess(ml);
-        
+//        hackPackageAccess(ml);
+
+        // PENDING JW: added delegate methods to VirtualContainerBase9
+        getVBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+        getHBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+
         updateRowCount();
         
         // init the behavior 'closures'

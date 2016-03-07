@@ -4,12 +4,11 @@
  */
 package de.swingempire.fx.scene.control.skin;
 
-import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.skin.VirtualFlow;
 
 /**
  * Plain copy of VirtualContainerBase to allow subclassing.
@@ -121,6 +120,15 @@ public abstract class VirtualContainerBase9<C extends Control, I extends Indexed
         return flow;
     }
 
+    protected ScrollBar getHBar() {
+        return getVirtualFlow().getHbar();
+    }
+    
+    protected ScrollBar getVBar() {
+        return getVirtualFlow().getVbar();
+    }
+    
+    
     double getMaxCellWidth(int rowsToCount) {
         return snappedLeftInset() + flow.getMaxCellWidth(rowsToCount) + snappedRightInset();
 //        return snappedLeftInset() + invokeGetMaxCellWidth(rowsToCount) + snappedRightInset();
