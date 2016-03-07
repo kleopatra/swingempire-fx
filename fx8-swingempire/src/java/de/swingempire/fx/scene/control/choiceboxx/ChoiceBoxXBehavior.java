@@ -5,79 +5,79 @@
 package de.swingempire.fx.scene.control.choiceboxx;
 
 /*
- * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
  *
  */
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
 import com.sun.javafx.scene.control.behavior.TwoLevelFocusComboBehavior;
+import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
+import com.sun.javafx.scene.control.inputmap.InputMap.MouseMapping;
 import com.sun.javafx.scene.control.skin.Utils;
 
 import static javafx.scene.input.KeyCode.*;
-import static javafx.scene.input.KeyEvent.*;
+
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 
 /**
  * ChoiceBoxBehavior - default implementation
  * 
- * c&p core except re-typed where needed (PENDING JW: indecent local fields)
- *
- * @profile common
+ * Plain c&p from core, 9-ea-107 - except for typing to ChoiceBoxX.
  */
 public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
-    /**
-     * The key bindings for the ChoiceBox. It seems this should really be the
-     * same as with the ButtonBehavior super class, but it doesn't handle ENTER
-     * events on desktop, whereas this does. It may be a proper analysis of the
-     * interaction logic would allow us to share bindings, but for now, we simply
-     * build it up specially here.
-     */
-    protected static final List<KeyBinding> CHOICE_BUTTON_BINDINGS = new ArrayList<KeyBinding>();
-    static {
-        CHOICE_BUTTON_BINDINGS.add(new KeyBinding(SPACE, KEY_PRESSED, "Press"));
-        CHOICE_BUTTON_BINDINGS.add(new KeyBinding(SPACE, KEY_RELEASED, "Release"));
 
-        if (Utils.isTwoLevelFocus()) {
-            CHOICE_BUTTON_BINDINGS.add(new KeyBinding(ENTER, KEY_PRESSED, "Press"));
-            CHOICE_BUTTON_BINDINGS.add(new KeyBinding(ENTER, KEY_RELEASED, "Release"));
-        }
-
-        CHOICE_BUTTON_BINDINGS.add(new KeyBinding(ESCAPE, KEY_RELEASED, "Cancel"));
-        CHOICE_BUTTON_BINDINGS.add(new KeyBinding(DOWN, KEY_RELEASED, "Down"));
-        CHOICE_BUTTON_BINDINGS.add(new KeyBinding(CANCEL, KEY_RELEASED, "Cancel"));
-
-    }
+    private final InputMap<ChoiceBoxX<T>> choiceBoxInputMap;
 
     private TwoLevelFocusComboBehavior tlFocus;
 
     /**************************************************************************
      *                          Setup KeyBindings                             *
      *************************************************************************/
-    @Override protected void callAction(String name) {
-        if (name.equals("Cancel")) cancel();
-        else if (name.equals("Press")) keyPressed();
-        else if (name.equals("Release")) keyReleased();
-        else if (name.equals("Down")) showPopup();
-        else super.callAction(name);
-    }
 
     public ChoiceBoxXBehavior(ChoiceBoxX<T> control) {
-        super(control, CHOICE_BUTTON_BINDINGS);
+        super(control);
+
+        // create a map for choiceBox-specific mappings (this reuses the default
+        // InputMap installed on the control, if it is non-null, allowing us to pick up any user-specified mappings)
+        choiceBoxInputMap = createInputMap();
+
+        // choiceBox-specific mappings for key and mouse input
+        addDefaultMapping(choiceBoxInputMap,
+            new KeyMapping(SPACE, KeyEvent.KEY_PRESSED, this::keyPressed),
+            new KeyMapping(SPACE, KeyEvent.KEY_RELEASED, this::keyReleased),
+
+            new KeyMapping(ESCAPE, KeyEvent.KEY_RELEASED, e -> cancel()),
+            new KeyMapping(DOWN, KeyEvent.KEY_RELEASED, e -> showPopup()),
+            new KeyMapping(CANCEL, KeyEvent.KEY_RELEASED, e -> cancel()),
+
+            new MouseMapping(MouseEvent.MOUSE_PRESSED, this::mousePressed),
+            new MouseMapping(MouseEvent.MOUSE_RELEASED, this::mouseReleased)
+        );
+
+        // add some special two-level focus mappings
+        InputMap<ChoiceBoxX<T>> twoLevelFocusInputMap = new InputMap<>(control);
+        twoLevelFocusInputMap.setInterceptor(e -> !Utils.isTwoLevelFocus());
+        twoLevelFocusInputMap.getMappings().addAll(
+            new KeyMapping(ENTER, KeyEvent.KEY_PRESSED, this::keyPressed),
+            new KeyMapping(ENTER, KeyEvent.KEY_RELEASED, this::keyReleased)
+        );
+        addDefaultChildMap(choiceBoxInputMap, twoLevelFocusInputMap);
+
         // Only add this if we're on an embedded platform that supports 5-button navigation
         if (Utils.isTwoLevelFocus()) {
             tlFocus = new TwoLevelFocusComboBehavior(control); // needs to be last.
         }
+    }
+
+    @Override public InputMap<ChoiceBoxX<T>> getInputMap() {
+        return choiceBoxInputMap;
     }
 
     @Override public void dispose() {
@@ -86,27 +86,26 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
     }
 
     public void select(int index) {
-        SelectionModel<T> sm = getControl().getSelectionModel();
+        SelectionModel<T> sm = getNode().getSelectionModel();
         if (sm == null) return;
 
         sm.select(index);
     }
 
     public void close() {
-        getControl().hide();
+        getNode().hide();
     }
 
     public void showPopup() {
-        getControl().show();
+        getNode().show();
     }
 
     /**
      * Invoked when a mouse press has occurred over the box. In addition to
      * potentially arming the Button, this will transfer focus to the box
      */
-    @Override public void mousePressed(MouseEvent e) {
-        ChoiceBoxX<T> choiceButton = getControl();
-        super.mousePressedInitial(e);
+    public void mousePressed(MouseEvent e) {
+        ChoiceBoxX<T> choiceButton = getNode();
         if (choiceButton.isFocusTraversable()) choiceButton.requestFocus();
     }
 
@@ -115,11 +114,10 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
      * was done in a manner that would fire the box's action. This happens
      * only if the box was armed by a corresponding mouse press.
      */
-    @Override public void mouseReleased(MouseEvent e) {
-        ChoiceBoxX<T> choiceButton = getControl();
-        super.mouseReleased(e);
+    public void mouseReleased(MouseEvent e) {
+        ChoiceBoxX<T> choiceButton = getNode();
         if (choiceButton.isShowing() || !choiceButton.contains(e.getX(), e.getY())) {
-            choiceButton.hide(); // hide if already showing 
+            choiceButton.hide(); // hide if already showing
         }
         else if (e.getButton() == MouseButton.PRIMARY) {
             choiceButton.show();
@@ -131,8 +129,8 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
      * causes this box to be armed if it is not already armed by a mouse
      * press.
      */
-    private void keyPressed() {
-        ChoiceBoxX<T> choiceButton = getControl();
+    private void keyPressed(KeyEvent e) {
+        ChoiceBoxX<T> choiceButton = getNode();
         if (!choiceButton.isShowing()) {
             choiceButton.show();
         }
@@ -142,7 +140,7 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
      * Invoked when a valid keystroke release occurs which causes the box
      * to fire if it was armed by a keyPress.
      */
-    private void keyReleased() {
+    private void keyReleased(KeyEvent e) {
     }
 
     // no-op
@@ -150,7 +148,7 @@ public class ChoiceBoxXBehavior<T> extends BehaviorBase<ChoiceBoxX<T>> {
      * Invoked when "escape" key is released
      */
     public void cancel() {
-        ChoiceBoxX<T> choiceButton = getControl();
+        ChoiceBoxX<T> choiceButton = getNode();
         choiceButton.hide();
     }
 

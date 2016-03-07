@@ -12,6 +12,10 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.ContextMenuContent;
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+
+import de.swingempire.fx.property.PathAdapter;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -28,18 +32,16 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-import com.sun.javafx.scene.control.skin.ContextMenuContent;
-
-import de.swingempire.fx.property.PathAdapter;
-
 
 /**
+ * PENDING JW: formally updated to jdk9 - no testing
+ * ----------
  * C&P'ed core
  * 
  * Experimentation with
@@ -69,7 +71,7 @@ import de.swingempire.fx.property.PathAdapter;
  * 
  * ChoiceBoxSkin - default implementation
  */
-public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBoxXBehavior<T>> {
+public class ChoiceBoxXSkin<T> extends SkinBase<ChoiceBoxX<T>> {
 
     private ContextMenu popup;
 
@@ -85,6 +87,8 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     private SelectionModel<T> selectionModel;
 
     private Label label;
+
+    private final BehaviorBase<ChoiceBoxX<T>> behavior;
 
     /**
      * The listener registered to choiceBox.itemsList
@@ -112,11 +116,12 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
     private PathAdapter<SingleSelectionModel<T>, T> selectedItemPath;
 
     public ChoiceBoxXSkin(ChoiceBoxX<T> control) {
-        super(control, new ChoiceBoxXBehavior<T>(control));
+        super(control);
         initialize();
+        behavior = new ChoiceBoxXBehavior<>(control);
         control.requestLayout();
-        registerChangeListener(control.showingProperty(), "SHOWING");
-        registerChangeListener(control.converterProperty(), "CONVERTER");
+        registerChangeListener(control.converterProperty(), e -> converterChanged());
+        registerChangeListener(control.showingProperty(), e -> showingChanged());
     }
 
     private void initialize() {
@@ -160,59 +165,58 @@ public class ChoiceBoxXSkin<T> extends BehaviorSkinBase<ChoiceBoxX<T>, ChoiceBox
         updateAll(false);
     }
 
-    @SuppressWarnings("rawtypes")
-    @Override protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-        if ("SHOWING".equals(p)) {
-            if (getSkinnable().isShowing()) {
-                MenuItem item = null;
+    
+    protected void showingChanged() {
+        if (getSkinnable().isShowing()) {
+            MenuItem item = null;
 
-                SelectionModel sm = getSkinnable().getSelectionModel();
-                if (sm == null) return;
+            SelectionModel sm = getSkinnable().getSelectionModel();
+            if (sm == null) return;
 
-                long currentSelectedIndex = sm.getSelectedIndex();
-                int itemInControlCount = getChoiceBoxItems().size();
-                boolean hasSelection = currentSelectedIndex >= 0 && currentSelectedIndex < itemInControlCount;
-                if (hasSelection) {
-                    // CHANGED JW: use findItem
-                    item = getMenuItemFor((int) currentSelectedIndex);
-//                    item = popup.getItems().get((int) currentSelectedIndex);
-                    if (item != null && item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
-                } else {
-                    if (itemInControlCount > 0) item = popup.getItems().get(0);
-                }
-
-                // This is a fix for RT-9071. Ideally this won't be necessary in
-                // the long-run, but for now at least this resolves the
-                // positioning
-                // problem of ChoiceBox inside a Cell.
-                getSkinnable().autosize();
-                // -- End of RT-9071 fix
-
-                double y = 0;
-
-                if (popup.getSkin() != null) {
-                    // PENDING JW: need to adjust for separator!
-                    ContextMenuContent cmContent = (ContextMenuContent)popup.getSkin().getNode();
-                    if (cmContent != null && currentSelectedIndex != -1) {
-                        // PENDING JW: implement the invoke, returns 0 for now
-//                        y = -(cmContent.getMenuYOffset((int)currentSelectedIndex));
-                        y = - invokeMenuYOffset(cmContent, (int) currentSelectedIndex);
-                    }
-                }
-
-                popup.show(getSkinnable(), Side.BOTTOM, 2, y);
+            long currentSelectedIndex = sm.getSelectedIndex();
+            int itemInControlCount = getChoiceBoxItems().size();
+            boolean hasSelection = currentSelectedIndex >= 0 && currentSelectedIndex < itemInControlCount;
+            if (hasSelection) {
+                // CHANGED JW: use findItem
+                item = getMenuItemFor((int) currentSelectedIndex);
+//                item = popup.getItems().get((int) currentSelectedIndex);
+                if (item != null && item instanceof RadioMenuItem) ((RadioMenuItem)item).setSelected(true);
             } else {
-                popup.hide();
+                if (itemInControlCount > 0) item = popup.getItems().get(0);
             }
-        } else if ("CONVERTER".equals(p)) {
-            // PENDING JW: no need to update the items ... 
-            // if it appears to be needed, somehting is wrong elsewhere
-//            updateChoiceBoxItems();
-            updatePopupItems();
-            // CHANGED JW: need to update label
-            updateLabel();
+
+            // This is a fix for RT-9071. Ideally this won't be necessary in
+            // the long-run, but for now at least this resolves the
+            // positioning
+            // problem of ChoiceBox inside a Cell.
+            getSkinnable().autosize();
+            // -- End of RT-9071 fix
+
+            double y = 0;
+
+            if (popup.getSkin() != null) {
+                // PENDING JW: need to adjust for separator!
+                ContextMenuContent cmContent = (ContextMenuContent)popup.getSkin().getNode();
+                if (cmContent != null && currentSelectedIndex != -1) {
+                    // PENDING JW: implement the invoke, returns 0 for now
+//                    y = -(cmContent.getMenuYOffset((int)currentSelectedIndex));
+                    y = - invokeMenuYOffset(cmContent, (int) currentSelectedIndex);
+                }
+            }
+
+            popup.show(getSkinnable(), Side.BOTTOM, 2, y);
+        } else {
+            popup.hide();
         }
+        
+    }
+    protected void converterChanged() {
+        // PENDING JW: no need to update the items ... 
+        // if it appears to be needed, somehting is wrong elsewhere
+//        updateChoiceBoxItems();
+        updatePopupItems();
+        // CHANGED JW: need to update label
+        updateLabel();
     }
 
     protected ObservableList<T> getChoiceBoxItems() {
