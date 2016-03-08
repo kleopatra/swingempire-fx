@@ -6,6 +6,10 @@ package de.swingempire.fx.scene.control.et;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.event.EventHandlerManager;
+
+import de.swingempire.fx.util.DebugUtils;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,13 +29,11 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ListViewSkin;
+import javafx.scene.control.skin.VirtualContainerBase;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.stage.Stage;
-
-import com.sun.javafx.event.EventHandlerManager;
-import com.sun.javafx.scene.control.skin.ListViewSkin;
-
-import de.swingempire.fx.util.DebugUtils;
 
 /**
  * Activate cell contextMenu by keyboard, quick shot on ListView<p>
@@ -81,9 +83,9 @@ public class ListViewETContextMenu extends Application {
         ContextMenuEvent s;
         ObservableList<String> data = FXCollections.observableArrayList("one", "two", "three");
         // core
-        ListView<String> listView = new ListView<>();
+//        ListView<String> listView = new ListView<>();
         // custom that effectively builds the chain twice
-//        ListViewC<String> listView = new ListViewC<>();
+        ListViewC<String> listView = new ListViewC<>();
         // custom that builds either from listView or from cell
 //        ListViewET<String> listView = new ListViewET<>();
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -175,6 +177,8 @@ public class ListViewETContextMenu extends Application {
     private static class ListViewETSkin<T> extends ListViewSkin<T> implements
             EventTarget {
 
+        private VirtualFlow flowAlias;
+        
         private ContextMenuEventDispatcher contextHandler = 
                 new ContextMenuEventDispatcher(new EventHandlerManager(this));
         
@@ -190,7 +194,7 @@ public class ListViewETContextMenu extends Application {
             int focused = getSkinnable().getFocusModel().getFocusedIndex();
             Cell<?> cell = null;
             if (focused > -1) {
-                cell = flow.getCell(focused);
+                cell = getFlow().getCell(focused);
                 contextHandler.setTargetCell(cell);
                 tail = tail.prepend(contextHandler);
                 tail = cell.buildEventDispatchChain(tail);
@@ -199,6 +203,12 @@ public class ListViewETContextMenu extends Application {
             return null;
         }
 
+        protected VirtualFlow getFlow() {
+            if (flowAlias == null) {
+                flowAlias = (VirtualFlow) FXUtils.invokeGetFieldValue(VirtualContainerBase.class, this, "flow");
+            }
+            return flowAlias;
+        }
         // boiler-plate constructor
         public ListViewETSkin(ListView<T> listView) {
             super(listView);
@@ -207,6 +217,9 @@ public class ListViewETContextMenu extends Application {
     }
 
     /**
+     * PENDING JW: 
+     * fx-9: throws NPE if tail == null, same in fx-8
+     * --------
      * ListView that hooks its skin into the event dispatch chain.
      * 
      * Here we try to build the chain either from the cell or from 
@@ -245,6 +258,8 @@ public class ListViewETContextMenu extends Application {
     private static class ListViewCSkin<T> extends ListViewSkin<T> implements
             EventTarget {
 
+        private VirtualFlow flowAlias;
+        
         private ContextMenuEventDispatcher contextHandler = 
                 new ContextMenuEventDispatcher(new EventHandlerManager(this));
 
@@ -254,13 +269,19 @@ public class ListViewETContextMenu extends Application {
             int focused = getSkinnable().getFocusModel().getFocusedIndex();
             Cell<?> cell = null;
             if (focused > -1) {
-                cell = flow.getCell(focused);
+                cell = getFlow().getCell(focused);
                 tail = cell.buildEventDispatchChain(tail);
             }
             contextHandler.setTargetCell(cell);
             return tail.prepend(contextHandler);
         }
 
+        protected VirtualFlow getFlow() {
+            if (flowAlias == null) {
+                flowAlias = (VirtualFlow) FXUtils.invokeGetFieldValue(VirtualContainerBase.class, this, "flow");
+            }
+            return flowAlias;
+        }
 
         // boiler-plate constructor
         public ListViewCSkin(ListView<T> listView) {

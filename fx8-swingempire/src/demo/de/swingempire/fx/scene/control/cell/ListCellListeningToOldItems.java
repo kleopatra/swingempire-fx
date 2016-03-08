@@ -20,6 +20,8 @@ import javafx.stage.Stage;
  * 
  * Left-over from Issue-??: 
  * Must use InvalidationListener on list-valued properties.
+ * reported:
+ * https://bugs.openjdk.java.net/browse/JDK-8151443
  * 
  * ListCells are listening to itemsProperty and register
  * ListChangeListeners if changed. Those aren't

@@ -12,8 +12,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
-
-import com.sun.javafx.scene.control.skin.ListCellSkin;
+import javafx.scene.control.skin.ListCellSkin;
 
 /**
  * Trying to make a cell the focusOwner. This would allow the
