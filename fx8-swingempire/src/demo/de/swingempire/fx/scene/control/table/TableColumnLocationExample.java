@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
@@ -31,6 +33,7 @@ public class TableColumnLocationExample extends Application {
     @Override
     public void start(Stage primaryStage) {
         TableView<Person> table = new TableView<>();
+        table.setSkin(new MyTableViewSkin<>(table));
         table.getColumns().add(column("First Name", Person::firstNameProperty, 120));
         table.getColumns().add(column("Last Name", Person::lastNameProperty, 120));
         table.getColumns().add(column("Email", Person::emailProperty, 250));
@@ -62,7 +65,10 @@ public class TableColumnLocationExample extends Application {
         TableHeaderRow headerRow = skin.getTableHeader();
         for (TableColumn col : table.getColumns()) {
             // Lookup method didn't make it into the public, Bug or feature?
-            TableColumnHeader header = headerRow.getColumnHeaderFor(col);
+            TableColumnHeader header = 
+                (TableColumnHeader) //headerRow.getColumnHeaderFor(col);
+                FXUtils.invokeGetMethodValue(TableHeaderRow.class, headerRow, 
+                        "getColumnHeaderFor", TableColumnBase.class, col);
             Button button = new Button(col.getText());
 
             button.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> 
