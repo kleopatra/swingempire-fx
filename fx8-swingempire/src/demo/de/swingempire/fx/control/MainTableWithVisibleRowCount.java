@@ -26,6 +26,11 @@ import javafx.util.Callback;
  * rows
  * 
  * http://stackoverflow.com/q/26298337/203657
+ * 
+ * PENDING JW: something fishy going on - after clicking the 
+ * choice, the focus needs to be moved elsewhere before 
+ * being able to click again! Didn't dig, so no idea if
+ * it's the pagination or the table.
  */
 public class MainTableWithVisibleRowCount extends Application
 {

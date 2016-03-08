@@ -57,7 +57,8 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
         private void visibleRowCountChanged() {
             FXUtils.invokeSetFieldValue(TableViewSkinBase.class, this, "needCellsReconfigured", true);
             // PENDING JW: really focus? not layout?
-            getSkinnable().requestFocus();
+            //getSkinnable().requestFocus();
+            getSkinnable().requestLayout();
         }
         
 

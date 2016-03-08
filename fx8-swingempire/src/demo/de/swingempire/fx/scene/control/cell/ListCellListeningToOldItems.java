@@ -12,25 +12,36 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
 /**
- * https://javafx-jira.kenai.com/browse/RT-35395
- * redundant calls to updateItem (from listener to itemsProperty?)
  * 
- * Other Issue (seen during testing):
+ * Left-over from Issue-??: 
+ * Must use InvalidationListener on list-valued properties.
+ * 
  * ListCells are listening to itemsProperty and register
  * ListChangeListeners if changed. Those aren't
- * updated when replacing with an equals list.
- * Trying to find whether or not it matters if the listener is updated.
+ * updated when replacing with an equals list. Here we
+ * see that the cell is still notified when the old list
+ * changes.
  * 
- * Any macroscopic changes?
+ * - click replace-items to replace the items by a list that's equal but not the same
+ * - click update-old to change the previous list
+ * - expected: updateItem not called
+ * - actual: updateItem called
+ * 
+ * no harm done except listening to stale list
+ * - click update-current
+ * - expected and actual: updateItem called and updated
+ * 
+ * which might imply that the listener is not needed at all: now skin
+ * updates its listener correctly (in an InvalidationListener) and reliably triggers
+ * cell updates on changes to the itemsProperty. 
  * 
  */
-public class RedundantItemUpdates extends Application {
+public class ListCellListeningToOldItems extends Application {
 
     public static void main(String[] args) {
         launch(args);
@@ -59,19 +70,13 @@ public class RedundantItemUpdates extends Application {
             return cell;
          });
 
-        Button update = new Button("Update Item at 0");
-        update.setOnAction(e -> {
-            Object old = listView.getItems().get(0);
-            listView.getItems().set(0, old + "X");
-            
-        });
-        Button reset = new Button("Reset items to equal list");
+        Button reset = new Button("Replace items to equal list");
         reset.setOnAction(e -> {
             previous = listView.getItems();
             listView.setItems(createItems(listView));
         });
         
-        Button updateOld = new Button("update old item at 0");
+        Button updateOld = new Button("update previous list at 0");
         updateOld.setOnAction(e -> {
             if (previous == null || previous == listView.getItems()) {
                 System.out.println("same items");
@@ -79,11 +84,13 @@ public class RedundantItemUpdates extends Application {
             }
             previous.set(0, "changed old");
         });
-        Button add = new Button("Add");
-        add.setOnAction(e -> {
-            listView.getItems().add(1, "other foo " + count++);
+        Button updateCurrent = new Button("Update current list at 0");
+        updateCurrent.setOnAction(e -> {
+            Object old = listView.getItems().get(0);
+            listView.getItems().set(0, old + "X");
+            
         });
-        Parent content = new VBox(listView, reset, updateOld, update, add);
+        Parent content = new VBox(listView, reset, updateOld, updateCurrent);
         stage.setScene(new Scene(content, 200, 180));
         stage.setTitle(System.getProperty("java.version"));
         stage.show();
@@ -95,9 +102,6 @@ public class RedundantItemUpdates extends Application {
     /**
      * Creates and returns a list the is equal to but not the same as 
      * the current items of the list.
-     * 
-     * @param lv
-     * @return
      */
     protected ObservableList<String> createItems(ListView lv) {
         ObservableList<String> items = lv != null ? FXCollections.observableArrayList(lv.getItems())
