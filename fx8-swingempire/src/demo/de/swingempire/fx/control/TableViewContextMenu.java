@@ -10,6 +10,10 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.sun.javafx.event.EventDispatchChainImpl;
+import com.sun.javafx.scene.control.behavior.TableCellBehavior;
+
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -36,22 +40,20 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableCellSkinBase;
+import javafx.scene.control.skin.TableRowSkin;
+import javafx.scene.control.skin.TableRowSkinBase;
+import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.sun.javafx.event.EventDispatchChainImpl;
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-import com.sun.javafx.scene.control.skin.TableCellSkinBase;
-import com.sun.javafx.scene.control.skin.TableRowSkin;
-import com.sun.javafx.scene.control.skin.TableRowSkinBase;
-import com.sun.javafx.scene.control.skin.TableViewSkin;
-
-import de.swingempire.fx.util.FXUtils;
-
 /**
+ * fx-9: wait for minimum of fix to abstract-private methods...
+ * ------
+ * 
  * per-cell contextMenu must be triggered by keyboard 
  * (f.i. shift-f10 on win) 
  * reported: https://javafx-jira.kenai.com/browse/RT-40071
@@ -149,12 +151,12 @@ public class TableViewContextMenu extends Application {
 
 
 
-        @Override
-        public void contextMenuRequested(ContextMenuEvent e) {
-            LOG.info("contextMenu requested in behaviour?" + e);
-            super.contextMenuRequested(e);
-        }
-
+//        @Override
+//        public void contextMenuRequested(ContextMenuEvent e) {
+//            LOG.info("contextMenu requested in behaviour?" + e);
+//            super.contextMenuRequested(e);
+//        }
+//
 
         @Override
         protected void doSelect(double x, double y, MouseButton button,
