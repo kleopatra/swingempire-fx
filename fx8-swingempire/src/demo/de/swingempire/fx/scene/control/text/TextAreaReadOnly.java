@@ -6,6 +6,8 @@ package de.swingempire.fx.scene.control.text;
 
 import java.lang.reflect.Field;
 
+import static com.sun.javafx.PlatformUtil.*;
+
 import javafx.application.Application;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.DoubleBinding;
@@ -13,16 +15,16 @@ import javafx.beans.property.BooleanProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.skin.TextAreaSkin;
+import javafx.scene.control.skin.TextInputControlSkin;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import com.sun.javafx.scene.control.skin.TextAreaSkin;
-import com.sun.javafx.scene.control.skin.TextInputControlSkin;
-
-import static com.sun.javafx.PlatformUtil.*;
-
 /**
+ * PENDING JW: leave it for now.
+ * fx-9: properties in textAreaSkin not visible.
+ * -------
  * Trying to make caret visible in non-editable textArea.
  * 
  * Not entirely successful, it's not blinking and gray.

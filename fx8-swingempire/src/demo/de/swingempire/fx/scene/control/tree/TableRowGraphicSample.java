@@ -7,9 +7,10 @@ package de.swingempire.fx.scene.control.tree;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import com.sun.javafx.runtime.VersionInfo;
+
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -23,14 +24,15 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableCellSkin;
+import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-import com.sun.javafx.runtime.VersionInfo;
-import com.sun.javafx.scene.control.skin.TableCellSkin;
-import com.sun.javafx.scene.control.skin.TableRowSkin;
-
 /**
+ * PENDING JW:
+ * fx-9: indentation-related methods moved to package-private
+ * -------
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
