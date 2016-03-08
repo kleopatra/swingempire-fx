@@ -30,6 +30,9 @@ import javafx.scene.layout.HBoxBuilder;
 import javafx.stage.Stage;
 
 /**
+ * fx-9: looks very old ... defer
+ * 
+ * ------
  * Issue: tableView selection appears as selected after sorting.
  *  when actually, the selection is cleared. The visual details of the
  *  misbehaviour depend on selectionModel

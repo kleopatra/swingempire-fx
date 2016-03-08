@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.javafx.scene.control.behavior.TreeTableRowBehavior;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,6 +17,7 @@ import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.SizeConverter;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
@@ -25,15 +28,13 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTablePosition;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
-
-import com.sun.javafx.css.converters.SizeConverter;
-import com.sun.javafx.scene.control.MultiplePropertyChangeListenerHandler;
-import com.sun.javafx.scene.control.behavior.TreeTableRowBehavior;
-import com.sun.javafx.scene.control.skin.CellSkinBase;
-import com.sun.javafx.scene.control.skin.TableRowSkinBase;
-import com.sun.javafx.scene.control.skin.TreeTableViewSkin;
+import javafx.scene.control.skin.CellSkinBase;
+import javafx.scene.control.skin.TableRowSkinBase;
+import javafx.scene.control.skin.TreeTableViewSkin;
 
 /**
+ * PENDING JW: unused? as copy, too old anyway, start again if need be.
+ * --------
  * Copy of core TreeTableRowSkin, 8u60b5
  */
 public class TreeTableRowSkinX<T> extends TableRowSkinBase<TreeItem<T>, TreeTableRow<T>, TreeTableRowBehavior<T>, TreeTableCell<T,?>> {

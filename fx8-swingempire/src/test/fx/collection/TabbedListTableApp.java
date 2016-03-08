@@ -27,6 +27,8 @@ import javafx.scene.layout.BorderPaneBuilder;
 import javafx.stage.Stage;
 
 /**
+ * fx-9: looks very old ... defer
+ * ------
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

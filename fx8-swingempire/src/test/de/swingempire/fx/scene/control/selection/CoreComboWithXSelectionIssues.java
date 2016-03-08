@@ -6,25 +6,24 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ComboBoxBuilder;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.SingleSelectionModel;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-import com.sun.javafx.scene.control.skin.ComboBoxBaseSkin;
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+
+import static org.junit.Assert.*;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxXSelectionModel;
-import static org.junit.Assert.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.SelectionModel;
+import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.skin.ComboBoxBaseSkin;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 
 /**
  * Testing core ComboBox with ComboBoxXSelectionModel.

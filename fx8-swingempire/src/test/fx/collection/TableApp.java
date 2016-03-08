@@ -9,7 +9,6 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ChangeListener;
@@ -21,26 +20,22 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.SceneBuilder;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBuilder;
 //import javafx.scene.control.MyTableViewSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.scene.control.TableColumnBuilder;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewSelectionModel;
-import javafx.scene.control.TableViewBuilder;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.BorderPaneBuilder;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.HBoxBuilder;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
 /**
+ * fx-9: looks very old, defer.
+ * ------
  * Issue: tableView selection appears as selected after sorting.
  *  when actually, the selection is cleared. The visual details of the
  *  misbehaviour depend on selectionModel
