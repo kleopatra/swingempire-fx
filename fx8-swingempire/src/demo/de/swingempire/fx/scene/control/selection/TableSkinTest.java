@@ -4,8 +4,14 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import java.lang.ref.Reference;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.control.TableViewSample.PlainTableCell;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,16 +32,17 @@ import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewSelectionModel;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableRowSkin;
+import javafx.scene.control.skin.TableRowSkinBase;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import com.sun.javafx.PlatformUtil;
-import com.sun.javafx.scene.control.skin.TableRowSkin;
-
-import de.swingempire.fx.control.TableViewSample.PlainTableCell;
-
 /**
+ * 
+ * fx-9: formally updated
+ * 
+ * --------
  * http://stackoverflow.com/q/26677385/203657
  * 
  * Cell selection broken for merged cells
@@ -65,11 +72,17 @@ public class TableSkinTest extends Application {
             @Override
             protected Skin<?> createDefaultSkin() {
                 return new TableRowSkin<TableSkinTest.Person>(this) {
+                    private List<TableCell> cellsAlias;
+                    private WeakHashMap<TableColumnBase, Reference> cellsMapAlias;
+
                     @Override
                     protected void layoutChildren(double x, double y, double w, double h) {
-                        checkState();
-                        if (cellsMap.isEmpty()) return;
-                        ObservableList<? extends TableColumnBase> visibleLeafColumns = getVisibleLeafColumns();
+                        FXUtils.invokeMethod(TableRowSkinBase.class, this, "checkState");
+//                        checkState();
+                        if (getCellsMap().isEmpty()) return;
+                        ObservableList<? extends TableColumnBase> visibleLeafColumns = 
+                                (ObservableList<? extends TableColumnBase>) FXUtils.invokeGetMethodValue(TableRowSkin.class, this, "getVisibleLeafColumns");
+                                //getVisibleLeafColumns();
                         if (visibleLeafColumns.isEmpty()) {
                             super.layoutChildren(x, y, w, h);
                             return;
@@ -85,6 +98,7 @@ public class TableSkinTest extends Application {
 
                         int index = control.getIndex();
 
+                        List<TableCell> cells = getCells();
                         for (int column = 0, max = cells.size(); column < max; column++) {
                             TableCell<TableSkinTest.Person, ?> tableCell = cells.get(column);
                             width = snapSize(tableCell.prefWidth(-1)) - snapSize(horizontalPadding);
@@ -102,6 +116,20 @@ public class TableSkinTest extends Application {
                             tableCell.relocate(x, snappedTopInset());
                             x += width;
                         }
+                    }
+
+                    private Map getCellsMap() {
+                        if (cellsMapAlias == null) {
+                            cellsMapAlias = (WeakHashMap<TableColumnBase, Reference>) FXUtils.invokeGetFieldValue(TableRowSkinBase.class, this, "cellsMap");
+                        }
+                        return cellsMapAlias;
+                    }
+                    
+                    private List<TableCell> getCells() {
+                        if (cellsAlias == null) {
+                            cellsAlias = (List<TableCell>) FXUtils.invokeGetFieldValue(TableRowSkinBase.class, this, "cells");
+                        }
+                        return cellsAlias;
                     }
                 };
             }
