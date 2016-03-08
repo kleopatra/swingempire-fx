@@ -8,15 +8,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableView;
-
-import com.sun.javafx.scene.control.skin.TableViewSkin;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.TableViewSkinBase;
+import javafx.scene.control.skin.VirtualFlow;
 
 /**
+ * fx-9: formally updated, untested
+ * 
+ * ----------
  * TableView with visibleRowCountProperty.
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -24,7 +29,6 @@ import com.sun.javafx.scene.control.skin.VirtualFlow;
 public class TableViewWithVisibleRowCount<T> extends TableView<T> {
 
     private IntegerProperty visibleRowCount = new SimpleIntegerProperty(this, "visibleRowCount", 10);
-    
     
     public IntegerProperty visibleRowCountProperty() {
         return visibleRowCount;
@@ -39,21 +43,23 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
      * Skin that respects table's visibleRowCount property.
      */
     public static class TableViewSkinX<T> extends TableViewSkin<T> {
+        private TableHeaderRow headerAlias;
 
         public TableViewSkinX(TableViewWithVisibleRowCount<T> tableView) {
             super(tableView);
-            registerChangeListener(tableView.visibleRowCountProperty(), "VISIBLE_ROW_COUNT");
-            handleControlPropertyChanged("VISIBLE_ROW_COUNT");
+            registerChangeListener(tableView.visibleRowCountProperty(), e -> visibleRowCountChanged());
+            // fx-9: no way to inject a custom flow ...    
         }
         
-        @Override
-        protected void handleControlPropertyChanged(String p) {
-            super.handleControlPropertyChanged(p);
-            if ("VISIBLE_ROW_COUNT".equals(p)) {
-                needCellsReconfigured = true;
-                getSkinnable().requestFocus();
-            }
+        /**
+         * @return
+         */
+        private void visibleRowCountChanged() {
+            FXUtils.invokeSetFieldValue(TableViewSkinBase.class, this, "needCellsReconfigured", true);
+            // PENDING JW: really focus? not layout?
+            getSkinnable().requestFocus();
         }
+        
 
         /**
          * Returns the visibleRowCount value of the table.
@@ -71,16 +77,25 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
          */
         protected double getFlowPrefHeight(int rows) {
             double height = 0;
-            if (flow instanceof MyFlow) {
-                height = ((MyFlow) flow).getPrefLength(rows);
-            }
-            else {
-                for (int i = 0; i < rows && i < getItemCount(); i++) {
+//            if (flow instanceof MyFlow) {
+//                height = ((MyFlow) flow).getPrefLength(rows);
+//            }
+//            else {
+                for (int i = 0; i < rows && i < getMyItemCount(); i++) {
                     height += invokeFlowCellLength(i);
                 }
-            }    
+//            }    
             return height + snappedTopInset() + snappedBottomInset();
 
+        }
+        
+        /**
+         * super getItemCount is package private - no rocket science, though
+         * @return
+         */
+        protected int getMyItemCount() {
+            TableView<T> tableView = getSkinnable();
+            return tableView.getItems() == null ? 0 : tableView.getItems().size();
         }
         
         /**
@@ -91,7 +106,21 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
                 double rightInset, double bottomInset, double leftInset) {
             // super hard-codes to 400 .. doooh
             double prefHeight = getFlowPrefHeight(getVisibleRowCount());
-            return prefHeight + getTableHeaderRow().prefHeight(width);
+            return prefHeight + getTableHeader().prefHeight(width);
+        }
+        
+        /**
+         * super getTableHeaderRow didn't make it yet.
+         * @return
+         */
+        protected TableHeaderRow getTableHeader() {
+            return headerAlias;
+        }
+        
+        @Override
+        protected TableHeaderRow createTableHeaderRow() {
+            headerAlias = super.createTableHeaderRow();
+            return headerAlias;
         }
         
         /**
@@ -102,6 +131,7 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
         protected double invokeFlowCellLength(int index) {
             double height = 1.0;
             Class<?> clazz = VirtualFlow.class;
+            VirtualFlow flow = (VirtualFlow) FXUtils.invokeGetFieldValue(TableViewSkinBase.class, this, "flow");
             try {
                 Method method = clazz.getDeclaredMethod("getCellLength", Integer.TYPE);
                 method.setAccessible(true);
@@ -112,29 +142,29 @@ public class TableViewWithVisibleRowCount<T> extends TableView<T> {
             return height;
         }
 
-        /**
-         * Overridden to return custom flow.
-         */
-        @Override
-        protected VirtualFlow createVirtualFlow() {
-            return new MyFlow();
-        }
-        
+//        /**
+//         * Overridden to return custom flow.
+//         */
+//        @Override
+//        protected VirtualFlow createVirtualFlow() {
+//            return new MyFlow();
+//        }
+//        
         /**
          * Extended to expose length calculation per a given # of rows.
          */
-        public static class MyFlow extends VirtualFlow {
-
-            protected double getPrefLength(int rowsPerPage) {
-                double sum = 0.0;
-                int rows = rowsPerPage; //Math.min(rowsPerPage, getCellCount());
-                for (int i = 0; i < rows; i++) {
-                    sum += getCellLength(i);
-                }
-                return sum;
-            }
-
-        }
+//        public static class MyFlow extends VirtualFlow {
+//
+//            protected double getPrefLength(int rowsPerPage) {
+//                double sum = 0.0;
+//                int rows = rowsPerPage; //Math.min(rowsPerPage, getCellCount());
+//                for (int i = 0; i < rows; i++) {
+//                    sum += getCellLength(i);
+//                }
+//                return sum;
+//            }
+//
+//        }
         
     }
 

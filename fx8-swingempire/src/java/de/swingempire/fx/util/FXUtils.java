@@ -137,6 +137,15 @@ public class FXUtils {
         return null;
     }
 
+    public static void invokeSetFieldValue(Class<?> declaringClass, Object target, String name, Object value) {
+        try {
+            Field field = declaringClass.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
     
 // -------------- aggregates
     
