@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.control;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -13,15 +14,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.skin.ProgressIndicatorSkin;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import com.sun.javafx.scene.control.skin.ProgressIndicatorSkin;
-
-import de.swingempire.fx.util.FXUtils;
-
 /**
+ * javafx-9: initialize/updateProgress are package private 
+ * 
+ * -----------
  * Facts:
  * <li> Skin installs a child of type Text  
  * <li> its text property is set initially and on change of progress
@@ -51,11 +52,17 @@ public class ProgressIndicatorConfig extends Application {
 
         public MyProgressIndicatorSkin(ProgressIndicator control) {
             super(control);
+            init();
+            // register additional handlers - can't override
+            // handler methods due to being package private in fx-9
+            registerChangeListener(control.indeterminateProperty(), e -> init());
+            registerChangeListener(control.progressProperty(), e -> progressChanged());
         }
 
-        @Override
-        protected void initialize() {
-            super.initialize();
+//        @Override
+        protected void init() {
+            // package-private as of fx-9
+//            super.initialize();
             configureDoneText();
         }
 
@@ -88,9 +95,10 @@ public class ProgressIndicatorConfig extends Application {
             return (String) getSkinnable().getProperties().get("doneMessage");
         }
 
-        @Override
-        protected void updateProgress() {
-            super.updateProgress();
+//        @Override
+        protected void progressChanged() {
+            // package-private as of fx-9
+//            super.updateProgress();
             configureDoneText();
         }
         
@@ -130,9 +138,10 @@ public class ProgressIndicatorConfig extends Application {
      * @return
      */
     private Parent getContent() {
-        indicator = new ProgressIndicator(1);
+        indicator = new ProgressIndicator(0);
         indicator.setSkin(new MyProgressIndicatorSkin(indicator));
         // install listener _before_ skin is available
+        // NPE in fx-9 - didn't dig
 //        customDoneText(indicator);
         Button button = new Button("End");
         button.setOnAction(e -> indicator.setProgress(1));
