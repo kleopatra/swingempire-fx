@@ -1119,6 +1119,33 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     //-------------------    
     
     /**
+     * Sanity testing: 
+     * ChoiceBoxSkin is listening to the selectedItem (and updating radio items)
+     * That listener is never re-wired to a new model. Doesn't matter, because
+     * the radio state is based on the selectedIndex of the current model.
+     * 
+     * The other way round: radio state is update on being notified by selectedIndex
+     * (which is updated with model change) and on showing (which is a bit weird ...)
+     * 
+     * So most probably no macroscopic effect, just internal confusion. 
+     */
+    @Test
+    public void testSetSelectionModelListeningToOldItemProperty() {
+        initSkin();
+        W model = createSimpleSelectionModel();
+        int index = 2;
+        model.select(index);
+        
+        W old = getSelectionModel();
+        setSelectionModel(model);
+        assertEquals("here it's sanity, issue fixed: ", items.get(index), getChoiceView().getValue());
+        
+        old.select(0);
+        assertEquals("value not effected by changes of old model ", 
+                items.get(index), getChoiceView().getValue());
+    }
+    
+    /**
      * Sanity testing fix of RT-38724:
      * invers: if value is bound, the model mut be update 
      */
@@ -1185,6 +1212,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
      * 
      * Here: sanity testing, selecting an item in the model updates box value
      */
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
     @Test
     public void testSetSelectionModelSelectAfterSetting() {
         initSkin();

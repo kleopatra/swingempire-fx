@@ -9,17 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
-import javafx.scene.control.Control;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -32,6 +21,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores;
@@ -46,9 +38,16 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
+import javafx.scene.control.Control;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 /**
  * Tests behaviour of MultipleSelection api.
  * 
@@ -1385,6 +1384,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * 
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectedOnSetItemsOldContained() {
         getSelectionModel().select(1);
         Object selectedItem = getSelectedItem();
@@ -1399,6 +1399,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * Maybe not: see https://javafx-jira.kenai.com/browse/RT-35039
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreDocErrors.class)
     public void testSelectedOnSetAllOldContained() {
         int index = 2;
         getSelectionModel().select(index);
