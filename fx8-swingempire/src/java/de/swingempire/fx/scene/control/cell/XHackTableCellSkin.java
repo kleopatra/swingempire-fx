@@ -10,6 +10,7 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
 import static de.swingempire.fx.util.FXUtils.*;
 
+import de.swingempire.fx.scene.control.skin.SkinBaseDecorator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.skin.TableCellSkin;
 import javafx.scene.input.MouseEvent;
@@ -30,7 +31,7 @@ import javafx.scene.input.MouseEvent;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T>  {
+public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T> implements SkinBaseDecorator {
 
     private BehaviorBase<TableCell<S,T>> behaviorBase;
     
@@ -39,7 +40,8 @@ public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T>  {
      */
     public XHackTableCellSkin(TableCell<S,T> control) {
         super(control);
-        replaceBehavior(null);
+        disposeSuperBehavior(TableCellSkin.class);
+        behaviorBase = createBehavior();
     }
     
     /**
@@ -54,30 +56,10 @@ public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T>  {
     }
 
     /**
-     * Just a marker - can't because super behaviour is final!
-     * Trying to dispose (aka: remove all input bindings) from old - doesn't work:
-     * Old mousePressed binding still called before the new.
-     * 
-     * @param xTableCellBehavior
+     * Creates and returns the custom behavior to use.
      */
-    private void replaceBehavior(XTableCellBehavior<S, T> xTableCellBehavior) {
-        BehaviorBase<?> old = (BehaviorBase<?>) invokeGetFieldValue(TableCellSkin.class, this, "behavior");
-        if (old != null) {
-            // alternatively: as long as the inputMap is not a public property of the
-            // Node, the behavior is the only collaborator, disposing all mapping might help:
-            old.getInputMap().dispose();
-            // this removes all mappings, nothing left
-            // old.getInputMap().dispose();
-            // this removes the defaults (mappings are empty)
-            // but still something is active: default mouse handlers
-            // in cellBehaviour are invoked before the replaced
-            // even though the mappings are removed
-            old.dispose();
-            // the "something" is a left-over reference in InputMap's internals
-            // need to hack out
-//            cleanupInputMap(old.getInputMap(), MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_RELEASED);
-        }
-        behaviorBase = new XTableCellBehavior<>(getSkinnable());
+    protected BehaviorBase<TableCell<S, T>> createBehavior() {
+        return new XTableCellBehavior<>(getSkinnable());
     }
     
     @SuppressWarnings("unused")

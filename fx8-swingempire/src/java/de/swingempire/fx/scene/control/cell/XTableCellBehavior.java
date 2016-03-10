@@ -78,19 +78,6 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
     }
     
     /**
-     * This method is called in jdk8_u5. Signature changed
-     * in jdk8_u20.
-     * 
-     * @param e
-     */
-//    @Override
-//    protected void simpleSelect(MouseButton button, int clickCount, boolean alreadySelected) {
-//        LOG.info("editing: " + getNode().getItem() + " / " + getNode().getTableView().getEditingCell());
-//        tryTerminateEdit();
-//        super.simpleSelect(button, clickCount, alreadySelected);
-//    }
-
-    /**
      * This method is introduced in jdk8_u20. It's the editing
      * handling part of the former simpleSelect. 
      * 
@@ -104,6 +91,19 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         tryTerminateEdit();
         super.handleClicks(button, clickCount, isAlreadySelected);
     }
+
+    /**
+     * This method is called in jdk8_u5. Signature changed
+     * in jdk8_u20.
+     * 
+     * KEEP to remember!
+     */
+//    @Override
+//    protected void simpleSelect(MouseButton button, int clickCount, boolean alreadySelected) {
+//        LOG.info("editing: " + getNode().getItem() + " / " + getNode().getTableView().getEditingCell());
+//        tryTerminateEdit();
+//        super.simpleSelect(button, clickCount, alreadySelected);
+//    }
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(XTableCellBehavior.class

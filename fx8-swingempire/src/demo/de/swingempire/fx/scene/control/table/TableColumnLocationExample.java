@@ -8,11 +8,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.skin.SkinBaseDecorator;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -53,7 +53,8 @@ public class TableColumnLocationExample extends Application {
 
 //        buttonsPerLabel(table, root);
         buttonsPerHeader(table, root);
-
+        // very quick check if SkinDecorator is working
+//        table.setFixedCellSize(40);
     }
 
     /**
@@ -133,88 +134,43 @@ public class TableColumnLocationExample extends Application {
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TableColumnLocationExample.class.getName());
-    public static class Person {
-        private StringProperty firstName = new SimpleStringProperty();
-        private StringProperty lastName = new SimpleStringProperty();
-        private StringProperty email = new SimpleStringProperty();
-
-        public Person(String firstName, String lastName, String email) {
-            setFirstName(firstName);
-            setLastName(lastName);
-            setEmail(email);
-        }
-
-        public final StringProperty firstNameProperty() {
-            return this.firstName;
-        }
-
-        public final String getFirstName() {
-            return this.firstNameProperty().get();
-        }
-
-        public final void setFirstName(final String firstName) {
-            this.firstNameProperty().set(firstName);
-        }
-
-        public final StringProperty lastNameProperty() {
-            return this.lastName;
-        }
-
-        public final String getLastName() {
-            return this.lastNameProperty().get();
-        }
-
-        public final void setLastName(final String lastName) {
-            this.lastNameProperty().set(lastName);
-        }
-
-        public final StringProperty emailProperty() {
-            return this.email;
-        }
-
-        public final String getEmail() {
-            return this.emailProperty().get();
-        }
-
-        public final void setEmail(final String email) {
-            this.emailProperty().set(email);
-        }
-
-
-    }
 
     /**
      * Override to get access to TableHeaderRow.
      * 
      * @author Jeanette Winzenburg, Berlin
      */
-public static class MyTableViewSkin<T> extends TableViewSkin<T> {
+    public static class MyTableViewSkin<T> extends TableViewSkin<T>
+//            implements SkinBaseDecorator 
+            {
 
-    private TableHeaderRow header;
-    
-    /**
-     * @param control
-     */
-    public MyTableViewSkin(TableView<T> control) {
-        super(control);
-    }
+        private TableHeaderRow header;
 
-    /**
-     * Implemented to grab header. Super method is 
-     * package and final.
-     * @return
-     */
-    public TableHeaderRow getTableHeader() {
-        return header;
+        /**
+         * @param control
+         */
+        public MyTableViewSkin(TableView<T> control) {
+            super(control);
+            // very quick check if SkinDecorator is working
+            // unregisterChangeListener(control.fixedCellSizeProperty());
+        }
+
+        /**
+         * Implemented to grab header. Super method is package and final.
+         * 
+         * @return
+         */
+        public TableHeaderRow getTableHeader() {
+            return header;
+        }
+
+        @Override
+        protected TableHeaderRow createTableHeaderRow() {
+            header = super.createTableHeaderRow();
+            return header;
+        }
+
     }
-    @Override
-    protected TableHeaderRow createTableHeaderRow() {
-        header = super.createTableHeaderRow();
-        return header;
-    }
-    
-    
-}
     public static void main(String[] args) {
         launch(args);
     }

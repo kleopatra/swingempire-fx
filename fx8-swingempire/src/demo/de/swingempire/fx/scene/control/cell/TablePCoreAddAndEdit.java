@@ -17,6 +17,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
@@ -24,6 +25,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.util.converter.DefaultStringConverter;
 
 /**
  * 
@@ -45,6 +47,8 @@ import javafx.stage.Stage;
  * 
  * filed as:
  * https://bugs.openjdk.java.net/browse/JDK-8150525
+ * fixed - the solution was to call updateEditing in indexChanged(int, int)
+ * hacking around by reflectively calling updateEditing in updateIndex(int)
  * 
  * Also old bug:
  * https://bugs.openjdk.java.net/browse/JDK-8093922
@@ -57,13 +61,33 @@ import javafx.stage.Stage;
  */
 public class TablePCoreAddAndEdit extends Application {
 
+    /**
+     * Subclass to test the fix of 
+     * https://bugs.openjdk.java.net/browse/JDK-8150525
+     * seems fixed!
+     */
+    public static class FixedTextFieldTableCell extends TextFieldTableCell {
+
+         public FixedTextFieldTableCell() {
+             super(new DefaultStringConverter());
+        }
+        @Override
+        public void updateIndex(int i) {
+            super.updateIndex(i);
+            FXUtils.invokeMethod(TableCell.class, this, "updateEditing");
+        }
+        
+        
+    }
+    
     private Parent getContent() {
         TableView<Dummy> table = new TableView<>(createData(50));
         table.setEditable(true);
         
         TableColumn<Dummy, String> column = new TableColumn<>("Value");
         column.setCellValueFactory(c -> c.getValue().valueProperty());
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
+//        column.setCellFactory(TextFieldTableCell.forTableColumn());
+        column.setCellFactory(p -> new FixedTextFieldTableCell());
         column.setMinWidth(200);
         table.getColumns().addAll(column);
         
