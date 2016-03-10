@@ -9,7 +9,6 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
 import static de.swingempire.fx.util.FXUtils.*;
 
-import de.swingempire.fx.util.FXUtils;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventType;
 import javafx.scene.control.SkinBase;
@@ -32,7 +31,7 @@ public interface SkinBaseDecorator {
      */
     default void unregisterChangeListener(ObservableValue<?> observable) {
         LambdaMultiplePropertyChangeListenerHandler handler = (LambdaMultiplePropertyChangeListenerHandler) 
-                FXUtils.invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
+                invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
         if (handler == null) return;
         handler.unregisterChangeListener(observable);
     }
@@ -43,7 +42,7 @@ public interface SkinBaseDecorator {
      * @param targetClass parent class that installed the behavior.
      */
     default void disposeSuperBehavior(Class<? extends SkinBase> targetClass) {
-        BehaviorBase<?> behavior = (BehaviorBase<?>) FXUtils.invokeGetFieldValue(targetClass, this, "behavior");
+        BehaviorBase<?> behavior = (BehaviorBase<?>) invokeGetFieldValue(targetClass, this, "behavior");
         if (behavior == null) return;
         // Hack around: JDK-8150636
         // InputMap not completely cleared on getMappings().clear
@@ -69,7 +68,7 @@ public interface SkinBaseDecorator {
      * @param targetClass parent class that installed the behavior.
      */
     default void disposeSuperBehavior(Class<? extends SkinBase> targetClass, EventType... events) {
-        BehaviorBase<?> behavior = (BehaviorBase<?>) FXUtils.invokeGetFieldValue(targetClass, this, "behavior");
+        BehaviorBase<?> behavior = (BehaviorBase<?>) invokeGetFieldValue(targetClass, this, "behavior");
         if (behavior == null) return;
         // this removes the defaults (mappings are empty)
         // but still something is active: default mouse handlers
