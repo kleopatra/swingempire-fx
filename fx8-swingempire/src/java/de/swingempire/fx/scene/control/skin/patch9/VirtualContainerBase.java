@@ -1,34 +1,29 @@
 /*
- * Created on 24.02.2016
+ * Created on 14.03.2016
  *
  */
-package de.swingempire.fx.scene.control.skin;
+package de.swingempire.fx.scene.control.skin.patch9;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SkinBase;
+import javafx.scene.control.skin.VirtualFlow;
 
 /**
- * Plain copy of VirtualContainerBase to allow subclassing.
+ * Can't extend VirtualContainerBase - due to abstract package-private methods.
  * 
- * Changes:
+ * Plain copy of core, except for 
+ * - widening scope of some methods/fields
+ * - reflective access to flow methods
  * 
- * - changed abstract package private methods to protected
- * - changed virtualFlow creator/accessor to protected
- * - invoked access to package private virualFlow methods
- * - use VirtualFlow9 to allow access to changed method scope
- * - also: VirtualFlow9 uses VirtualScrollBar9
- * 
- * 
- * -----------
- * Parent class to control skins whose contents are virtualized and scrollable.
- * This class handles the interaction with the VirtualFlow class, which is the
- * main class handling the virtualization of the contents of this container.
+ * @author Jeanette Winzenburg, Berlin
  */
-public abstract class VirtualContainerBase9<C extends Control, I extends IndexedCell> extends SkinBase<C> {
-
+public abstract class VirtualContainerBase<C extends Control, I extends IndexedCell> 
+    extends SkinBase<C> {
+    
     /***************************************************************************
      *                                                                         *
      * Private fields                                                          *
@@ -41,7 +36,7 @@ public abstract class VirtualContainerBase9<C extends Control, I extends Indexed
      * The virtualized container which handles the layout and scrolling of
      * all the cells.
      */
-    private final VirtualFlow9<I> flow;
+    private final VirtualFlow<I> flow;
 
 
 
@@ -55,7 +50,7 @@ public abstract class VirtualContainerBase9<C extends Control, I extends Indexed
      *
      * @param control
      */
-    public VirtualContainerBase9(final C control) {
+    public VirtualContainerBase(final C control) {
         super(control);
         flow = createVirtualFlow();
 
@@ -112,38 +107,74 @@ public abstract class VirtualContainerBase9<C extends Control, I extends Indexed
      * This enables skin subclasses to provide a custom VirtualFlow implementation,
      * rather than have VirtualContainerBase instantiate the default instance.
      */
-    protected VirtualFlow9<I> createVirtualFlow() {
-        return new VirtualFlow9<>();
+    protected VirtualFlow<I> createVirtualFlow() {
+        return new VirtualFlow<>();
     }
 
-    protected final VirtualFlow9<I> getVirtualFlow() {
+    protected final VirtualFlow<I> getVirtualFlow() {
         return flow;
     }
 
+//--------- delegate to virtual flow: here done reflectively
+    
     protected ScrollBar getHBar() {
-        return getVirtualFlow().getHbar();
+        return (ScrollBar) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getHbar");
+//        return getVirtualFlow().getHbar();
     }
     
     protected ScrollBar getVBar() {
-        return getVirtualFlow().getVbar();
+        return (ScrollBar) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getVbar");
+//        return getVirtualFlow().getVbar();
+    }
+
+    protected void setCellDirty(int index) {
+        FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "setCellDirty", Integer.TYPE, index);
     }
     
+    protected void rebuildCells() {
+        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "rebuildCells");
+    }
     
+    protected void reconfigureCells() {
+        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "reconfigureCells");
+    }
+
+    protected I getLastVisibleCellWithinViewPort() {
+        return (I) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getLastVisibleCellWithinViewPort");
+    }
+
+    protected I getFirstVisibleCellWithinViewPort() {
+        return (I) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getFirstVisibleCellWithinViewPort");
+    }
+    
+    private double getCellLengthFromFlow(int i) {
+        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getCellLength", Integer.TYPE, i);
+    }
+
+
+    private double getMaxCellWidthFromFlow(int rowsToCount) {
+        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getMaxCellWidth", Integer.TYPE, rowsToCount);
+//        return flow.getMaxCellWidth(rowsToCount);
+    }
+
+
+//--------- end delegate methods
     double getMaxCellWidth(int rowsToCount) {
-        return snappedLeftInset() + flow.getMaxCellWidth(rowsToCount) + snappedRightInset();
-//        return snappedLeftInset() + invokeGetMaxCellWidth(rowsToCount) + snappedRightInset();
+        return snappedLeftInset() + getMaxCellWidthFromFlow(rowsToCount) + snappedRightInset();
     }
+
 
     double getVirtualFlowPreferredHeight(int rows) {
         double height = 1.0;
 
         for (int i = 0; i < rows && i < getItemCount(); i++) {
-            height += flow.getCellLength(i);
-//            height += invokeGetCellLength(i);
+            height += getCellLengthFromFlow(i);
         }
 
         return height + snappedTopInset() + snappedBottomInset();
     }
+
+
 
     protected void checkState() {
         if (rowCountDirty) {
@@ -152,12 +183,4 @@ public abstract class VirtualContainerBase9<C extends Control, I extends Indexed
         }
     }
 
-//    protected double invokeGetMaxCellWidth(int rowsToCount) {
-//        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getMaxCellWidth", int.class, rowsToCount);
-//    }
-//    
-//    protected double invokeGetCellLength(int index) {
-//        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getCellLength", int.class, index);
-//        
-//    }
 }

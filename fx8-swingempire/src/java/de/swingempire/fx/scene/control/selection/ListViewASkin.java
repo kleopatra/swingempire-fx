@@ -17,6 +17,10 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import com.sun.javafx.scene.control.VirtualScrollBar;
+import com.sun.javafx.scene.control.skin.resources.ControlResources;
+
+import de.swingempire.fx.property.BugPropertyAdapters;
 import javafx.beans.property.ListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.WeakListChangeListener;
@@ -31,15 +35,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-
-import com.sun.javafx.scene.control.skin.VirtualContainerBase;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import com.sun.javafx.scene.control.skin.VirtualScrollBar;
-import com.sun.javafx.scene.control.skin.resources.ControlResources;
-
-import de.swingempire.fx.property.BugPropertyAdapters;
 
 /**
  * Idea was (but no longer is)
@@ -55,7 +53,7 @@ import de.swingempire.fx.property.BugPropertyAdapters;
  * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
  * - changed listening to use listProperty (to fix 15793)
  */
-public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListViewABehavior<T>, ListCell<T>> {
+public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell<T>> {
 
  //--------------- hacking access   
     protected void hackPackageAccess(EventHandler<MouseEvent> ml) {

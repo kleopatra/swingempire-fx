@@ -4,24 +4,13 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-/*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- *
- */
-
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import com.sun.javafx.scene.control.VirtualScrollBar;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
-import de.swingempire.fx.scene.control.skin.VirtualContainerBase9;
+import de.swingempire.fx.scene.control.skin.patch9.VirtualContainerBase;
 import javafx.beans.property.ListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.WeakListChangeListener;
@@ -34,10 +23,7 @@ import javafx.scene.control.FocusModel;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
-import javafx.scene.control.skin.ListViewSkin;
-import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
@@ -65,7 +51,7 @@ import javafx.scene.layout.StackPane;
  * - changed type of behavior to ListViewABehavior (after giving up on extending ListViewBehavior)
  * - changed listening to use listProperty (to fix 15793)
  */
-public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>, ListCell<T>> {
+public class ListViewASkin9<T> extends VirtualContainerBase<ListViewAnchored<T>, ListCell<T>> {
 
  //--------------- hacking access   
 //    protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
@@ -161,7 +147,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
         };
 //        hackPackageAccess(ml);
 
-        // PENDING JW: added delegate methods to VirtualContainerBase9
+        // PENDING JW: added delegate methods to VirtualContainerBase/9
         getVBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
         getHBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
 
@@ -239,8 +225,9 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
                     // This code was updated for RT-36714 to not update all cells,
                     // just those affected by the change
                     for (int i = c.getFrom(); i < c.getTo(); i++) {
-                        // PENDING JW: setCellDirty is not visible
-                        getVirtualFlow().setCellDirty(i);
+                        // PENDING JW: flow.setCellDirty  is not visible
+                        setCellDirty(i);
+//                        getVirtualFlow().setCellDirty(i);
                     }
 
                     break;
@@ -383,9 +370,13 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
         super.layoutChildren(x, y, w, h);
 
         if (needCellsRebuilt) {
-            getVirtualFlow().rebuildCells();
+            // PENDING JW: exposed methods in VirtualContainerBase
+            rebuildCells();
+//            getVirtualFlow().rebuildCells();
         } else if (needCellsReconfigured) {
-            getVirtualFlow().reconfigureCells();
+            // PENDING JW: exposed methods in VirtualContainerBase
+            reconfigureCells();
+//            getVirtualFlow().reconfigureCells();
         }
 
         needCellsRebuilt = false;
@@ -481,7 +472,8 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
      * if this is a horizontal container, then the scrolling will be to the right.
      */
     private int onScrollPageDown(boolean isFocusDriven) {
-        ListCell<T> lastVisibleCell = getVirtualFlow().getLastVisibleCellWithinViewPort();
+        // PENDING JW: exposed hidden flow method on VirtualContainerBase
+        ListCell<T> lastVisibleCell = /*getVirtualFlow().*/getLastVisibleCellWithinViewPort();
         if (lastVisibleCell == null) return -1;
 
         final SelectionModel<T> sm = getSkinnable().getSelectionModel();
@@ -508,7 +500,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
                 // to be the top-most cell, or at least as far to the top as we can go.
                 getVirtualFlow().scrollToTop(lastVisibleCell);
 
-                ListCell<T> newLastVisibleCell = getVirtualFlow().getLastVisibleCellWithinViewPort();
+                ListCell<T> newLastVisibleCell = /*getVirtualFlow().*/getLastVisibleCellWithinViewPort();
                 lastVisibleCell = newLastVisibleCell == null ? lastVisibleCell : newLastVisibleCell;
             }
         } else {
@@ -527,7 +519,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
      * if this is a horizontal container, then the scrolling will be to the left.
      */
     private int onScrollPageUp(boolean isFocusDriven) {
-        ListCell<T> firstVisibleCell = getVirtualFlow().getFirstVisibleCellWithinViewPort();
+        ListCell<T> firstVisibleCell = /*getVirtualFlow().*/getFirstVisibleCellWithinViewPort();
         if (firstVisibleCell == null) return -1;
 
         final SelectionModel<T> sm = getSkinnable().getSelectionModel();
@@ -553,7 +545,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase9<ListViewAnchored<T>
                 // to be the bottom-most cell, or at least as far to the bottom as we can go.
                 getVirtualFlow().scrollToBottom(firstVisibleCell);
 
-                ListCell<T> newFirstVisibleCell = getVirtualFlow().getFirstVisibleCellWithinViewPort();
+                ListCell<T> newFirstVisibleCell = /*getVirtualFlow().*/getFirstVisibleCellWithinViewPort();
                 firstVisibleCell = newFirstVisibleCell == null ? firstVisibleCell : newFirstVisibleCell;
             }
         } else {
