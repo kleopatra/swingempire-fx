@@ -181,7 +181,7 @@ public class TableViewSample extends Application {
             cell.focusedProperty().addListener((s, ov, nv) ->{
                 if (!nv) {
                 LOG.info("focus change: " + nv + " / " + cell.getItem() + " / " + cell.isEditing());
-                new RuntimeException("who-is-calling? \n").printStackTrace();
+//                new RuntimeException("who-is-calling? \n").printStackTrace();
                 }
 //                if (nv) {
 //                    Node owner = null;

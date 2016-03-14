@@ -72,13 +72,13 @@ public class DefaultTreeTableCell<S, T> extends TreeTableCell<S, T> {
          * 
          * PENDING JW: hiddenn into package-private scope in java9
          */
-        @Override
-        protected double leftLabelPadding() {
-            double padding = super.leftLabelPadding();
-            padding += getRowGraphicPatch();
-            return padding;
-        }
-
+//        @Override
+//        protected double leftLabelPadding() {
+//            double padding = super.leftLabelPadding();
+//            padding += getRowGraphicPatch();
+//            return padding;
+//        }
+//
         /**
          * Returns the patch for leftPadding if the tableRow has a graphic of
          * its own.<p>

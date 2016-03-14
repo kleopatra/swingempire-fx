@@ -15,11 +15,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
-import javafx.scene.control.skin.TableRowSkinBase;
 import javafx.scene.control.skin.TreeTableRowSkin;
 //import javafx.scene.control.cell.CellUtils;
 import javafx.util.Callback;
@@ -159,7 +157,7 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new CheckBoxTreeTableRowSkin<>(this);
+        return new CheckBoxTreeTableRowSkin(this);
     }
 
     public static class CheckBoxTreeTableRowSkin<S> extends TreeTableRowSkin<S> {
@@ -179,10 +177,10 @@ public class CheckBoxTreeTableRow<T> extends TreeTableRow<T> {
          * clean way to inject our own! Will be made protected, ongoing work in
          * https://bugs.openjdk.java.net/browse/JDK-8148573
          */
-        @Override
-        protected ObjectProperty<Node> graphicProperty() {
-            return getSkinnable().graphicProperty();
-        }
+//        @Override
+//        protected ObjectProperty<Node> graphicProperty() {
+//            return getSkinnable().graphicProperty();
+//        }
 
         protected CheckBoxTreeTableRow<S> getTableRow() {
             return (CheckBoxTreeTableRow<S>) super.getSkinnable();
