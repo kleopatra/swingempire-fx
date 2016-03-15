@@ -139,6 +139,10 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
     protected void reconfigureCells() {
         FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "reconfigureCells");
     }
+    
+    protected void recreateCells() {
+        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "recreateCells");
+    }
 
     protected I getLastVisibleCellWithinViewPort() {
         return (I) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getLastVisibleCellWithinViewPort");

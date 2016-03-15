@@ -150,51 +150,64 @@ public class ListViewASkin9<T> extends VirtualContainerBase<ListViewAnchored<T>,
 //        registerChangeListener(listView.placeholderProperty(), "PLACEHOLDER");
 //        registerChangeListener(listView.fixedCellSizeProperty(), "FIXED_CELL_SIZE");
         
-        // register listeners new
-        // Register listeners
-        // items updates are handled separately 
-//        registerChangeListener(listView.itemsProperty(), o -> updateListViewItems());
-        registerChangeListener(listView.orientationProperty(), o ->
-            getVirtualFlow().setVertical(listView.getOrientation() == Orientation.VERTICAL)
-        );
-        // PENDING JW: flow.recreateCells  is not visible
-//        registerChangeListener(listView.cellFactoryProperty(), o -> getVirtualFlow().recreateCells());
-        registerChangeListener(listView.parentProperty(), o -> {
-            if (listView.getParent() != null && listView.isVisible()) {
-                listView.requestLayout();
-            }
-        });
-        registerChangeListener(listView.placeholderProperty(), o -> updatePlaceholderRegionVisibility());
-        registerChangeListener(listView.fixedCellSizeProperty(), o ->
-            getVirtualFlow().setFixedCellSize(listView.getFixedCellSize())
-        );
+        // items are not handled by changeListener
+//      registerChangeListener(listView.itemsProperty(), "ITEMS");
+      // Register listeners
+      // PENDING JW: this is quite clutchy - need to use both old and new
+      // method for registration. At runtime, only one of them is actually
+      // used, the other is implemented as a no-op by the compatibility layer
+      registerChangeListener(listView.orientationProperty(), "ORIENTATION");
+      registerChangeListener(listView.cellFactoryProperty(), "CELL_FACTORY");
+      registerChangeListener(listView.parentProperty(), "PARENT");
+      registerChangeListener(listView.placeholderProperty(), "PLACEHOLDER");
+      registerChangeListener(listView.fixedCellSizeProperty(), "FIXED_CELL_SIZE");
+      
+      registerChangeListener(listView.orientationProperty(), e -> orientationChanged());
+      registerChangeListener(listView.cellFactoryProperty(), e -> cellFactoryChanged());
+      registerChangeListener(listView.parentProperty(), e -> parentChanged());
+      registerChangeListener(listView.placeholderProperty(), e -> updatePlaceholderRegionVisibility());
+      registerChangeListener(listView.fixedCellSizeProperty(), e -> fixedCellSizeChanged());
+  }
 
-    }
+//-------------- callbacks methods on property changes of the skinnable
+  @Override protected void handleControlPropertyChanged(String p) {
+      super.handleControlPropertyChanged(p);
+      if ("ITEMS".equals(p)) {
+//          updateListViewItems();
+      } else if ("ORIENTATION".equals(p)) {
+          orientationChanged();
+      } else if ("CELL_FACTORY".equals(p)) {
+          cellFactoryChanged();
+      } else if ("PARENT".equals(p)) {
+          parentChanged();
+      } else if ("PLACEHOLDER".equals(p)) {
+          updatePlaceholderRegionVisibility();
+      } else if ("FIXED_CELL_SIZE".equals(p)) {
+          fixedCellSizeChanged();
+      }
+  }
+  protected void fixedCellSizeChanged() {
+      getVirtualFlow().setFixedCellSize(getSkinnable().getFixedCellSize());
+  }
 
+  protected void parentChanged() {
+      if (getSkinnable().getParent() != null && getSkinnable().isVisible()) {
+          getSkinnable().requestLayout();
+      }
+  }
+
+  protected void cellFactoryChanged() {
+      /*getVirtualFlow().*/recreateCells();
+  }
+
+  protected void orientationChanged() {
+      getVirtualFlow().setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
+  }
+//-------- end callback
     protected ListViewABeahvior9<T> getBehavior() {
         return behavior;
     }
     
-    // Changed: old property listeners callback method
-//    @Override protected void handleControlPropertyChanged(String p) {
-//        super.handleControlPropertyChanged(p);
-//        if ("ITEMS".equals(p)) {
-////            updateListViewItems();
-//        } else if ("ORIENTATION".equals(p)) {
-//            getVirtualFlow().setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
-//        } else if ("CELL_FACTORY".equals(p)) {
-//            getVirtualFlow().recreateCells();
-//        } else if ("PARENT".equals(p)) {
-//            if (getSkinnable().getParent() != null && getSkinnable().isVisible()) {
-//                getSkinnable().requestLayout();
-//            }
-//        } else if ("PLACEHOLDER".equals(p)) {
-//            updatePlaceholderRegionVisibility();
-//        } else if ("FIXED_CELL_SIZE".equals(p)) {
-//            getVirtualFlow().setFixedCellSize(getSkinnable().getFixedCellSize());
-//        }
-//    }
-//
     private final ListChangeListener<T> listViewItemsListener = new ListChangeListener<T>() {
         @Override public void onChanged(Change<? extends T> c) {
             while (c.next()) {
