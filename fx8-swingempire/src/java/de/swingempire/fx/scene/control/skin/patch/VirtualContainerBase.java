@@ -19,4 +19,9 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
         super(control, behavior);
     }
 
+    @Override
+    protected VirtualFlow<I> createVirtualFlow() {
+        return new VirtualFlow<>();
+    }
+
 }

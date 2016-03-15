@@ -4,6 +4,9 @@
  */
 package de.swingempire.fx.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -41,6 +44,93 @@ public class FXUtils {
 
     public final static String ANCHOR_KEY = "anchor";
 
+//--------- reflective method/field access
+    
+    /**
+     * Reflectively access hidden field's value.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the field name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetFieldValue(Class declaringClass, Object target, String name) {
+        try {
+            Field field = declaringClass.getDeclaredField(name);
+            field.setAccessible(true);
+            return field.get(target);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Reflectively access hidden method's value without parameters.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the method name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetMethodValue(Class declaringClass, Object target, String name) {
+        try {
+            Method field = declaringClass.getDeclaredMethod(name);
+            field.setAccessible(true);
+            return field.invoke(target);
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Reflectively access method without paramters.
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the method name
+     */
+    public static void invokeMethod(Class declaringClass, Object target, String name) {
+        try {
+            Method method = declaringClass.getDeclaredMethod(name);
+            method.setAccessible(true);
+            method.invoke(target);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Reflectively access hidden method value with a single parameter.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the field name
+     * @return value of the field or null if something happened
+     */
+    public static Object invokeGetMethodValue(Class declaringClass, Object target, String name, Class paramType, Object param) {
+        try {
+            Method field = declaringClass.getDeclaredMethod(name, paramType);
+            field.setAccessible(true);
+            return field.invoke(target, param);
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void invokeSetFieldValue(Class<?> declaringClass, Object target, String name, Object value) {
+        try {
+            Field field = declaringClass.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
+    
 // -------------- aggregates
     
     public static <T>  Collector<T, ?, ObservableList<T>> toObservableList() {

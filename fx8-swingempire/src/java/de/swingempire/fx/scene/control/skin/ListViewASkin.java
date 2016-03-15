@@ -30,20 +30,21 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
-
-//import com.sun.javafx.scene.control.skin.VirtualContainerBase;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import com.sun.javafx.scene.control.skin.VirtualScrollBar;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
 import de.swingempire.fx.scene.control.skin.patch.VirtualContainerBase;
 
 /**
+ * fx-8/9: goal is to have everything in this class (actually the complete
+ * package) version-agnostic.
+ * 
+ * -------------
  * Idea was (but no longer is)
  * Plain copy of core 8u20, except the (non-functional) changes listed below to allow subclassing
  * and pluggable behaviour.<p>
@@ -59,28 +60,6 @@ import de.swingempire.fx.scene.control.skin.patch.VirtualContainerBase;
  */
 public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell<T>> {
 
- //--------------- hacking access   
-    protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
-        getVirtualScrollBar("getVbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-        getVirtualScrollBar("getHbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//        flow.getVbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//        flow.getHbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-    }
-    
-    protected VirtualScrollBar getVirtualScrollBar(String name) {
-        try {
-            Method method = VirtualFlow.class.getDeclaredMethod(name);
-            method.setAccessible(true);
-            return (VirtualScrollBar) method.invoke(flow);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-///------------ end hacking access
-    
     /**
      * Region placed over the top of the flow (and possibly the header row) if
      * there is no data.
@@ -103,12 +82,12 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //    private ObservableList<T> listViewItems;
 
     /**
+     * PENDING JW: doc is incorrect, we always install custom behavior
      * Default constructor that installs core ListViewBehaviour.
      * @param listView
      */
     public ListViewASkin(final ListView<T> listView) {
         this(listView, new ListViewABehavior<T>(listView));
-
     }
     
     /**
@@ -124,12 +103,12 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //        updateListViewItems();
         
         // init the VirtualFlow
-        flow.setId("virtual-flow");
-        flow.setPannable(IS_PANNABLE);
-        flow.setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
-        flow.setCreateCell(flow1 -> ListViewASkin.this.createCell());
-        flow.setFixedCellSize(listView.getFixedCellSize());
-        getChildren().add(flow);
+        getVirtualFlow().setId("virtual-flow");
+        getVirtualFlow().setPannable(IS_PANNABLE);
+        orientationChanged();
+        getVirtualFlow().setCreateCell(flow1 -> ListViewASkin.this.createCell());
+        getVirtualFlow().setFixedCellSize(listView.getFixedCellSize());
+        getChildren().add(getVirtualFlow());
         
         EventHandler<MouseEvent> ml = event -> {
             // RT-15127: cancel editing on scroll. This is a bit extreme
@@ -148,7 +127,8 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
                 listView.requestFocus();
             }
         };
-        hackPackageAccess(ml);
+        getVBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
+        getHBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
         
         updateRowCount();
         
@@ -161,35 +141,61 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //        getBehavior().setOnScrollPageUp(isFocusDriven -> onScrollPageUp(isFocusDriven));
 //        getBehavior().setOnSelectPreviousRow(() -> { onSelectPreviousCell(); });
 //        getBehavior().setOnSelectNextRow(() -> { onSelectNextCell(); });
-        
+
+        // items are not handled by changeListener
+//        registerChangeListener(listView.itemsProperty(), "ITEMS");
         // Register listeners
-        registerChangeListener(listView.itemsProperty(), "ITEMS");
+        // PENDING JW: this is quite clutchy - need to use both old and new
+        // method for registration. At runtime, only one of them is actually
+        // used, the other is implemented as a no-op by the compatibility
         registerChangeListener(listView.orientationProperty(), "ORIENTATION");
         registerChangeListener(listView.cellFactoryProperty(), "CELL_FACTORY");
         registerChangeListener(listView.parentProperty(), "PARENT");
         registerChangeListener(listView.placeholderProperty(), "PLACEHOLDER");
         registerChangeListener(listView.fixedCellSizeProperty(), "FIXED_CELL_SIZE");
+        
+        registerChangeListener(listView.orientationProperty(), e -> orientationChanged());
+        registerChangeListener(listView.cellFactoryProperty(), e -> cellFactoryChanged());
+        registerChangeListener(listView.parentProperty(), e -> parentChanged());
+        registerChangeListener(listView.placeholderProperty(), e -> updatePlaceholderRegionVisibility());
+        registerChangeListener(listView.fixedCellSizeProperty(), e -> fixedCellSizeChanged());
     }
 
+//-------------- callbacks methods on property changes of the skinnable
     @Override protected void handleControlPropertyChanged(String p) {
         super.handleControlPropertyChanged(p);
         if ("ITEMS".equals(p)) {
 //            updateListViewItems();
         } else if ("ORIENTATION".equals(p)) {
-            flow.setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
+            orientationChanged();
         } else if ("CELL_FACTORY".equals(p)) {
-            flow.recreateCells();
+            cellFactoryChanged();
         } else if ("PARENT".equals(p)) {
-            if (getSkinnable().getParent() != null && getSkinnable().isVisible()) {
-                getSkinnable().requestLayout();
-            }
+            parentChanged();
         } else if ("PLACEHOLDER".equals(p)) {
             updatePlaceholderRegionVisibility();
         } else if ("FIXED_CELL_SIZE".equals(p)) {
-            flow.setFixedCellSize(getSkinnable().getFixedCellSize());
+            fixedCellSizeChanged();
+        }
+    }
+    protected void fixedCellSizeChanged() {
+        getVirtualFlow().setFixedCellSize(getSkinnable().getFixedCellSize());
+    }
+
+    protected void parentChanged() {
+        if (getSkinnable().getParent() != null && getSkinnable().isVisible()) {
+            getSkinnable().requestLayout();
         }
     }
 
+    protected void cellFactoryChanged() {
+        recreateCells();
+    }
+
+    protected void orientationChanged() {
+        getVirtualFlow().setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
+    }
+//-------- end callback
     private final ListChangeListener<T> listViewItemsListener = new ListChangeListener<T>() {
         @Override public void onChanged(Change<? extends T> c) {
             while (c.next()) {
@@ -199,7 +205,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
                     // This code was updated for RT-36714 to not update all cells,
                     // just those affected by the change
                     for (int i = c.getFrom(); i < c.getTo(); i++) {
-                        flow.setCellDirty(i);
+                        getVirtualFlow().setCellDirty(i);
                     }
 
                     break;
@@ -249,7 +255,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
     private boolean needCellsReconfigured = false;
 
     @Override protected void updateRowCount() {
-        if (flow == null) return;
+        if (getVirtualFlow() == null) return;
         
         int oldCount = itemCount;
 //        int newCount = listViewItems == null ? 0 : listViewItems.size();
@@ -257,7 +263,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         int newCount = listProperty.size();
         itemCount = newCount;
         
-        flow.setCellCount(newCount);
+        getVirtualFlow().setCellCount(newCount);
         
         updatePlaceholderRegionVisibility();
         if (newCount != oldCount) {
@@ -288,7 +294,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
             }
         }
 
-        flow.setVisible(! visible);
+        getVirtualFlow().setVisible(! visible);
         if (placeholderRegion != null) {
             placeholderRegion.setVisible(visible);
         }
@@ -341,9 +347,9 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         super.layoutChildren(x, y, w, h);
         
         if (needCellsRebuilt) {
-            flow.rebuildCells();
+            getVirtualFlow().rebuildCells();
         } else if (needCellsReconfigured) {
-            flow.reconfigureCells();
+            getVirtualFlow().reconfigureCells();
         } 
         
         needCellsRebuilt = false;
@@ -356,7 +362,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
                 placeholderRegion.resizeRelocate(x, y, w, h);
             }
         } else {
-            flow.resizeRelocate(x, y, w, h);
+            getVirtualFlow().resizeRelocate(x, y, w, h);
         }
     }
     
@@ -382,13 +388,13 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
     private void onFocusPreviousCell() {
         FocusModel<T> fm = getSkinnable().getFocusModel();
         if (fm == null) return;
-        flow.show(fm.getFocusedIndex());
+        getVirtualFlow().show(fm.getFocusedIndex());
     }
 
     private void onFocusNextCell() {
         FocusModel<T> fm = getSkinnable().getFocusModel();
         if (fm == null) return;
-        flow.show(fm.getFocusedIndex());
+        getVirtualFlow().show(fm.getFocusedIndex());
     }
 
     private void onSelectPreviousCell() {
@@ -396,12 +402,12 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         if (sm == null) return;
 
         int pos = sm.getSelectedIndex();
-        flow.show(pos);
+        getVirtualFlow().show(pos);
 
         // Fix for RT-11299
-        IndexedCell<T> cell = flow.getFirstVisibleCell();
+        IndexedCell<T> cell = getVirtualFlow().getFirstVisibleCell();
         if (cell == null || pos < cell.getIndex()) {
-            flow.setPosition(pos / (double) getItemCount());
+            getVirtualFlow().setPosition(pos / (double) getItemCount());
         }
     }
 
@@ -410,18 +416,18 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         if (sm == null) return;
 
         int pos = sm.getSelectedIndex();
-        flow.show(pos);
+        getVirtualFlow().show(pos);
 
         // Fix for RT-11299
-        ListCell<T> cell = flow.getLastVisibleCell();
+        ListCell<T> cell = getVirtualFlow().getLastVisibleCell();
         if (cell == null || cell.getIndex() < pos) {
-            flow.setPosition(pos / (double) getItemCount());
+            getVirtualFlow().setPosition(pos / (double) getItemCount());
         }
     }
 
     private void onMoveToFirstCell() {
-        flow.show(0);
-        flow.setPosition(0);
+        getVirtualFlow().show(0);
+        getVirtualFlow().setPosition(0);
     }
 
     private void onMoveToLastCell() {
@@ -430,8 +436,8 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //
         int endPos = getItemCount() - 1;
 //        sm.select(endPos);
-        flow.show(endPos);
-        flow.setPosition(1);
+        getVirtualFlow().show(endPos);
+        getVirtualFlow().setPosition(1);
     }
 
     /**
@@ -439,7 +445,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
      * if this is a horizontal container, then the scrolling will be to the right.
      */
     private int onScrollPageDown(boolean isFocusDriven) {
-        ListCell<T> lastVisibleCell = flow.getLastVisibleCellWithinViewPort();
+        ListCell<T> lastVisibleCell = getVirtualFlow().getLastVisibleCellWithinViewPort();
         if (lastVisibleCell == null) return -1;
 
         final SelectionModel<T> sm = getSkinnable().getSelectionModel();
@@ -464,9 +470,9 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
             if (isLeadIndex) {
                 // if the last visible cell is selected, we want to shift that cell up
                 // to be the top-most cell, or at least as far to the top as we can go.
-                flow.showAsFirst(lastVisibleCell);
+                getVirtualFlow().showAsFirst(lastVisibleCell);
 
-                ListCell<T> newLastVisibleCell = flow.getLastVisibleCellWithinViewPort();
+                ListCell<T> newLastVisibleCell = getVirtualFlow().getLastVisibleCellWithinViewPort();
                 lastVisibleCell = newLastVisibleCell == null ? lastVisibleCell : newLastVisibleCell;
             }
         } else {
@@ -476,7 +482,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         }
 
         int newSelectionIndex = lastVisibleCell.getIndex();
-        flow.show(lastVisibleCell);
+        getVirtualFlow().show(lastVisibleCell);
         return newSelectionIndex;
     }
 
@@ -485,7 +491,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
      * if this is a horizontal container, then the scrolling will be to the left.
      */
     private int onScrollPageUp(boolean isFocusDriven) {
-        ListCell<T> firstVisibleCell = flow.getFirstVisibleCellWithinViewPort();
+        ListCell<T> firstVisibleCell = getVirtualFlow().getFirstVisibleCellWithinViewPort();
         if (firstVisibleCell == null) return -1;
 
         final SelectionModel<T> sm = getSkinnable().getSelectionModel();
@@ -509,9 +515,9 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
             if (isLeadIndex) {
                 // if the first visible cell is selected, we want to shift that cell down
                 // to be the bottom-most cell, or at least as far to the bottom as we can go.
-                flow.showAsLast(firstVisibleCell);
+                getVirtualFlow().showAsLast(firstVisibleCell);
 
-                ListCell<T> newFirstVisibleCell = flow.getFirstVisibleCellWithinViewPort();
+                ListCell<T> newFirstVisibleCell = getVirtualFlow().getFirstVisibleCellWithinViewPort();
                 firstVisibleCell = newFirstVisibleCell == null ? firstVisibleCell : newFirstVisibleCell;
             }
         } else {
@@ -521,7 +527,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
         }
 
         int newSelectionIndex = firstVisibleCell.getIndex();
-        flow.show(firstVisibleCell);
+        getVirtualFlow().show(firstVisibleCell);
         return newSelectionIndex;
     }
 
@@ -541,13 +547,13 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //                        return null;
 //                    }
 //                }
-//                return flow.getPrivateCell(focusedIndex);
+//                return getVirtualFlow().getPrivateCell(focusedIndex);
 //            }
 //            case ROW_AT_INDEX: {
 //                Integer rowIndex = (Integer)parameters[0];
 //                if (rowIndex == null) return null;
 //                if (0 <= rowIndex && rowIndex < getItemCount()) {
-//                    return flow.getPrivateCell(rowIndex);
+//                    return getVirtualFlow().getPrivateCell(rowIndex);
 //                }
 //                return null;
 //            }
@@ -556,13 +562,13 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //                ObservableList<Integer> indices = sm.getSelectedIndices();
 //                List<Node> selection = new ArrayList<>(indices.size());
 //                for (int i : indices) {
-//                    ListCell<T> row = flow.getPrivateCell(i);
+//                    ListCell<T> row = getVirtualFlow().getPrivateCell(i);
 //                    if (row != null) selection.add(row);
 //                }
 //                return FXCollections.observableArrayList(selection);
 //            }
-//            case VERTICAL_SCROLLBAR: return flow.getVbar();
-//            case HORIZONTAL_SCROLLBAR: return flow.getHbar();
+//            case VERTICAL_SCROLLBAR: return getVbar();
+//            case HORIZONTAL_SCROLLBAR: return getHbar();
 //            default: return super.accGetAttribute(attribute, parameters);
 //        }
 //    }
@@ -572,7 +578,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListView<T>, ListCell
 //        switch (action) {
 //            case SCROLL_TO_INDEX: {
 //                Integer index = (Integer)parameters[0];
-//                if (index != null) flow.show(index);
+//                if (index != null) getVirtualFlow().show(index);
 //                break;
 //            }
 //            default: super.accExecuteAction(action, parameters);
