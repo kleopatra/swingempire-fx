@@ -8,12 +8,9 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
-import static de.swingempire.fx.util.FXUtils.*;
-
-import de.swingempire.fx.scene.control.skin.SkinBaseDecorator;
+import de.swingempire.fx.scene.control.skin.patch9.SkinBaseDecorator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.skin.TableCellSkin;
-import javafx.scene.input.MouseEvent;
 
 /**
  * Not really useful for replacing Behavior:

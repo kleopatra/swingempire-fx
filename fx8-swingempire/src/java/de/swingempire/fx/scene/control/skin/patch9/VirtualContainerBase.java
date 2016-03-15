@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control.skin.patch9;
 
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
@@ -183,4 +184,22 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
         }
     }
 
-}
+//--------------- provide fx-9 dummy method, no-op in fx-8
+    
+    /**
+     * FX-8 compatibility dummy: no-op in fx-9
+     * @param property
+     * @param consumer
+     */
+    protected final void registerChangeListener(ObservableValue<?> property, String key) {
+    }
+    
+    /**
+     * FX-8 compatibility dummy: no-op in fx-9
+     * @param property
+     * @param consumer
+     */
+    protected void handleControlPropertyChanged(String p) {
+    }
+    
+}    

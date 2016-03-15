@@ -9,7 +9,6 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.skin.SkinBaseDecorator;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;

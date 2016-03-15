@@ -10,7 +10,7 @@ import java.security.PrivilegedAction;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
-import de.swingempire.fx.scene.control.skin.patch9.VirtualContainerBase;
+import de.swingempire.fx.scene.control.skin.patch.VirtualContainerBase;
 import javafx.beans.property.ListProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.WeakListChangeListener;
@@ -53,27 +53,6 @@ import javafx.scene.layout.StackPane;
  */
 public class ListViewASkin9<T> extends VirtualContainerBase<ListViewAnchored<T>, ListCell<T>> {
 
- //--------------- hacking access   
-//    protected void hackPackageAccess(EventHandler<MouseEvent> ml) {
-//        getVirtualScrollBar("getVbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//        getVirtualScrollBar("getHbar").addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-////        getVirtualFlow().getVbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-////        getVirtualFlow().getHbar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
-//    }
-//    
-//    protected VirtualScrollBar getVirtualScrollBar(String name) {
-//        try {
-//            Method method = VirtualFlow.class.getDeclaredMethod(name);
-//            method.setAccessible(true);
-//            return (VirtualScrollBar) method.invoke(getVirtualFlow());
-//        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-
-///------------ end hacking access
     
     /**
      * Region placed over the top of the getVirtualFlow() (and possibly the header row) if
