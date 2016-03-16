@@ -2,31 +2,29 @@
  * Created on 24.02.2016
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.skin;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.sun.javafx.PlatformUtil;
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 import com.sun.javafx.scene.control.behavior.TwoLevelFocusListBehavior;
-import com.sun.javafx.scene.control.inputmap.InputMap;
-import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
-import com.sun.javafx.scene.control.inputmap.InputMap.MouseMapping;
-import com.sun.javafx.scene.control.inputmap.KeyBinding;
 import com.sun.javafx.scene.control.skin.Utils;
 
 import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyCombination.*;
 
+import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
+import de.swingempire.fx.scene.control.skin.patch.BehaviorBase;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
@@ -34,6 +32,14 @@ import javafx.util.Callback;
 /**
 * PENDING JW: the api doc is copied from the old (jdk8u20) version, 
 * need to check for jdk9 - ntohing tested yet!!
+* 
+* Goal: remove all direct references to internal core api
+* - built inheritance chain, lowest in skin.patch8/9 (version specific), next higher
+* in skin.patch (version agnostic except for import of patch8/9), all others must
+* inherit from thos in skin.patch 
+* - added compatibility api to lowest BehaviourBase (the one directly inheriting from core)
+* - implemented to do something useful for patch9, no-ops in patch8
+* 
 * --------------------
 * 
 * Copy from 9ea-104 and mixed with improved jdk8 version to
@@ -70,8 +76,8 @@ import javafx.util.Callback;
 * - extracted the actual extend into <code>selectTo(newIndex, clear)</code> 
 */
 
-public class ListViewABeahvior9<T> extends BehaviorBase<ListView<T>> {
-    private final InputMap<ListView<T>> listViewInputMap;
+public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
+//    private final InputMap<ListView<T>> listViewInputMap;
 
     /**
      * Indicates that a keyboard key has been pressed which represents the
@@ -79,7 +85,7 @@ public class ListViewABeahvior9<T> extends BehaviorBase<ListView<T>> {
      * we are also armed, and will ignore mouse events related to arming.
      * Note this is made package private solely for the sake of testing.
      */
-    private boolean keyDown;
+//    private boolean keyDown;
 
     private final EventHandler<KeyEvent> keyEventListener = e -> {
         if (!e.isConsumed()) {
@@ -99,108 +105,98 @@ public class ListViewABeahvior9<T> extends BehaviorBase<ListView<T>> {
      *                                                                         *
      **************************************************************************/
 
-    public ListViewABeahvior9(ListView<T> control) {
-        super(control);
+    public ListViewABehavior(ListView<T> control) {
+        super(control, "ListViewBindings");
         // create a map for listView-specific mappings
-        listViewInputMap = createInputMap();
+//        listViewInputMap = createInputMap();
 
         // add focus traversal mappings
-        addDefaultMapping(listViewInputMap, FocusTraversalInputMap.getFocusTraversalMappings());
-        addDefaultMapping(listViewInputMap,
-            new KeyMapping(HOME, e -> selectFirstRow()),
-            new KeyMapping(END, e -> selectLastRow()),
-            new KeyMapping(new KeyBinding(HOME).shift(), e -> selectAllToFirstRow()),
-            new KeyMapping(new KeyBinding(END).shift(), e -> selectAllToLastRow()),
-            new KeyMapping(new KeyBinding(PAGE_UP).shift(), e -> selectAllPageUp()),
-            new KeyMapping(new KeyBinding(PAGE_DOWN).shift(), e -> selectAllPageDown()),
+        addDefaultFocusTraversalMapping();
 
-            new KeyMapping(new KeyBinding(SPACE).shift(), e -> selectAllToFocus(false)),
-            new KeyMapping(new KeyBinding(SPACE).shortcut().shift(), e -> selectAllToFocus(true)),
+        // navigational mappings that are independent on list orientation
+        addDefaultKeyBinding(HOME, e -> selectFirstRow());
+        addDefaultKeyBinding(END, e -> selectLastRow());
+        addDefaultKeyBinding(new KeyCodeCombination(HOME, SHIFT_DOWN), e -> selectAllToFirstRow());
+        addDefaultKeyBinding(new KeyCodeCombination(END, SHIFT_DOWN), e -> selectAllToLastRow());
+        addDefaultKeyBinding(new KeyCodeCombination(PAGE_UP, SHIFT_DOWN), e -> selectAllPageUp());
+        addDefaultKeyBinding(new KeyCodeCombination(PAGE_DOWN, SHIFT_DOWN), e -> selectAllPageDown());
+        
+        addDefaultKeyBinding(new KeyCodeCombination(SPACE, SHIFT_DOWN), e -> selectAllToFocus(false));
+        addDefaultKeyBinding(new KeyCodeCombination(SPACE, SHIFT_DOWN, SHORTCUT_DOWN), e -> selectAllToFocus(true));
+        
+        addDefaultKeyBinding(PAGE_UP, e -> scrollPageUp());
+        addDefaultKeyBinding(PAGE_DOWN, e -> scrollPageDown());
+        addDefaultKeyBinding(ENTER, e -> activate());
+        addDefaultKeyBinding(SPACE, e -> activate());
+        addDefaultKeyBinding(F2, e -> activate());
+        addDefaultKeyBinding(ESCAPE, e -> cancelEdit());
+        addDefaultKeyBinding(new KeyCodeCombination(A, SHORTCUT_DOWN), e -> selectAll());
+        addDefaultKeyBinding(new KeyCodeCombination(HOME, SHORTCUT_DOWN), e -> focusFirstRow());
+        addDefaultKeyBinding(new KeyCodeCombination(END, SHORTCUT_DOWN), e -> focusLastRow());
+        addDefaultKeyBinding(new KeyCodeCombination(PAGE_UP, SHORTCUT_DOWN), e -> focusPageUp());
+        addDefaultKeyBinding(new KeyCodeCombination(PAGE_DOWN, SHORTCUT_DOWN), e -> focusPageDown());
+        
+        addDefaultKeyBinding(new KeyCodeCombination(BACK_SLASH, SHORTCUT_DOWN), e -> clearSelection());
+        addDefaultMouseBinding(MouseEvent.MOUSE_PRESSED, this::mousePressed);
+        
 
-            new KeyMapping(PAGE_UP, e -> scrollPageUp()),
-            new KeyMapping(PAGE_DOWN, e -> scrollPageDown()),
-
-            new KeyMapping(ENTER, e -> activate()),
-            new KeyMapping(SPACE, e -> activate()),
-            new KeyMapping(F2, e -> activate()),
-            new KeyMapping(ESCAPE, e -> cancelEdit()),
-
-            new KeyMapping(new KeyBinding(A).shortcut(), e -> selectAll()),
-            new KeyMapping(new KeyBinding(HOME).shortcut(), e -> focusFirstRow()),
-            new KeyMapping(new KeyBinding(END).shortcut(), e -> focusLastRow()),
-            new KeyMapping(new KeyBinding(PAGE_UP).shortcut(), e -> focusPageUp()),
-            new KeyMapping(new KeyBinding(PAGE_DOWN).shortcut(), e -> focusPageDown()),
-
-            new KeyMapping(new KeyBinding(BACK_SLASH).shortcut(), e -> clearSelection()),
-
-            new MouseMapping(MouseEvent.MOUSE_PRESSED, this::mousePressed)
-        );
-
-        // create OS-specific child mappings
-        // --- mac OS
-        InputMap<ListView<T>> macInputMap = new InputMap<>(control);
-        macInputMap.setInterceptor(event -> !PlatformUtil.isMac());
-        addDefaultMapping(macInputMap, new KeyMapping(new KeyBinding(SPACE).shortcut().ctrl(), e -> toggleFocusOwnerSelection()));
-        addDefaultChildMap(listViewInputMap, macInputMap);
-
-        // --- all other platforms
-        InputMap<ListView<T>> otherOsInputMap = new InputMap<>(control);
-        otherOsInputMap.setInterceptor(event -> PlatformUtil.isMac());
-        addDefaultMapping(otherOsInputMap, new KeyMapping(new KeyBinding(SPACE).ctrl(), e -> toggleFocusOwnerSelection()));
-        addDefaultChildMap(listViewInputMap, otherOsInputMap);
-
+        // PENDING JW: OS specifics 
+//        // create OS-specific child mappings
+//        // --- mac OS
+//        InputMap<ListView<T>> macInputMap = new InputMap<>(control);
+//        macInputMap.setInterceptor(event -> !PlatformUtil.isMac());
+//        addDefaultMapping(macInputMap, new KeyMapping(new KeyBinding(SPACE).shortcut().ctrl(), e -> toggleFocusOwnerSelection()));
+//        addDefaultChildMap(listViewInputMap, macInputMap);
+//
+//        // --- all other platforms
+//        InputMap<ListView<T>> otherOsInputMap = new InputMap<>(control);
+//        otherOsInputMap.setInterceptor(event -> PlatformUtil.isMac());
+//        addDefaultMapping(otherOsInputMap, new KeyMapping(new KeyBinding(SPACE).ctrl(), e -> toggleFocusOwnerSelection()));
+//        addDefaultChildMap(listViewInputMap, otherOsInputMap);
+//
         // create two more child maps, one for vertical listview and one for horizontal listview
         // --- vertical listview
-        InputMap<ListView<T>> verticalListInputMap = new InputMap<>(control);
-        verticalListInputMap.setInterceptor(event -> control.getOrientation() != Orientation.VERTICAL);
+        Map<KeyCodeCombination, EventHandler<KeyEvent>> vertical = new HashMap<>();
+        vertical.put(new KeyCodeCombination(UP), e -> selectPreviousRow());
+        vertical.put(new KeyCodeCombination(KP_UP), e -> selectPreviousRow());
+        vertical.put(new KeyCodeCombination(DOWN), e -> selectNextRow());
+        vertical.put(new KeyCodeCombination(KP_DOWN), e -> selectNextRow());
+        vertical.put(new KeyCodeCombination(UP, SHIFT_DOWN), e -> alsoSelectPreviousRow());
+        vertical.put(new KeyCodeCombination(KP_UP, SHIFT_DOWN), e -> alsoSelectPreviousRow());
+        vertical.put(new KeyCodeCombination(DOWN, SHIFT_DOWN), e -> alsoSelectNextRow());
+        vertical.put(new KeyCodeCombination(KP_DOWN, SHIFT_DOWN), e -> alsoSelectNextRow());
+        
+        vertical.put(new KeyCodeCombination(UP, SHORTCUT_DOWN), e -> focusPreviousRow());
+        vertical.put(new KeyCodeCombination(DOWN, SHORTCUT_DOWN), e -> focusNextRow());
+        
+        vertical.put(new KeyCodeCombination(UP, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectPreviousRow());
+        vertical.put(new KeyCodeCombination(DOWN, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectNextRow());
+        vertical.put(new KeyCodeCombination(PAGE_UP, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectPageUp());
+        vertical.put(new KeyCodeCombination(PAGE_DOWN, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectPageDown());
+        vertical.put(new KeyCodeCombination(HOME, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectAllToFirstRow());
+        vertical.put(new KeyCodeCombination(END, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectAllToLastRow());
+        
+        createAndAddDefaultChildKeyBindings(vertical, e -> control.getOrientation() != Orientation.VERTICAL);
 
-        addDefaultMapping(verticalListInputMap,
-            new KeyMapping(UP, e -> selectPreviousRow()),
-            new KeyMapping(KP_UP, e -> selectPreviousRow()),
-            new KeyMapping(DOWN, e -> selectNextRow()),
-            new KeyMapping(KP_DOWN, e -> selectNextRow()),
+        // horizontal ListView
+        Map<KeyCodeCombination, EventHandler<KeyEvent>> horizontal = new HashMap<>();
+        horizontal.put(new KeyCodeCombination(LEFT), e -> selectPreviousRow());
+        horizontal.put(new KeyCodeCombination(KP_LEFT), e -> selectPreviousRow());
+        horizontal.put(new KeyCodeCombination(RIGHT), e -> selectNextRow());
+        horizontal.put(new KeyCodeCombination(KP_RIGHT), e -> selectNextRow());
 
-            new KeyMapping(new KeyBinding(UP).shift(), e -> alsoSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(KP_UP).shift(), e -> alsoSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(DOWN).shift(), e -> alsoSelectNextRow()),
-            new KeyMapping(new KeyBinding(KP_DOWN).shift(), e -> alsoSelectNextRow()),
+        horizontal.put(new KeyCodeCombination(LEFT, SHIFT_DOWN),e -> alsoSelectPreviousRow());
+        horizontal.put(new KeyCodeCombination(KP_LEFT, SHIFT_DOWN), e -> alsoSelectPreviousRow());
+        horizontal.put(new KeyCodeCombination(RIGHT, SHIFT_DOWN), e -> alsoSelectNextRow());
+        horizontal.put(new KeyCodeCombination(KP_RIGHT, SHIFT_DOWN), e -> alsoSelectNextRow());
 
-            new KeyMapping(new KeyBinding(UP).shortcut(), e -> focusPreviousRow()),
-            new KeyMapping(new KeyBinding(DOWN).shortcut(), e -> focusNextRow()),
+        horizontal.put(new KeyCodeCombination(LEFT, SHORTCUT_DOWN), e -> focusPreviousRow());
+        horizontal.put(new KeyCodeCombination(RIGHT, SHORTCUT_DOWN), e -> focusNextRow());
 
-            new KeyMapping(new KeyBinding(UP).shortcut().shift(), e -> discontinuousSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(DOWN).shortcut().shift(), e -> discontinuousSelectNextRow()),
-            new KeyMapping(new KeyBinding(PAGE_UP).shortcut().shift(), e -> discontinuousSelectPageUp()),
-            new KeyMapping(new KeyBinding(PAGE_DOWN).shortcut().shift(), e -> discontinuousSelectPageDown()),
-            new KeyMapping(new KeyBinding(HOME).shortcut().shift(), e -> discontinuousSelectAllToFirstRow()),
-            new KeyMapping(new KeyBinding(END).shortcut().shift(), e -> discontinuousSelectAllToLastRow())
-        );
+        horizontal.put(new KeyCodeCombination(LEFT, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectPreviousRow());
+        horizontal.put(new KeyCodeCombination(RIGHT, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectNextRow());
 
-        addDefaultChildMap(listViewInputMap, verticalListInputMap);
-
-        // --- horizontal listview
-        InputMap<ListView<T>> horizontalListInputMap = new InputMap<>(control);
-        horizontalListInputMap.setInterceptor(event -> control.getOrientation() != Orientation.HORIZONTAL);
-
-        addDefaultMapping(horizontalListInputMap,
-            new KeyMapping(LEFT, e -> selectPreviousRow()),
-            new KeyMapping(KP_LEFT, e -> selectPreviousRow()),
-            new KeyMapping(RIGHT, e -> selectNextRow()),
-            new KeyMapping(KP_RIGHT, e -> selectNextRow()),
-
-            new KeyMapping(new KeyBinding(LEFT).shift(), e -> alsoSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(KP_LEFT).shift(), e -> alsoSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(RIGHT).shift(), e -> alsoSelectNextRow()),
-            new KeyMapping(new KeyBinding(KP_RIGHT).shift(), e -> alsoSelectNextRow()),
-
-            new KeyMapping(new KeyBinding(LEFT).shortcut(), e -> focusPreviousRow()),
-            new KeyMapping(new KeyBinding(RIGHT).shortcut(), e -> focusNextRow()),
-
-            new KeyMapping(new KeyBinding(LEFT).shortcut().shift(), e -> discontinuousSelectPreviousRow()),
-            new KeyMapping(new KeyBinding(RIGHT).shortcut().shift(), e -> discontinuousSelectNextRow())
-        );
-
-        addDefaultChildMap(listViewInputMap, horizontalListInputMap);
+        createAndAddDefaultChildKeyBindings(horizontal, e -> control.getOrientation() != Orientation.HORIZONTAL);
 
         // set up other listeners
         // We make this an event _filter_ so that we can determine the state
@@ -232,9 +228,9 @@ public class ListViewABeahvior9<T> extends BehaviorBase<ListView<T>> {
      *                                                                         *
      **************************************************************************/
 
-    @Override public InputMap<ListView<T>> getInputMap() {
-        return listViewInputMap;
-    }
+//    @Override public InputMap<ListView<T>> getInputMap() {
+//        return listViewInputMap;
+//    }
 
     @Override public void dispose() {
         ListView<T> control = getNode();

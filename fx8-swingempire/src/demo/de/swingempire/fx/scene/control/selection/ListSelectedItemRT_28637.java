@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -38,7 +39,11 @@ public class ListSelectedItemRT_28637 extends Application {
 
         final ListViewAnchored<String> listView = new ListViewAnchored<String>();
         listView.setItems(items);
-
+        
+        // unrelated: use multipleSelectionModel
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        //------ end unrelated
+        
         Button button = new Button("Remove");
         button.setOnAction(new EventHandler<ActionEvent>() {
             @Override

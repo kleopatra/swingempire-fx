@@ -73,7 +73,7 @@ public class ListViewAnchored<T> extends ListView<T> {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new ListViewASkin9<>(this);
+        return new de.swingempire.fx.scene.control.skin.ListViewASkin<>(this);
     }
     
 }
