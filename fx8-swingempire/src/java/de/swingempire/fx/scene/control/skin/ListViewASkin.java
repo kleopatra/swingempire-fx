@@ -93,7 +93,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
      */
     public ListViewASkin(ListViewAnchored<T> listView,
             ListViewABehavior<T> listViewBehavior) {
-        super(listView);
+        super(listView, listViewBehavior);
         behavior = listViewBehavior;
 
         listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());
@@ -205,6 +205,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
       getVirtualFlow().setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
   }
 //-------- end callback
+  
     protected ListViewABehavior<T> getBehavior() {
         return behavior;
     }

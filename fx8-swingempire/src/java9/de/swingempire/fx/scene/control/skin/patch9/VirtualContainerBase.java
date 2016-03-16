@@ -19,6 +19,7 @@ import javafx.scene.control.skin.VirtualFlow;
  * Plain copy of core, except for 
  * - widening scope of some methods/fields
  * - reflective access to flow methods
+ * - dummy parameter in constructor, for compatibility
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -51,7 +52,7 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
      *
      * @param control
      */
-    public VirtualContainerBase(final C control) {
+    public VirtualContainerBase(final C control, Object dummyBehavior) {
         super(control);
         flow = createVirtualFlow();
 

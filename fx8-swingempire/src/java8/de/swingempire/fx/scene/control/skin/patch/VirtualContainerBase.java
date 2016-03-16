@@ -13,8 +13,8 @@ import javafx.scene.control.IndexedCell;
 public abstract class VirtualContainerBase<C extends Control, I extends IndexedCell> extends
         de.swingempire.fx.scene.control.skin.patch9.VirtualContainerBase<C, I> {
 
-    public VirtualContainerBase(C control) {
-        super(control);
+    public VirtualContainerBase(C control, Object behavior) {
+        super(control, behavior);
     }
 
 

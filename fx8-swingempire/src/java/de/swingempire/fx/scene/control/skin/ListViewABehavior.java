@@ -379,7 +379,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
 //        return ListCellBehavior.hasNonDefaultAnchor(getNode());
 //    }
 
-    private void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
      // CHANGED JW: commented anchor setting        
 //       if (! e.isShiftDown() && ! e.isSynthesized()) {
 //            int index = getNode().getSelectionModel().getSelectedIndex();
