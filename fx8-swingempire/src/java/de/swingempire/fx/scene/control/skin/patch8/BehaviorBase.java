@@ -4,7 +4,16 @@
  */
 package de.swingempire.fx.scene.control.skin.patch8;
 
+import java.util.Map;
+import java.util.function.Predicate;
+
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.control.Control;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 
 
 /**
@@ -25,6 +34,31 @@ public abstract class BehaviorBase<C extends Control>
      */
     public BehaviorBase(C control, String bindingsKey) {
         super(control, KeyBindingsFactory.createKeyBindings(bindingsKey));
+    }
+
+//---------- compatibility API, no-ops
+    
+    /**
+     * Compatibility API: no-op in fx-8, mainly because super's keyBindings
+     * are final and immutatble in super. Nothing we can do about it ...
+     * 
+     * @param key
+     * @param c
+     */
+    protected void addDefaultKeyBinding(KeyCode key, EventHandler<KeyEvent> handler) {
+    }
+    
+    protected void addDefaultKeyBinding(KeyCodeCombination key, EventHandler<KeyEvent> c) {
+    }
+
+    protected void addDefaultFocusTraversalMapping() {
+    }
+        
+    protected void addDefaultMouseBinding(EventType<MouseEvent> type, EventHandler<MouseEvent> handler) {
+    }
+
+    protected void createAndAddDefaultChildKeyBindings(
+            Map<KeyCodeCombination, EventHandler<KeyEvent>> keyBindings, Predicate interceptor) {
     }
 
 }
