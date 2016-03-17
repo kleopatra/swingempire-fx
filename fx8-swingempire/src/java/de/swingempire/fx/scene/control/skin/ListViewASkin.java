@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.skin;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
@@ -104,7 +105,9 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
         getVirtualFlow().setId("virtual-getVirtualFlow()");
         getVirtualFlow().setPannable(IS_PANNABLE);
         getVirtualFlow().setVertical(getSkinnable().getOrientation() == Orientation.VERTICAL);
-        getVirtualFlow().setCellFactory(flow1 -> ListViewASkin.this.createCell());
+//        getVirtualFlow().setCellFactory(flow1 -> ListViewASkin.this.createCell());
+        // PENDING JW: method name changed, use delegate on VCB
+        setCellFactory(flow1 -> createCell());
         getVirtualFlow().setFixedCellSize(listView.getFixedCellSize());
         getChildren().add(getVirtualFlow());
         
@@ -134,14 +137,14 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
         updateRowCount();
         
         // init the behavior 'closures'
-        getBehavior().setOnFocusPreviousRow(() -> { onFocusPreviousCell(); });
-        getBehavior().setOnFocusNextRow(() -> { onFocusNextCell(); });
-        getBehavior().setOnMoveToFirstCell(() -> { onMoveToFirstCell(); });
-        getBehavior().setOnMoveToLastCell(() -> { onMoveToLastCell(); });
-        getBehavior().setOnScrollPageDown(isFocusDriven -> onScrollPageDown(isFocusDriven));
-        getBehavior().setOnScrollPageUp(isFocusDriven -> onScrollPageUp(isFocusDriven));
-        getBehavior().setOnSelectPreviousRow(() -> { onSelectPreviousCell(); });
-        getBehavior().setOnSelectNextRow(() -> { onSelectNextCell(); });
+        getListViewBehavior().setOnFocusPreviousRow(() -> { onFocusPreviousCell(); });
+        getListViewBehavior().setOnFocusNextRow(() -> { onFocusNextCell(); });
+        getListViewBehavior().setOnMoveToFirstCell(() -> { onMoveToFirstCell(); });
+        getListViewBehavior().setOnMoveToLastCell(() -> { onMoveToLastCell(); });
+        getListViewBehavior().setOnScrollPageDown(isFocusDriven -> onScrollPageDown(isFocusDriven));
+        getListViewBehavior().setOnScrollPageUp(isFocusDriven -> onScrollPageUp(isFocusDriven));
+        getListViewBehavior().setOnSelectPreviousRow(() -> { onSelectPreviousCell(); });
+        getListViewBehavior().setOnSelectNextRow(() -> { onSelectNextCell(); });
         
         // Register listeners old
 //        registerChangeListener(listView.itemsProperty(), "ITEMS");
@@ -206,7 +209,15 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
   }
 //-------- end callback
   
-    protected ListViewABehavior<T> getBehavior() {
+    /**
+     * This is a final method in fx-8 BehaviorSkinBase.
+     * can't override. To access ours, we'
+     */
+//    public BehaviorBase<ListViewAnchored<T>> getBehavior() {
+//        return behavior;
+//    }
+    
+    protected ListViewABehavior<T> getListViewBehavior() {
         return behavior;
     }
     
@@ -316,7 +327,13 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
         }
     }
 
-     private ListCell<T> createCell() {
+    /**
+     * Abstract public method in VCB fx-8
+     * per-skin private in fx-9, commenting override for compatibility
+     * @return
+     */
+//     @Override
+    public ListCell<T> createCell() {
         ListCell<T> cell;
         if (getSkinnable().getCellFactory() != null) {
             cell = getSkinnable().getCellFactory().call(getSkinnable());
@@ -492,7 +509,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
             if (isLeadIndex) {
                 // if the last visible cell is selected, we want to shift that cell up
                 // to be the top-most cell, or at least as far to the top as we can go.
-                getVirtualFlow().scrollToTop(lastVisibleCell);
+                /*getVirtualFlow().*/scrollToTop(lastVisibleCell);
 
                 ListCell<T> newLastVisibleCell = /*getVirtualFlow().*/getLastVisibleCellWithinViewPort();
                 lastVisibleCell = newLastVisibleCell == null ? lastVisibleCell : newLastVisibleCell;
@@ -504,7 +521,8 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
         }
 
         int newSelectionIndex = lastVisibleCell.getIndex();
-        getVirtualFlow().scrollTo(lastVisibleCell);
+        // PENDING: look up new/old method names, then delegate
+        /*getVirtualFlow().*/scrollTo(lastVisibleCell);
         return newSelectionIndex;
     }
 
@@ -537,7 +555,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
             if (isLeadIndex) {
                 // if the first visible cell is selected, we want to shift that cell down
                 // to be the bottom-most cell, or at least as far to the bottom as we can go.
-                getVirtualFlow().scrollToBottom(firstVisibleCell);
+                /*getVirtualFlow().*/scrollToBottom(firstVisibleCell);
 
                 ListCell<T> newFirstVisibleCell = /*getVirtualFlow().*/getFirstVisibleCellWithinViewPort();
                 firstVisibleCell = newFirstVisibleCell == null ? firstVisibleCell : newFirstVisibleCell;
@@ -549,7 +567,7 @@ public class ListViewASkin<T> extends VirtualContainerBase<ListViewAnchored<T>, 
         }
 
         int newSelectionIndex = firstVisibleCell.getIndex();
-        getVirtualFlow().scrollTo(firstVisibleCell);
+        /*getVirtualFlow().*/scrollTo(firstVisibleCell);
         return newSelectionIndex;
     }
 

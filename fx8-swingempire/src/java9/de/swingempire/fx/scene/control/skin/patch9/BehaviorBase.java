@@ -96,4 +96,27 @@ public abstract class BehaviorBase<C extends Node>
         }
         return binding;
     }
+    
+//-------- compatibility layer: delegate
+    
+    /**
+     * same as getNode to keep fx-8 happy.
+     * @return
+     */
+    protected C getControl() {
+        return getNode();
+    }
+    
+//----------- compatibility layer: no-ops
+    
+    protected /*final*/ String matchActionForEvent(KeyEvent e) {
+        return null;
+    }
+    
+    protected void callAction(String name) {
+    }    
+    
+    protected void callActionForEvent(KeyEvent e) {
+    }
+
 }

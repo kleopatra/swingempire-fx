@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -37,7 +38,8 @@ public class ListSelectedItemRT_28637 extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        final ListViewAnchored<String> listView = new ListViewAnchored<String>();
+//        final ListView<String> listView = new ListViewAnchored<String>();
+        final ListView<String> listView = new ListView<String>();
         listView.setItems(items);
         
         // unrelated: use multipleSelectionModel

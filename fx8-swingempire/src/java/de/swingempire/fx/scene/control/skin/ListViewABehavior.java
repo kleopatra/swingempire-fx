@@ -24,6 +24,7 @@ import static javafx.scene.input.KeyCombination.*;
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
 import de.swingempire.fx.scene.control.skin.patch.BehaviorBase;
 import javafx.event.EventHandler;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
@@ -139,6 +140,7 @@ public class ListViewABehavior<T>
         }
     }
 
+//------------------------ keyBindings are version dependent, support both!    
     /**
      * Installs the input bindings. This is called exactly once
      * from the constructor. <p>
@@ -240,7 +242,98 @@ public class ListViewABehavior<T>
         createAndAddDefaultChildKeyBindings(horizontal, e -> control.getOrientation() != Orientation.HORIZONTAL);
     }
 
+    /**
+     * Lookup code for fx-8. Not used in fx-9.
+     */
+    @Override
+    protected /*final*/ String matchActionForEvent(KeyEvent e) {
+        String action = super.matchActionForEvent(e);
+        if (action != null) {
+            if (e.getCode() == LEFT || e.getCode() == KP_LEFT) {
+                if (getControl().getEffectiveNodeOrientation() == NodeOrientation.RIGHT_TO_LEFT) {
+                    if (e.isShiftDown()) {
+                        action = "AlsoSelectNextRow";
+                    } else {
+                        if (e.isShortcutDown()) {
+                            action = "FocusNextRow";
+                        } else {
+                            action = getControl().getOrientation() == Orientation.HORIZONTAL ? "SelectNextRow" : "TraverseRight";
+                        }
+                    }
+                }
+            } else if (e.getCode() == RIGHT || e.getCode() == KP_RIGHT) {
+                if (getControl().getEffectiveNodeOrientation() == NodeOrientation.RIGHT_TO_LEFT) {
+                    if (e.isShiftDown()) {
+                        action = "AlsoSelectPreviousRow";
+                    } else {
+                        if (e.isShortcutDown()) {
+                            action = "FocusPreviousRow";
+                        } else {
+                            action = getControl().getOrientation() == Orientation.HORIZONTAL ? "SelectPreviousRow" : "TraverseLeft";
+                        }
+                    }
+                }
+            }
+        }
+        return action;
+    }
 
+    /**
+     * Lookup code for fx-8. Not used in fx-9.
+     */
+    @Override 
+    protected void callAction(String name) {
+        if ("SelectPreviousRow".equals(name)) selectPreviousRow();
+        else if ("SelectNextRow".equals(name)) selectNextRow();
+        else if ("SelectFirstRow".equals(name)) selectFirstRow();
+        else if ("SelectLastRow".equals(name)) selectLastRow();
+        else if ("SelectAllToFirstRow".equals(name)) selectAllToFirstRow();
+        else if ("SelectAllToLastRow".equals(name)) selectAllToLastRow();
+        else if ("SelectAllPageUp".equals(name)) selectAllPageUp();
+        else if ("SelectAllPageDown".equals(name)) selectAllPageDown();
+        else if ("AlsoSelectNextRow".equals(name)) alsoSelectNextRow();
+        else if ("AlsoSelectPreviousRow".equals(name)) alsoSelectPreviousRow();
+        else if ("ClearSelection".equals(name)) clearSelection();
+        else if ("SelectAll".equals(name)) selectAll();
+        else if ("ScrollUp".equals(name)) scrollPageUp();
+        else if ("ScrollDown".equals(name)) scrollPageDown();
+        else if ("FocusPreviousRow".equals(name)) focusPreviousRow();
+        else if ("FocusNextRow".equals(name)) focusNextRow();
+        else if ("FocusPageUp".equals(name)) focusPageUp();
+        else if ("FocusPageDown".equals(name)) focusPageDown();
+        else if ("Activate".equals(name)) activate();
+        else if ("CancelEdit".equals(name)) cancelEdit();
+        else if ("FocusFirstRow".equals(name)) focusFirstRow();
+        else if ("FocusLastRow".equals(name)) focusLastRow();
+        else if ("toggleFocusOwnerSelection".equals(name)) toggleFocusOwnerSelection();
+
+        else if ("SelectAllToFocus".equals(name)) selectAllToFocus(false);
+        else if ("SelectAllToFocusAndSetAnchor".equals(name)) selectAllToFocus(true);
+
+        else if ("DiscontinuousSelectNextRow".equals(name)) discontinuousSelectNextRow();
+        else if ("DiscontinuousSelectPreviousRow".equals(name)) discontinuousSelectPreviousRow();
+        else if ("DiscontinuousSelectPageUp".equals(name)) discontinuousSelectPageUp();
+        else if ("DiscontinuousSelectPageDown".equals(name)) discontinuousSelectPageDown();
+        else if ("DiscontinuousSelectAllToLastRow".equals(name)) discontinuousSelectAllToLastRow();
+        else if ("DiscontinuousSelectAllToFirstRow".equals(name)) discontinuousSelectAllToFirstRow();
+        else super.callAction(name);
+    }
+
+    /**
+     * Lookup code for fx-8. Not used in fx-9.
+     */
+    @Override 
+    protected void callActionForEvent(KeyEvent e) {
+        // RT-12751: we want to keep an eye on the user holding down the shift key, 
+        // so that we know when they enter/leave multiple selection mode. This
+        // changes what happens when certain key combinations are pressed.
+        isShiftDown = e.getEventType() == KeyEvent.KEY_PRESSED && e.isShiftDown();
+        isShortcutDown = e.getEventType() == KeyEvent.KEY_PRESSED && e.isShortcutDown();
+
+        super.callActionForEvent(e);
+    }
+
+//--------------- end of key bindings
 
     /***************************************************************************
      *                                                                         *

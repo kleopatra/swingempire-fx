@@ -6,14 +6,14 @@ package de.swingempire.fx.scene.control.skin.patch8;
 
 import java.util.function.Consumer;
 
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+
+import de.swingempire.fx.util.FXUtils;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
-
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-
-import de.swingempire.fx.util.FXUtils;
+import javafx.util.Callback;
 
 
 /**
@@ -38,15 +38,15 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
      * This enables skin subclasses to provide a custom VirtualFlow implementation,
      * rather than have VirtualContainerBase instantiate the default instance.
      */
-    protected com.sun.javafx.scene.control.skin.VirtualFlow<I> createVirtualFlow() {
-        return new com.sun.javafx.scene.control.skin.VirtualFlow<>();
+    protected /*com.sun.javafx.scene.control.skin.*/VirtualFlow<I> createVirtualFlow() {
+        return new /*com.sun.javafx.scene.control.skin.*/VirtualFlow<>();
     }
 
-    protected com.sun.javafx.scene.control.skin.VirtualFlow<I> getVirtualFlow() {
-        return flow;
+    protected /*com.sun.javafx.scene.control.skin.*/VirtualFlow<I> getVirtualFlow() {
+        return (VirtualFlow<I>) flow;
     }
 
-//--------- delegate to virtual flow: here done reflectively
+//--------- delegate to virtual flow: done reflectively or directly, as needed
     
     protected ScrollBar getHBar() {
         return (ScrollBar) FXUtils.invokeGetMethodValue(
@@ -60,6 +60,34 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
 //        return getVirtualFlow().getVbar();
     }
 
+    protected void setCellDirty(int index) {
+//        FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "setCellDirty", Integer.TYPE, index);
+        getVirtualFlow().setCellDirty(index);
+    }
+
+    protected void setCreateCell(Callback cc) {
+        setCellFactory(cc);
+    }
+    
+    protected void setCellFactory(Callback cc) {
+        getVirtualFlow().setCreateCell(cc);
+    }
+    
+    /**
+     * Method name in flow changed. Here: use new name.
+     * @param cell
+     */
+    protected void scrollToTop(I cell) {
+        getVirtualFlow().showAsFirst(cell);
+    }
+    
+    protected void scrollTo(I cell) {
+        getVirtualFlow().show(cell);
+    }
+    
+    protected void scrollToBottom(I cell) {
+        getVirtualFlow().showAsLast(cell);
+    }
     protected void rebuildCells() {
         getVirtualFlow().rebuildCells();
     }

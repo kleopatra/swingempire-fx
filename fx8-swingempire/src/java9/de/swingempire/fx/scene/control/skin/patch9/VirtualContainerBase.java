@@ -11,7 +11,7 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.skin.VirtualFlow;
+import javafx.util.Callback;
 
 /**
  * Can't extend VirtualContainerBase - due to abstract package-private methods.
@@ -125,12 +125,34 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
     }
     
     protected ScrollBar getVBar() {
-        return (ScrollBar) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getVbar");
+        return (ScrollBar) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getVbar");
 //        return getVirtualFlow().getVbar();
     }
 
     protected void setCellDirty(int index) {
-        FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "setCellDirty", Integer.TYPE, index);
+        FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "setCellDirty", Integer.TYPE, index);
+    }
+    
+    protected void setCreateCell(Callback<VirtualFlow<I>, I> cc) {
+        setCellFactory(cc);
+    }
+    
+    protected void setCellFactory(Callback cc) {
+        getVirtualFlow().setCellFactory(cc);
+    }
+    
+    protected void scrollToTop(I cell) {
+        getVirtualFlow().scrollToTop(cell);
+    }
+    
+    protected void scrollTo(I cell) {
+        getVirtualFlow().scrollTo(cell);
+    }
+    
+    protected void scrollToBottom(I cell) {
+        getVirtualFlow().scrollToBottom(cell);
     }
     
     protected void rebuildCells() {

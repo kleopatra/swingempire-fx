@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collector;
 
 import com.sun.glass.ui.Robot;
-import com.sun.javafx.scene.control.inputmap.InputMap;
+//import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
@@ -56,12 +56,12 @@ public class FXUtils {
      * 
      * @param inputMap
      */
-    public static void cleanupInputMap(InputMap<?> inputMap, EventType... types) {
-        Map eventTypeMappings = (Map) invokeGetFieldValue(InputMap.class, inputMap, "eventTypeMappings");
-        for (EventType eventType : types) {
-            eventTypeMappings.remove(eventType);
-        }
-    }
+//    public static void cleanupInputMap(InputMap<?> inputMap, EventType... types) {
+//        Map eventTypeMappings = (Map) invokeGetFieldValue(InputMap.class, inputMap, "eventTypeMappings");
+//        for (EventType eventType : types) {
+//            eventTypeMappings.remove(eventType);
+//        }
+//    }
 
     
     /**

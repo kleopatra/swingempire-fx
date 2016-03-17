@@ -6,15 +6,17 @@ package de.swingempire.fx.scene.control.skin;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.skin.patch.TableViewSkin;
+import de.swingempire.fx.scene.control.skin.patch.VirtualFlow;
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.VirtualContainerBase;
-import javafx.scene.control.skin.VirtualFlow;
 
 /**
+ * fx-9/8 compatibility - Decision: wait for bug fix bubbling up into ea! 
+ * --------
  * Trying to update the editing state after a layout pass - not working.
  * 
  * @author Jeanette Winzenburg, Berlin
@@ -22,11 +24,11 @@ import javafx.scene.control.skin.VirtualFlow;
 @SuppressWarnings({ "unchecked" })
 public class XTableViewSkin<T> extends TableViewSkin<T> {
 
-    VirtualFlow<IndexedCell<T>> flowAlias;
+//    private VirtualFlow<TableRow<T>> flowAlias;
 
     public XTableViewSkin(TableView<T> control) {
         super(control);
-        flowAlias = (VirtualFlow<IndexedCell<T>>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, this, "getVirtualFlow");
+//        flowAlias = (VirtualFlow<IndexedCell<T>>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, this, "getVirtualFlow");
     }
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
@@ -34,6 +36,19 @@ public class XTableViewSkin<T> extends TableViewSkin<T> {
         updateEditingCell();
     }
     
+    /**
+     * Can't: it's package private in fx-9. Can't inject, the field is
+     * final. Hmmm... 
+     * 
+     * Can't do anything flow-specific in this concrete class - would
+     * break compatibility.
+     * @return
+     */
+//    @Override
+//    protected VirtualFlow<TableRow<T>> createVirtualFlow() {
+//        flowAlias = new VirtualFlow<>();
+//        return flowAlias;
+//    }
     /**
      * Meant to start a pending edit, if any, after a layout pass.
      * 

@@ -38,6 +38,10 @@ public abstract class BehaviorBase<C extends Control>
         super(control, KeyBindingsFactory.createKeyBindings(bindingsKey));
     }
 
+    public boolean hasInputMap() {
+        return false;
+    }
+    
 //------- compatibility API, delegate
     
     protected C getNode() {

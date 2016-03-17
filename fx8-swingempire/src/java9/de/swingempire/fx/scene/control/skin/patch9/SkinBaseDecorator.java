@@ -4,8 +4,11 @@
  */
 package de.swingempire.fx.scene.control.skin.patch9;
 
+import java.util.Map;
+
 import com.sun.javafx.scene.control.LambdaMultiplePropertyChangeListenerHandler;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
+import com.sun.javafx.scene.control.inputmap.InputMap;
 
 import static de.swingempire.fx.util.FXUtils.*;
 
@@ -79,4 +82,21 @@ public interface SkinBaseDecorator {
         // need to hack out
         cleanupInputMap(behavior.getInputMap(), events);
     }
+    
+    /**
+     * This is a hack around InputMap not cleaning up internals on removing mappings.
+     * We remove MousePressed/MouseReleased/MouseDragged mappings from the internal map.
+     * <p>
+     * Beware: obviously this is dirty!
+     * 
+     * @param inputMap
+     */
+    public static void cleanupInputMap(InputMap<?> inputMap, EventType... types) {
+        Map eventTypeMappings = (Map) invokeGetFieldValue(InputMap.class, inputMap, "eventTypeMappings");
+        for (EventType eventType : types) {
+            eventTypeMappings.remove(eventType);
+        }
+    }
+
+
 }
