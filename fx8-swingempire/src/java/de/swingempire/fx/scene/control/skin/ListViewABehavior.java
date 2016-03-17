@@ -4,15 +4,19 @@
  */
 package de.swingempire.fx.scene.control.skin;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * Note: these are imports from hidden API
+ * Didn't change across versions, so keep for now.
+ */
 import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 import com.sun.javafx.scene.control.behavior.TwoLevelFocusListBehavior;
 import com.sun.javafx.scene.control.skin.Utils;
+//-------- end references to hidden api
 
 import static javafx.scene.input.KeyCode.*;
 import static javafx.scene.input.KeyCombination.*;
@@ -31,7 +35,7 @@ import javafx.util.Callback;
 
 /**
 * PENDING JW: the api doc is copied from the old (jdk8u20) version, 
-* need to check for jdk9 - ntohing tested yet!!
+* need to check for jdk9 - nohing tested yet!!
 * 
 * Goal: remove all direct references to internal core api
 * - built inheritance chain, lowest in skin.patch8/9 (version specific), next higher
@@ -76,8 +80,9 @@ import javafx.util.Callback;
 * - extracted the actual extend into <code>selectTo(newIndex, clear)</code> 
 */
 
-public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
-//    private final InputMap<ListView<T>> listViewInputMap;
+public class ListViewABehavior<T> 
+    extends BehaviorBase<ListView<T>>
+    implements ListViewBehaviors {
 
     /**
      * Indicates that a keyboard key has been pressed which represents the
@@ -110,6 +115,42 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         // create a map for listView-specific mappings
 //        listViewInputMap = createInputMap();
 
+        installInputBindings();
+
+        // set up other listeners
+        // We make this an event _filter_ so that we can determine the state
+        // of the shift key before the event handlers get a shot at the event.
+        control.addEventFilter(KeyEvent.ANY, keyEventListener);
+
+//        control.itemsProperty().addListener(weakItemsListener);
+//        if (control.getItems() != null) {
+//            control.getItems().addListener(weakItemsListListener);
+//        }
+//
+//        // Fix for RT-16565
+//        control.selectionModelProperty().addListener(weakSelectionModelListener);
+//        if (control.getSelectionModel() != null) {
+//            control.getSelectionModel().getSelectedIndices().addListener(weakSelectedIndicesListener);
+//        }
+
+        // Only add this if we're on an embedded platform that supports 5-button navigation
+        if (Utils.isTwoLevelFocus()) {
+            tlFocus = new TwoLevelFocusListBehavior(control); // needs to be last.
+        }
+    }
+
+    /**
+     * Installs the input bindings. This is called exactly once
+     * from the constructor. <p>
+     * 
+     * Note that this is effective
+     * only in fx-9. For fx-8 the bindings are hard-coded into
+     * the compatibility layer so this method does nothing.
+     * 
+     */
+    private void installInputBindings() {
+        if (!hasInputMap()) return;
+        ListView<T> control = getNode();
         // add focus traversal mappings
         addDefaultFocusTraversalMapping();
 
@@ -197,27 +238,6 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
         horizontal.put(new KeyCodeCombination(RIGHT, SHORTCUT_DOWN, SHIFT_DOWN), e -> discontinuousSelectNextRow());
 
         createAndAddDefaultChildKeyBindings(horizontal, e -> control.getOrientation() != Orientation.HORIZONTAL);
-
-        // set up other listeners
-        // We make this an event _filter_ so that we can determine the state
-        // of the shift key before the event handlers get a shot at the event.
-        control.addEventFilter(KeyEvent.ANY, keyEventListener);
-
-//        control.itemsProperty().addListener(weakItemsListener);
-//        if (control.getItems() != null) {
-//            control.getItems().addListener(weakItemsListListener);
-//        }
-//
-//        // Fix for RT-16565
-//        control.selectionModelProperty().addListener(weakSelectionModelListener);
-//        if (control.getSelectionModel() != null) {
-//            control.getSelectionModel().getSelectedIndices().addListener(weakSelectedIndicesListener);
-//        }
-
-        // Only add this if we're on an embedded platform that supports 5-button navigation
-        if (Utils.isTwoLevelFocus()) {
-            tlFocus = new TwoLevelFocusListBehavior(control); // needs to be last.
-        }
     }
 
 
@@ -227,10 +247,6 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
      * Implementation of BehaviorBase API                                      *
      *                                                                         *
      **************************************************************************/
-
-//    @Override public InputMap<ListView<T>> getInputMap() {
-//        return listViewInputMap;
-//    }
 
     @Override public void dispose() {
         ListView<T> control = getNode();
@@ -255,6 +271,7 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     private boolean isShiftDown = false;
     private boolean isShortcutDown = false;
 
+    //--------- implementation of ListViewBehaviors
     private Callback<Boolean, Integer> onScrollPageUp;
     private Callback<Boolean, Integer> onScrollPageDown;
     private Runnable onFocusPreviousRow;
@@ -264,15 +281,49 @@ public class ListViewABehavior<T> extends BehaviorBase<ListView<T>> {
     private Runnable onMoveToFirstCell;
     private Runnable onMoveToLastCell;
 
-    public void setOnScrollPageUp(Callback<Boolean, Integer> c) { onScrollPageUp = c; }
-    public void setOnScrollPageDown(Callback<Boolean, Integer> c) { onScrollPageDown = c; }
-    public void setOnFocusPreviousRow(Runnable r) { onFocusPreviousRow = r; }
-    public void setOnFocusNextRow(Runnable r) { onFocusNextRow = r; }
-    public void setOnSelectPreviousRow(Runnable r) { onSelectPreviousRow = r; }
-    public void setOnSelectNextRow(Runnable r) { onSelectNextRow = r; }
-    public void setOnMoveToFirstCell(Runnable r) { onMoveToFirstCell = r; }
-    public void setOnMoveToLastCell(Runnable r) { onMoveToLastCell = r; }
+    
+    @Override
+    public void setOnScrollPageUp(Callback<Boolean, Integer> c) {
+        onScrollPageUp = c;
+    }
 
+    @Override
+    public void setOnScrollPageDown(Callback<Boolean, Integer> c) {
+        onScrollPageDown = c;
+    }
+
+    @Override
+    public void setOnFocusPreviousRow(Runnable r) {
+        onFocusPreviousRow = r;
+    }
+
+    @Override
+    public void setOnFocusNextRow(Runnable r) {
+        onFocusNextRow = r;
+    }
+
+    @Override
+    public void setOnSelectPreviousRow(Runnable r) {
+        onSelectPreviousRow = r;
+    }
+
+    @Override
+    public void setOnSelectNextRow(Runnable r) {
+        onSelectNextRow = r;
+    }
+
+    @Override
+    public void setOnMoveToFirstCell(Runnable r) {
+        onMoveToFirstCell = r;
+    }
+
+    @Override
+    public void setOnMoveToLastCell(Runnable r) {
+        onMoveToLastCell = r;
+    }
+
+    //---------- end implementation of ListViewBehaviors
+    
     private boolean selectionChanging = false;
 
 //    private final ListChangeListener<Integer> selectedIndicesListener = c -> {

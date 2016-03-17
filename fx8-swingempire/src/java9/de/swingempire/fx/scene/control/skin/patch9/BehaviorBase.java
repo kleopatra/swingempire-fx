@@ -39,6 +39,10 @@ public abstract class BehaviorBase<C extends Node>
         inputMap = createInputMap();
     }
     
+    protected boolean hasInputMap() {
+        return true;
+    }
+    
     @Override
     public InputMap<C> getInputMap() {
         return inputMap;
