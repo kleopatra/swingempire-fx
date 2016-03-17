@@ -38,8 +38,8 @@ public class ListSelectedItemRT_28637 extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-//        final ListView<String> listView = new ListViewAnchored<String>();
-        final ListView<String> listView = new ListView<String>();
+        final ListView<String> listView = new ListViewAnchored<String>();
+//        final ListView<String> listView = new ListView<String>();
         listView.setItems(items);
         
         // unrelated: use multipleSelectionModel

@@ -120,7 +120,8 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
 //--------- delegate to virtual flow: here done reflectively
     
     protected ScrollBar getHBar() {
-        return (ScrollBar) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getHbar");
+        return (ScrollBar) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getHbar");
 //        return getVirtualFlow().getHbar();
     }
     
@@ -156,32 +157,39 @@ public abstract class VirtualContainerBase<C extends Control, I extends IndexedC
     }
     
     protected void rebuildCells() {
-        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "rebuildCells");
+        FXUtils.invokeMethod(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "rebuildCells");
     }
     
     protected void reconfigureCells() {
-        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "reconfigureCells");
+        FXUtils.invokeMethod(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "reconfigureCells");
     }
     
     protected void recreateCells() {
-        FXUtils.invokeMethod(VirtualFlow.class, getVirtualFlow(), "recreateCells");
+        FXUtils.invokeMethod(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "recreateCells");
     }
 
     protected I getLastVisibleCellWithinViewPort() {
-        return (I) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getLastVisibleCellWithinViewPort");
+        return (I) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getLastVisibleCellWithinViewPort");
     }
 
     protected I getFirstVisibleCellWithinViewPort() {
-        return (I) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getFirstVisibleCellWithinViewPort");
+        return (I) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getFirstVisibleCellWithinViewPort");
     }
     
     private double getCellLengthFromFlow(int i) {
-        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getCellLength", Integer.TYPE, i);
+        return (double) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getCellLength", Integer.TYPE, i);
     }
 
 
     private double getMaxCellWidthFromFlow(int rowsToCount) {
-        return (double) FXUtils.invokeGetMethodValue(VirtualFlow.class, getVirtualFlow(), "getMaxCellWidth", Integer.TYPE, rowsToCount);
+        return (double) FXUtils.invokeGetMethodValue(
+                javafx.scene.control.skin.VirtualFlow.class, getVirtualFlow(), "getMaxCellWidth", Integer.TYPE, rowsToCount);
 //        return flow.getMaxCellWidth(rowsToCount);
     }
 
