@@ -13,10 +13,9 @@ import javafx.scene.control.TableCell;
  * <p>
  * Note: we should extend TableCellSkinBase instead of TableCellSkin,
  * Can't - scope of columnVisibility/Width changed to package, no way to override.
- * TabelCellSkinBase rather useless, needed to 
  * <p>
  * reported: https://bugs.openjdk.java.net/browse/JDK-8148573
- * status: fixed, maybe not yet in public ea
+ * status: fixed, maybe not yet in public ea (as of 9-ea-107)
  * <p>
  * 
  * needed to go dirty replacing Behavior:

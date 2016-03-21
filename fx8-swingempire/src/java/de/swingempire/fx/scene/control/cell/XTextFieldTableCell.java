@@ -116,7 +116,7 @@ public class XTextFieldTableCell<S, T> extends TextFieldTableCell<S, T> {
      * 
      * <p>
      * 
-     * Newest version (jdk9) uses a hack - XHackTableCellSkin that extends
+     * Newest version (jdk9) uses a hack in the compatibility layer, extending
      * from the concrete TableCellSkin (due to not being able to extend
      * TableCellSkinBase - https://bugs.openjdk.java.net/browse/JDK-8148573 )
      */

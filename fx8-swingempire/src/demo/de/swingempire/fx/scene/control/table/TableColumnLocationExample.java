@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.skin.patch.SkinBaseDecorator;
+import de.swingempire.fx.scene.control.skin.patch.TableViewSkin;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
@@ -21,10 +22,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
+// PENDING JW: version dependency!
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
-import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -33,7 +33,7 @@ public class TableColumnLocationExample extends Application {
     @Override
     public void start(Stage primaryStage) {
         TableView<Person> table = new TableView<>();
-        table.setSkin(new MyTableViewSkin<>(table));
+        table.setSkin(new TableViewSkin<>(table));
         table.getColumns().add(column("First Name", Person::firstNameProperty, 120));
         table.getColumns().add(column("Last Name", Person::lastNameProperty, 120));
         table.getColumns().add(column("Email", Person::emailProperty, 250));
@@ -63,8 +63,8 @@ public class TableColumnLocationExample extends Application {
      * @param table
      */
     private void buttonsPerHeader(TableView<Person> table, Pane root) {
-        if (!(table.getSkin() instanceof TableViewSkinBase)) return;
-        MyTableViewSkin<?> skin = (MyTableViewSkin<?>) table.getSkin();
+        if (!(table.getSkin() instanceof TableViewSkin)) return;
+        TableViewSkin<?> skin = (TableViewSkin<?>) table.getSkin();
         TableHeaderRow headerRow = skin.getTableHeader();
         for (TableColumn<?, ?> col : table.getColumns()) {
             // Lookup method didn't make it into the public, Bug or feature?
@@ -161,20 +161,6 @@ public class TableColumnLocationExample extends Application {
              // table.setFixedCellSize(100);
         }
 
-        /**
-         * Implemented to grab header. Super method is package and final.
-         * 
-         * @return
-         */
-        public TableHeaderRow getTableHeader() {
-            return header;
-        }
-
-        @Override
-        protected TableHeaderRow createTableHeaderRow() {
-            header = super.createTableHeaderRow();
-            return header;
-        }
 
     }
     public static void main(String[] args) {
