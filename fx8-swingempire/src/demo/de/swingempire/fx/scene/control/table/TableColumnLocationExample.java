@@ -10,11 +10,11 @@ import java.util.logging.Logger;
 
 //PENDING JW: version dependency!
 // fx-9
-//import javafx.scene.control.skin.TableColumnHeader;
-//import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.skin.TableHeaderRow;
 // fx-8
-import com.sun.javafx.scene.control.skin.TableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
+//import com.sun.javafx.scene.control.skin.TableColumnHeader;
+//import com.sun.javafx.scene.control.skin.TableHeaderRow;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.skin.patch.TableViewSkin;
