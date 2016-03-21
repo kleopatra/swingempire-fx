@@ -21,6 +21,7 @@ import com.sun.javafx.scene.control.behavior.KeyBinding;
 import com.sun.javafx.scene.control.behavior.OrientedKeyBinding;
 
 import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyEvent.*;
 
 /**
  * Beware: not really functional  in master9 - c&p'd from master8!
@@ -109,12 +110,50 @@ public class KeyBindingsFactory {
         LIST_VIEW_BINDINGS.add(new KeyBinding(BACK_SLASH, "ClearSelection").shortcut());
     }
     
+//---------- combo base bindings
+    
+    private static final String PRESS_ACTION = "Press";
+    private static final String RELEASE_ACTION = "Release";
+
+    protected static final List<KeyBinding> COMBO_BOX_BASE_BINDINGS = new ArrayList<KeyBinding>();
+    static {
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(F4, KEY_RELEASED, "togglePopup"));
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(UP, "togglePopup").alt());
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(DOWN, "togglePopup").alt());
+
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(SPACE, KEY_PRESSED, PRESS_ACTION));
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(SPACE, KEY_RELEASED, RELEASE_ACTION));
+
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(ENTER, KEY_PRESSED, PRESS_ACTION));
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(ENTER, KEY_RELEASED, RELEASE_ACTION));
+
+        // The following keys are forwarded to the parent container
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(ESCAPE, "Cancel"));
+        COMBO_BOX_BASE_BINDINGS.add(new KeyBinding(F10, "ToParent"));
+    }
+
+
+    
+//---------------- Combobox bindings
+    
+    
+    
+    protected static final List<KeyBinding> COMBO_BOX_BINDINGS = new ArrayList<KeyBinding>();
+    static {
+        COMBO_BOX_BINDINGS.add(new KeyBinding(UP, KEY_PRESSED, "selectPrevious"));
+        COMBO_BOX_BINDINGS.add(new KeyBinding(DOWN, "selectNext"));
+        COMBO_BOX_BINDINGS.addAll(COMBO_BOX_BASE_BINDINGS);
+    }
+
+
+    
 //---------------- all known bindings
     
     protected static final Map<String, List<KeyBinding>> KEY_BINDINGS_MAP = new HashMap<>();
 
     static {
         KEY_BINDINGS_MAP.put("ListViewBindings", LIST_VIEW_BINDINGS);
+        KEY_BINDINGS_MAP.put("ComboBoxBindings", COMBO_BOX_BINDINGS);
     }
 
 //----------------- factory    

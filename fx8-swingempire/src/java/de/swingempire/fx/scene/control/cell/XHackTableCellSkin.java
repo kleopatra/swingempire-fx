@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
-import de.swingempire.fx.scene.control.skin.patch9.SkinBaseDecorator;
+import de.swingempire.fx.scene.control.skin.patch.SkinBaseDecorator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.skin.TableCellSkin;
 
@@ -28,7 +28,8 @@ import javafx.scene.control.skin.TableCellSkin;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T> implements SkinBaseDecorator {
+public class XHackTableCellSkin<S,T> extends TableCellSkin<S,T> 
+    implements SkinBaseDecorator {
 
     private BehaviorBase<TableCell<S,T>> behaviorBase;
     

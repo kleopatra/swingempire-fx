@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.skin.patch.SkinBaseDecorator;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
@@ -53,7 +54,9 @@ public class TableColumnLocationExample extends Application {
 //        buttonsPerLabel(table, root);
         buttonsPerHeader(table, root);
         // very quick check if SkinDecorator is working
-//        table.setFixedCellSize(40);
+        // change fixed after having been added to the scene
+        // to demonstrate that the changeListener on the property is removed
+        // table.setFixedCellSize(100);
     }
 
     /**
@@ -61,9 +64,9 @@ public class TableColumnLocationExample extends Application {
      */
     private void buttonsPerHeader(TableView<Person> table, Pane root) {
         if (!(table.getSkin() instanceof TableViewSkinBase)) return;
-        MyTableViewSkin skin = (MyTableViewSkin) table.getSkin();
+        MyTableViewSkin<?> skin = (MyTableViewSkin<?>) table.getSkin();
         TableHeaderRow headerRow = skin.getTableHeader();
-        for (TableColumn col : table.getColumns()) {
+        for (TableColumn<?, ?> col : table.getColumns()) {
             // Lookup method didn't make it into the public, Bug or feature?
             TableColumnHeader header = 
                 (TableColumnHeader) //headerRow.getColumnHeaderFor(col);
@@ -140,18 +143,22 @@ public class TableColumnLocationExample extends Application {
      * @author Jeanette Winzenburg, Berlin
      */
     public static class MyTableViewSkin<T> extends TableViewSkin<T>
-//            implements SkinBaseDecorator 
+            implements SkinBaseDecorator 
             {
 
         private TableHeaderRow header;
 
         /**
-         * @param control
+         * @param table
          */
-        public MyTableViewSkin(TableView<T> control) {
-            super(control);
+        public MyTableViewSkin(TableView<T> table) {
+            super(table);
             // very quick check if SkinDecorator is working
-            // unregisterChangeListener(control.fixedCellSizeProperty());
+            // unregisterChangeListener(table.fixedCellSizeProperty());
+             // if we set the fixedCellSize here, the effect
+             // (of having no effect) can't be seen - must do after
+             // having been added to the scenegraph
+             // table.setFixedCellSize(100);
         }
 
         /**
