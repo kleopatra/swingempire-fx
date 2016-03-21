@@ -8,8 +8,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+//PENDING JW: version dependency!
+// fx-9
+//import javafx.scene.control.skin.TableColumnHeader;
+//import javafx.scene.control.skin.TableHeaderRow;
+// fx-8
+import com.sun.javafx.scene.control.skin.TableColumnHeader;
+import com.sun.javafx.scene.control.skin.TableHeaderRow;
+
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.skin.patch.SkinBaseDecorator;
 import de.swingempire.fx.scene.control.skin.patch.TableViewSkin;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
@@ -22,9 +29,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
-// PENDING JW: version dependency!
-import javafx.scene.control.skin.TableColumnHeader;
-import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -137,32 +141,6 @@ public class TableColumnLocationExample extends Application {
     private static final Logger LOG = Logger
             .getLogger(TableColumnLocationExample.class.getName());
 
-    /**
-     * Override to get access to TableHeaderRow.
-     * 
-     * @author Jeanette Winzenburg, Berlin
-     */
-    public static class MyTableViewSkin<T> extends TableViewSkin<T>
-            implements SkinBaseDecorator 
-            {
-
-        private TableHeaderRow header;
-
-        /**
-         * @param table
-         */
-        public MyTableViewSkin(TableView<T> table) {
-            super(table);
-            // very quick check if SkinDecorator is working
-            // unregisterChangeListener(table.fixedCellSizeProperty());
-             // if we set the fixedCellSize here, the effect
-             // (of having no effect) can't be seen - must do after
-             // having been added to the scenegraph
-             // table.setFixedCellSize(100);
-        }
-
-
-    }
     public static void main(String[] args) {
         launch(args);
     }
