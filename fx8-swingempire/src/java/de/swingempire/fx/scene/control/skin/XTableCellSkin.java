@@ -4,15 +4,8 @@
  */
 package de.swingempire.fx.scene.control.skin;
 
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-import com.sun.javafx.scene.control.skin.TableCellSkinBase;
-
 import de.swingempire.fx.scene.control.skin.patch.TableCellSkin;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 
 /**
  * Can't - scope of columnVisibility/Width changed to package, no way to override.
