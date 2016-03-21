@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import de.swingempire.fx.scene.control.XTableView;
+import de.swingempire.fx.scene.control.skin.XTableCellSkin;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.Skin;
@@ -121,8 +122,8 @@ public class XTextFieldTableCell<S, T> extends TextFieldTableCell<S, T> {
      */
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new XHackTableCellSkin<S, T>(this);
-//        return new XTableCellSkin<S, T>(this);
+//        return new XHackTableCellSkin<S, T>(this);
+        return new XTableCellSkin<S, T>(this);
     }
 
 

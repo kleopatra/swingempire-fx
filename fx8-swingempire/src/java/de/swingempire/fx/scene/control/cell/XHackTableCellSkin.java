@@ -8,9 +8,10 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
+import de.swingempire.fx.scene.control.skin.XTableCellBehavior;
 import de.swingempire.fx.scene.control.skin.patch.SkinBaseDecorator;
+import de.swingempire.fx.scene.control.skin.patch.TableCellSkin;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.skin.TableCellSkin;
 
 /**
  * Not really useful for replacing Behavior:

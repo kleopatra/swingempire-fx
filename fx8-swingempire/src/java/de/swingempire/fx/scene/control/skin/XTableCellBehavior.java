@@ -2,13 +2,12 @@
  * Created on 12.08.2014
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.scene.control.skin;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-
 import de.swingempire.fx.scene.control.XTableView;
+import de.swingempire.fx.scene.control.skin.patch.TableCellBehavior;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
