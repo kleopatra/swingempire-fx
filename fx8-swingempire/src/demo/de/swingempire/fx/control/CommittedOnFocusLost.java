@@ -6,6 +6,7 @@ package de.swingempire.fx.control;
 
 import static javafx.scene.control.TextFormatter.*;
 
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -27,6 +28,15 @@ import javafx.stage.Stage;
  * Spinner might be similar, can't tell without bug missing commitOnFocusLost fixed
  * https://bugs.openjdk.java.net/browse/JDK-8150946
  * 
+ * <p>
+ * experimenting after Jonathan's comment (and lowering priority), marked 
+ * by "experimenting".
+ * 
+ * <p>
+ * An idea that seems to be working is to let a custom Combo (Spinner, Picker)
+ * register a listener to the focusedProperty and commit on lost. That's
+ * what core TextInputControl does.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class CommittedOnFocusLost extends Application {
@@ -35,6 +45,7 @@ public class CommittedOnFocusLost extends Application {
         // TextField with TextFormatter: behaves as expected:
         TextField textField = new TextField();
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
+        
         textField.setTextFormatter(formatter);
         textField.focusedProperty().addListener((src, ov, nv) -> {
             if (!nv) {
@@ -43,12 +54,39 @@ public class CommittedOnFocusLost extends Application {
             }
         });
 
-        
+        textField.setOnAction(e -> {
+            System.out.println("textfield action: " + 
+                    textField.getText() + "=" + formatter.getValue());
+        });
         // compare to combo
         ObservableList<String> items = FXCollections.observableArrayList("One", "Two", "All");
-        ComboBox<String> comboBox = new ComboBox<>(items);
+        ComboBox<String> comboBox = new ComboBox<String>(items) {
+            {
+                focusedProperty().addListener((src, ov, nv) -> {
+                    if (!nv && isEditable()) {
+                        setValue(getEditor().getText());
+                        System.out.println("focused in combo constructor");
+                    }
+                });
+            }
+
+        };
+        comboBox.getEditor().focusedProperty().addListener((src, ov, nv) -> {
+            if (!nv) {
+                System.out.println("editor focused " + comboBox.getEditor().getText() + " = " + comboBox.getValue());
+            }
+        });
+//        ComboBoxX<String> comboBox = new ComboBoxX<>(items);
         comboBox.setEditable(true);
         comboBox.setValue(items.get(0));
+        // experimenting
+//        TextFormatter<String> formatterC = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
+//        comboBox.getEditor().setTextFormatter(formatterC);
+//        formatterC.valueProperty().addListener((src, ov, nv) -> {
+////            comboBox.setValue(nv);
+//            System.out.println("formatter committed: " + nv + "=" + comboBox.getValue());
+//        });
+        // end of experimenting
         comboBox.focusedProperty().addListener((src, ov, nv) -> {
             if (!nv) {
                 System.out.println("combo committed: " + 

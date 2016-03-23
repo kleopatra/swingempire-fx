@@ -45,16 +45,17 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.Skinnable;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.ComboBoxPopupControl;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import javafx.stage.Popup;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 
+import static javafx.scene.control.TextFormatter.*;
 
 //import javafx.scene.accessibility.Attribute;
 
@@ -195,6 +196,7 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         this.comboBox = comboBox;
 //        updateComboBoxItems();
 
+        invokeCommitHandler();
         // PENDING JW: textfield moved up the chain?
         // editable input node
 //        this.textField = comboBox.isEditable() ? getEditableInputNode() : null;
@@ -316,6 +318,25 @@ public class ComboBoxXListViewSkin<T> extends ComboBoxPopupControl<T> {
         registerChangeListener(control.editableProperty(), e -> updateEditableHack());
 
         injectPopup();
+    }
+
+    /**
+    * Trying to work around 
+    * https://bugs.openjdk.java.net/browse/JDK-8151129
+    * 
+    */
+    private void invokeCommitHandler() {
+        TextField field = (TextField) FXUtils.invokeGetMethodValue(
+                ComboBoxPopupControl.class, this, "getEditableInputNode");
+        if (field == null) return;
+//        TextFormatter formatter = new TextFormatter(IDENTITY_STRING_CONVERTER);
+//        field.setTextFormatter(formatter);
+//        field.focusedProperty().addListener(ov -> {//(src, ov, nv) -> {
+//            if (!field.isFocused()) {
+//                LOG.info("text? " + field.getText());
+//                comboBox.setValue((T) field.getText());
+//            }
+//        });
     }
 
     /**

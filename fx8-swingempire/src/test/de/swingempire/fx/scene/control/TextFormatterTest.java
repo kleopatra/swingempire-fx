@@ -6,14 +6,6 @@ package de.swingempire.fx.scene.control;
 
 import java.util.function.UnaryOperator;
 
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextFormatter.Change;
-import javafx.util.StringConverter;
-import javafx.util.converter.IntegerStringConverter;
-
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -24,8 +16,18 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import de.swingempire.fx.junit.JavaFXThreadingRule;
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextFormatter.Change;
+import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -91,8 +93,10 @@ public class TextFormatterTest {
         assertSame(formatter.getValueConverter(), factory.getConverter());
     }
     
+    
     /**
      * Doc error: undocumented IllegalStateException if StringConverter is null.
+     * 
      */
     @Test
     @Ignore
@@ -101,6 +105,30 @@ public class TextFormatterTest {
         new TextFormatter((StringConverter) null);
         new TextFormatter<Integer>(null, 5);
     }
+    /**
+     * Test interaction between textFormatter and textField.
+     * Here we change the value in formatter and check if Action
+     * is fired.
+     * 
+     * No action fired, should it? It's doc'ed to be fired if
+     * ENTER pressed.
+     */
+    @Test
+    public void testTextFormatterValueChangeAction() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        field.setOnAction(e -> {
+            count.set(count.get() + 1);
+        });
+        String updatedValue = "updated";
+        formatter.setValue(updatedValue);
+        assertEquals("action must be fired?", 1, count.get());
+        assertEquals("field must be updated on value change", updatedValue, field.getText());
+    }
+    
     /**
      * Test interaction between textFormatter and textField.
      * Here we change the value in formatter and verify update 
