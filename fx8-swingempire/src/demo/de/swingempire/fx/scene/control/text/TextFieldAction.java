@@ -4,21 +4,31 @@
  */
 package de.swingempire.fx.scene.control.text;
 
+import java.util.logging.Logger;
+
+import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
+import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
+
 import static javafx.scene.control.TextFormatter.*;
 
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
+import javafx.scene.control.skin.TextFieldSkin;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -45,8 +55,13 @@ public class TextFieldAction extends Application {
 
         // compare to TextField with TextFormatter: value not yet committed
         TextField textField = new TextField();
+//        textField.setSkin(new TextFieldSkin(textField));
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
         
+        textField.skinProperty().addListener((src, ov, nv) -> {
+            replaceEnter(textField);
+            
+        });
         textField.setTextFormatter(formatter);
         textField.setOnAction(e -> {
             System.out.println("textfield action: " + 
@@ -71,6 +86,45 @@ public class TextFieldAction extends Application {
         return box;
     }
 
+    /** 
+     * Hack-around: text not committed on receiving action
+     * https://bugs.openjdk.java.net/browse/JDK-8152557
+     * 
+     * A - reflectively replace the field's keyBinding to ENTER, must
+     * be called after the skin is installed.
+     * 
+     * B - eventhandler that commits before firing the action
+     * <p>
+     * Note: we can't extend/change the skin's behavior, it's
+     * final!
+     * 
+     * @param field
+     */
+    protected void replaceEnter(TextField field) {
+        TextFieldBehavior behavior = (TextFieldBehavior) FXUtils.invokeGetFieldValue(
+                TextFieldSkin.class, field.getSkin(), "behavior");
+        InputMap inputMap = behavior.getInputMap();
+        KeyBinding binding = new KeyBinding(KeyCode.ENTER);
+        
+        KeyMapping keyMapping = new KeyMapping(binding, e -> {
+            e.consume();
+            fire(field);
+        });
+        // note: this fails prior to 9-ea-108
+        // due to https://bugs.openjdk.java.net/browse/JDK-8150636
+        inputMap.getMappings().remove(keyMapping); 
+        inputMap.getMappings().add(keyMapping);
+    }
+    
+    protected void fire(TextField textField) {
+        EventHandler<ActionEvent> onAction = textField.getOnAction();
+        ActionEvent actionEvent = new ActionEvent(textField, null);
+        // first commit, then fire
+        textField.commitValue();
+        textField.fireEvent(actionEvent);
+        // PENDING JW: missing forwardToParent
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setScene(new Scene(getContent()));
@@ -82,4 +136,7 @@ public class TextFieldAction extends Application {
         launch(args);
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(TextFieldAction.class.getName());
 }

@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control;
 
 import java.util.function.UnaryOperator;
+import java.util.logging.Logger;
 
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -15,17 +16,30 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
+import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
+import javafx.scene.control.skin.TextFieldSkin;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
@@ -105,6 +119,104 @@ public class TextFormatterTest {
         new TextFormatter((StringConverter) null);
         new TextFormatter<Integer>(null, 5);
     }
+    
+
+    /**
+     * Test issue:
+     * https://bugs.openjdk.java.net/browse/JDK-8152557
+     *
+     * Can't replace behavior - final! No way to intercept ...?
+     * Maybe replace mapping?
+     */
+    @Test
+    public void testTextFormatterCommittedBeforeAction() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        StringProperty formatterValue = new SimpleStringProperty(formatter.getValue());
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        field.setOnAction(e -> {
+            count.set(count.get() + 1);
+            formatterValue.set(formatter.getValue());
+        });
+        new StageLoader(field);
+        field.replaceText(0, 1, "k");
+        assertEquals(initialValue, formatter.getValue());
+        TextFieldBehavior behavior = (TextFieldBehavior) FXUtils.invokeGetFieldValue(
+                TextFieldSkin.class, field.getSkin(), "behavior");
+        FXUtils.invokeGetMethodValue(TextFieldBehavior.class, behavior, "fire", KeyEvent.class, null);
+        assertEquals(1, count.get());
+        assertEquals(field.getText(), formatterValue.getValue());
+    }
+    
+    /**
+     * Test the hack: replace the event handler for 
+     */
+    @Test
+    public void testTextFormatterCommittedBeforeActionHack() {
+        TextField field = new TextField();
+        String initialValue = "initial";
+        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        field.setTextFormatter(formatter);
+        StringProperty formatterValue = new SimpleStringProperty(formatter.getValue());
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        field.setOnAction(e -> {
+            count.set(count.get() + 1);
+            formatterValue.set(formatter.getValue());
+        });
+        new StageLoader(field);
+        replaceEnter(field);
+        field.skinProperty().addListener((src, ov, nv) -> {
+            
+        });
+        field.replaceText(0, 1, "k");
+        assertEquals(initialValue, formatter.getValue());
+        fire(field);
+        assertEquals(1, count.get());
+        assertEquals(field.getText(), formatterValue.getValue());
+    }
+
+    /** 
+     * Hack-around: text not committed on receiving action
+     * https://bugs.openjdk.java.net/browse/JDK-8152557
+     * 
+     * A - reflectively replace the field's keyBinding to ENTER, must
+     * be called after the skin is installed.
+     * 
+     * B - eventhandler that commits before firing the action
+     * <p>
+     * Note: we can't extend/change the skin's behavior, it's
+     * final!
+     * 
+     * @param field
+     */
+    protected void replaceEnter(TextField field) {
+        TextFieldBehavior behavior = (TextFieldBehavior) FXUtils.invokeGetFieldValue(
+                TextFieldSkin.class, field.getSkin(), "behavior");
+        InputMap inputMap = behavior.getInputMap();
+        KeyBinding binding = new KeyBinding(KeyCode.ENTER);
+        
+        KeyMapping keyMapping = new KeyMapping(binding, e -> {
+            e.consume();
+            fire(field);
+        });
+        // note: this fails prior to 9-ea-108
+        // due to https://bugs.openjdk.java.net/browse/JDK-8150636
+        inputMap.getMappings().remove(keyMapping); 
+        inputMap.getMappings().add(keyMapping);
+    }
+    
+    protected void fire(TextField textField) {
+        EventHandler<ActionEvent> onAction = textField.getOnAction();
+        ActionEvent actionEvent = new ActionEvent(textField, null);
+        // first commit, then fire
+        textField.commitValue();
+        textField.fireEvent(actionEvent);
+        // PENDING JW: missing forwardToParent
+    }
+
+
     /**
      * Test interaction between textFormatter and textField.
      * Here we change the value in formatter and check if Action
@@ -126,7 +238,6 @@ public class TextFormatterTest {
         String updatedValue = "updated";
         formatter.setValue(updatedValue);
         assertEquals("action must be fired?", 1, count.get());
-        assertEquals("field must be updated on value change", updatedValue, field.getText());
     }
     
     /**
@@ -196,5 +307,7 @@ public class TextFormatterTest {
         assertEquals("field must be updated on setting formatter", initialValue, field.getText());
     }
     
-    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(TextFormatterTest.class.getName());
 }
