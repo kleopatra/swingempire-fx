@@ -11,6 +11,7 @@ import de.swingempire.fx.scene.control.skin.patch.TableCellBehavior;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 
 /**
  * Trying to intercept the selection process to not cancel an edit.
@@ -64,6 +65,14 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         super(cell);
     }
     
+    
+    @Override
+    public void mousePressed(MouseEvent e) {
+        LOG.info("cell/row index " + getControl().getIndex() + " / " + getControl().getTableRow().getIndex());
+        super.mousePressed(e);
+    }
+
+
     /**
      * Tries to terminate edits if containing table is of type
      * XTableView.
@@ -76,6 +85,19 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         }
     }
     
+    
+    @Override
+    protected void doSelect(double x, double y, MouseButton button,
+            int clickCount, boolean shiftDown, boolean shortcutDown) {
+        super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
+    }
+
+    @Override
+    protected void simpleSelect(MouseButton button, int clickCount,
+            boolean shortcutDown) {
+        super.simpleSelect(button, clickCount, shortcutDown);
+    }
+
     /**
      * This method is introduced in jdk8_u20. It's the editing
      * handling part of the former simpleSelect. 
