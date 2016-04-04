@@ -65,12 +65,6 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         super(cell);
     }
     
-    
-    @Override
-    public void mousePressed(MouseEvent e) {
-        LOG.info("cell/row index " + getControl().getIndex() + " / " + getControl().getTableRow().getIndex());
-        super.mousePressed(e);
-    }
 
 
     /**
@@ -85,19 +79,6 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         }
     }
     
-    
-    @Override
-    protected void doSelect(double x, double y, MouseButton button,
-            int clickCount, boolean shiftDown, boolean shortcutDown) {
-        super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
-    }
-
-    @Override
-    protected void simpleSelect(MouseButton button, int clickCount,
-            boolean shortcutDown) {
-        super.simpleSelect(button, clickCount, shortcutDown);
-    }
-
     /**
      * This method is introduced in jdk8_u20. It's the editing
      * handling part of the former simpleSelect. 
@@ -113,6 +94,36 @@ public class XTableCellBehavior<S, T> extends TableCellBehavior<S, T>{
         super.handleClicks(button, clickCount, isAlreadySelected);
     }
 
+// debugging hooks! KEEP 
+    
+//    /**
+//     * Debugging only!
+//     */
+//    @Override
+//    protected void doSelect(double x, double y, MouseButton button,
+//            int clickCount, boolean shiftDown, boolean shortcutDown) {
+//        super.doSelect(x, y, button, clickCount, shiftDown, shortcutDown);
+//    }
+//    /**
+//     * Debugging only!
+//     */
+//    @Override
+//    public void mousePressed(MouseEvent e) {
+//        LOG.info("cell/row index " + getControl().getIndex() + " / " + getControl().getTableRow().getIndex());
+//        super.mousePressed(e);
+//    }
+//
+//    /**
+//     * Debugging only!
+//     */
+//    @Override
+//    protected void simpleSelect(MouseButton button, int clickCount,
+//            boolean shortcutDown) {
+//        super.simpleSelect(button, clickCount, shortcutDown);
+//    }
+
+    
+    
     /**
      * This method is called in jdk8_u5. Signature changed
      * in jdk8_u20.

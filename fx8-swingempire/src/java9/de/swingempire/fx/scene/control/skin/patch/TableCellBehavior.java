@@ -7,6 +7,8 @@ package de.swingempire.fx.scene.control.skin.patch;
 import javafx.scene.control.TableCell;
 
 /**
+ * Does nothing ... just getting out of non-patch packages.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableCellBehavior<S, T>

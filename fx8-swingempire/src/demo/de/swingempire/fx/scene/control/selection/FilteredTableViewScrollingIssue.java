@@ -5,9 +5,9 @@
 package de.swingempire.fx.scene.control.selection;
 
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
-import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
@@ -21,7 +21,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -47,7 +49,12 @@ import javafx.stage.Stage;
  * row index are out of sync: row is correctly updated to 0, while
  * cell is still on the (old before filtering) 20.
  * 
- * commented bug - decision: don't dig further!
+ * Happens only if last row (second last is fine)
+ * 
+ * Jonathan found the underlying reason: it's handling of odd/even
+ * rows in virtualFlow.getAccumCell, which tries its best to
+ * re-use a cell with the same eveness for the sake of css. 
+ * See his comment in the report.
  * 
  * ------------ below descriptions from bug report
  * <p>
@@ -77,21 +84,30 @@ public class FilteredTableViewScrollingIssue extends Application {
 
     @Override
     public void start(final Stage primaryStage) throws Exception {
+        final ObservableList<ItemT> items = FXCollections.observableArrayList();
+        int f = -1;
         final Predicate<ItemT> acceptPredicate = item -> true;
-        final Predicate<ItemT> value2Predicate = item -> item.integerProperty().getValue() == 20;
+        final Predicate<ItemT> value2Predicate = item ->
+            item.integerProperty().getValue() == items.size() -1;
 
 //        tableView = new XTableView<>();
         tableView = new TableView<>();
-        
+//        tableView.setRowFactory(cc -> {
+//            return new TableRow<ItemT>() {
+//                @Override
+//                protected Skin<?> createDefaultSkin() {
+//                    return new IndexUpdatingTableRowSkin<>(this);
+//                }
+//            };
+//        });
         final TableColumn<ItemT, Integer> column = new TableColumn<>("Value");
         column.setCellValueFactory(param -> param.getValue().integerProperty());
         column.setCellFactory(cc -> new XTextFieldTableCell<>());
         tableView.getColumns().add(column);
 
-        final ObservableList<ItemT> items = FXCollections.observableArrayList();
-        IntStream.range(0, 21)
+        IntStream.range(0, 6)
             .forEach(value -> items.add(new ItemT(value)));
-//        items.add(new Item(2));
+//        items.add(new ItemT(f));
 
         final FilteredList<ItemT> filteredItems = items.filtered(acceptPredicate);
         filteredItems.addListener((ListChangeListener) (c -> {
@@ -126,7 +142,7 @@ public class FilteredTableViewScrollingIssue extends Application {
         borderPane.setBottom(buttonBox);
 
         primaryStage.setTitle(FXUtils.version() + " Table View Filtering & Scrolling Issue");
-        primaryStage.setScene(new Scene(borderPane, 600, 400));
+        primaryStage.setScene(new Scene(borderPane, 600, 170));
         primaryStage.setResizable(false); // resizing must be prevented, because it affects the number of allocated rows in the table view
         primaryStage.show();
     }
@@ -159,4 +175,7 @@ public class FilteredTableViewScrollingIssue extends Application {
     public static void main(String[] args) {
         launch();
     }
+    @SuppressWarnings("unused")
+    static final Logger LOG = Logger
+            .getLogger(FilteredTableViewScrollingIssue.class.getName());
 }

@@ -14,7 +14,7 @@ import de.swingempire.fx.scene.control.skin.patch.TableCellSkin;
 import javafx.scene.control.TableCell;
 
 /**
- * no longer used: version specifics factored into xx.patch
+ * <b>no longer used</b>: version specifics factored into xx.patch
  * ---------
  * Not really useful for replacing Behavior:
  * - super behavior is final, can't hack a replace

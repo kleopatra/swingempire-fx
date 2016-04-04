@@ -8,8 +8,9 @@ import de.swingempire.fx.scene.control.skin.patch.TableCellSkin;
 import javafx.scene.control.TableCell;
 
 /**
+ * A clean inject of cusstom behavior should override the abstract base class.
  * Can't - scope of columnVisibility/Width changed to package, no way to override.
- * TabelCellSkinBase rather useless, needed to 
+ * Compatibility layer takes over the hacking.
  * 
  * reported: https://bugs.openjdk.java.net/browse/JDK-8148573
  * status: fixed, maybe not yet in public ea

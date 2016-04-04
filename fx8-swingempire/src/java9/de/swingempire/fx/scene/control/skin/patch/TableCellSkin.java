@@ -4,12 +4,13 @@
  */
 package de.swingempire.fx.scene.control.skin.patch;
 
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
+//import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
 import javafx.scene.control.TableCell;
 
 /**
  * Compatibility layer to inject behavior.
+ * 
  * <p>
  * Note: we should extend TableCellSkinBase instead of TableCellSkin,
  * Can't - scope of columnVisibility/Width changed to package, no way to override.
@@ -37,16 +38,20 @@ public class TableCellSkin<S, T>
     extends javafx.scene.control.skin.TableCellSkin<S, T>
     implements SkinBaseDecorator {
 
-    private BehaviorBase<TableCell<S,T>> behaviorBase;
+    private TableCellBehavior<S,T> behaviorBase;
     
     /**
-     * @param control
+     * 
+     * @param control the control to skin
+     * @param behavior the behavior to inject, may be null to not replace
+     *    super's
      */
-    public TableCellSkin(TableCell<S, T> control, BehaviorBase<TableCell<S, T>> behavior) {
+    public TableCellSkin(TableCell<S, T> control, TableCellBehavior<S, T> behavior) {
         super(control);
-        disposeSuperBehavior(javafx.scene.control.skin.TableCellSkin.class);
-        behaviorBase = behavior;
-
+        if (behavior != null) {
+            disposeSuperBehavior(javafx.scene.control.skin.TableCellSkin.class);
+            behaviorBase = behavior;
+        }
     }
 
     /**
