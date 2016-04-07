@@ -4,9 +4,13 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.util.List;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableValue;
+import javafx.event.EventType;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
@@ -17,6 +21,12 @@ import javafx.util.Callback;
  * PENDING
  * <li> handle editing
  * <li> handle usage without cell factory
+ * 
+ * <p>
+ * Editing notes: problem is the focus of the ListView on its item type.
+ * If we want to add editing per a property of the item, we have to add the
+ * property type while keeping the ListCell (and all collaborators, like
+ * the editCommitHandler, EditEvent ... ) focused on the item type.
  * 
  * @param <T> the type of the data item
  * @param <C> the type of the cell (may be same or different from T)
@@ -31,10 +41,41 @@ public class ListXView<T, C> extends ListView<T> {
         super();
         cellValueFactory = new SimpleObjectProperty<>(this, "cellValueFactory");
         setCellFactory(v -> new ListXCell<>());
+        setOnEditCommit(e -> commitEdit(e));
     }
     
 
-    /** {@inheritDoc} */
+    /**
+     * Callback for default commit handler, it can handle both basic 
+     * EditEvents and value-editing EditXEvents.
+     * 
+     * PENDING JW: not really safely implemented!
+     * 
+     * @param e
+     * @return
+     */
+    protected void commitEdit(EditEvent<T> e) {
+        int index = e.getIndex();
+        List<T> list = getItems();
+        if (index < 0 || index >= list.size()) return;
+        if (e instanceof EditXEvent) {
+            EditXEvent<T, C> ex = (EditXEvent<T, C>) e;
+            ObservableValue<C> cellValue = getCellObservableValue(index);
+            if (cellValue instanceof WritableValue) {
+                ((WritableValue)cellValue).setValue(ex.getNewCellValue());
+            }
+        } else { // default of super
+            list.set(index, e.getNewValue());
+        }
+    }
+
+
+    /** 
+     * Returns the observableValue at the given index if in range,
+     * or null otherwise.
+     *
+     * C&P from TableColumn.
+     */
     public final ObservableValue<C> getCellObservableValue(int index) {
         if (index < 0 || getItems() == null) return null;
         
@@ -44,8 +85,16 @@ public class ListXView<T, C> extends ListView<T> {
         return getCellObservableValue(rowData);
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * Returns the observableValue on the given item. Returns null if
+     * there is no cellValueFactory or the item is null.
+     * 
+     * PENDING JW: who's responsible for null handling? We do it here
+     * 
+     * C&P from TableColumn.
+     */
     public final ObservableValue<C> getCellObservableValue(T item) {
+        if (item == null) return null;
         // Get the factory
         final Callback<T, ObservableValue<C>> factory = getCellValueFactory();
         if (factory == null) return null;
@@ -86,6 +135,33 @@ public class ListXView<T, C> extends ListView<T> {
         return cellValueFactory;
     }
  
+    public static class EditXEvent<T, C> extends EditEvent<T> {
+
+        private C newCellValue;
+        
+        /**
+         * Constructor that takes a cell value in addition to the row value.
+         * 
+         * PENDING: specify the valid combinations of the params!
+         * 
+         * @param source
+         * @param eventType
+         * @param newValue
+         * @param editIndex
+         * @param newCellValue the value of a property of the item, if any
+         */
+        public EditXEvent(ListView<T> source,
+                EventType<? extends javafx.scene.control.ListView.EditEvent<T>> eventType,
+                T newValue, int editIndex, C newCellValue) {
+            super(source, eventType, newValue, editIndex);
+            this.newCellValue = newCellValue;
+        }
+        
+        public final C getNewCellValue() {
+            return newCellValue;
+        }
+        
+    }
 //------------------------ boilerplate cellvalueFactory: use core PropertyValueFactory    
     
 //    private ObjectProperty<Callback<CellDataFeatures<T, C>, ObservableValue<C>>> cellValueFactory;

@@ -82,13 +82,8 @@ public class TableCellWithTooltip extends Application {
      * @return
      */
     private List<DataModel> createItems() {
-//        Stream.generate();
-        List<DataModel> dataItems = new ArrayList<DataModel>();
-        dataItems = IntStream.range(0, 20).mapToObj(i -> createData(i)).collect(Collectors.toList());
-        DataModel row1Data = createData(1);
-        dataItems.add(row1Data);
-        DataModel row2Data = createData(2);
-        dataItems.add(row2Data);
+        List<DataModel> dataItems = 
+                IntStream.range(0, 20).mapToObj(this::createData).collect(Collectors.toList());
         return dataItems;
     }
 

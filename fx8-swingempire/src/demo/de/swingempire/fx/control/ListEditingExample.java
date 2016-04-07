@@ -12,36 +12,44 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.util.converter.DefaultStringConverter;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.property.PropertyFactory;
 import de.swingempire.fx.scene.control.ListXView;
-import de.swingempire.fx.scene.control.TextFieldListXCell;
 
 /**
- * Driver for ListXView.
+ * Two-parameter ListView
+ * http://stackoverflow.com/q/36436358/203657
+ * 
+ * Core ListView only supports one type parameter, 
+ * TextFieldListCell requires a converter from/to that type.
+ * It is not possible to set a property of the item (as
+ * is done in TableColumn.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ListXExample extends Application{
+public class ListEditingExample extends Application{
 
-    private ListXView<Person, String> listView;
+    private ListView<Person> listView;
     private EventHandler<ActionEvent> updateFirstTitle;
     private EventHandler<ActionEvent> logComboValue;
     private ComboBox<Person> comboBox;
 
-    public ListXExample() {
+    public ListEditingExample() {
         // BUG: scrollbar missing default context menu
 //        manager.addAlbums(10000);
         
-        listView = new ListXView<Person, String>();
-        listView.setCellValueFactory(p -> p.lastNameProperty());
-        listView.setCellFactory(p -> new TextFieldListXCell(new DefaultStringConverter()));
+        listView = new ListView<>();
         listView.setEditable(true);
+        listView.setCellFactory(TextFieldListCell.forListView());
+//        listView.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+//        listView.setCellValueFactory(new PropertyFactory<>("lastName"));
+//        listView.setCellValueFactory(p -> p.lastNameProperty());
         listView.setItems(Person.persons());
 //        listView.setItems(FXCollections.observableList(Person.persons(), p -> new Observable[] { p.lastNameProperty()}));
 
@@ -96,6 +104,6 @@ public class ListXExample extends Application{
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ListXExample.class
+    private static final Logger LOG = Logger.getLogger(ListEditingExample.class
             .getName());
 }

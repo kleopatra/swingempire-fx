@@ -6,46 +6,66 @@ package de.swingempire.fx.control;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.util.converter.DefaultStringConverter;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.PropertyFactory;
-import de.swingempire.fx.scene.control.ListXView;
-import de.swingempire.fx.scene.control.TextFieldListXCell;
 
 /**
- * Driver for ListXView.
+ * Driver for ListXView. Here we compare against tableView with a
+ * single column.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ListXExample extends Application{
+public class ListTableFakeExample extends Application{
 
-    private ListXView<Person, String> listView;
+    private TableView<Person> tableView;
     private EventHandler<ActionEvent> updateFirstTitle;
     private EventHandler<ActionEvent> logComboValue;
     private ComboBox<Person> comboBox;
 
-    public ListXExample() {
+    public ListTableFakeExample() {
         // BUG: scrollbar missing default context menu
 //        manager.addAlbums(10000);
         
-        listView = new ListXView<Person, String>();
-        listView.setCellValueFactory(p -> p.lastNameProperty());
-        listView.setCellFactory(p -> new TextFieldListXCell(new DefaultStringConverter()));
-        listView.setEditable(true);
-        listView.setItems(Person.persons());
+        tableView = new TableView<Person>();
+        tableView.setEditable(true);
+        // quick check for http://stackoverflow.com/q/36452735/203657
+        // let cells receive keyboard events
+        // doesn't work, similar to contextMenu triggers
+        // see experiments with custom event dispatchers
+        tableView.setRowFactory(rf -> {
+            TableRow row = new TableRow() {
+                {
+                    addEventFilter(KeyEvent.KEY_RELEASED, e -> {
+                        System.out.println("got key " + e);
+                    });
+                }
+            };
+            return row;
+        });
+//        listView.setCellValueFactory(new PropertyFactory<>("lastName"));
+        TableColumn<Person, String> lastName = new TableColumn<>("Last Name");
+        lastName.setCellValueFactory(cc -> cc.getValue().lastNameProperty());
+        lastName.setCellFactory(TextFieldTableCell.forTableColumn());
+        tableView.getColumns().addAll(lastName);
+        tableView.setItems(Person.persons());
 //        listView.setItems(FXCollections.observableList(Person.persons(), p -> new Observable[] { p.lastNameProperty()}));
 
-        comboBox = new ComboBox<>(listView.getItems());
+        comboBox = new ComboBox<>(tableView.getItems());
         
         StringConverter<Person> converter = new StringConverter<Person>() {
 
@@ -68,7 +88,7 @@ public class ListXExample extends Application{
         comboBox.setOnAction(logComboValue);
         
         updateFirstTitle = e -> {
-            Person fx = listView.getItems().get(0);
+            Person fx = tableView.getItems().get(0);
             fx.setLastName(fx.getLastName() + "X");
         };
 
@@ -77,7 +97,7 @@ public class ListXExample extends Application{
     private Region getContent() {
         BorderPane pane = new BorderPane();
         pane.setTop(comboBox);
-        pane.setCenter(listView);
+        pane.setCenter(tableView);
         Button updateButton = new Button("update first title");
         updateButton.setOnAction(updateFirstTitle);
         pane.setBottom(updateButton);
@@ -96,6 +116,6 @@ public class ListXExample extends Application{
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ListXExample.class
+    private static final Logger LOG = Logger.getLogger(ListTableFakeExample.class
             .getName());
 }

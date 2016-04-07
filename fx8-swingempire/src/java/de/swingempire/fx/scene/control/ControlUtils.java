@@ -9,6 +9,10 @@ import java.util.function.Function;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Control;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.util.Callback;
 
@@ -53,6 +57,23 @@ public class ControlUtils {
             if (data == null || data.getValue() == null) return null;
             T result = function.apply(data.getValue());
             return new ReadOnlyObjectWrapper<T>(result);
+        }
+    }
+
+    public static void requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(Control c) {
+        Scene scene = c.getScene();
+        final Node focusOwner = scene == null ? null : scene.getFocusOwner();
+        if (focusOwner == null) {
+            c.requestFocus();
+        } else if (! c.equals(focusOwner)) {
+            Parent p = focusOwner.getParent();
+            while (p != null) {
+                if (c.equals(p)) {
+                    c.requestFocus();
+                    break;
+                }
+                p = p.getParent();
+            }
         }
     }
 

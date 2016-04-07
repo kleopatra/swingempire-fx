@@ -4,13 +4,22 @@
  */
 package de.swingempire.fx.scene.control;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.Cell;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 
 /**
  * Mimicking the valueFactory mechanism as used in TableCell.<p>
+ * 
+ * Note: this is useful _only_ for showing, _not_ for editing! The ListCell must be
+ * typed to the item type (that's the typing expected by the cellFactory).
+ * As a consequence it will talk in the language of that type: start/commitEdit will
+ * carry it. There is no clean way to intercept the edit event, nor the editHandler - all
+ * done and hard-wired in super!
  * 
  * @param <T> the type of the data item
  * @param <C> the type of the cell (may be same or different from T)
@@ -90,6 +99,13 @@ public class ListXCell<T, C> extends ListCell<T> {
         }
     }
 
+    /**
+     * PENDING JW: item not used? Should fall-back to item.toString
+     * if we have no observableValue?
+     * 
+     * @param item
+     * @return
+     */
     protected String getCellText(T item) {
         C value = getCellValue();
         return value instanceof String ? (String) value : String.valueOf(value);
@@ -97,6 +113,25 @@ public class ListXCell<T, C> extends ListCell<T> {
 
     protected C getCellValue() {
         return currentObservable != null ? currentObservable.getValue() : null;
+    }
+    
+    protected void commitCellValue(C cellValue) {
+        if (! isEditing()) return;
+        ListView<T> list = getListView();
+        if (list != null) {
+            list.fireEvent(new ListXView.EditXEvent<>(list, 
+                    ListView.<T>editCommitEvent(),
+                    null,
+                    list.getEditingIndex(),
+                    cellValue));
+        }
+        FXUtils.invokeGetMethodValue(Cell.class, this, "setEditing", Boolean.TYPE, false);
+        updateItem(getItem(), false);
+        if (list != null) {
+            list.edit(-1);
+            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
+
+        }
     }
     
     @SuppressWarnings("unchecked")
