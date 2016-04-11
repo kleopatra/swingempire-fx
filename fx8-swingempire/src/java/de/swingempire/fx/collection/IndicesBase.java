@@ -49,7 +49,7 @@ public abstract class IndicesBase<T> extends ObservableListBase<Integer> {
 
     protected BitSet bitSet;
     
-    //-------- fields for performance experiments: currently unused
+    //-------- fields for performance experiments: unused (unsafe to use!)
     private static boolean PERFORM = false;
     private boolean valid;
     private int firstSetIndex;

@@ -690,7 +690,14 @@ public class IndicesListTest {
     
     /**
      * Test notification on setAll if there are already set indices.
-     * Changed implementation due to RT-39776, test assumption incorrect.
+     * Changed implementation due to RT-39776 (performance!), 
+     * test assumption here is now incorrect - we now get a replaced
+     * of the whole range.
+     * 
+     * new issue coordinate:
+     * https://bugs.openjdk.java.net/browse/JDK-8093204
+     * 
+     * PENDING JW: what's expected?
      */
     @Test
     public void testSetAllNotificationIfHasSet() {
@@ -698,11 +705,27 @@ public class IndicesListTest {
         indicesList.addIndices(indices);
         report.clear();
         indicesList.setAllIndices();
-//        report.prettyPrint();
+        report.prettyPrint();
         assertEquals(items.size(), indicesList.size());
         assertEquals(1, report.getEventCount());
         Change c = report.getLastChange();
-        assertEquals(4, getChangeCount(c, ChangeType.ADDED));
+        assertEquals("PENDING: what IS the correct expectation?", 
+                4, getChangeCount(c, ChangeType.ADDED));
+    }
+    
+    /**
+     * Plain observableList setAll (with some of them already in the list) 
+     * - we get a replaced of the complete.
+     */
+    @Test
+    public void testSetAllPlainList() {
+       ObservableList plain = FXCollections.observableArrayList("5-item", "3-item" , "1-item" ); 
+       ListChangeReport report = new ListChangeReport(plain);
+       plain.setAll(items);
+       report.prettyPrint();
+       Change c = report.getLastChange();
+       assertEquals("PENDING: what IS the correct expectation?", 
+               4, getChangeCount(c, ChangeType.ADDED));
     }
     
     /**

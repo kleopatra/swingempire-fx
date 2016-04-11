@@ -52,6 +52,8 @@ import static javafx.scene.control.SelectionMode.*;
 
 
 /**
+ * No longer (as of 9-ea-108) needed, fix bubbled up.
+ * ------------------ 
  * exact copy of:
  * http://hg.openjdk.java.net/openjfx/9-dev/rt/file/64f4605ad7b7/modules/controls/src/main/java/javafx/scene/control/MultipleSelectionModelBase.java
  * 

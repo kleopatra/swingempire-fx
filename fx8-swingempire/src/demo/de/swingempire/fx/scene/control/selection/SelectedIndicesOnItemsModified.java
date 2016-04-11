@@ -19,6 +19,14 @@ import javafx.stage.Stage;
  * 
  * http://stackoverflow.com/q/26913280/203657
  * 
+ * Related issues:
+ * 
+ * https://bugs.openjdk.java.net/browse/JDK-8089709
+ * fixed the permutation craziness in ListView, introduced
+ * violation of notification contract:
+ * 
+ * https://bugs.openjdk.java.net/browse/JDK-8147852
+ * still open!  
  * @author Jeanette Winzenburg, Berlin
  */
 public class SelectedIndicesOnItemsModified extends Application {
@@ -36,7 +44,7 @@ public class SelectedIndicesOnItemsModified extends Application {
         System.out.println("indices before modification: " + table.getSelectionModel().getSelectedIndices());
         ListView<Integer> list = new ListView<>(items);
         // variant: use SimpleListSelectionModel
-        list.setSelectionModel(new SimpleListSelectionModel<>(list));
+//        list.setSelectionModel(new SimpleListSelectionModel<>(list));
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         // orig SO
         list.getSelectionModel().selectRange(2, 4);

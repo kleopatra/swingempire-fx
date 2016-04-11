@@ -36,6 +36,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * No longer (as of 9-ea-108) needed, fix bubbled up.
+ * ------------------ 
+ * 
  * exact copy of:
  * http://hg.openjdk.java.net/openjfx/9-dev/rt/file/64f4605ad7b7/modules/controls/src/main/java/com/sun/javafx/scene/control/MultipleAdditionAndRemovedChange.java
  * 

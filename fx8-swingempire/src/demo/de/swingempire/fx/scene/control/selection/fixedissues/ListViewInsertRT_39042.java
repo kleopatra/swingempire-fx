@@ -2,7 +2,7 @@
  * Created on 20.10.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.fixedissues;
 
 import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
@@ -25,6 +25,11 @@ import javafx.stage.Stage;
      * - actual: selection at third
      * 
      * Note: happens if re-setting items after instantiation.
+     * 
+     * <p>
+     * new coordinates:
+     * https://bugs.openjdk.java.net/browse/JDK-8097447
+     * fixed.
      * @author Jeanette Winzenburg, Berlin
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })

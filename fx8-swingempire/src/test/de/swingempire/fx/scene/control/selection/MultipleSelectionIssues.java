@@ -261,7 +261,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         ObservableList items = FXCollections.observableArrayList("1", "2", "3");
         ListChangeReport report = new ListChangeReport(items);
         items.removeAll("1", "3");
-        report.prettyPrintAll();
+//        report.prettyPrintAll();
     }
 
     /**
@@ -479,7 +479,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
             assertEquals("selectedIndices must not fire, index unchanged " + index, 
                     0, report.getEventCount());
         } else {
-            report.prettyPrintAll();
+//            report.prettyPrintAll();
             assertEquals("selectedIndices must fire, changed index " + getSelectedIndex(), 
                     1, report.getEventCount());
             // failure of core: fires a single added instead of the expected replaced
@@ -492,9 +492,10 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     /**
      * Why do we get a permutated? How are we supposed to use it?
      * don't expect a permutation change, incorrect in core!
+     * 
+     * Permutation is fixed (9-ea-108) - unconditionally ignore for now
      */
     @Test
-    @Ignore
     @ConditionalIgnore(condition = IgnoreReported.class)
     public void testSelectedIndicesEventsOnAddedItem() {
         if (!multipleMode) return;
@@ -505,17 +506,18 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
         ListChangeReport report = new ListChangeReport(indices);
         addItem(0, createItem("new item"));
-        Change c = report.getLastChange();
 //        prettyPrint(c);
+        Change c = report.getLastChange();
         c.next();
-        if (!c.wasPermutated()) {
-            LOG.info("no permutation as expected:" + c);
-            return;
-        }
-        for (int i = c.getFrom(); i < c.getTo(); i++) {
-            int newIndex = c.getPermutation(i);
-            assertEquals("item at oldIndex " + i, copy.get(i), indices.get(newIndex));
-        }
+        assertFalse("change must not be permutated", c.wasPermutated());
+//        if (!c.wasPermutated()) {
+//            LOG.info("no permutation as expected:" + c);
+//            return;
+//        }
+//        for (int i = c.getFrom(); i < c.getTo(); i++) {
+//            int newIndex = c.getPermutation(i);
+//            assertEquals("item at oldIndex " + i, copy.get(i), indices.get(newIndex));
+//        }
     }
     
     /**
@@ -787,7 +789,6 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     @Test
     public void testEventIndicesOnSelectIndices() {
         if (!multipleMode) return;
-        assertEquals("sanity: no previous selection", 0, getSelectedIndices().size());
         int[] indices = new int[]{2, 5, 7};
         ListChangeReport report = new ListChangeReport(getSelectedIndices());
         getSelectionModel().selectIndices(indices[0], indices);
@@ -798,6 +799,28 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         Change c = report.getLastChange();
         c.next();
         assertEquals(indices.length, c.getAddedSize());
+    }
+    
+    /**
+     * Test list change of selectedIndices on selectIndices with
+     * indices in-between already selected indices. 
+     */
+    @Test
+    public void testEventIndicesOnSelectIndicesDiscontinous() {
+        if (!multipleMode) return;
+        // initial selection
+        int[] indices = new int[]{2, 5, 7};
+        getSelectionModel().selectIndices(indices[0], indices);
+        int[] addedIndices = new int[]{3, 6, 0};
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getSelectionModel().selectIndices(addedIndices[0], addedIndices);
+        assertEquals(1, report.getEventCount());
+        
+        assertEquals("event must be multiple added " + report.getLastChange(), 3, 
+                getChangeCount(report.getLastChange(), ChangeType.ADDED)); 
+//        Change c = report.getLastChange();
+//        c.next();
+//        assertEquals(indices.length, c.getAddedSize());
     }
     
     /**

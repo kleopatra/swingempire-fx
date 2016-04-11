@@ -31,6 +31,9 @@ import javafx.stage.Stage;
  * - sequence of subchanges incorrect: must be ordered by getFrom - reopened issue
  * - subchanges should be concatenated if possible: fix doesn't
  * 
+ * Reopen isn't an option ;-) Filed another:
+ * https://bugs.openjdk.java.net/browse/JDK-8147852
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class SelectedIndicesOnItemsModified extends Application {
@@ -45,8 +48,9 @@ public class SelectedIndicesOnItemsModified extends Application {
         ListView<String> list = new ListView<>(items);
         // variant: use SimpleListSelectionModel
 //        list.setSelectionModel(new SimpleListSelectionModel<>(list));
-        // variant: use fixed core model
-        list.setSelectionModel(new ListViewBitSelectionModelCorefix709<>(list));
+        // variant: use fixed core model - no longer needed, included in
+        // 9-ea-108
+//        list.setSelectionModel(new ListViewBitSelectionModelCorefix709<>(list));
         list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         // orig SO
         list.getSelectionModel().selectRange(2, 4);
