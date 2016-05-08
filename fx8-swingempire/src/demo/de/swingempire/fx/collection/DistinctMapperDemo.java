@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -166,6 +167,7 @@ public class DistinctMapperDemo extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setScene(new Scene(getContent()));
+        primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }
 

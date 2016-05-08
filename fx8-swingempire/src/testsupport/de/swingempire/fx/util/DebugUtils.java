@@ -139,7 +139,12 @@ public class DebugUtils {
                 + choice.getFocusModel().getFocusedItem());
     }
 
-    public static String getDisplayText(Control view) {
+    /**
+     * PENDING JW: direct access to ComboBoxBaseSkin - factor into patch!
+     * @param view
+     * @return
+     */
+   public static String getDisplayText(Control view) {
         Skin skin = view.getSkin();
         if (!(skin instanceof ComboBoxBaseSkin))
             return null;

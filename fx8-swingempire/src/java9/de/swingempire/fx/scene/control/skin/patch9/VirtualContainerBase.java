@@ -15,6 +15,7 @@ import javafx.util.Callback;
 
 /**
  * Can't extend VirtualContainerBase - due to abstract package-private methods.
+ * Fix not in 9-ea-109?
  * 
  * Plain copy of core, except for 
  * - widening scope of some methods/fields

@@ -86,6 +86,11 @@ public class JavaFXThreadingRule implements TestRule {
             }
         }
 
+        /**
+         * PENDING JW: access of internal fx class PlatformImp.
+         * 
+         * @throws InterruptedException
+         */
         protected void setupJavaFX() throws InterruptedException {
             long timeMillis = System.currentTimeMillis();
             final CountDownLatch latch = new CountDownLatch(1);
