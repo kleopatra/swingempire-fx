@@ -23,6 +23,7 @@ import javafx.scene.control.SkinBase;
  * Must only be implemented by SkinBase (or its descendants)
  *  because it assumes to be of type SkinBase.
  * 
+ * dummy change ...
  * @author Jeanette Winzenburg, Berlin
  */
 public interface SkinBaseDecorator {
