@@ -34,6 +34,12 @@ import javafx.util.StringConverter;
  * 
  * reported:
  * https://bugs.openjdk.java.net/browse/JDK-8150951
+ * deferred to java10 .. reasoning is that behavior is not public, all fixes
+ * would be hacks as long as behaviours aren't public - the THINGY-TO-DO
+ * would be to make it public, so wait ..
+ * 
+ * Implication: ComboBoxPopupControl is useless for extension, need to 
+ * replicate all code in behaviour.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -52,7 +58,7 @@ public class ComboCustomSkinNPE_Report extends Application {
         public CustomComboSkin(ComboBoxBase<T> control) {
             super(control);
             // most basic behavior
-            behavior = new CustomComboBehavior<>(control);
+//            behavior = new CustomComboBehavior<>(control);
             getPopupContent().setManaged(false);
             getChildren().add(getPopupContent());
             getChildren().add(getDisplayNode());

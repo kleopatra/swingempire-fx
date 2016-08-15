@@ -9,11 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,26 +19,14 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import de.swingempire.fx.collection.IndexMappedList;
-import de.swingempire.fx.collection.IndicesList;
+
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils.ChangeType;
-import de.swingempire.fx.util.FXUtils.PrintingListChangeListener;
 import de.swingempire.fx.util.ListChangeReport;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -76,7 +59,7 @@ public class IndexMappedListTest {
 //        itemsReport.prettyPrint();
         int[] permutated = new int[] {3, 5, 7};
         Object[] permItems = new Object[] {items.get(3), items.get(5), items.get(7)}; 
-//        LOG.info("sortedItems" + itemsReport.getLastChange());
+        LOG.info("sortedItems" + itemsReport.getLastChange());
 //        LOG.info("sorted: " + report.getLastChange());
         for (int i = 0; i < permutated.length; i++) {
             assertEquals("permutated at" + i, permItems[i], indexedItems.get(i));

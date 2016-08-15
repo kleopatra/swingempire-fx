@@ -17,11 +17,15 @@ public class Person {
     private final SimpleStringProperty firstName;
     private final SimpleStringProperty lastName;
     private final SimpleStringProperty email;
+    private final SimpleStringProperty secondaryMail;
+    
     public Person(String fName, String lName, String email) {
         this.firstName = new SimpleStringProperty(fName);
         this.lastName = new SimpleStringProperty(lName);
         this.email = new SimpleStringProperty(email);
+        this.secondaryMail = new SimpleStringProperty("xx" + email);
     }
+    
     public String getFirstName() {
         return firstName.get();
     }
@@ -53,6 +57,16 @@ public class Person {
         return email;
     }
     
+    public String getSecondaryMail() {
+        return secondaryMailProperty().get();
+    }
+    
+    public void setSecondaryMail(String mail) {
+        secondaryMailProperty().set(mail);
+    }
+    public StringProperty secondaryMailProperty() {
+        return secondaryMail;
+    }
     
     @Override
     public String toString() {
