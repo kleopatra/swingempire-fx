@@ -9,4 +9,5 @@ package de.swingempire.fx.chart;
  */
 public class Dummy {
 
+    int nothing;
 }
