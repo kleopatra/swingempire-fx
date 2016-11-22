@@ -1,0 +1,13 @@
+/**
+ * Just want to see an effect, doesn't matter what
+ */
+.nested-column-header > .nested-column-header {
+/*
+ * not working, not a property?
+ * -fx-font-weight: normal;
+ */	
+	-fx-padding: 10;
+	-fx-background-color: white;
+}
+
+

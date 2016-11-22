@@ -4,8 +4,20 @@
  */
 package de.swingempire.fx.property;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.logging.Logger;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import static de.swingempire.fx.property.BugPropertyAdapters.*;
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.scene.control.cell.Person22463;
+import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.InvalidationReport;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
@@ -25,17 +37,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import de.swingempire.fx.scene.control.cell.Person22463;
-import de.swingempire.fx.util.ChangeReport;
-import de.swingempire.fx.util.InvalidationReport;
-
-import static de.swingempire.fx.property.BugPropertyAdapters.*;
-import static org.junit.Assert.*;
-
 /**
  * @author Jeanette Winzenburg, Berlin
  */
@@ -43,7 +44,31 @@ import static org.junit.Assert.*;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableTest {
 
+//--------- using method references
     
+    public static class ClassWithProperty {
+        private ObjectProperty<LocalDate> baseDate = new SimpleObjectProperty(this, "baseDate");
+        private ObjectProperty<LocalDate> derivedDate = new SimpleObjectProperty(this, "derivedDate");
+        
+        public ClassWithProperty() {
+            baseDate.addListener(this::dateChanged);
+        }
+        
+        protected void dateChanged(ObservableValue sender, LocalDate ov, LocalDate nv) {
+//            derivedDate.set(nv.plusDays(10));
+        }
+        
+        protected void dateChanged(LocalDate ov) {
+            derivedDate.set(baseDate.get().minusDays(10));
+        }
+    }
+    
+    @Test
+    public void testMethod() {
+        ClassWithProperty cl = new ClassWithProperty();
+        cl.baseDate.set(LocalDate.now());
+        assertEquals(10, ChronoUnit.DAYS.between(cl.baseDate.get(), cl.derivedDate.get()));
+    }
 //--------------------------
 
     @Test
