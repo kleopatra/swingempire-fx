@@ -358,6 +358,11 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
 
     @Override
+    public int getViewIndex(int arg0) {
+        return 0;
+    }
+
+    @Override
     public T get(int index) {
         int realIndex = getSource().get(index);
         return backingList.get(realIndex);
