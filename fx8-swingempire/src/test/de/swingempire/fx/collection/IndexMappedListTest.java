@@ -572,6 +572,14 @@ public class IndexMappedListTest {
     }
     
     @Test
+    public void testViewIndex() {
+        indicesList.setIndices(3, 5);
+        assertEquals(2, indexedItems.size());
+        assertEquals(0, indexedItems.getViewIndex(0));
+        assertEquals(1, indexedItems.getViewIndex(1));
+    }
+    
+    @Test
     public void testGet() {
         int index = 3;
         indicesList.setIndices(index);

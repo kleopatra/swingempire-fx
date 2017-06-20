@@ -358,8 +358,8 @@ public class IndexMappedList<T> extends TransformationList<T, Integer> {
     }
 
     @Override
-    public int getViewIndex(int arg0) {
-        return 0;
+    public int getViewIndex(int index) {
+        return index;
     }
 
     @Override
