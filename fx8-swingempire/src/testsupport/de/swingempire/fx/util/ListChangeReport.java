@@ -38,6 +38,10 @@ public class ListChangeReport implements ListChangeListener {
         return changes.size();
     }
     
+    /**
+     * Pretty prints last change. The change is reset before and 
+     * after printing.
+     */
     public void prettyPrint() {
         Change c = getLastChange();
         if (c == null) return;
@@ -45,8 +49,14 @@ public class ListChangeReport implements ListChangeListener {
         c.reset();
     }
     
+    /**
+     * Pretty prints all recorded changes, in invers order of having received them
+     * that is last is first.
+     */
     public void prettyPrintAll() {
         changes.stream().forEach(c -> {
+            // not necessary, done by prettyprint
+//            c.reset();
            System.out.println("--- change at: " + changes.indexOf(c));
            FXUtils.prettyPrint(c);
            c.reset();

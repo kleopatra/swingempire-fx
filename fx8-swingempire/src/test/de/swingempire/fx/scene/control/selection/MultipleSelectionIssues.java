@@ -418,9 +418,12 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * Test selection state and notification of selectedIndices for discontinous remove items
      * https://javafx-jira.kenai.com/browse/RT-39636
      * Reported for tableView, not for others.
+     * 
+     * https://bugs.openjdk.java.net/browse/JDK-8089560
+     * still open (p4) as of 9-u171
      */
     @Test
-//    @ConditionalIgnore(condition = IgnoreReported.class)
+    @ConditionalIgnore(condition = IgnoreReported.class)
     public void testSelectedItemsOnDiscontinousRemovedItems() {
 //        if (!multipleMode) return;
         int last = items.size() - 1;
@@ -438,20 +441,52 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      * Test selection state and notification of selectedIndices for discontinous remove items
      * https://javafx-jira.kenai.com/browse/RT-39636
      * Reported for tableView, not for others.
+     * https://bugs.openjdk.java.net/browse/JDK-8089560
+     * still open (p4) as of 9-u171     
+     * looks more fishy: getting 2 changes - first is a add at 0 with the new selectedIndex
+     * second is a add/removed (moving cursor), adding selected at 0 followed 
+     * by a removed on 0 with the old selected. this second should be the only change fired.
      */
     @Test
-//    @ConditionalIgnore(condition = IgnoreReported.class)
+    @ConditionalIgnore(condition = IgnoreReported.class)
     public void testSelectedIndicesOnDiscontinousRemovedItems() {
 //        if (!multipleMode) return;
         int last = items.size() - 1;
         getSelectionModel().select(last);
         ListChangeReport report = new ListChangeReport(getSelectedIndices());
         removeAllItems(items.get(2), items.get(5));
+//        report.prettyPrintAll();
         int expected = last - 2;
         assertEquals("sanity: items size after remove", expected + 1, items.size());
         assertEquals("selectedIndex", expected, getSelectedIndex());
         assertEquals("selected in indices after removing", expected, getSelectedIndices().get(0).intValue());
         assertEquals("single event on discontinousremove " + report.getLastChange(), 1, report.getEventCount());
+    }
+    
+    /**
+     * Trying to pinpoint the fishyness: the first add-only is incorrect, at that point
+     * listening code could get inconsistent f.i. when trying to keep a parallel list
+     * in sync.
+     */
+    @Test //@Ignore
+    @ConditionalIgnore(condition = IgnoreReported.class)
+    public void testSelectedIndicesOnDiscontinousRemovedItemsFishyDig() {
+//        if (!multipleMode) return;
+        int last = items.size() - 1;
+        getSelectionModel().select(last);
+        
+        // outer list kept in sync with the selected indices
+        List<Integer> sync = new ArrayList();
+        sync.addAll(getSelectedIndices());
+        getSelectedIndices().addListener((ListChangeListener) change -> {
+            while(change.next()) {
+                sync.addAll(change.getAddedSubList());
+                sync.removeAll(change.getRemoved());
+            }
+        });
+        // discontinous remove of two items
+        removeAllItems(items.get(2), items.get(5));
+        assertEquals("sync of selected indices", getSelectedIndices(), sync);
     }
     
     /**
@@ -1758,7 +1793,7 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
     public void testSelectedItemsInvalidChange_38884() {
         getSelectionModel().select(3);
         int removedSize = getSelectedItems().size();
-        ListChangeListener l = (Change c) -> {
+        ListChangeListener l = c -> {
             c.next();
             assertEquals(removedSize, c.getRemovedSize());
         };
