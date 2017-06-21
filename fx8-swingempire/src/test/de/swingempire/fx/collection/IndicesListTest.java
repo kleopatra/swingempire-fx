@@ -144,6 +144,14 @@ public class IndicesListTest {
         public int getSourceIndex(int index) {
             return get(index);
         }
+        
+        /**
+         * Mechanical implementation returning -1 ... not used?
+         */
+        @Override
+        public int getViewIndex(int index) {
+            return -1;
+        }
 
         @Override
         public Integer get(int index) {
