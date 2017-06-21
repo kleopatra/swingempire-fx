@@ -167,7 +167,10 @@ public class ValidateBeforeFocusLost extends Application {
         EventHandler<ActionEvent> handler = e -> {
             Predicate rule = rules.get(field);
             if (rule == null || rule.test(field)) {
-                field.impl_traverse(Direction.NEXT);
+                // old 
+//                field.impl_traverse(Direction.NEXT);
+                // not visible 
+                field.traverse(Direction.NEXT);
             }
         };
         if (field instanceof TextField) {
