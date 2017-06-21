@@ -351,6 +351,57 @@ public class TransformationListTest {
     /**
      * Expecting fine grained notification from filteredList
      * https://javafx-jira.kenai.com/browse/RT-39291
+     * https://bugs.openjdk.java.net/browse/JDK-8092288
+     * unchanged as of jdk9-ea-171
+     * 
+     * Here testing custom replacement
+     */
+    @Test
+//    @ConditionalIgnore (condition = IgnoreReported.class)
+    public void testFilteredListXOneFiltered() {
+        ObservableList<String> list = createObservableList(true);
+        FilteredListX filtered = new FilteredListX(list, p -> true);
+        ListChangeReport report = new ListChangeReport(filtered);
+        // keep all except the third, equivalent to removing one item
+        filtered.setPredicate(p-> p != list.get(2));
+        Change c = report.getLastChange();
+        c.next();
+        assertTrue("expected: single remove but was: " + c, wasSingleRemoved(c));
+    }
+    
+    /**
+     * Expecting fine grained notification from filteredList
+     * https://javafx-jira.kenai.com/browse/RT-39291
+     * https://bugs.openjdk.java.net/browse/JDK-8092288
+     * unchanged as of jdk9-ea-171
+     * 
+     * Here testing custom replacement
+     */
+    @Test
+//    @ConditionalIgnore (condition = IgnoreReported.class)
+    public void testFilteredXList() {
+        ObservableList<String> list = createObservableList(true);
+        // needs a predicate
+//        FilteredList<String> sorted = list.filtered();
+        FilteredListX filtered = new FilteredListX(list);
+        List added = new ArrayList();
+        for (int i = 1; i < list.size(); i +=2) {
+            added.add(list.get(i));
+        }
+        
+        ListChangeReport report = new ListChangeReport(filtered);
+        filtered.setPredicate(p -> added.contains(p));
+        prettyPrint(report.getLastChange());
+        assertEquals(1, report.getEventCount());
+        // unexpected: filtering fires a single replaced
+        assertEquals("disjoint removes", added.size(), getChangeCount(report.getLastChange()));
+    }
+    
+    /**
+     * Expecting fine grained notification from filteredList
+     * https://javafx-jira.kenai.com/browse/RT-39291
+     * https://bugs.openjdk.java.net/browse/JDK-8092288
+     * unchanged as of jdk9-ea-171
      */
     @Test
     @ConditionalIgnore (condition = IgnoreReported.class)
@@ -368,6 +419,8 @@ public class TransformationListTest {
     /**
      * Expecting fine grained notification from filteredList
      * https://javafx-jira.kenai.com/browse/RT-39291
+     * https://bugs.openjdk.java.net/browse/JDK-8092288
+     * unchanged as of jdk9-ea-171
      */
     @Test
     @ConditionalIgnore (condition = IgnoreReported.class)

@@ -176,6 +176,11 @@ public final class FilteredListX<E> extends TransformationList<E, E>{
         return filtered[index];
     }
 
+    @Override
+    public int getViewIndex(int index) {
+        return Arrays.binarySearch(filtered, 0, size, index);
+    }
+
     private SortHelper getSortHelper() {
         if (helper == null) {
             helper = new SortHelper();
