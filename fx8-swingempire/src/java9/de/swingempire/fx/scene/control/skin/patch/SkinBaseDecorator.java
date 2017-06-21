@@ -37,7 +37,7 @@ public interface SkinBaseDecorator {
         LambdaMultiplePropertyChangeListenerHandler handler = (LambdaMultiplePropertyChangeListenerHandler) 
                 invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
         if (handler == null) return;
-        handler.unregisterChangeListener(observable);
+        handler.unregisterChangeListeners(observable);
     }
     
     /**

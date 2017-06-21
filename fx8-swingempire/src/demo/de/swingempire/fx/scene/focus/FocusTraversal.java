@@ -95,7 +95,10 @@ public class FocusTraversal extends Application {
             
         };
         ParentTraversalEngine engine = new ParentTraversalEngine(vb, algo);
-        vb.setImpl_traversalEngine(engine);
+        // old
+//        vb.setImpl_traversalEngine(engine);
+        // not visible
+        vb.setTraversalEngine(engine);
 
         VBox sibling = new VBox(new TextField("we are family!")); 
         vb.getChildren().addAll(button1, button2, button3);
