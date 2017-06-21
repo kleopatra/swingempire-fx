@@ -505,7 +505,12 @@ public class TreeIndexMappedList<T> extends TransformationList<TreeItem<T>, Inte
     public int getSourceIndex(int index) {
         return index;
     }
-
+    
+    @Override
+    public int getViewIndex(int index) {
+        return index;
+    }
+    
     @Override
     public TreeItem<T> get(int index) {
         int realIndex = getSource().get(index);
