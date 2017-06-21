@@ -385,9 +385,7 @@ public class TransformationListTest {
     @ConditionalIgnore (condition = IgnoreReported.class)
     public void testFilteredList() {
         ObservableList<String> list = createObservableList(true);
-        // needs a predicate
-//        FilteredList<String> sorted = list.filtered();
-        FilteredList filtered = new FilteredList(list);
+        FilteredList<String> filtered = list.filtered(null);
         List added = new ArrayList();
         for (int i = 1; i < list.size(); i +=2) {
             added.add(list.get(i));
