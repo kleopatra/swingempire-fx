@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.chart;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -37,7 +38,8 @@ public class ChartColorCSS extends Application {
         HBox root = new HBox(r, button);
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
-        primaryStage.setTitle(System.getProperty("java.version"));
+//        primaryStage.setTitle(System.getProperty("java.version"));
+        primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }
     
