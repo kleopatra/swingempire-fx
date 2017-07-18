@@ -7,6 +7,7 @@ package de.swingempire.fx.control;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -39,6 +40,7 @@ public class AcceleratorOnTab extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        Menu m;
         Tab t1 = new Tab("Tab 1");
         TableView<Void> tv1 = new TableView<>();
         t1.setContent(tv1);
