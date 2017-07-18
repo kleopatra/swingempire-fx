@@ -21,6 +21,19 @@ import javafx.stage.Stage;
  * Bug report:
  * https://bugs.openjdk.java.net/browse/JDK-8144920
  * 
+ * Press F1 to change size then look at printout:
+ * 
+ * expected: 
+ * 1. "after" different from before, 
+ * 2. "after" should be half of the current width of the axis
+ *
+ * actual:
+ * after same as before
+ *
+ * 
+ * 
+ * still open as of 9ea-175
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class AxisConversionBug extends Application {
@@ -49,7 +62,7 @@ public class AxisConversionBug extends Application {
                 // region.requestLayout();
                 // workaround suggested by Vadim in bug report
                 // works fine
-                axis.layout();
+//                axis.layout();
                 double positionAfter = axis.getDisplayPosition(50);
                 LOG.info("position before/after resize: " + positionBefore + 
                         " / " + positionAfter + " width: " + axis.getWidth()) ;

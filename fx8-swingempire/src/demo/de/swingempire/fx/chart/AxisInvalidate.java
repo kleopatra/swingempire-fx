@@ -20,6 +20,14 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 /**
+ * Description on
+ * https://stackoverflow.com/q/34139076/203657
+ * 
+ * This example now behaves as expected, though the related bug
+ * https://bugs.openjdk.java.net/browse/JDK-8144920
+ * is not yet fixed as of 9ea-175 (and the example AxisConversionBug still
+ * misbehaving)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class AxisInvalidate extends Application {
@@ -50,12 +58,14 @@ public class AxisInvalidate extends Application {
             // doesn't make a difference, shouldn't be needed anyway
             //axis.requestAxisLayout();
             // hack from bug report:
-            axis.layout();
+//            axis.layout();
+            // seems to work 9ea-u175 aka sticks to its position
+            //without any hack (what was the problem?)
             double pixelOnAxis = axis.getDisplayPosition(value.getValue());
-            thumb.relocate(pixelOnAxis, getHeight() /4);
 //            Platform.runLater(() -> {
 //                LOG.info("diff " + (pixelOnAxis - axis.getDisplayPosition(value.getValue())));
 //            });
+            thumb.relocate(pixelOnAxis, getHeight() /4);
             
         }
         
