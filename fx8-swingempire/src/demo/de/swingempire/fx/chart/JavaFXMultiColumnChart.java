@@ -42,6 +42,8 @@ import javafx.util.converter.DoubleStringConverter;
  * bad example in tutorial.
  * 
  * @web http://java-buddy.blogspot.com/
+ * 
+ * looks okay in 9ea-u175
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class JavaFXMultiColumnChart extends Application {
