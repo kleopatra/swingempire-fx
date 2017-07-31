@@ -2,7 +2,7 @@
  * Created on 14.09.2016
  *
  */
-package de.swingempire.fx.scene.control.skin;
+package de.swingempire.lang;
 
 import java.util.logging.Logger;
 
@@ -53,9 +53,11 @@ public class BugNestedColumnHeaderFactory9 extends Application {
         @Override
         protected TableColumnHeader createTableColumnHeader(
                 TableColumnBase col) {
-            return col.getColumns().isEmpty() ?
+            TableColumnHeader header = col == null || col.getColumns().isEmpty() || col == getTableColumn() ?
                     new MyColumnHeader(null, col) : 
-                    new MyNestedColumnHeader(null, col);    
+                    new MyNestedColumnHeader(null, col);  
+                    LOG.info("col: " + (col != null ? col.getText() : "null") + " header: " + header);
+            return header;
         }
 
         public MyNestedColumnHeader(TableViewSkinBase skin,
