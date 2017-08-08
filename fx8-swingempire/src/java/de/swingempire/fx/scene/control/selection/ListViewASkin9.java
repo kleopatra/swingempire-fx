@@ -28,6 +28,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
 /**
+ * Decision: give up - most of the bugs probably fixed, no use!
  * 
  * PENDING JW: on the way to update to jdk9
  * 
@@ -92,7 +93,7 @@ public class ListViewASkin9<T> extends VirtualContainerBase<ListViewAnchored<T>,
      */
     public ListViewASkin9(ListViewAnchored<T> listView,
             ListViewABeahvior9<T> listViewBehavior) {
-        super(listView);
+        super(listView, null);
         behavior = listViewBehavior;
 
         listProperty = BugPropertyAdapters.listProperty(listView.itemsProperty());

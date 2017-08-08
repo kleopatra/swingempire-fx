@@ -7,11 +7,7 @@ package de.swingempire.fx.scene.control.skin;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.skin.patch.TableViewSkin;
-import de.swingempire.fx.scene.control.skin.patch.VirtualFlow;
-import de.swingempire.fx.util.FXUtils;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 
 /**

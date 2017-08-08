@@ -78,6 +78,9 @@ public class AccessFieldFX extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        Object res = getClass().getResource("/com/sun/javafx/scene/control/skin/modena/modena.css");
+        LOG.info(res + "");
+
         primaryStage.setScene(new Scene(getContent(), 600, 400));
         // primaryStage.setTitle(FXUtils.version());
         primaryStage.show();

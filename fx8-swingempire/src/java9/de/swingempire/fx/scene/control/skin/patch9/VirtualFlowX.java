@@ -10,7 +10,7 @@ import javafx.scene.control.IndexedCell;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
-public class VirtualFlow<T extends IndexedCell> 
+public class VirtualFlowX<T extends IndexedCell> 
     extends javafx.scene.control.skin.VirtualFlow<T> {
 
 }

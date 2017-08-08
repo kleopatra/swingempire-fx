@@ -4,6 +4,8 @@
  */
 package de.swingempire.lang;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /*
@@ -60,6 +62,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.sun.java.swing.plaf.windows.WindowsLabelUI;
+
 import de.swingempire.fx.util.FXUtils;        
 
 public class HelloWorldSwing {
@@ -79,6 +82,8 @@ public class HelloWorldSwing {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        List list = new ArrayList();
+        list.set(5, "error");
         //Create and set up the window.
         JFrame frame = new JFrame("HelloWorldSwing");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

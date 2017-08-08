@@ -11,6 +11,7 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SkinBase;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.util.Callback;
 
 /**

@@ -6,13 +6,11 @@ package de.swingempire.fx.scene.control.skin.patch;
 
 import java.util.Map;
 
-import com.sun.javafx.scene.control.LambdaMultiplePropertyChangeListenerHandler;
 import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.inputmap.InputMap;
 
 import static de.swingempire.fx.util.FXUtils.*;
 
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventType;
 import javafx.scene.control.SkinBase;
 
@@ -23,23 +21,61 @@ import javafx.scene.control.SkinBase;
  * Must only be implemented by SkinBase (or its descendants)
  *  because it assumes to be of type SkinBase.
  * 
- * dummy change ...
+ * removed methods related to changeListenerHandler: 
+ *      missing unregister was fixed in fx9
  * @author Jeanette Winzenburg, Berlin
  */
 public interface SkinBaseDecorator {
 
-    /**
-     * Removes all change listeners that are currently registered to the given property. 
-     * 
-     * @param observable the property to remove the listeners from.
-     */
-    default void unregisterChangeListener(ObservableValue<?> observable) {
-        LambdaMultiplePropertyChangeListenerHandler handler = (LambdaMultiplePropertyChangeListenerHandler) 
-                invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
-        if (handler == null) return;
-        handler.unregisterChangeListeners(observable);
-    }
     
+//    /**
+//     * Removes all change listeners that are currently registered to the given property. 
+//     * 
+//     * @param observable the property to remove the listeners from.
+//     */
+//    default void unregisterChangeListener(ObservableValue<?> observable) {
+//        LambdaMultiplePropertyChangeListenerHandler handler = getChangeListenerHandler();
+//        if (handler == null) return;
+//        handler.unregisterChangeListeners(observable);
+//    }
+//
+//    default void registerChangeListener(ObservableValue<?> observable, Consumer<ObservableValue<?>> consumer) {
+//        LambdaMultiplePropertyChangeListenerHandler handler = getChangeListenerHandler();
+//        if (handler == null) return;
+//        handler.registerChangeListener(observable, consumer);
+//    }
+//    
+//    /**
+//     * 
+//     * @param observable the observable to listen to
+//     * @param consumer the action to apply on change
+//     * @param replace if true unregisters previously installed listeners before registration
+//     */
+//    default void registerChangeListener(ObservableValue<?> observable, Consumer<ObservableValue<?>> consumer, boolean replace) {
+//        if (replace) {
+//            unregisterChangeListener(observable);
+//        }
+//        registerChangeListener(observable, consumer);
+//    }
+//    
+//    default LambdaMultiplePropertyChangeListenerHandler getChangeListenerHandler() {
+//        return (LambdaMultiplePropertyChangeListenerHandler) 
+//                invokeGetFieldValue(TableColumnHeader.class, this, listenerName);
+//        
+//    }
+//
+//    /**
+//     * Removes all change listeners that are currently registered to the given property. 
+//     * 
+//     * @param observable the property to remove the listeners from.
+//     */
+//    default void unregisterChangeListener(ObservableValue<?> observable) {
+//        LambdaMultiplePropertyChangeListenerHandler handler = (LambdaMultiplePropertyChangeListenerHandler) 
+//                invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
+//        if (handler == null) return;
+//        handler.unregisterChangeListeners(observable);
+//    }
+//    
     /**
      * Disposes behavior (and InputMap) that was installed by super.
      * 
