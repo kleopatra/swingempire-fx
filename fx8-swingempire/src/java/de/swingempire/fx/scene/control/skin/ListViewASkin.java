@@ -30,7 +30,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
 /**
- * 
+ * and testing againg, just this line different to have something to commit
  * PENDING JW: on the way to update to jdk9
  * 
  * can't as long as VirtualContainerBase has package-private abstract methods ... 
