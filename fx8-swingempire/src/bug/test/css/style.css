@@ -1,0 +1,53 @@
+.root {
+  -fx-font: 11 Tahoma;
+}
+
+/******************************************************************************* 
+ *                                                                             *
+ * ComboBox                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.combo-box{
+    -fx-skin: "test.css.ComboBoxListViewSkin";
+}
+
+.combo-box-base{
+    -fx-background-color: #CCC;
+    -fx-background-radius: 4;
+    -fx-padding: 0;
+    -fx-border-insets: 0;
+}
+
+.combo-box-base:editable{	
+    -fx-background-color: #FFF;
+}
+
+.combo-box-base:editable > .text-field {
+    -fx-border-image-source: null;
+    -fx-background-color: #EEE;
+    -fx-padding: 1 0;
+}
+
+/*------------- combobox arrow -----------------------------------------------*/
+
+.combo-box-base > .arrow-button > .arrow {
+   -fx-padding: 4;
+   -fx-background-position:center;
+   -fx-background-size:auto;       
+   -fx-shape: "M 0 0 H 7 L 3.5 4 z";
+   -fx-background-color: #000;
+}
+
+/******************************************************************************* 
+ *                                                                             *
+ * TabPane                                                                     *
+ *                                                                             *
+ ******************************************************************************/
+.tab-pane {
+    -fx-skin: "test.css.TabPaneSkin";
+    -fx-tab-min-height: 1.75em; /* 21 */
+    -fx-tab-max-height: 1.75em; /* 21 */
+    -fx-padding: 0;
+}
+
