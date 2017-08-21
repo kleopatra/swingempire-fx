@@ -10,9 +10,12 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -28,6 +31,31 @@ public class TableViewDemo extends Application {
 
     private TableView<Person> table;
     private TableColumn emailHeader;
+    
+    public static class PlainTableCell<S, T> extends TableCell<S, T> {
+        
+        public PlainTableCell() {
+        }
+        
+        @Override protected void updateItem(T item, boolean empty) {
+            if (item == getItem()) return;
+
+            super.updateItem(item, empty);
+
+            if (item == null) {
+                super.setText(null);
+                super.setGraphic(null);
+            } else if (item instanceof Node) {
+                super.setText(null);
+                super.setGraphic((Node)item);
+            } else {
+                super.setText(item.toString());
+                super.setGraphic(null);
+            }
+        }
+
+
+    }
 
     private Parent getContent() {
         table = createTableWithColumns();
@@ -96,10 +124,7 @@ public class TableViewDemo extends Application {
         TableView table = new TableView(Person.persons());
         TableColumn first = new TableColumn("First Name");
         first.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-//        installColumnFilter(first);
-//        FilterModel model = first.getColumnFilter().getFilterModel();
-//        filtered.predicateProperty().bind(model.predicateProperty());
-        
+        first.setCellFactory(e -> new PlainTableCell());
         table.setEditable(true);
         table.getColumns().addAll(first);
         emailHeader = new TableColumn("Emails");
@@ -110,7 +135,7 @@ public class TableViewDemo extends Application {
 //        installColumnFilter(email);
         
         TableColumn secondary = new TableColumn("Secondary");
-        secondary.setCellValueFactory(new PropertyValueFactory<>("secondaryEmail"));
+        secondary.setCellValueFactory(new PropertyValueFactory<>("secondaryMail"));
 //        installColumnFilter(secondary);
         
 //        emailHeader.getColumns().addAll(email, secondary);

@@ -19,6 +19,8 @@ import javafx.stage.Stage;
  * Tooltip flickering (showing/hiding) when setting text in onShowing.
  *  
  * Reported: https://javafx-jira.kenai.com/browse/RT-40080
+ * 
+ * fixed, as of 8u60, verified in 9-ea-u180
  *  
  * @author Jeanette Winzenburg, Berlin
  */
@@ -31,10 +33,10 @@ public class DynamicTooltipRT_40080 extends Application {
         button.setTooltip(t);
         t.setOnShowing(e -> {
             // side-effect: tooltip hidden/shown
-//            t.setText("x/y: " + t.getX() + "/" + t.getY());
+            t.setText("x/y: " + t.getX() + "/" + t.getY());
             // here we get a stable tooltip
-             t.textProperty().set("x/y: " + t.getX() + "/" + t.getY() + "\n" +
-             "ax/y: " + t.getAnchorX() + "/" + t.getAnchorY());
+//             t.textProperty().set("x/y: " + t.getX() + "/" + t.getY() + "\n" +
+//             "ax/y: " + t.getAnchorX() + "/" + t.getAnchorY());
         });
         VBox pane = new VBox(button);
         Scene scene = new Scene(pane);

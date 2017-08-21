@@ -7,18 +7,19 @@ package de.swingempire.fx.control;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.PopupWindow.AnchorLocation;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * Tooltip that dynamically updates its text with mouse coordinates.
@@ -67,6 +68,7 @@ public class DynamicTooltipMouseListener extends Application {
             LOG.info("bounds on shown " +"x/y: " + t.getX() + "/" + t.getY() + "\n       " +
                     "ax/y: " + (t.getAnchorX() - 10) + "/" + (t.getAnchorY() - 7));
         });
+        t.textProperty().addListener((src, ov, nv) -> LOG.info("text: " + nv));
         Button button = new Button(text);
         button.setTooltip(t);
         button.setOnContextMenuRequested(e -> {
@@ -74,12 +76,25 @@ public class DynamicTooltipMouseListener extends Application {
                     "scene/screen/source " + e.getSceneX() + " / " + e.getScreenX() + " / " + e.getX());
         });
         button.setOnMouseMoved(e -> {
-            LOG.info("moved: " + text + "\n      " +
-            "scene/screen/source " + e.getSceneX() + " / " + e.getScreenX() + " / " + e.getX());
+//            LOG.info("moved: " + text + "\n      " +
+//            "scene/screen/source " + e.getSceneX() + " / " + e.getScreenX() + " / " + e.getX());
+            // not updated while showing? its the same, dude ...
+//            t.textProperty().set("x/y: " + t.getX() + "/" + t.getY() + "\n" +
+//            "ax/y: " + t.getAnchorX() + "/" + t.getAnchorY());
+            LOG.info("in buttonhandler");
         });
+//        button.setOnMouseMoved(this::moved);
+//        Consumer<MouseEvent> mc = button.getOnMouseMoved();
+        Consumer<MouseEvent> cc = this::moved;
+        Consumer<MouseEvent> combiX = cc.andThen(button.getOnMouseMoved()::handle);
+        Consumer<MouseEvent> combi = cc.andThen(me -> button.getOnMouseMoved().handle(me));
+        button.setOnMouseMoved(combiX::accept);
         return button;
     }
     
+    public void moved(MouseEvent e) {
+        LOG.info("consumer: " + e);
+    }
     public static void main(String[] args) {
         launch(args);
     }

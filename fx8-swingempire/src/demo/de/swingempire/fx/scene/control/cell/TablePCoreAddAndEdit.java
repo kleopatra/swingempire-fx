@@ -55,7 +55,8 @@ import javafx.util.converter.DefaultStringConverter;
  * 
  * resolved as can't reproduce
  * 
- * 
+ * New issue (9ea-u180)
+ * start editing anywhere, scroll by clicking -> editing is cancelled
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -86,8 +87,8 @@ public class TablePCoreAddAndEdit extends Application {
         
         TableColumn<Dummy, String> column = new TableColumn<>("Value");
         column.setCellValueFactory(c -> c.getValue().valueProperty());
-//        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        column.setCellFactory(p -> new FixedTextFieldTableCell());
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+//        column.setCellFactory(p -> new FixedTextFieldTableCell());
         column.setMinWidth(200);
         table.getColumns().addAll(column);
         
