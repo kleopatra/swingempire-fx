@@ -104,8 +104,11 @@ public class TableCoreRecentlyChanged extends Application {
         
         Button changeValue = new Button("Edit");
         changeValue.setOnAction(e -> {
-            Dummy dummy = table.getItems().get(editIndex);
-            dummy.setValue(dummy.getValue()+"x");
+            for (int index = editIndex; index <(editIndex +3); index++) {
+                Dummy dummy = table.getItems().get(index);
+                dummy.setValue(dummy.getValue()+"x");
+                
+            }
         });
         HBox buttons = new HBox(10, changeValue);
         BorderPane content = new BorderPane(table);
