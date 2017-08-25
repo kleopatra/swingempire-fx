@@ -6,14 +6,8 @@ package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
-//import com.sun.javafx.css.Stylesheet;
-
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -43,12 +37,10 @@ import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
 
 /**
- * Example from tutorial. 
+ * See also:
+ * https://github.com/kleopatra/swingempire-fx/wiki/CellEditing
  * 
- * Changes:
- * - removed hard-coded stage sizing
- * - use enhanced person bean, thus no need for onEditCommitHandler (removed)
- * - tabs represent variations in tableCells
+ * Tabs represent variations in tableCells
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -56,7 +48,7 @@ import javafx.util.converter.DefaultStringConverter;
 public class TableViewSample extends Application {
     private final ObservableList<Person> data = Person.persons();
    
-    XTableView<Person> xTable;
+    private XTableView<Person> xTable;
     
     /**
      * Creates and returns the content of the stage.
@@ -96,7 +88,6 @@ public class TableViewSample extends Application {
         return pane;
     }
 
-     
     /**
      * This is original of the tutorial example. 
      * No longer:
@@ -137,17 +128,6 @@ public class TableViewSample extends Application {
             setGraphic(null);
         }
 
-        // public void cancelEdit(boolean really) {
-        // if(really) {
-        // new RuntimeException("who's calling? ").printStackTrace();
-        // super.cancelEdit();
-        // setText((String) getItem());
-        // setGraphic(null);
-        // } else {
-        //
-        // commitEdit();
-        // }
-        // }
         @Override
         public void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
@@ -233,8 +213,6 @@ public class TableViewSample extends Application {
         final Label label = new Label("Address Book");
         label.setFont(new Font("Arial", 20));
         TableView<Person> table = createBaseTable(useExtended);
-        // button allows to hide all columns, then impossible to show them again
-        // http://stackoverflow.com/q/26141262/203657
         table.setTableMenuButtonVisible(true);
         setCellFactories(table, coreTextFieldCellFactory);
         final TextField addFirstName = new TextField();
@@ -248,15 +226,6 @@ public class TableViewSample extends Application {
         addEmail.setPromptText("Email");
         final Button addButton = new Button("Add");
         addButton.setOnAction((ActionEvent e) -> {
-            // check: change item is reflected in cell using BoundTableCell
-   //            Person selected = table.getSelectionModel().getSelectedItem();
-   //            if (selected == null) return;
-   //            selected.setFirstName(selected.getFirstName() + "x");
-            // original
-            // except inserting at top to see problem with incorrect focus on
-            // inserting
-            // http://stackoverflow.com/q/25559022/203657
-            // might be fixed by https://javafx-jira.kenai.com/browse/RT-37632
             data.add(0, new Person(addFirstName.getText() + "x", addLastName.getText() + "x",
                     addEmail.getText()+ "x"));
             addFirstName.clear();
@@ -265,12 +234,9 @@ public class TableViewSample extends Application {
             
         });
    
-        HBox hb = new HBox(3);
-        hb.getChildren().addAll(addFirstName, addLastName, addEmail, addButton);
-        final VBox vbox = new VBox();
-        vbox.setSpacing(5);
-        vbox.setPadding(new Insets(10, 0, 0, 10));
-        vbox.getChildren().addAll(label, table, hb);
+        HBox hb = new HBox(10,addFirstName, addLastName, addEmail, addButton);
+        final VBox vbox = new VBox(10, label, table, hb);
+        vbox.setPadding(new Insets(10, 10, 10, 10));
         return vbox;
     }
 
@@ -308,8 +274,6 @@ public class TableViewSample extends Application {
         firstNameCol.setMinWidth(100);
         firstNameCol
                 .setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        // changed JW: removed editCommitHandlers
-        // only need a custom handler if the bean doesn't expose the property
         lastNameCol.setMinWidth(100);
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         emailCol.setMinWidth(200);
@@ -324,10 +288,7 @@ public class TableViewSample extends Application {
     public void start(Stage stage) {
 
         stage.setTitle("Table View Sample");
-        final Parent vbox = createContent();
-        BorderPane pane = new BorderPane(vbox);
-        Scene scene = new Scene(pane);
-        stage.setScene(scene);
+        stage.setScene(new Scene(createContent()));
         stage.show();
     }
 
