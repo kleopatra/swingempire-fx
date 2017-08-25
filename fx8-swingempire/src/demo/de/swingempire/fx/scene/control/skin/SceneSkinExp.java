@@ -29,10 +29,14 @@ import javafx.stage.Stage;
  */
 public class SceneSkinExp extends Application {
 
+    Label parentA;
+    Label childA;
+    Label grandChildA;
+    
     private Parent getContent() {
-        Label parentA = createLabel("parentA");
-        Label childA = createLabel("childA");
-        Label grandChildA = createLabel("grandChildA");
+        parentA = createLabel("parentA");
+        childA = createLabel("childA");
+        grandChildA = createLabel("grandChildA");
         parentA.setGraphic(childA);
         childA.setGraphic(grandChildA);
         VBox box = new VBox(10, parentA);
@@ -56,7 +60,17 @@ public class SceneSkinExp extends Application {
 //            Label childA = (Label) label.getGraphic();
 //            Label grandChildA = (Label) childA.getGraphic();
 //            LOG.info("scene on grandChild: " + grandChildA.getScene());
+//            LOG.info("window? " + label.getScene().getWindow());
+//            label.getScene().getWindow().showingProperty().addListener((wsrc, wov, wnv) -> onShowing(wnv));
         }
+    }
+
+    /**
+     * @param wnv
+     * @return
+     */
+    private void onShowing(Boolean wnv) {
+        LOG.info("showing");
     }
 
     private void sceneChanged(ObservableValue<? extends Scene> src, Scene ov,
@@ -65,6 +79,19 @@ public class SceneSkinExp extends Application {
         Label label = (Label) sceneProperty.getBean();
         String text = label.getText();
         System.out.println("scene change for " + text + " with skin " + label.getSkin());
+        if ("parentA".equals(label.getText())) {
+//          Label childA = (Label) label.getGraphic();
+//          Label grandChildA = (Label) childA.getGraphic();
+//          LOG.info("scene on grandChild: " + grandChildA.getScene());
+            // window still null, can't start listening directly
+//          label.getScene().getWindow().showingProperty().addListener((wsrc, wov, wnv) -> onShowing(wnv));
+          label.getScene().windowProperty().addListener((wsrc, wov, wnv) -> {
+              if (wnv != null) {
+                  LOG.info("window? " + label.getScene().getWindow());
+                  wnv.showingProperty().addListener((ssrc, sov, snv) -> onShowing(snv));
+              }
+          });
+      }
     }
 
     @Override
