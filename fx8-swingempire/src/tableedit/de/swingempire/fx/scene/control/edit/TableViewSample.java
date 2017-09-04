@@ -233,8 +233,13 @@ public class TableViewSample extends Application {
             addEmail.clear();
             
         });
+        
+        final Button edit = new Button("Edit");
+        edit.setOnAction((ActionEvent e) -> {
+            table.edit(1, table.getColumns().get(0));
+        });
    
-        HBox hb = new HBox(10,addFirstName, addLastName, addEmail, addButton);
+        HBox hb = new HBox(10, edit, addFirstName, addLastName, addEmail, addButton);
         final VBox vbox = new VBox(10, label, table, hb);
         vbox.setPadding(new Insets(10, 10, 10, 10));
         return vbox;
@@ -257,26 +262,24 @@ public class TableViewSample extends Application {
         }
         // quick check for https://javafx-jira.kenai.com/browse/RT-18937
         // requirement: no selection
-        // side-effect here: can't start edits
-        // table.setSelectionModel(null);
+        // side-effect here: can't start edits 
+        // looks okay in fx9
+//        table.setSelectionModel(null);
         table.setEditable(true);
         
         // side-testing: focus not updated correctly
-        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
-//            LOG.info("old/new " + oldValue + "\n  " + newValue);
-//            LOG.info("anchor? " + table.getProperties().get("anchor"));
-        });
+//        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+//        table.getFocusModel().focusedCellProperty().addListener((p, oldValue, newValue)-> {
+////            LOG.info("old/new " + oldValue + "\n  " + newValue);
+////            LOG.info("anchor? " + table.getProperties().get("anchor"));
+//        });
         TableColumn<Person, String> firstNameCol = new TableColumn<>(
                 "First Name");
         TableColumn<Person, String> lastNameCol = new TableColumn<>("Last Name");
         TableColumn<Person, String> emailCol = new TableColumn<>("Email");
-        firstNameCol.setMinWidth(100);
         firstNameCol
                 .setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        lastNameCol.setMinWidth(100);
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-        emailCol.setMinWidth(200);
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         table.getColumns().addAll(firstNameCol, lastNameCol, emailCol);
         table.setItems(data);
@@ -288,7 +291,7 @@ public class TableViewSample extends Application {
     public void start(Stage stage) {
 
         stage.setTitle("Table View Sample");
-        stage.setScene(new Scene(createContent()));
+        stage.setScene(new Scene(createContent(), 500, 300));
         stage.show();
     }
 

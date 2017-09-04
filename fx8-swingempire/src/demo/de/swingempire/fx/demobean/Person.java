@@ -19,6 +19,9 @@ public class Person {
     private final SimpleStringProperty email;
     private final SimpleStringProperty secondaryMail;
     
+    public Person(String fName, String lName) {
+        this(fName, lName, "");
+    }
     public Person(String fName, String lName, String email) {
         this.firstName = new SimpleStringProperty(fName);
         this.lastName = new SimpleStringProperty(lName);

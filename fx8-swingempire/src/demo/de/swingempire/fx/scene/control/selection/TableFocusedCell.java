@@ -20,6 +20,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
@@ -59,6 +60,7 @@ import javafx.stage.Stage;
  *    
  */
 public class TableFocusedCell extends Application {
+    private int counter;
     private final ObservableList<Locale> data =
             FXCollections.observableArrayList(Locale.getAvailableLocales());
    
@@ -99,7 +101,13 @@ public class TableFocusedCell extends Application {
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F1) {
-                data.add(0, new Locale("dummy"));
+                data.add(0, new Locale("dummy"  + counter++));
+            }
+        });
+        
+        table.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.F2) {
+                data.set(0, new Locale("dummy" + counter++));
             }
         });
 
@@ -131,11 +139,18 @@ public class TableFocusedCell extends Application {
         });
         
 
-        Button button = new Button("Add");
+        Button button = new Button("set");
         button.setOnAction(ev -> {
-            data.add(0, new Locale("dummy"));
+            data.set(3, new Locale("dummy" + counter++));
         });
+        
+        Button add = new Button("add");
+        add.setOnAction(e -> data.add(3, new Locale("dummy" + counter++)));
+        Button remove = new Button("remove");
+        remove.setOnAction(e -> data.remove(3));
         BorderPane root = new BorderPane(table);
+        HBox box =  new HBox(10, button, add, remove);
+        root.setBottom(box);
         Scene scene = new Scene(root);
 //        scene.getStylesheets().add(getClass().getResource("focusedtablecell.css").toExternalForm());
 //        Callback cf = p -> new FocusableTableCell<>();
