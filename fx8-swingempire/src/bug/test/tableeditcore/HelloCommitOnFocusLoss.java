@@ -30,8 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.swing.JTable;
-
 import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -65,7 +63,6 @@ import javafx.scene.control.cell.ComboBoxTreeCell;
 import javafx.scene.control.cell.ComboBoxTreeTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.control.cell.TextFieldTreeTableCell;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
@@ -92,14 +89,14 @@ public class HelloCommitOnFocusLoss extends Application {
         final TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
-        tabPane.getTabs().add(buildListViewTab());
         tabPane.getTabs().add(buildTableViewTab());
+        tabPane.getTabs().add(buildListViewTab());
         tabPane.getTabs().add(buildTreeViewTab());
         tabPane.getTabs().add(buildTreeTableViewTab());
 
         StackPane stackPane = new StackPane(tabPane);
 
-        final Scene scene = new Scene(stackPane, 875, 700);
+        final Scene scene = new Scene(stackPane, 875, 300);
         scene.setFill(Color.LIGHTGRAY);
 
         stage.setTitle("Hello Commit On Focus Loss");
@@ -121,6 +118,14 @@ public class HelloCommitOnFocusLoss extends Application {
         return label;
     }
 
+    private Button createEditButton(TableView table) {
+        Button btn = new Button("Edit (3, 0)");
+        btn.setOnAction(e -> {
+            table.edit(3, (TableColumn) table.getColumns().get(0));
+        });
+        return btn;
+        
+    }
     private Button createDumpButton(Control c) {
         Button btn = new Button("Print to console");
         btn.setOnAction(e -> dumpToConsole(c));
@@ -291,10 +296,10 @@ public class HelloCommitOnFocusLoss extends Application {
         innerTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         innerTabPane.setPadding(new Insets(10));
 
+        innerTabPane.getTabs().add(buildSimpleTableViewTab("TextField", TextFieldTableCellJon.forTableColumn()));
+        innerTabPane.getTabs().add(buildSimpleTableViewTab("Custom", tableView -> new NestedTextFieldTableCell()));
         innerTabPane.getTabs().add(buildSimpleTableViewTab("ChoiceBox", ChoiceBoxTableCell.forTableColumn("Option 1", "Option 2", "Option 3")));
         innerTabPane.getTabs().add(buildSimpleTableViewTab("ComboBox", ComboBoxTableCell.forTableColumn("Option 1", "Option 2", "Option 3")));
-        innerTabPane.getTabs().add(buildSimpleTableViewTab("TextField", TextFieldTableCell.forTableColumn()));
-        innerTabPane.getTabs().add(buildSimpleTableViewTab("Custom", tableView -> new NestedTextFieldTableCell()));
 
         Tab tab = new Tab("TableView");
         tab.setContent(innerTabPane);
@@ -318,7 +323,8 @@ public class HelloCommitOnFocusLoss extends Application {
         firstNameCol.addEventHandler(TableColumn.editCommitEvent(),e -> System.out.println("On Edit Commit: " + e));
 
         // simple table view
-        final TableView<Person> tableView = new TableView<>(data);
+        final TableViewJon<Person> tableView = new TableViewJon<>(data);
+        tableView.setSelectionModel(null);
         tableView.getColumns().addAll(firstNameCol);
         tableView.setEditable(true);
         tableView.setMaxHeight(Double.MAX_VALUE);
@@ -332,14 +338,16 @@ public class HelloCommitOnFocusLoss extends Application {
         // --- simple tableview
 
         // control buttons
-        grid.add(new VBox(10, new Button("Dummy"), createDumpButton(tableView)), 1, 1);
+        grid.add(new VBox(10, new Button("Dummy"), createEditButton(tableView), createDumpButton(tableView))
+                , 1, 1);
 
+        
         Tab tab = new Tab(title);
         tab.setContent(grid);
         return tab;
     }
 
-    private static class NestedTextFieldTableCell extends TableCell<Person, String> {
+    private static class NestedTextFieldTableCell extends TableCellJon<Person, String> {
         final TextField textField;
         final HBox container;
 

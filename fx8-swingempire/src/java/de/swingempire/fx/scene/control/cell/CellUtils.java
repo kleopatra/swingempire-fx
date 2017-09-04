@@ -172,7 +172,7 @@ public class CellUtils {
         updateItem(cell, converter, null, null, textField);
     }
     
-    static <T> void updateItem(final Cell<T> cell, 
+    public static <T> void updateItem(final Cell<T> cell, 
                                final StringConverter<T> converter,
                                final Pane hbox,
                                final Node graphic,
@@ -200,7 +200,7 @@ public class CellUtils {
         }
     }
     
-    static <T> void startEdit(final Cell<T> cell, 
+    public static <T> void startEdit(final Cell<T> cell, 
                               final StringConverter<T> converter,
                               final Pane hbox,
                               final Node graphic,
@@ -224,12 +224,12 @@ public class CellUtils {
         textField.requestFocus();
     }
     
-    static <T> void cancelEdit(Cell<T> cell, final StringConverter<T> converter, Node graphic) {
+    public static <T> void cancelEdit(Cell<T> cell, final StringConverter<T> converter, Node graphic) {
         cell.setText(getItemText(cell, converter));
         cell.setGraphic(graphic);
     }
     
-    static <T> TextField createTextField(final Cell<T> cell, final StringConverter<T> converter) {
+    public static <T> TextField createTextField(final Cell<T> cell, final StringConverter<T> converter) {
         final TextField textField = new TextField(getItemText(cell, converter));
         textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override public void handle(KeyEvent t) {

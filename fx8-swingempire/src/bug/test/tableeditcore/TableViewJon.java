@@ -4,6 +4,8 @@
  */
 package test.tableeditcore;
 
+import java.util.logging.Logger;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.FXCollections;
@@ -17,6 +19,7 @@ public class TableViewJon<S> extends TableView<S> {
 
     private InvalidationListener focusOwnerListener = o -> {
         if (!ControlUtils.isFocusOnNodeOrAnyChild(this)) {
+            LOG.info("focusListener on Table: " + ControlUtils.isFocusOnNodeOrAnyChild(this));
             edit(-1, null);
         }
     };
@@ -47,4 +50,7 @@ public class TableViewJon<S> extends TableView<S> {
 
     }
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(TableViewJon.class.getName());
 }
