@@ -12,36 +12,31 @@ import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
- * TableView:  multipe selection lost on setItem
+ * TableView: Multiple selection lost on set item
  * 
  * reported as
  * https://bugs.openjdk.java.net/browse/JDK-8186904 
  * 
+ * Here check ListView: okay
+ * 
  */
-public class TableViewMultipleSelectionLostOnSet extends Application {
+public class ListViewMultipleSelectionLostOnSet extends Application {
 
     private int counter;
 
     private Parent getContent() {
-        TableView<Locale> table = new TableView<>(FXCollections.observableArrayList(
+        ListView<Locale> table = new ListView<>(FXCollections.observableArrayList(
                 Locale.getAvailableLocales()));
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
-        countryCode.setCellValueFactory(new PropertyValueFactory<>("country"));
-        TableColumn<Locale, String> language = new TableColumn<>("Language");
-        language.setCellValueFactory(new PropertyValueFactory<>("language"));
-        TableColumn<Locale, String> variant = new TableColumn<>("Variant");
-        variant.setCellValueFactory(new PropertyValueFactory<>("variant"));
-        table.getColumns().addAll(countryCode, language, variant);
         Button set = new Button("Set");
         set.setOnAction(e -> table.getItems().set(3, new Locale("dummy " + counter++)));
         HBox buttons = new HBox(10, set);
