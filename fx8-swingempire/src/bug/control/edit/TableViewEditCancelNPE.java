@@ -2,7 +2,7 @@
  * Created on 05.09.2017
  *
  */
-package de.swingempire.fx.scene.control.edit;
+package control.edit;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;

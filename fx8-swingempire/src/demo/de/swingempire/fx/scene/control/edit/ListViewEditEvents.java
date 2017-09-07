@@ -17,12 +17,20 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * TreeView: receives cancel event on commit
  * https://bugs.openjdk.java.net/browse/JDK-8124615
+ * TreeView: F2 fires cancel
  * https://bugs.openjdk.java.net/browse/JDK-8123783
  * 
- * Modified to handle ListView and test EditEvent.getIndex()
+ * Bug still for ListView, but for a different reason:
+ * default handler replaces value in items -> skin cancels edit  
+ * 
+ * Modified TVEvents to handle ListView
  */
-public class LVEvents extends Application {
+public class ListViewEditEvents extends Application {
+    private int onEditStartCounter = 0;
+    private int onEditCancelCounter = 0;
+    private int onEditCommitCounter = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -40,13 +48,16 @@ public class LVEvents extends Application {
         final Label labelOnEditCommitCounter = new Label("On edit commit: ");
 
         listView.setOnEditStart(t -> 
-            labelOnEditStartCounter.setText("On edit start: " + String.valueOf(t.getIndex())));
-                
-        listView.setOnEditCommit(t -> 
-                labelOnEditCommitCounter.setText("On edit commit: " + String.valueOf(t.getIndex())));
+            labelOnEditStartCounter.setText("On edit start: " + ++onEditStartCounter));
+
+        // use addEventHandler to really commit back to items
+        listView.addEventHandler(listView.editCommitEvent(), t -> 
+             
+//        listView.setOnEditCommit(t -> 
+                labelOnEditCommitCounter.setText("On edit commit: " + ++onEditCommitCounter));
 
         listView.setOnEditCancel(t->
-                labelOnEditCancelCounter.setText("On edit cancel: " + String.valueOf(t.getIndex())));
+                labelOnEditCancelCounter.setText("On edit cancel: " + ++onEditCancelCounter));
  
         VBox vBox = new VBox(10d);
         vBox.getChildren().addAll(labelOnEditStartCounter, labelOnEditCancelCounter, labelOnEditCommitCounter);

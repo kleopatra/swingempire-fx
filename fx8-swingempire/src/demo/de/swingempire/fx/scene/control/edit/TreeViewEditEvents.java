@@ -20,10 +20,16 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 /**
+ * TreeView: receives cancel event on commit
  * https://bugs.openjdk.java.net/browse/JDK-8124615
+ * TreeView: F2 fires cancel
  * https://bugs.openjdk.java.net/browse/JDK-8123783
+ * 
+ * example from bug report (was TVEvents), fixed
+ * 
+ * PENDING: TreeView has no commitHandler?
  */
-public class TVEvents extends Application {
+public class TreeViewEditEvents extends Application {
 
     private int onEditStartCounter = 0;
     private int onEditCancelCounter = 0;
@@ -40,9 +46,9 @@ public class TVEvents extends Application {
         treeView.setCellFactory(getCellFactory());
 
         TreeItem<String> rootItem = new TreeItem<>("root");
+        rootItem.setExpanded(true);
 
         treeView.setRoot(rootItem);
-
         ObservableList<TreeItem<String>> children = treeView.getRoot().getChildren();
         for (int i = 0; i < 10; i++) {
             children.add(new TreeItem("item-" + (i + 1)));
@@ -60,9 +66,11 @@ public class TVEvents extends Application {
             }
         });
 
-        treeView.setOnEditCommit(new EventHandler() {
+        treeView.addEventHandler(treeView.editCommitEvent(), new EventHandler() {
+//        treeView.setOnEditCommit(new EventHandler() {
             @Override
             public void handle(Event t) {
+                System.out.println(treeView.getOnEditCommit());
                 onEditCommitCounter++;
                 labelOnEditCommitCounter.setText("On edit commit: " + String.valueOf(onEditCommitCounter));
             }

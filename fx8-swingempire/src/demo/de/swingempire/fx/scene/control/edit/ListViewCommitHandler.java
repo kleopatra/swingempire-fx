@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.edit;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -48,22 +49,25 @@ public class ListViewCommitHandler extends Application {
 //                (Change<? extends String> c) -> FXUtils.prettyPrint(c));
         simpleList.getItems().addListener((Change<? extends String> c) -> {
             while (c.next()) {
-//                if (c.wasAdded() && c.getAddedSize() == 1) {
-//                    String added = c.getAddedSubList().get(0);
-//                    int index = c.getList().size() - 1;
-//                    String last = c.getList().get(index);
-//                    if ("newItem".equals(added) && added.equals(last)) {
-//                        expectedEditIndex = index;
-////                        simpleList.getSelectionModel().select(index);
-//                        simpleList.edit(index);
-//                        // list thinks its editing, but editing component not
-//                        // inserted
-//                        System.out.println("editing in itemsListener: " + index
-//                                + " / " + simpleList.getEditingIndex());
-//                        break;
-//                    }
-//
-//                }
+                if (c.wasAdded() && c.getAddedSize() == 1) {
+                    String added = c.getAddedSubList().get(0);
+                    int index = c.getList().size() - 1;
+                    String last = c.getList().get(index);
+                    if ("newItem".equals(added) && added.equals(last)) {
+                        expectedEditIndex = index;
+//                        simpleList.getSelectionModel().select(index);
+                      Platform.runLater(() -> {
+                        
+                          simpleList.edit(index);
+                          // list thinks its editing, but editing component not
+                          // inserted
+                          System.out.println("editing in itemsListener: " + index
+                                  + " / " + simpleList.getEditingIndex());
+                                        });
+                        break;
+                    }
+
+                }
             }
         });
 
@@ -120,10 +124,11 @@ public class ListViewCommitHandler extends Application {
             System.out.println(
                     "setOnEditStart " + t.getIndex() + " /" + t.getNewValue());
         });
-        simpleList.setOnEditCommit(t -> {
+        simpleList.addEventHandler(ListView.editCommitEvent(), t -> {
+//        simpleList.setOnEditCommit(t -> {
             System.out.println(
                     "setOnEditCommit " + t.getIndex() + " /" + t.getNewValue());
-            simpleList.getItems().set(t.getIndex(), t.getNewValue());
+//            simpleList.getItems().set(t.getIndex(), t.getNewValue());
             if (t.getIndex() == simpleList.getItems().size() - 1) {
                 int index = t.getIndex() + 1;
                 // System.out.println("setOnEditCommit - last " + t.getIndex() +
@@ -132,8 +137,8 @@ public class ListViewCommitHandler extends Application {
                 expectedEditIndex = index;
                 simpleList.getSelectionModel().select(index);
 //                simpleList.getFocusModel().focus(index);
-                simpleList.edit(index);
-                editTimer.playFromStart();
+//                simpleList.edit(index);
+//                editTimer.playFromStart();
                 // runlater doesn't help?
                 // sometimes, but gets out of sync somehow (incorrect cell
                 // starts
