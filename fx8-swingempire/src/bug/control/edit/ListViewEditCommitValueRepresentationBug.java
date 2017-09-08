@@ -18,6 +18,11 @@ import javafx.stage.Stage;
  * to commit it back to the list
  *  
  * but okay ... cell always shows value of backing data, not the edited 
+ * Why? Code in commitEdit looks very much the same
+ * 
+ * <ul> diffs
+ * <li>ListCell listens to itemsList changes - but nothing changed, shouldn't be triggered
+ * <li>
  */
 public class ListViewEditCommitValueRepresentationBug extends Application {
 
