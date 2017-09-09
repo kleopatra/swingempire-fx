@@ -1,8 +1,8 @@
 /*
- * Created on 05.09.2017
+ * Created on 09.09.2017
  *
  */
-package de.swingempire.fx.scene.control.edit;
+package de.swingempire.fx.scene.control.cell;
 
 /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -29,7 +29,6 @@ package de.swingempire.fx.scene.control.edit;
  * questions.
  */
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,13 +44,13 @@ import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 import com.sun.javafx.tk.Toolkit;
 
 import static org.junit.Assert.*;
+//import static test.com.sun.javafx.scene.control.infrastructure.ControlTestUtils.assertStyleClassContains;
 
+import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.StageLoader;
-import javafx.application.Platform;
+import de.swingempire.fx.util.VirtualFlowTestUtils;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -68,18 +67,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Callback;
+//import test.com.sun.javafx.scene.control.infrastructure.KeyEventFirer;
+//import test.com.sun.javafx.scene.control.infrastructure.KeyModifier;
+//import test.com.sun.javafx.scene.control.test.RT_22463_Person;
 
 /**
- * c&p core test from Jonathan's webrev to commit-on-focus-lost
- * 
- * doesn't compile .. test infrastructs missing
+ * copied from:
+ * http://cr.openjdk.java.net/~jgiles/8089514.1/raw_files/new/modules/javafx.controls/src/test/java/test/javafx/scene/control/ListViewTest.java
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListViewTest {
     private ListView<String> listView;
     private MultipleSelectionModel<String> sm;
@@ -99,7 +96,7 @@ public class ListViewTest {
 //    @Test public void noArgConstructorSetsTheStyleClass() {
 //        assertStyleClassContains(listView, "list-view");
 //    }
-
+//
     @Test public void noArgConstructorSetsNonNullSelectionModel() {
         assertNotNull(sm);
     }
@@ -156,7 +153,19 @@ public class ListViewTest {
         assertNull(listView.getSelectionModel());
     }
 
-
+//    @Test public void selectionModelCanBeBound() {
+//        MultipleSelectionModel<String> sm = ListViewShim.<String>getListViewBitSetSelectionModel(listView);
+//        ObjectProperty<MultipleSelectionModel<String>> other = new SimpleObjectProperty<MultipleSelectionModel<String>>(sm);
+//        listView.selectionModelProperty().bind(other);
+//        assertSame(sm, sm);
+//    }
+//
+//    @Test public void selectionModelCanBeChanged() {
+//        MultipleSelectionModel<String> sm = ListViewShim.<String>getListViewBitSetSelectionModel(listView);
+//        listView.setSelectionModel(sm);
+//        assertSame(sm, sm);
+//    }
+//
     @Test public void canSetSelectedItemToAnItemEvenWhenThereAreNoItems() {
         final String randomString = new String("I AM A CRAZY RANDOM STRING");
         sm.select(randomString);
@@ -457,6 +466,56 @@ public class ListViewTest {
         assertNull(listView.getSelectionModel().getSelectedItem());
     }
 
+    @Test public void test_rt28534() {
+        ListView<Person> list = new ListView<Person>();
+        list.setItems(FXCollections.observableArrayList(
+                new Person("Jacob", "Smith", "jacob.smith@example.com"),
+                new Person("Isabella", "Johnson", "isabella.johnson@example.com"),
+                new Person("Ethan", "Williams", "ethan.williams@example.com"),
+                new Person("Emma", "Jones", "emma.jones@example.com"),
+                new Person("Michael", "Brown", "michael.brown@example.com")));
+
+        VirtualFlowTestUtils.assertRowsNotEmpty(list, 0, 5); // rows 0 - 5 should be filled
+        VirtualFlowTestUtils.assertRowsEmpty(list, 5, -1); // rows 5+ should be empty
+
+        // now we replace the data and expect the cells that have no data
+        // to be empty
+        list.setItems(FXCollections.observableArrayList(
+                new Person("*_*Emma", "Jones", "emma.jones@example.com"),
+                new Person("_Michael", "Brown", "michael.brown@example.com")));
+
+        VirtualFlowTestUtils.assertRowsNotEmpty(list, 0, 2); // rows 0 - 2 should be filled
+        VirtualFlowTestUtils.assertRowsEmpty(list, 2, -1); // rows 2+ should be empty
+    }
+
+//    @Test public void test_rt22463() {
+//        final ListView<RT_22463_Person> list = new ListView<RT_22463_Person>();
+//
+//        // before the change things display fine
+//        RT_22463_Person p1 = new RT_22463_Person();
+//        p1.setId(1l);
+//        p1.setName("name1");
+//        RT_22463_Person p2 = new RT_22463_Person();
+//        p2.setId(2l);
+//        p2.setName("name2");
+//        list.setItems(FXCollections.observableArrayList(p1, p2));
+//        VirtualFlowTestUtils.assertCellTextEquals(list, 0, "name1");
+//        VirtualFlowTestUtils.assertCellTextEquals(list, 1, "name2");
+//
+//        // now we change the persons but they are still equal as the ID's don't
+//        // change - but the items list is cleared so the cells should update
+//        RT_22463_Person new_p1 = new RT_22463_Person();
+//        new_p1.setId(1l);
+//        new_p1.setName("updated name1");
+//        RT_22463_Person new_p2 = new RT_22463_Person();
+//        new_p2.setId(2l);
+//        new_p2.setName("updated name2");
+//        list.getItems().clear();
+//        list.setItems(FXCollections.observableArrayList(new_p1, new_p2));
+//        VirtualFlowTestUtils.assertCellTextEquals(list, 0, "updated name1");
+//        VirtualFlowTestUtils.assertCellTextEquals(list, 1, "updated name2");
+//    }
+
     @Test public void test_rt28637() {
         ObservableList<String> items = FXCollections.observableArrayList("String1", "String2", "String3", "String4");
 
@@ -474,7 +533,78 @@ public class ListViewTest {
         assertEquals(0, listView.getSelectionModel().getSelectedIndex());
     }
 
- 
+    @Test public void test_rt28819_1() {
+        ObservableList<String> emptyModel = FXCollections.observableArrayList();
+
+        final ListView<String> listView = new ListView<String>();
+        listView.setItems(emptyModel);
+        VirtualFlowTestUtils.assertRowsEmpty(listView, 0, 5);
+
+        ObservableList<String> mod = FXCollections.observableArrayList();
+        String value = System.currentTimeMillis()+"";
+        mod.add(value);
+        listView.setItems(mod);
+        VirtualFlowTestUtils.assertCellCount(listView, 1);
+        VirtualFlowTestUtils.assertCellTextEquals(listView, 0, value);
+    }
+
+    @Test public void test_rt28819_2() {
+        ObservableList<String> emptyModel = FXCollections.observableArrayList();
+
+        final ListView<String> listView = new ListView<String>();
+        listView.setItems(emptyModel);
+        VirtualFlowTestUtils.assertRowsEmpty(listView, 0, 5);
+
+        ObservableList<String> mod1 = FXCollections.observableArrayList();
+        String value1 = System.currentTimeMillis()+"";
+        mod1.add(value1);
+        listView.getItems().setAll(mod1);
+        VirtualFlowTestUtils.assertCellCount(listView, 1);
+        VirtualFlowTestUtils.assertCellTextEquals(listView, 0, value1);
+    }
+
+    @Test public void test_rt29390() {
+        ObservableList<String> items = FXCollections.observableArrayList(
+                "String1", "String2", "String3", "String4",
+                "String1", "String2", "String3", "String4",
+                "String1", "String2", "String3", "String4",
+                "String1", "String2", "String3", "String4"
+        );
+
+        final ListView<String> listView = new ListView<String>(items);
+        listView.setMaxHeight(50);
+        listView.setPrefHeight(50);
+
+        // we want the vertical scrollbar
+        VirtualScrollBar scrollBar = VirtualFlowTestUtils.getVirtualFlowVerticalScrollbar(listView);
+
+        assertNotNull(scrollBar);
+        assertTrue(scrollBar.isVisible());
+        assertTrue(scrollBar.getVisibleAmount() > 0.0);
+        assertTrue(scrollBar.getVisibleAmount() < 1.0);
+
+        // this next test is likely to be brittle, but we'll see...If it is the
+        // cause of failure then it can be commented out
+        assertEquals(0.125, scrollBar.getVisibleAmount(), 0.0);
+    }
+
+    @Test public void test_rt30400() {
+        // create a listview that'll render cells using the check box cell factory
+        ObservableList<String> items = FXCollections.observableArrayList("String1");
+        final ListView<String> listView = new ListView<String>(items);
+        listView.setMinHeight(100);
+        listView.setPrefHeight(100);
+        listView.setCellFactory(CheckBoxListCell.forListView(param -> new ReadOnlyBooleanWrapper(true)));
+
+        // because only the first row has data, all other rows should be
+        // empty (and not contain check boxes - we just check the first four here)
+        VirtualFlowTestUtils.assertRowsNotEmpty(listView, 0, 1);
+        VirtualFlowTestUtils.assertCellNotEmpty(VirtualFlowTestUtils.getCell(listView, 0));
+        VirtualFlowTestUtils.assertCellEmpty(VirtualFlowTestUtils.getCell(listView, 1));
+        VirtualFlowTestUtils.assertCellEmpty(VirtualFlowTestUtils.getCell(listView, 2));
+        VirtualFlowTestUtils.assertCellEmpty(VirtualFlowTestUtils.getCell(listView, 3));
+    }
+
     @Test public void test_rt29420() {
         final ListView<String> listView = new ListView<String>();
 
@@ -502,6 +632,125 @@ public class ListViewTest {
         sl.dispose();
     }
 
+    @Test public void test_rt31165() {
+        final ObservableList names = FXCollections.observableArrayList("Adam", "Alex", "Alfred", "Albert");
+        final ObservableList data = FXCollections.observableArrayList();
+        for (int i = 0; i < 18; i++) {
+            data.add(""+i);
+        }
+
+        final ListView listView = new ListView(data);
+        listView.setPrefSize(200, 250);
+        listView.setEditable(true);
+        listView.setCellFactory(ComboBoxListCell.forListView(names));
+
+        IndexedCell cell = VirtualFlowTestUtils.getCell(listView, 1);
+        assertEquals("1", cell.getText());
+        assertFalse(cell.isEditing());
+
+        listView.edit(1);
+
+        assertEquals(1, listView.getEditingIndex());
+        assertTrue(cell.isEditing());
+
+        VirtualFlowTestUtils.getVirtualFlow(listView).requestLayout();
+        Toolkit.getToolkit().firePulse();
+
+        assertEquals(1, listView.getEditingIndex());
+        assertTrue(cell.isEditing());
+    }
+
+    @Test public void test_rt31471() {
+        final ObservableList names = FXCollections.observableArrayList("Adam", "Alex", "Alfred", "Albert");
+        final ListView listView = new ListView(names);
+
+        IndexedCell cell = VirtualFlowTestUtils.getCell(listView, 0);
+        assertEquals("Adam", cell.getItem());
+
+        listView.setFixedCellSize(50);
+
+        VirtualFlowTestUtils.getVirtualFlow(listView).requestLayout();
+        Toolkit.getToolkit().firePulse();
+
+        assertEquals("Adam", cell.getItem());
+        assertEquals(50, cell.getHeight(), 0.00);
+    }
+
+    private int rt_31200_count = 0;
+//    @Test public void test_rt_31200() {
+//        final ListView listView = new ListView();
+//        listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+//            @Override
+//            public ListCell<String> call(ListView<String> param) {
+//                return new ListCellShim<String>() {
+//                    ImageView view = new ImageView();
+//                    { setGraphic(view); };
+//
+//                    @Override
+//                    public void updateItem(String item, boolean empty) {
+//                        if (getItem() == null ? item == null : getItem().equals(item)) {
+//                            rt_31200_count++;
+//                        }
+//                        super.updateItem(item, empty);
+//                        if (item == null || empty) {
+//                            view.setImage(null);
+//                            setText(null);
+//                        } else {
+//                            setText(item);
+//                        }
+//                    }
+//                };
+//            }
+//        });
+//        listView.getItems().setAll("one", "two", "three", "four", "five");
+//
+//        StageLoader sl = new StageLoader(listView);
+//
+//        assertEquals(24, rt_31200_count);
+//
+//        // resize the stage
+//        sl.getStage().setHeight(250);
+//        Toolkit.getToolkit().firePulse();
+//        sl.getStage().setHeight(50);
+//        Toolkit.getToolkit().firePulse();
+//        assertEquals(24, rt_31200_count);
+//
+//        sl.dispose();
+//    }
+//
+//    @Test public void test_rt_30484() {
+//        final ListView listView = new ListView();
+//        listView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+//            @Override public ListCell<String> call(ListView<String> param) {
+//                return new ListCellShim<String>() {
+//                    Rectangle graphic = new Rectangle(10, 10, Color.RED);
+//                    { setGraphic(graphic); };
+//
+//                    @Override public void updateItem(String item, boolean empty) {
+//                        super.updateItem(item, empty);
+//                        if (item == null || empty) {
+//                            graphic.setVisible(false);
+//                            setText(null);
+//                        } else {
+//                            graphic.setVisible(true);
+//                            setText(item);
+//                        }
+//                    }
+//                };
+//            }
+//        });
+//
+//        // First two rows have content, so the graphic should show.
+//        // All other rows have no content, so graphic should not show.
+//        listView.getItems().setAll("one", "two");
+//
+//        VirtualFlowTestUtils.assertGraphicIsVisible(listView, 0);
+//        VirtualFlowTestUtils.assertGraphicIsVisible(listView, 1);
+//        VirtualFlowTestUtils.assertGraphicIsNotVisible(listView, 2);
+//        VirtualFlowTestUtils.assertGraphicIsNotVisible(listView, 3);
+//        VirtualFlowTestUtils.assertGraphicIsNotVisible(listView, 4);
+//        VirtualFlowTestUtils.assertGraphicIsNotVisible(listView, 5);
+//    }
 
     private int rt_29650_start_count = 0;
     private int rt_29650_commit_count = 0;
@@ -530,14 +779,14 @@ public class ListViewTest {
         ListCell rootCell = (ListCell) VirtualFlowTestUtils.getCell(listView, 0);
         TextField textField = (TextField) rootCell.getGraphic();
         textField.setText("Testing!");
-        KeyEventFirer keyboard = new KeyEventFirer(textField);
-        keyboard.doKeyPress(KeyCode.ENTER);
-
-        // TODO should the following assert be enabled?
-//        assertEquals("Testing!", listView.getItems().get(0));
-        assertEquals(1, rt_29650_start_count);
-        assertEquals(1, rt_29650_commit_count);
-        assertEquals(0, rt_29650_cancel_count);
+//        KeyEventFirer keyboard = new KeyEventFirer(textField);
+//        keyboard.doKeyPress(KeyCode.ENTER);
+//
+//        // TODO should the following assert be enabled?
+////        assertEquals("Testing!", listView.getItems().get(0));
+//        assertEquals(1, rt_29650_start_count);
+//        assertEquals(1, rt_29650_commit_count);
+//        assertEquals(0, rt_29650_cancel_count);
 
         sl.dispose();
     }
@@ -605,10 +854,10 @@ public class ListViewTest {
         assertEquals(0, rt_35889_cancel_count);
 
         textField.setText("Z");
-        KeyEventFirer keyboard = new KeyEventFirer(textField);
-        keyboard.doKeyPress(KeyCode.ENTER);
-
-        assertEquals(0, rt_35889_cancel_count);
+//        KeyEventFirer keyboard = new KeyEventFirer(textField);
+//        keyboard.doKeyPress(KeyCode.ENTER);
+//
+//        assertEquals(0, rt_35889_cancel_count);
     }
 
     @Test public void test_rt25679() {
@@ -710,89 +959,89 @@ public class ListViewTest {
         sl.dispose();
     }
 
-    @Test
-    public void test_rt_35395_fixedCellSize() {
-        test_rt_35395(true);
-    }
-
-    @Test
-    public void test_rt_35395_notFixedCellSize() {
-        test_rt_35395(false);
-    }
+//    @Test
+//    public void test_rt_35395_fixedCellSize() {
+//        test_rt_35395(true);
+//    }
+//
+//    @Test
+//    public void test_rt_35395_notFixedCellSize() {
+//        test_rt_35395(false);
+//    }
 
     private int rt_35395_counter;
 
-    private void test_rt_35395(boolean useFixedCellSize) {
-        rt_35395_counter = 0;
-
-        ObservableList<String> items = FXCollections.observableArrayList();
-        for (int i = 0; i < 20; ++i) {
-            items.addAll("red", "green", "blue", "purple");
-        }
-
-        ListView<String> listView = new ListView<>(items);
-        if (useFixedCellSize) {
-            listView.setFixedCellSize(24);
-        }
-        listView.setCellFactory(lv -> new ListCellShim<String>() {
-            @Override
-            public void updateItem(String color, boolean empty) {
-                rt_35395_counter += 1;
-                super.updateItem(color, empty);
-                setText(null);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Rectangle rect = new Rectangle(16, 16);
-                    rect.setStyle("-fx-fill: " + color);
-                    setGraphic(rect);
-                }
-            }
-        });
-
-        StageLoader sl = new StageLoader(listView);
-
-        Platform.runLater(() -> {
-            rt_35395_counter = 0;
-            items.set(10, "yellow");
-            Platform.runLater(() -> {
-                Toolkit.getToolkit().firePulse();
-                assertEquals(1, rt_35395_counter);
-                rt_35395_counter = 0;
-                items.set(30, "yellow");
-                Platform.runLater(() -> {
-                    Toolkit.getToolkit().firePulse();
-                    assertEquals(0, rt_35395_counter);
-                    rt_35395_counter = 0;
-                    items.remove(12);
-                    Platform.runLater(() -> {
-                        Toolkit.getToolkit().firePulse();
-                        assertEquals(useFixedCellSize ? 39 : 45, rt_35395_counter);
-                        rt_35395_counter = 0;
-                        items.add(12, "yellow");
-                        Platform.runLater(() -> {
-                            Toolkit.getToolkit().firePulse();
-                            assertEquals(useFixedCellSize ? 39 : 45, rt_35395_counter);
-                            rt_35395_counter = 0;
-                            listView.scrollTo(5);
-                            Platform.runLater(() -> {
-                                Toolkit.getToolkit().firePulse();
-                                assertEquals(5, rt_35395_counter);
-                                rt_35395_counter = 0;
-                                listView.scrollTo(55);
-                                Platform.runLater(() -> {
-                                    Toolkit.getToolkit().firePulse();
-                                    assertEquals(useFixedCellSize ? 17 : 53, rt_35395_counter);
-                                    sl.dispose();
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    }
-
+//    private void test_rt_35395(boolean useFixedCellSize) {
+//        rt_35395_counter = 0;
+//
+//        ObservableList<String> items = FXCollections.observableArrayList();
+//        for (int i = 0; i < 20; ++i) {
+//            items.addAll("red", "green", "blue", "purple");
+//        }
+//
+//        ListView<String> listView = new ListView<>(items);
+//        if (useFixedCellSize) {
+//            listView.setFixedCellSize(24);
+//        }
+//        listView.setCellFactory(lv -> new ListCellShim<String>() {
+//            @Override
+//            public void updateItem(String color, boolean empty) {
+//                rt_35395_counter += 1;
+//                super.updateItem(color, empty);
+//                setText(null);
+//                if (empty) {
+//                    setGraphic(null);
+//                } else {
+//                    Rectangle rect = new Rectangle(16, 16);
+//                    rect.setStyle("-fx-fill: " + color);
+//                    setGraphic(rect);
+//                }
+//            }
+//        });
+//
+//        StageLoader sl = new StageLoader(listView);
+//
+//        Platform.runLater(() -> {
+//            rt_35395_counter = 0;
+//            items.set(10, "yellow");
+//            Platform.runLater(() -> {
+//                Toolkit.getToolkit().firePulse();
+//                assertEquals(1, rt_35395_counter);
+//                rt_35395_counter = 0;
+//                items.set(30, "yellow");
+//                Platform.runLater(() -> {
+//                    Toolkit.getToolkit().firePulse();
+//                    assertEquals(0, rt_35395_counter);
+//                    rt_35395_counter = 0;
+//                    items.remove(12);
+//                    Platform.runLater(() -> {
+//                        Toolkit.getToolkit().firePulse();
+//                        assertEquals(useFixedCellSize ? 39 : 45, rt_35395_counter);
+//                        rt_35395_counter = 0;
+//                        items.add(12, "yellow");
+//                        Platform.runLater(() -> {
+//                            Toolkit.getToolkit().firePulse();
+//                            assertEquals(useFixedCellSize ? 39 : 45, rt_35395_counter);
+//                            rt_35395_counter = 0;
+//                            listView.scrollTo(5);
+//                            Platform.runLater(() -> {
+//                                Toolkit.getToolkit().firePulse();
+//                                assertEquals(5, rt_35395_counter);
+//                                rt_35395_counter = 0;
+//                                listView.scrollTo(55);
+//                                Platform.runLater(() -> {
+//                                    Toolkit.getToolkit().firePulse();
+//                                    assertEquals(useFixedCellSize ? 17 : 53, rt_35395_counter);
+//                                    sl.dispose();
+//                                });
+//                            });
+//                        });
+//                    });
+//                });
+//            });
+//        });
+//    }
+//
     @Test public void test_rt_37632() {
         final ObservableList<String> listOne = FXCollections.observableArrayList("A", "B", "C");
         final ObservableList<String> listTwo = FXCollections.observableArrayList("C");
@@ -1058,7 +1307,7 @@ public class ListViewTest {
         FocusModel<String> fm = stringListView.getFocusModel();
 
         // click on row 0
-        VirtualFlowTestUtils.clickOnRow(stringListView, 0);
+//        VirtualFlowTestUtils.clickOnRow(stringListView, 0);
         assertTrue(sm.isSelected(0));
         assertEquals("a", sm.getSelectedItem());
         assertTrue(fm.isFocused(0));
@@ -1186,7 +1435,7 @@ public class ListViewTest {
         sm.setSelectionMode(SelectionMode.MULTIPLE);
 
         StageLoader sl = new StageLoader(stringListView);
-        KeyEventFirer keyboard = new KeyEventFirer(stringListView);
+//        KeyEventFirer keyboard = new KeyEventFirer(stringListView);
 
         assertEquals(0, sm.getSelectedItems().size());
 
@@ -1195,13 +1444,13 @@ public class ListViewTest {
         if (useSMSelectAll) {
             sm.selectAll();
         } else {
-            keyboard.doKeyPress(KeyCode.A, KeyModifier.getShortcutKey());
+//            keyboard.doKeyPress(KeyCode.A, KeyModifier.getShortcutKey());
         }
 
         assertEquals(4, sm.getSelectedItems().size());
         assertEquals(0, (int) ListCellBehavior.getAnchor(stringListView, -1));
 
-        keyboard.doKeyPress(KeyCode.DOWN, KeyModifier.SHIFT);
+//        keyboard.doKeyPress(KeyCode.DOWN, KeyModifier.SHIFT);
 
         assertEquals(0, (int) ListCellBehavior.getAnchor(stringListView, -1));
         assertEquals(2, sm.getSelectedItems().size());

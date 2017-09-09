@@ -16,12 +16,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
- * TreeViewCell: must not interfere with custom commit handler
+ * TreeViewCell: check state of cancel event
  * 
  * reported:
- * https://bugs.openjdk.java.net/browse/JDK-8187309
  */
-public class TreeViewEditCommitInterfere extends Application {
+public class TreeViewEditCancelBug extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -32,15 +31,8 @@ public class TreeViewEditCommitInterfere extends Application {
         treeView.setShowRoot(false);
         treeView.setEditable(true);
         treeView.setCellFactory(TextFieldTreeCell.forTreeView());
-        // custom commit handler: replace value on some condition only
-        treeView.setOnEditCommit(t -> {
-            String ov = t.getOldValue();
-            String nv = t.getNewValue();
-            if (nv.length() > ov.length()) {
-                t.getTreeItem().setValue(nv);
-            }
-        });
 
+//        treeView.setOnEditCancel(e -> );
         Button check = new Button("Print child value");
         check.setOnAction(e -> System.out.println(child.getValue()));
         BorderPane pane = new BorderPane(treeView);

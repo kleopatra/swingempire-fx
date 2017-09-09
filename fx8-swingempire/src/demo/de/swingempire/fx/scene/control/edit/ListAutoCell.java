@@ -6,11 +6,11 @@ package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.CellDecorator;
 import de.swingempire.fx.scene.control.cell.CellUtils;
-import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.Cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -21,13 +21,18 @@ import javafx.util.converter.DefaultStringConverter;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
-public class ListAutoCell<T> extends ListCell<T> {
+public class ListAutoCell<T> extends ListCell<T> implements CellDecorator<T> {
     
     
     
     @Override
+    protected void updateItem(T arg0, boolean arg1) {
+        super.updateItem(arg0, arg1);
+    }
+
+    @Override
     public void cancelEdit() {
-        LOG.info("editing/index " + isEditing() + getIndex());
+        LOG.info("editing/index " + isEditing() + getIndex() + getItem());
         super.cancelEdit();
     }
 
@@ -41,42 +46,8 @@ public class ListAutoCell<T> extends ListCell<T> {
         super.startEdit();
     }
 
-    /**
-     * Hook into Cell's commitEdit - used to by-pass current fx9 TableCell's implementation
-     * of commitEdit
-     * @param value
-     */
-    protected void cellCommitEdit(T value) {
-        if (isEditing()) {
-            invokeSetEditing(false);
-//            setEditing(false);
-        }
-    }
-    
-    /**
-     * Hook into Cell's cancelEdit - used to by-pass current fx9 TableCell's implementation
-     * of cancelEdit
-     * @param value
-     */
-    protected void cellCancelEdit() {
-        if (isEditing()) {
-            invokeSetEditing(false);
-//            setEditing(false);
-        }
-        
-    }
-    //---------------------- reflection acrobatics
-    
-    protected void invokeSetEditing(boolean selected) {
-        FXUtils.invokeGetMethodValue(Cell.class, this, "setEditing", Boolean.TYPE, selected);
-    }
-    
-    protected void invokeSetSelected(boolean selected) {
-        FXUtils.invokeGetMethodValue(Cell.class, this, "setSelected", Boolean.TYPE, selected);
-    }
-    
 
-    public static class TextFieldListAutoCell<T> extends ListAutoCell<T> {
+    public static class TextFieldListAutoCell<T> extends ListAutoCell<T>  implements TextFieldCellDecorator<T> {
         
         
         public static Callback<ListView<String>, ListCell<String>> forListView() {
@@ -146,26 +117,12 @@ public class ListAutoCell<T> extends ListCell<T> {
          * The {@link StringConverter} property.
          * @return the {@link StringConverter} property
          */
+        @Override
         public final ObjectProperty<StringConverter<T>> converterProperty() {
             return converter;
         }
 
-        /**
-         * Sets the {@link StringConverter} to be used in this cell.
-         * @param value the {@link StringConverter} to be used in this cell
-         */
-        public final void setConverter(StringConverter<T> value) {
-            converterProperty().set(value);
-        }
-
-        /**
-         * Returns the {@link StringConverter} used in this cell.
-         * @return the {@link StringConverter} used in this cell
-         */
-        public final StringConverter<T> getConverter() {
-            return converterProperty().get();
-        }
-
+        
 
         /***************************************************************************
          *                                                                         *
@@ -173,24 +130,30 @@ public class ListAutoCell<T> extends ListCell<T> {
          *                                                                         *
          **************************************************************************/
 
+        @Override
+        public TextField getTextField() {
+            if (textField == null) {
+                textField = createTextField();
+            }
+            return textField;
+        }
+        
         /** {@inheritDoc} */
-        @Override public void startEdit() {
+        @Override 
+        public void startEdit() {
             if (! isEditable() || ! getListView().isEditable()) {
                 return;
             }
             super.startEdit();
 
             if (isEditing()) {
-                if (textField == null) {
-                    textField = CellUtils.createTextField(this, getConverter());
-                }
-
-                CellUtils.startEdit(this, getConverter(), null, null, textField);
+                startEditTextField();
             }
         }
 
         /** {@inheritDoc} */
-        @Override public void cancelEdit() {
+        @Override 
+        public void cancelEdit() {
             if (isEditing()) {
                 ListView list = getListView();
                 if (list != null) {
@@ -201,13 +164,16 @@ public class ListAutoCell<T> extends ListCell<T> {
                 }
             }
             super.cancelEdit();
-            CellUtils.cancelEdit(this, getConverter(), null);
+            cancelEditTextField();
+//            CellUtils.cancelEdit(this, getConverter(), null);
         }
 
         /** {@inheritDoc} */
         @Override public void updateItem(T item, boolean empty) {
-            super.updateItem(item, empty);
-            CellUtils.updateItem(this, getConverter(), null, null, textField);
+            cellUpdateItem(item, empty);
+            updateItemTextField(item, empty);
+//            super.updateItem(item, empty);
+//            CellUtils.updateItem(this, getConverter(), null, null, textField);
         }
 
     }

@@ -6,15 +6,15 @@ package de.swingempire.fx.scene.control.edit;
 
 
 import de.swingempire.fx.scene.control.ControlUtils;
-import de.swingempire.fx.scene.control.cell.CellUtils;
-import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.scene.control.cell.CellDecorator;
+import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Cell;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -41,7 +41,7 @@ public class TreeViewEditCommitInterfereHack extends Application {
     /**
      * Custom TreeCell that shows
      */
-    public static class XTreeCell<T> extends TreeCell<T> {
+    public static class XTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         
         @Override
         public void commitEdit(T newValue) {
@@ -85,41 +85,6 @@ public class TreeViewEditCommitInterfereHack extends Application {
             }
         }
 
-        /**
-         * Hook into Cell's commitEdit - used to by-pass current fx9 TableCell's implementation
-         * of commitEdit
-         * @param value
-         */
-        protected void cellCommitEdit(T value) {
-            if (isEditing()) {
-                invokeSetEditing(false);
-//                setEditing(false);
-            }
-        }
-        
-        /**
-         * Hook into Cell's cancelEdit - used to by-pass current fx9 TableCell's implementation
-         * of cancelEdit
-         * @param value
-         */
-        protected void cellCancelEdit() {
-            if (isEditing()) {
-                invokeSetEditing(false);
-//                setEditing(false);
-            }
-            
-        }
-        //---------------------- reflection acrobatics
-        
-        protected void invokeSetEditing(boolean selected) {
-            FXUtils.invokeGetMethodValue(Cell.class, this, "setEditing", Boolean.TYPE, selected);
-        }
-        
-        protected void invokeSetSelected(boolean selected) {
-            FXUtils.invokeGetMethodValue(Cell.class, this, "setSelected", Boolean.TYPE, selected);
-        }
-        
-
     }
 
     private TreeItem inEditCommit;
@@ -127,7 +92,7 @@ public class TreeViewEditCommitInterfereHack extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         TreeItem<String> rootItem = new TreeItem<>("root");
-        TreeItem<String> child = new TreeItem<>("child");
+        TreeItem<String> child = new TreeItem<>("child", new Label("X"));
         rootItem.getChildren().add(child);
         TreeView<String> treeView = new TreeView<>(rootItem);
         treeView.setShowRoot(false);
@@ -159,7 +124,7 @@ public class TreeViewEditCommitInterfereHack extends Application {
     /**
      * c&p of core TextFieldTreeCell, no change
      */
-    public static class XTextFieldTreeCell<T> extends XTreeCell<T> {
+    public static class XTextFieldTreeCell<T> extends XTreeCell<T> implements TextFieldCellDecorator<T> {
         /***************************************************************************
          *                                                                         *
          * Static cell factories                                                   *
@@ -272,23 +237,6 @@ public class TreeViewEditCommitInterfereHack extends Application {
             return converter;
         }
     
-        /**
-         * Sets the {@link StringConverter} to be used in this cell.
-         * @param value the {@link StringConverter} to be used in this cell
-         */
-        public final void setConverter(StringConverter<T> value) {
-            converterProperty().set(value);
-        }
-    
-        /**
-         * Returns the {@link StringConverter} used in this cell.
-         * @return the {@link StringConverter} used in this cell
-         */
-        public final StringConverter<T> getConverter() {
-            return converterProperty().get();
-        }
-    
-    
     
         /***************************************************************************
          *                                                                         *
@@ -296,6 +244,14 @@ public class TreeViewEditCommitInterfereHack extends Application {
          *                                                                         *
          **************************************************************************/
     
+        @Override
+        public TextField getTextField() {
+            if (textField == null) {
+                textField = createTextField();
+            }
+            return textField;
+        }
+
         /** {@inheritDoc} */
         @Override public void startEdit() {
             if (! isEditable() || ! getTreeView().isEditable()) {
@@ -304,28 +260,38 @@ public class TreeViewEditCommitInterfereHack extends Application {
             super.startEdit();
     
             if (isEditing()) {
-                StringConverter<T> converter = getConverter();
-                if (textField == null) {
-                    textField = CellUtils.createTextField(this, converter);
-                }
-                if (hbox == null) {
-                    hbox = new HBox(3);//CellUtils.TREE_VIEW_HBOX_GRAPHIC_PADDING);
-                }
-    
-                CellUtils.startEdit(this, converter, hbox, getTreeItemGraphic(), textField);
+                startEditTextField();
+//                StringConverter<T> converter = getConverter();
+//                if (textField == null) {
+//                    textField = CellUtils.createTextField(this, converter);
+//                }
+//                if (hbox == null) {
+//                    hbox = new HBox(3);//CellUtils.TREE_VIEW_HBOX_GRAPHIC_PADDING);
+//                }
+//    
+//                CellUtils.startEdit(this, converter, hbox, getTreeItemGraphic(), textField);
             }
         }
     
         /** {@inheritDoc} */
-        @Override public void cancelEdit() {
+        @Override 
+        public void cancelEdit() {
+            // super handles setting not-editing state on this cell and on the virtual control
             super.cancelEdit();
-            CellUtils.cancelEdit(this, getConverter(), getTreeItemGraphic());
+            cancelEditTextField();
+//            CellUtils.cancelEdit(this, getConverter(), getTreeItemGraphic());
         }
     
+        @Override
+        public void cancelEditTextField() {
+            
+        }
         /** {@inheritDoc} */
         @Override public void updateItem(T item, boolean empty) {
-            super.updateItem(item, empty);
-            CellUtils.updateItem(this, getConverter(), hbox, getTreeItemGraphic(), textField);
+            cellUpdateItem(item, empty);
+//            super.updateItem(item, empty);
+            updateItemTextField(item, empty);
+//            CellUtils.updateItem(this, getConverter(), hbox, getTreeItemGraphic(), textField);
         }
     
     

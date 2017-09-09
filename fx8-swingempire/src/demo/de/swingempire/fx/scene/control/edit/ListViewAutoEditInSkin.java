@@ -3,20 +3,24 @@
  *
  */
 package de.swingempire.fx.scene.control.edit;
-import static de.swingempire.fx.scene.control.edit.ListAutoCell.*;
-
+import de.swingempire.fx.scene.control.edit.ListAutoCell.TextFieldListAutoCell;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
-import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToolBar;
 import javafx.scene.control.skin.ListViewSkin;
+import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 ;/**
  * Trying to add item/start edit on new item in commitHandler:
@@ -33,12 +37,13 @@ public class ListViewAutoEditInSkin extends Application {
     
     public static class MyListViewSkin<T> extends ListViewSkin<T> {
 
-        VirtualFlow flow;
+        VirtualFlow flowAlias;
         /**
          * @param listView
          */
         public MyListViewSkin(ListView<T> listView) {
             super(listView);
+            flowAlias = invokeGetVirtualFlow();
         }
         
         @Override
@@ -49,11 +54,22 @@ public class ListViewAutoEditInSkin extends Application {
             ObservableMap<Object, Object> properties = skinnable.getProperties();
             Integer editPending = (Integer) properties.get("PENDING_EDIT_KEY");
             if (editPending != null && editPending >= 0) {
-                p("detecting edit pending? " + editPending);
                 properties.put("PENDING_EDIT_KEY", null);
-                skinnable.edit(editPending);
+                IndexedCell cell = flowAlias.getVisibleCell(editPending);
+                p("detecting edit pending? " + editPending + " edit cell " + cell.getIndex());
+                cell.updateIndex(editPending);
+                cell.startEdit();
+//                skinnable.edit(editPending);
             }
         }
+        
+        
+        //-------------------- reflection acrobatics
+        
+        private VirtualFlow invokeGetVirtualFlow() {
+            return (VirtualFlow) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, this, "getVirtualFlow");
+        }
+        
     }
     /**
      * Callback for editTimer. Implemented to scroll to and force
@@ -75,11 +91,11 @@ public class ListViewAutoEditInSkin extends Application {
     public void start(Stage primaryStage) {
         simpleList = new ListView<>(FXCollections.observableArrayList("Item1", "item2", "item2", "item3")) {
 
-//            @Override
-//            protected Skin<?> createDefaultSkin() {
-//                return new MyListViewSkin<>(this);
-//            }
-//            
+            @Override
+            protected Skin<?> createDefaultSkin() {
+                return new MyListViewSkin<>(this);
+            }
+            
         };
         simpleList.setEditable(true);
         
@@ -90,8 +106,6 @@ public class ListViewAutoEditInSkin extends Application {
         simpleList.setOnEditCommit(t -> {
             p("edit commit: " + t.getIndex());
             // any modification of the items will trigger a cancel
-            simpleList.getItems().set(t.getIndex(), t.getNewValue());
-            p("item set");
             if (t.getIndex() == simpleList.getItems().size() - 1) {
                 expectedEditIndex = t.getIndex() + 1;
                   p("expected edit? " + expectedEditIndex);
@@ -102,7 +116,7 @@ public class ListViewAutoEditInSkin extends Application {
                 simpleList.scrollTo(expectedEditIndex);
                 simpleList.getProperties().put("PENDING_EDIT_KEY", expectedEditIndex);
                 // this does not work
-                simpleList.edit(expectedEditIndex);
+//                simpleList.edit(expectedEditIndex);
                 
                 // ... so we start a timer to force
                 // uncomment for a brittle solution ;)
@@ -110,13 +124,20 @@ public class ListViewAutoEditInSkin extends Application {
                 // reset .. a bit paranoid here ;)
 //                expectedEditIndex = -1;
             }
+            p("item set");
+            simpleList.getItems().set(t.getIndex(), t.getNewValue());
 
         });
 
 
         BorderPane root = new BorderPane(simpleList);
         Scene scene = new Scene(root, 300, 150);
-
+        // quick check: https://stackoverflow.com/q/42884924/203657
+        // make control inside toolbar fill
+//        TextField field = new TextField();
+//        ToolBar tool = new ToolBar(new Button("dummy"), field);
+//        HBox.setHgrow(field, Priority.ALWAYS);
+//        root.setTop(tool);
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);
         primaryStage.show();
