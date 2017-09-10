@@ -6,32 +6,35 @@ package de.swingempire.fx.util;
 
 import java.util.Optional;
 
-import static javafx.scene.control.ListView.*;
+import static javafx.scene.control.TableColumn.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ListView.EditEvent;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ListViewEditReport {
+public class TableViewEditReport {
 
-    ListView source;
+    TableView source;
     
-    ObservableList<ListView.EditEvent> editEvents = FXCollections.observableArrayList();
+    ObservableList<CellEditEvent> editEvents = FXCollections.observableArrayList();
     
-    public ListViewEditReport(ListView listView) {
+    public TableViewEditReport(TableView listView) {
         this.source = listView;
-        listView.addEventHandler(ListView.editAnyEvent(), this::addEvent);
+        TableColumn column = (TableColumn) listView.getColumns().get(0);
+        column.addEventHandler(editAnyEvent(), e -> addEvent((CellEditEvent) e));
     }
     
     /**
      * Returns the list of editEvents as unmodifiable list.
      * @return
      */
-    public ObservableList<EditEvent> getEditEvents(){
+    public ObservableList<CellEditEvent> getEditEvents(){
         return FXCollections.unmodifiableObservableList(editEvents);
     }
     /**
@@ -45,18 +48,18 @@ public class ListViewEditReport {
         return editEvents.size();
     }
     
-    public Optional<EditEvent> getLastEditStart() {
+    public Optional<CellEditEvent> getLastEditStart() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editStartEvent()))
                 .findFirst();
     }
     
-    public Optional<EditEvent> getLastEditCancel() {
+    public Optional<CellEditEvent> getLastEditCancel() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editCancelEvent()))
                 .findFirst();
     }
-    public Optional<EditEvent> getLastEditCommit() {
+    public Optional<CellEditEvent> getLastEditCommit() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editCommitEvent()))
                 .findFirst();
@@ -89,7 +92,7 @@ public class ListViewEditReport {
         return hasEditEvents() ? getLastAnyEvent().getEventType().equals(editCancelEvent()) : false;
     }
     
-    public EditEvent getLastAnyEvent() {
+    public CellEditEvent getLastAnyEvent() {
         return hasEditEvents() ? editEvents.get(0) : null;
     }
     
@@ -98,7 +101,19 @@ public class ListViewEditReport {
     }
     
     
-    protected void addEvent(ListView.EditEvent event) {
+    protected void addEvent(CellEditEvent event) {
         editEvents.add(0, event);
+    }
+    
+    public static String getEditText(CellEditEvent event) {
+        // table, tablePosition (aka: row/column), eventType, newValue
+        TablePosition pos = event.getTablePosition();
+        TableColumn column = pos != null ? event.getTableColumn() :null;
+        int row = pos != null ? pos.getRow() : -1;
+        Object oldValue = pos != null ? event.getOldValue() : null;
+        Object rowValue = pos != null ? event.getRowValue() : null;
+        return "[ pos: " + pos + " rowValue: " + rowValue + " oldValue: " 
+                + oldValue + " newValue: " + event.getNewValue();
+        
     }
 }
