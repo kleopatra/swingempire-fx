@@ -18,9 +18,9 @@ import javafx.scene.control.ListView.EditEvent;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListViewEditReport {
 
-    ListView source;
+    private ListView source;
     
-    ObservableList<ListView.EditEvent> editEvents = FXCollections.observableArrayList();
+    private ObservableList<ListView.EditEvent> editEvents = FXCollections.observableArrayList();
     
     public ListViewEditReport(ListView listView) {
         this.source = listView;
@@ -28,7 +28,7 @@ public class ListViewEditReport {
     }
     
     /**
-     * Returns the list of editEvents as unmodifiable list.
+     * Returns the list of editEvents as unmodifiable list, most recent first.
      * @return
      */
     public ObservableList<EditEvent> getEditEvents(){
@@ -98,7 +98,29 @@ public class ListViewEditReport {
     }
     
     
-    protected void addEvent(ListView.EditEvent event) {
+    protected void addEvent(EditEvent event) {
         editEvents.add(0, event);
+    }
+    
+    /**
+     * Returns the enhanced edit text of all events received, most 
+     * recent first.
+     * 
+     * @param message
+     * @return
+     */
+    public String getAllEditEventTexts(String message) {
+        if (!hasEditEvents()) return "noEvents";
+        String edits = message + "\n";
+        for (EditEvent editEvent : editEvents) {
+            edits += getEditEventText(editEvent) + "\n";
+        }
+        return edits;
+    }
+    
+    public static String getEditEventText(EditEvent event) {
+        return "[ListViewEditEvent [type: " + event.getEventType() + " index " 
+                + event.getIndex() + " newValue " + event.getNewValue() + "]";
+        
     }
 }

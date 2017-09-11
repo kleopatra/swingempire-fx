@@ -19,6 +19,16 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
     
     TextField getTextField();
     
+    /**
+     * Default implementation at the same level of concreteness as the default XXCell
+     * implementation (NOT the base XXCell! which have none). Updates this
+     * cell's text/graphic properties depending on empty on isEditing.
+     * 
+     * Copied from CellUtils.updateItem
+     * 
+     * @param item
+     * @param empty
+     */
     default void updateItemTextField(T item, boolean empty) {
         if (empty) { //isEmpty()) {
             setText(null);
@@ -49,6 +59,13 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 
     }
     
+    /**
+     * Default implementation with updates the textField as appropriatee
+     * and sets it as graphic of this cell, text of this cell is null.
+     * 
+     * Copied from CellUtils.editStart.
+     * PENDING: HBox for treeItem graphics not supported.
+     */
     default void startEditTextField() {
         if (!isEditing()) return;
         // copied and adjusted from CellUtils
@@ -72,15 +89,27 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 
     }
     
+    /**
+     * Implemented to do nothing .. really needed?
+     * @param item
+     */
     default void commitEditTextField(T item) {
         
     }
     
+    /**
+     * Default implementation to update text/graphic property of this cell.
+     * Copied from CellUtils.cancelEdit.
+     */
     default void cancelEditTextField() {
         setText(itemToString(getItem()));
         setGraphic(null);
     }
     
+    /**
+     * Copied from core CellUtils.createTextField
+     * @return
+     */
     default TextField createTextField() {
         final TextField textField = new TextField(itemToString(getItem()));
 

@@ -64,12 +64,22 @@ public interface CellDecorator<T> {
     
     void cancelEdit();
     
+    boolean isEditable();
+    
+    boolean isEmpty();
+    
 //------------ access cell-level state
     
     void updateSelected(boolean selected);
     
     boolean isSelected();
     
+    /**
+     * Implemented Cell.updateItem, c&p.
+     * 
+     * @param item
+     * @param empty
+     */
     default void cellUpdateItem(T item, boolean empty) {
         setItem(item);
         invokeSetEmpty(empty);
@@ -78,10 +88,21 @@ public interface CellDecorator<T> {
             updateSelected(false);
         }
     }
-    
+
+    /**
+     * Implemented Cell.startEdit(), c&p plus reflective access to hidden api.
+     */
+    default void cellStartEdit() {
+        if (isEditable() && !isEditing() && !isEmpty()) {
+//            setEditing(true);
+            invokeSetEditing(true);
+        }
+    }
+
     /**
      * Hook into Cell's commitEdit - used to by-pass current fx9 TableCell's implementation
      * of commitEdit
+     * Implemented Cell.commitEdit(), c&p plus reflective access to hidden api.
      * @param value
      */
     default void cellCommitEdit(T value) {
@@ -94,6 +115,7 @@ public interface CellDecorator<T> {
     /**
      * Hook into Cell's cancelEdit - used to by-pass current fx9 TableCell's implementation
      * of cancelEdit
+     * Implemented Cell.cancelEdit(), c&p plus reflective access to hidden api.
      * @param value
      */
     default void cellCancelEdit() {
@@ -101,8 +123,9 @@ public interface CellDecorator<T> {
             invokeSetEditing(false);
 //            setEditing(false);
         }
-        
     }
+    
+
     //---------------------- reflection acrobatics
     
     default void invokeSetEditing(boolean selected) {

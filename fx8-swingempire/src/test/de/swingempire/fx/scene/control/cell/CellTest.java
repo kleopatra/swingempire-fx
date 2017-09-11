@@ -15,15 +15,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
-import static javafx.scene.control.ListView.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TableViewEditReport;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
@@ -125,12 +128,109 @@ public class CellTest {
         assertEquals(1, report.getEditEventSize());
         Optional<CellEditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
-        LOG.info("what do we get?" + report.getEditText(e.get()));
+//        LOG.info("what do we get?" + report.getEditText(e.get()));
         assertEquals("index on start event", editIndex, e.get().getTablePosition().getRow());
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
     }
 
 //---------------- test editEvents and cell/control state on List    
+    
+    
+    /**
+     * Test notification/cell/list state with multiple edits
+     * 
+     * the index of cancel is always incorrect: a cancel is fired with index on the
+     * new edit position.
+     * Here the incorrect index is fired before the start event.
+     * 
+     * Here: 
+     * edit(1)
+     * edit(0)
+     * 
+     */
+    @Test
+    public void testListEditChangeEditIndexOnListReversed() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        // initial edit index
+        int initialEditIndex = 1;
+        IndexedCell initialEditingCell =  getCell(control, initialEditIndex);
+        int secondEditIndex = 0;
+        IndexedCell secondEditingCell = getCell(control, secondEditIndex);
+        // start edit on control with initial editIndex
+        control.edit(initialEditIndex);
+        assertTrue(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        ListViewEditReport report = new ListViewEditReport(control);
+        // switch editing to second
+        control.edit(secondEditIndex);
+        LOG.info("" + report.getAllEditEventTexts("edit(1) -> edit(0): "));
+        // test control state
+        assertEquals(secondEditIndex, control.getEditingIndex());
+        // test cell state
+        assertFalse(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        assertTrue(secondEditingCell.isEditing());
+        assertEquals(secondEditIndex, secondEditingCell.getIndex());
+        // test editEvent
+        assertEquals("change edit must fire ", 2, report.getEditEventSize());
+        
+        Optional<EditEvent> start = report.getLastEditStart();
+        assertTrue(start.isPresent());
+        assertEquals("start on changed edited", secondEditIndex, start.get().getIndex());
+        Optional<EditEvent> cancel = report.getLastEditCancel();
+        assertTrue(cancel.isPresent());
+        assertEquals("cancel on initially edited", initialEditIndex, cancel.get().getIndex());
+    }
+    
+    /**
+     * Test notification/cell/list state with multiple edits
+     * 
+     * the index of cancel is always incorrect: a cancel is fired with index on the
+     * new edit position.
+     * Here the incorrect index is fired before the start event.
+     * 
+     * 
+     * Here: 
+     * edit(0)
+     * edit(1)
+     */
+    @Test
+    public void testListEditChangeEditIndexOnList() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        // initial edit index
+        int initialEditIndex = 0;
+        IndexedCell initialEditingCell =  getCell(control, initialEditIndex);
+        int secondEditIndex = 1;
+        IndexedCell secondEditingCell = getCell(control, secondEditIndex);
+        // start edit on control with initial editIndex
+        control.edit(initialEditIndex);
+        assertTrue(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        ListViewEditReport report = new ListViewEditReport(control);
+        // switch editing to second
+        control.edit(secondEditIndex);
+        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
+        // test control state
+        assertEquals(secondEditIndex, control.getEditingIndex());
+        // test cell state
+        assertFalse(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        assertTrue(secondEditingCell.isEditing());
+        assertEquals(secondEditIndex, secondEditingCell.getIndex());
+        // test editEvent
+        Optional<EditEvent> start = report.getLastEditStart();
+        assertTrue(start.isPresent());
+        assertEquals("start on changed edited", secondEditIndex, start.get().getIndex());
+        Optional<EditEvent> cancel = report.getLastEditCancel();
+        assertTrue(cancel.isPresent());
+        assertEquals("cancel on initially edited", initialEditIndex, cancel.get().getIndex());
+    }
+    
+
+    
+    
     /**
      * start edit on list
      * -> commit edit on cell with newValue (same with identical value)
@@ -153,7 +253,7 @@ public class CellTest {
         // start edit on control
         control.edit(editIndex);
         ListViewEditReport report = new ListViewEditReport(control);
-        // cancel edit on control
+        // commit value on cell
         String editedValue = "edited";
         cell.commitEdit(editedValue);
         // test control state
@@ -230,10 +330,14 @@ public class CellTest {
     }
     
     /**
-     * Testing cell/editEvent: start edit on cell.startEdit
+     * Incorrect index in editStart event when edit started on cell
      * 
-     * event index incorrect: still -1
+     * reported as
+     * https://bugs.openjdk.java.net/browse/JDK-8187432
+     * 
+     * Ignore stand-alone only, otherwise can't show fix in custom ListCell
      */
+//    @ConditionalIgnore (condition = IgnoreReported.class)
     @Test
     public void testListEditStartOnCell() {
         ListView<String> control = createEditableList();
@@ -250,6 +354,35 @@ public class CellTest {
         assertEquals(1, report.getEditEventSize());
         Optional<EditEvent> e = report.getLastEditStart();
         assertEquals("index on start event", editIndex, e.get().getIndex());
+    }
+    
+    /**
+     * Incorrect index in editStart event when edit started on cell
+     * 
+     * reported as
+     * https://bugs.openjdk.java.net/browse/JDK-8187432
+     */
+    @ConditionalIgnore (condition = IgnoreReported.class)
+    @Test
+    public void testListEditStartOnCellStandalone() {
+        ListView<String> control = new ListView<>(FXCollections
+                .observableArrayList("Item1", "Item2", "Item3", "Item4"));
+        control.setEditable(true);
+        control.setCellFactory(TextFieldListCell.forListView());
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell = getCell(control, editIndex);
+        ObjectProperty<ListView.EditEvent> editEvent = new SimpleObjectProperty<>();
+        control.addEventHandler(ListView.editStartEvent(), e -> editEvent.set(e));
+        // start edit on control
+        cell.startEdit();
+        // test cell state
+        assertTrue(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        // test editEvent
+        assertNotNull(editEvent.get());
+        assertEquals("type is startEdit", ListView.editStartEvent(), editEvent.get().getEventType());
+        assertEquals("index on start event", editIndex, editEvent.get().getIndex());
     }
     
     @Test
