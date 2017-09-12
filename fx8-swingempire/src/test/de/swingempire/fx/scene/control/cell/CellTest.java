@@ -21,7 +21,9 @@ import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreListEdit;
+import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreTableEdit;
+import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreTreeEdit;
 import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TableViewEditReport;
@@ -64,15 +66,112 @@ public class CellTest {
     public static TestRule classRule = new JavaFXThreadingRule();
 
 //----------- test editEvents and cell/control state on Table    
+    /**
+     * start edit on list
+     * -> commit edit on cell with newValue (same with identical value)
+     * 
+     * Note: can't commit on control, missing api
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCommitOnCell() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        // test data
+        assertEquals("column text must be updated", editedValue, control.getItems().get(editIndex).getText());
+        // test cell state
+        assertFalse(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        // test editEvent
+        Optional<CellEditEvent> commit = report.getLastEditCommit();
+        assertTrue(commit.isPresent());
+        assertNotNull("tablePosition must not be null", commit.get().getTablePosition());
+        assertEquals("index on cancel event", editIndex,
+                commit.get().getTablePosition().getRow());
+        assertEquals("tableColumn must be colum", column, commit.get().getTableColumn());
+        assertEquals(1, report.getEditEventSize());
+    }
     
+    /**
+     * Here: cancel the edit with cell.cancelEdit ->
+     * the cancel index is correct
+     * ListView: EditEvent on cancel has incorrect index
+     * 
+     * reported: https://bugs.openjdk.java.net/browse/JDK-8187226
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCancelOnCell() {
+        TableView<TableColumn> control = createEditableTable();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on cell
+        cell.startEdit();
+        TableViewEditReport report = new TableViewEditReport(control);
+        // cancel edit on control
+        control.edit(-1, null);
+        // test cell state
+        assertFalse(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        // test editEvent
+        assertEquals(1, report.getEditEventSize());
+        Optional<CellEditEvent> cancel = report.getLastEditCancel();
+        assertTrue(cancel.isPresent());
+        assertNotNull("tablePosition must not be null", cancel.get().getTablePosition());
+        assertEquals("index on cancel event", editIndex,
+                cancel.get().getTablePosition().getRow());
+    }
+    
+
+    /**
+     * Here: cancel the edit with control.edit(-1, null)
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCancelOnTable() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn column = control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        // cancel edit on control
+        control.edit(-1, null);
+        // test cell state
+        assertFalse(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        // test editEvent
+        assertEquals(1, report.getEditEventSize());
+        Optional<CellEditEvent> cancel = report.getLastEditCancel();
+        assertTrue(cancel.isPresent());
+        assertNotNull("tablePosition must not be null", cancel.get().getTablePosition());
+        assertEquals("index on cancel event", editIndex,
+                cancel.get().getTablePosition().getRow());
+    }
+    
+
     /**
      * Testing cell/editEvent: start edit on cell.startEdit
      * 
      * EditingCell not updated? This might be fixed with Jon's patch
      * for commit-on-focuslost
      */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
     @Test
-    public void testTableEditStartOnCellEditingCell() {
+    public void testTableEditStartOnCellHasEditingCell() {
         TableView<TableColumn> control = createEditableTable();
         new StageLoader(control);
         int editIndex = 1;
@@ -86,6 +185,7 @@ public class CellTest {
     /**
      * This test blows because table.editingCell isn't updated ... why not?
      */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
     @Test
     public void testTableEditStartOnCell() {
         TableView<TableColumn> control = createEditableTable();
@@ -98,6 +198,7 @@ public class CellTest {
         cell.startEdit();
         // test control state
         TablePosition pos = control.getEditingCell();
+        assertNotNull("editingCell must not be null", pos);
         assertEquals(editIndex, pos.getRow());
         assertSame(first, pos.getTableColumn());
         // test cell state
@@ -111,8 +212,9 @@ public class CellTest {
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
     }
     
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
     @Test
-    public void testTableEditStartOnControl() {
+    public void testTableEditStartOnTable() {
         TableView<TableColumn> control = createEditableTable();
         TableColumn<TableColumn, String> first = (TableColumn<TableColumn, String>) control.getColumns().get(0);
         new StageLoader(control);
@@ -129,6 +231,7 @@ public class CellTest {
         Optional<CellEditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
 //        LOG.info("what do we get?" + report.getEditText(e.get()));
+//        assertNotNull(e.get().getTablePosition());
         assertEquals("index on start event", editIndex, e.get().getTablePosition().getRow());
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
     }
@@ -148,6 +251,7 @@ public class CellTest {
      * edit(0)
      * 
      */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditChangeEditIndexOnListReversed() {
         ListView<String> control = createEditableList();
@@ -195,6 +299,7 @@ public class CellTest {
      * edit(0)
      * edit(1)
      */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditChangeEditIndexOnList() {
         ListView<String> control = createEditableList();
@@ -244,6 +349,7 @@ public class CellTest {
      *
      * Note: can't commit on control, missing api
      */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditCommitOnCell() {
         ListView<String> control = createEditableList();
@@ -278,6 +384,7 @@ public class CellTest {
      * reported: https://bugs.openjdk.java.net/browse/JDK-8187226
      * 
      */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditCancelOnCell() {
         ListView<String> control = createEditableList();
@@ -307,6 +414,7 @@ public class CellTest {
      * reported: https://bugs.openjdk.java.net/browse/JDK-8187226
      * 
      */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditCancelOnList() {
         ListView<String> control = createEditableList();
@@ -337,7 +445,7 @@ public class CellTest {
      * 
      * Ignore stand-alone only, otherwise can't show fix in custom ListCell
      */
-//    @ConditionalIgnore (condition = IgnoreReported.class)
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditStartOnCell() {
         ListView<String> control = createEditableList();
@@ -362,7 +470,7 @@ public class CellTest {
      * reported as
      * https://bugs.openjdk.java.net/browse/JDK-8187432
      */
-    @ConditionalIgnore (condition = IgnoreReported.class)
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditStartOnCellStandalone() {
         ListView<String> control = new ListView<>(FXCollections
@@ -374,7 +482,7 @@ public class CellTest {
         IndexedCell cell = getCell(control, editIndex);
         ObjectProperty<ListView.EditEvent> editEvent = new SimpleObjectProperty<>();
         control.addEventHandler(ListView.editStartEvent(), e -> editEvent.set(e));
-        // start edit on control
+        // start edit on cell
         cell.startEdit();
         // test cell state
         assertTrue(cell.isEditing());
@@ -385,6 +493,7 @@ public class CellTest {
         assertEquals("index on start event", editIndex, editEvent.get().getIndex());
     }
     
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
     public void testListEditStartOnList() {
         ListView<String> control = createEditableList();
@@ -446,6 +555,7 @@ public class CellTest {
      * reported:
      * https://bugs.openjdk.java.net/browse/JDK-8187309
      */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
     @Test
     public void testTreeEditHandler() {
         TreeView<String> control = createOneChildEditableTree();

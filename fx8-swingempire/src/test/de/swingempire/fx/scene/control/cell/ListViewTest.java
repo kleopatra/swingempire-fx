@@ -37,8 +37,12 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
+import com.codeaffine.test.ConditionalIgnoreRule;
 import com.sun.javafx.scene.control.VirtualScrollBar;
 import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 import com.sun.javafx.tk.Toolkit;
@@ -47,6 +51,7 @@ import static org.junit.Assert.*;
 //import static test.com.sun.javafx.scene.control.infrastructure.ControlTestUtils.assertStyleClassContains;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.VirtualFlowTestUtils;
 import javafx.beans.binding.Bindings;
@@ -78,12 +83,21 @@ import javafx.scene.layout.VBox;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListViewTest {
+    
+    @Rule
+    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+
+    @ClassRule
+    public static TestRule classRule = new JavaFXThreadingRule();
+
     private ListView<String> listView;
     private MultipleSelectionModel<String> sm;
     private FocusModel<String> fm;
 
+    
     @Before public void setup() {
         listView = new ListView<>();
+        listView.setCellFactory(e -> new DebugTextFieldListCell());
         sm = listView.getSelectionModel();
         fm = listView.getFocusModel();
     }
@@ -768,7 +782,7 @@ public class ListViewTest {
 
         listView.getItems().setAll("one", "two", "three", "four", "five");
         listView.setEditable(true);
-        listView.setCellFactory(TextFieldListCell.forListView());
+        listView.setCellFactory(DebugTextFieldListCell.forListView());
 
         StageLoader sl = new StageLoader(listView);
 
@@ -837,7 +851,7 @@ public class ListViewTest {
         final ListView<String> textFieldListView = new ListView<String>();
         textFieldListView.setItems(FXCollections.observableArrayList("A", "B", "C"));
         textFieldListView.setEditable(true);
-        textFieldListView.setCellFactory(TextFieldListCell.forListView());
+        textFieldListView.setCellFactory(DebugTextFieldListCell.forListView());
         textFieldListView.setOnEditCancel(t -> {
             rt_35889_cancel_count++;
             System.out.println("On Edit Cancel: " + t);
@@ -1069,7 +1083,7 @@ public class ListViewTest {
     private int rt_37853_cancelCount;
     private int rt_37853_commitCount;
     @Test public void test_rt_37853() {
-        listView.setCellFactory(TextFieldListCell.forListView());
+        listView.setCellFactory(DebugTextFieldListCell.forListView());
         listView.setEditable(true);
 
         for (int i = 0; i < 10; i++) {

@@ -11,6 +11,10 @@ import org.junit.runners.JUnit4;
 
 import javafx.collections.FXCollections;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 
 /**
  * Use debugging cells instead of core cells.
@@ -21,6 +25,30 @@ import javafx.scene.control.ListView;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class DebugCellTest extends CellTest {
     
+    
+    /**
+     * Creates and returns an editable Table of TableColumns (as items ;)
+     * configured with 2 items
+     * and DebugTextFieldTableCell as cellFactory on first column (which represents
+     * the textProperty of a TableColumn
+     * 
+     * @return
+     */
+    @Override
+    protected TableView<TableColumn> createEditableTable() {
+        TableView<TableColumn> table = new TableView<>(
+                FXCollections.observableArrayList(new TableColumn("first"),
+                        new TableColumn("second")));
+        table.setEditable(true);
+
+        TableColumn<TableColumn, String> first = new TableColumn<>("Text");
+        first.setCellFactory(DebugTextFieldTableCell.forTableColumn());
+        first.setCellValueFactory(new PropertyValueFactory<>("text"));
+
+        table.getColumns().addAll(first);
+        return table;
+
+    }
     
 
     /**
