@@ -78,6 +78,9 @@ import javafx.scene.layout.VBox;
 //import test.com.sun.javafx.scene.control.test.RT_22463_Person;
 
 /**
+ * commented tests that need key interaction/shim (?)
+ * replaced TextFieldListCell with DebugTextFieldListCell
+ * 
  * copied from:
  * http://cr.openjdk.java.net/~jgiles/8089514.1/raw_files/new/modules/javafx.controls/src/test/java/test/javafx/scene/control/ListViewTest.java
  */

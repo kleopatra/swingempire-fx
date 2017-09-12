@@ -6,36 +6,31 @@ package de.swingempire.fx.util;
 
 import java.util.Optional;
 
-import static javafx.scene.control.TableColumn.*;
+import static javafx.scene.control.TreeView.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ListView.EditEvent;
+import javafx.scene.control.TreeView;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class TableViewEditReport {
+public class TreeViewEditReport {
 
-    TableView source;
+    private TreeView source;
     
-    ObservableList<CellEditEvent> editEvents = FXCollections.observableArrayList();
+    private ObservableList<EditEvent> editEvents = FXCollections.observableArrayList();
     
-    public TableViewEditReport(TableView listView) {
+    public TreeViewEditReport(TreeView listView) {
         this.source = listView;
-        TableColumn column = (TableColumn) listView.getColumns().get(0);
-        column.addEventHandler(editAnyEvent(), e -> addEvent((CellEditEvent) e));
+        listView.addEventHandler(editAnyEvent(), this::addEvent);
     }
     
     /**
-     * Returns the list of editEvents as unmodifiable list.
+     * Returns the list of editEvents as unmodifiable list, most recent first.
      * @return
      */
-    public ObservableList<CellEditEvent> getEditEvents(){
+    public ObservableList<EditEvent> getEditEvents(){
         return FXCollections.unmodifiableObservableList(editEvents);
     }
     /**
@@ -49,18 +44,18 @@ public class TableViewEditReport {
         return editEvents.size();
     }
     
-    public Optional<CellEditEvent> getLastEditStart() {
+    public Optional<EditEvent> getLastEditStart() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editStartEvent()))
                 .findFirst();
     }
     
-    public Optional<CellEditEvent> getLastEditCancel() {
+    public Optional<EditEvent> getLastEditCancel() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editCancelEvent()))
                 .findFirst();
     }
-    public Optional<CellEditEvent> getLastEditCommit() {
+    public Optional<EditEvent> getLastEditCommit() {
         return editEvents.stream()
                 .filter(e -> e.getEventType().equals(editCommitEvent()))
                 .findFirst();
@@ -93,7 +88,7 @@ public class TableViewEditReport {
         return hasEditEvents() ? getLastAnyEvent().getEventType().equals(editCancelEvent()) : false;
     }
     
-    public CellEditEvent getLastAnyEvent() {
+    public EditEvent getLastAnyEvent() {
         return hasEditEvents() ? editEvents.get(0) : null;
     }
     
@@ -102,7 +97,7 @@ public class TableViewEditReport {
     }
     
     
-    protected void addEvent(CellEditEvent event) {
+    protected void addEvent(EditEvent event) {
         editEvents.add(0, event);
     }
     
@@ -116,21 +111,15 @@ public class TableViewEditReport {
     public String getAllEditEventTexts(String message) {
         if (!hasEditEvents()) return "noEvents";
         String edits = message + "\n";
-        for (CellEditEvent editEvent : editEvents) {
+        for (EditEvent editEvent : editEvents) {
             edits += getEditEventText(editEvent) + "\n";
         }
         return edits;
     }
     
-    public static String getEditEventText(CellEditEvent event) {
-        // table, tablePosition (aka: row/column), eventType, newValue
-        TablePosition pos = event.getTablePosition();
-        TableColumn column = pos != null ? event.getTableColumn() :null;
-        int row = pos != null ? pos.getRow() : -1;
-        Object oldValue = pos != null ? event.getOldValue() : null;
-        Object rowValue = pos != null ? event.getRowValue() : null;
-        return "[tableViewEditEvent [ type: " + event.getEventType() + " pos: " + pos + " rowValue: " + rowValue + " oldValue: " 
-                + oldValue + " newValue: " + event.getNewValue();
+    public static String getEditEventText(EditEvent event) {
+        return "[TreeViewEditEvent [type: " + event.getEventType() + " treeItem " 
+                + event.getTreeItem() + " newValue " + event.getNewValue() + "]";
         
     }
 }

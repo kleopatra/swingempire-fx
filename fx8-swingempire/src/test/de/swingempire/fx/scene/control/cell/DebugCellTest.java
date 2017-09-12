@@ -13,8 +13,11 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.cell.TextFieldTreeCell;
 
 /**
  * Use debugging cells instead of core cells.
@@ -26,6 +29,41 @@ import javafx.scene.control.cell.TextFieldTableCell;
 public class DebugCellTest extends CellTest {
     
     
+    /**
+     * Overridden to comment.
+     * 
+     * Fails with DebugListCell as well: fires 2 events just as core - 
+     * can't do much about, its the cancel that comes from skin (cancels edit
+     * on items change)
+     */
+    @Override
+    public void testListEditCommitOnCell() {
+        super.testListEditCommitOnCell();
+    }
+
+    /**
+     * Creates and returns an editable Tree configured with 3 child item,
+     * hidden root
+     * and DebugTextFieldTreeCell as cellFactory
+     * 
+     * @return
+     */
+    @Override
+    protected TreeView<String> createEditableTree() {
+        TreeItem<String> rootItem = new TreeItem<>("root");
+        rootItem.getChildren().addAll(
+                new TreeItem<>("one"),
+                new TreeItem<>("two"),
+                new TreeItem<>("three")
+                
+                );
+        TreeView<String> treeView = new TreeView<>(rootItem);
+        treeView.setShowRoot(false);
+        treeView.setEditable(true);
+        treeView.setCellFactory(DebugTextFieldTreeCell.forTreeView());
+        return treeView;
+    }
+
     /**
      * Creates and returns an editable Table of TableColumns (as items ;)
      * configured with 2 items

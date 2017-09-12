@@ -6,9 +6,9 @@ package de.swingempire.fx.scene.control.cell;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeView;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
@@ -16,26 +16,32 @@ import javafx.util.converter.DefaultStringConverter;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
-public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
+public class DebugTextFieldTreeCell<T> extends DebugTreeCell<T>
         implements TextFieldCellDecorator<T> {
-
-    
     
     /** {@inheritDoc} */
     @Override 
     public void startEdit() {
-        if (! isEditable()
-                || ! getTableView().isEditable()
-                || ! getTableColumn().isEditable()) {
+        if (! isEditable() || ! getTreeView().isEditable()) {
             return;
         }
         super.startEdit();
 
         if (isEditing()) {
             startEditTextField();
+
+//            StringConverter<T> converter = getConverter();
+//            if (textField == null) {
+//                textField = CellUtils.createTextField(this, converter);
+//            }
+//            if (hbox == null) {
+//                hbox = new HBox(CellUtils.TREE_VIEW_HBOX_GRAPHIC_PADDING);
+//            }
+//
+//            CellUtils.startEdit(this, converter, hbox, getTreeItemGraphic(), textField);
         }
     }
-    
+
     /**
      * Implemented to call super - nothing special to do?
      * 
@@ -50,14 +56,22 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     /** {@inheritDoc} */
     @Override 
     public void cancelEdit() {
-        // do nothing if we are not editing ..
+        // do nothing if we are not editing .. 
       if (!isEditing()) return; 
       super.cancelEdit();
       cancelEditTextField();
 //      CellUtils.cancelEdit(this, getConverter(), null);
+
+//        super.cancelEdit();
+//        CellUtils.cancelEdit(this, getConverter(), getTreeItemGraphic());
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc} 
+     * 
+     * PENDING: core extends DefaultTreeCell which implements the graphic handling,
+     * is updateItemTextField good enough (minus treeItem graphic handling .. which is 
+     * missing here) 
+     */
     @Override 
     protected void updateItem(T item, boolean empty) {
         // same as cellUpdateItem because base tableCell has no own!
@@ -65,7 +79,11 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
         updateItemTextField(item, empty);
     }
 
- //---------------- properties, constructors, factory methods   
+
+    
+    
+    //---------------- properties, constructors, factory methods   
+
     private TextField textField;
 
     @Override
@@ -89,7 +107,7 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     }
 
 
-    public DebugTextFieldTableCell() {
+    public DebugTextFieldTreeCell() {
         this(null);
     }
 
@@ -97,18 +115,18 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     /**
      * @param converter
      */
-    public DebugTextFieldTableCell(StringConverter<T> converter) {
+    public DebugTextFieldTreeCell(StringConverter<T> converter) {
         this.getStyleClass().add("text-field-table-cell");
         setConverter(converter);
     }
     
-    public static <S> Callback<TableColumn<S,String>, TableCell<S,String>> forTableColumn() {
-        return forTableColumn(new DefaultStringConverter());
+    public static Callback<TreeView<String>, TreeCell<String>> forTreeView() {
+        return forTreeView(new DefaultStringConverter());
     }
 
-    public static <S,T> Callback<TableColumn<S,T>, TableCell<S,T>> forTableColumn(
+    public static <T> Callback<TreeView<T>, TreeCell<T>> forTreeView(
             final StringConverter<T> converter) {
-        return list -> new DebugTextFieldTableCell<S,T>(converter);
+        return list -> new DebugTextFieldTreeCell<T>(converter);
     }
 
 
