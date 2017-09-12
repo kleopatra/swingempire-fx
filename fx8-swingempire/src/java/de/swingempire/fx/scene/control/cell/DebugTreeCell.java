@@ -75,12 +75,13 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         cellCommitEdit(newValue);
 
         // update the item within this cell, so that it represents the new value
-        if (treeItem != null) {
-            treeItem.setValue(newValue);
-            updateTreeItem(treeItem);
-            updateItem(newValue, false);
-        }
+//        if (treeItem != null) {
+//            treeItem.setValue(newValue);
+//            updateTreeItem(treeItem);
+//            updateItem(newValue, false);
+//        }
 
+        updateItem(newValue, false);
         if (tree != null) {
             // reset the editing item in the TreetView
             tree.edit(null);
@@ -136,7 +137,7 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
      * @return
      */
     protected boolean resetListEditingIndexInCancel() {
-        return (boolean) FXUtils.invokeGetFieldValue(ListCell.class, this, "updateEditingIndex");
+        return (boolean) FXUtils.invokeGetFieldValue(TreeCell.class, this, "updateEditingIndex");
     }
 
 }

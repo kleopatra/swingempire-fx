@@ -30,6 +30,27 @@ public class DebugCellTest extends CellTest {
     
     
     /**
+     * Overridden to comment
+     * This passes in custom cell.
+     * 
+     */
+    @Override
+    public void testTreeEditRespectCommitHandler() {
+        super.testTreeEditRespectCommitHandler();
+    }
+
+    /**
+     * Overridden to comment
+     * 
+     * This fails in custom cell because TreeView has no default commit handler-
+     * so adding a custom commit handler in createEditableTree
+     */
+    @Override
+    public void testTreeEditCommitOnCell() {
+        super.testTreeEditCommitOnCell();
+    }
+
+    /**
      * Overridden to comment.
      * 
      * Fails with DebugListCell as well: fires 2 events just as core - 
@@ -46,6 +67,9 @@ public class DebugCellTest extends CellTest {
      * hidden root
      * and DebugTextFieldTreeCell as cellFactory
      * 
+     * Note: we also install a custom commit handler because super doesn't 
+     * have any installed! 
+     * 
      * @return
      */
     @Override
@@ -61,6 +85,10 @@ public class DebugCellTest extends CellTest {
         treeView.setShowRoot(false);
         treeView.setEditable(true);
         treeView.setCellFactory(DebugTextFieldTreeCell.forTreeView());
+        treeView.setOnEditCommit(e -> {
+            TreeItem editItem = e.getTreeItem();
+            editItem.setValue(e.getNewValue());
+        });
         return treeView;
     }
 

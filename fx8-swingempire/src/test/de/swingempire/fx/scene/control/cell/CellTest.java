@@ -69,56 +69,55 @@ public class CellTest {
 //----------- test editEvents and cell/control state on Tree
     
     
-//    /**
-//     * Test notification/cell/list state with multiple edits
-//     * 
-//     * the index of cancel is always incorrect: a cancel is fired with index on the
-//     * new edit position.
-//     * Here the incorrect index is fired before the start event.
-//     * 
-//     * 
-//     * Here: 
-//     * edit(0)
-//     * edit(1)
-//     */
-//    @ConditionalIgnore (condition = IgnoreTableEdit.class)
-//    @Test
-//    public void testTableEditChangeEditOnTableReversed() {
-//        TableView<TableColumn> control = createEditableTable();
-//        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
-//        new StageLoader(control);
-//        int initialEditIndex = 1;
-//        IndexedCell initialEditingCell =  getCell(control, initialEditIndex, 0);
-//        int secondEditIndex = 0;
-//        IndexedCell secondEditingCell = getCell(control, secondEditIndex, 0);
-//        // start edit on control with initial editIndex
-//        control.edit(initialEditIndex, column);
-//        assertTrue(initialEditingCell.isEditing());
-//        assertEquals(initialEditIndex, initialEditingCell.getIndex());
-//        TableViewEditReport report = new TableViewEditReport(control);
-//        // switch editing to second
-//        control.edit(secondEditIndex, column);
-//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-//        // test control state
-//        TablePosition editingPos = control.getEditingCell();
-//        assertNotNull("editingPos must not be null", editingPos);
-//        assertEquals(secondEditIndex, editingPos.getRow());
-//        // test cell state
-//        assertFalse(initialEditingCell.isEditing());
-//        assertEquals(initialEditIndex, initialEditingCell.getIndex());
-//        assertTrue(secondEditingCell.isEditing());
-//        assertEquals(secondEditIndex, secondEditingCell.getIndex());
-//        // test editEvent
-//        Optional<CellEditEvent> start = report.getLastEditStart();
-//        assertTrue(start.isPresent());
-//        assertNotNull("pos on startEvent must not be null", start.get().getTablePosition());
-//        assertEquals("start on changed edited", secondEditIndex, start.get().getTablePosition().getRow());
-//        Optional<CellEditEvent> cancel = report.getLastEditCancel();
-//        assertTrue(cancel.isPresent());
-//        assertNotNull("pos on cancelEvent must not be null", start.get().getTablePosition());
-//        assertEquals("cancel on initially edited", initialEditIndex, cancel.get().getTablePosition().getRow());
-//    }
-//    
+    /**
+     * Test notification/cell/list state with multiple edits
+     * 
+     * the index of cancel is always incorrect: a cancel is fired with index on the
+     * new edit position.
+     * Here the incorrect index is fired before the start event.
+     * 
+     * 
+     * Here: 
+     * edit(1)
+     * edit(0)
+     */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
+    @Test
+    public void testTreeEditChangeEditOnControlReverse() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int initialEditIndex = 1;
+        TreeItem initialEditItem = control.getTreeItem(initialEditIndex);
+        IndexedCell initialEditingCell =  getCell(control, initialEditIndex);
+        int secondEditIndex = 2;
+        TreeItem secondEditItem = control.getTreeItem(secondEditIndex);
+        IndexedCell secondEditingCell = getCell(control, secondEditIndex);
+        // start edit on control with initial editIndex
+        control.edit(initialEditItem);
+        assertTrue(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        TreeViewEditReport report = new TreeViewEditReport(control);
+        // switch editing to second
+        control.edit(secondEditItem);
+        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
+        // test control state
+        TreeItem editingPos = control.getEditingItem();
+        assertNotNull("editingPos must not be null", editingPos);
+        assertEquals(secondEditItem, editingPos);
+        // test cell state
+        assertFalse(initialEditingCell.isEditing());
+        assertEquals(initialEditIndex, initialEditingCell.getIndex());
+        assertTrue(secondEditingCell.isEditing());
+        assertEquals(secondEditIndex, secondEditingCell.getIndex());
+        // test editEvent
+        Optional<TreeView.EditEvent> start = report.getLastEditStart();
+        assertTrue(start.isPresent());
+        assertEquals("item on cancel event", secondEditItem, start.get().getTreeItem());
+        Optional<TreeView.EditEvent> cancel = report.getLastEditCancel();
+        assertTrue(cancel.isPresent());
+        assertEquals("item on cancel event", initialEditItem, cancel.get().getTreeItem());
+    }
+    
     /**
      * Test notification/cell/list state with multiple edits
      * 
@@ -170,8 +169,47 @@ public class CellTest {
     
     /**
      * 
+     * start edit on control
+     * -> commit edit on cell with newValue (same with identical value)
+     *
+     * TreeCell: must not interfere with custom commit handler
+     * 
+     * reported:
+     * https://bugs.openjdk.java.net/browse/JDK-8187309
+     *
+     * 
+     * Note: can't commit on control, missing api
+     */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
+    @Test
+    public void testTreeEditRespectCommitHandler() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        TreeItem<String> editItem = control.getTreeItem(editIndex);
+        String oldValue = editItem.getValue();
+        IndexedCell cell =  getCell(control, editIndex);
+        // do nothing
+        control.setOnEditCommit(e -> new String("dummy"));
+        // start edit on control
+        control.edit(editItem);
+        TreeViewEditReport report = new TreeViewEditReport(control);
+        String editedValue = "edited";
+        // commit edit on cell
+        cell.commitEdit(editedValue);
+        // test data
+        assertEquals("value must not be changed", oldValue, control.getTreeItem(editIndex).getValue());
+        assertEquals(1, report.getEditEventSize());
+    }
+    
+    /**
+     * 
      * start edit on list
      * -> commit edit on cell with newValue (same with identical value)
+     * 
+     * This passes in core - even though treeView has no default commit handler! -
+     * due to https://bugs.openjdk.java.net/browse/JDK-8187309, cell fiddles with
+     * data
      * 
      * Note: can't commit on control, missing api
      */
@@ -190,7 +228,7 @@ public class CellTest {
         // commit edit on cell
         cell.commitEdit(editedValue);
         // test data
-        assertEquals("column text must be updated", editedValue, control.getTreeItem(editIndex).getValue());
+        assertEquals("value must be updated", editedValue, control.getTreeItem(editIndex).getValue());
         // test cell state
         assertFalse(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -923,11 +961,8 @@ public class CellTest {
      * Test default edit handlers: expected none for start/cancel,
      * default that commits
      * 
-     * Here: Tree - fails, due to 
-     * TreeViewCell: must not interfere with custom commit handler
-     * 
-     * reported:
-     * https://bugs.openjdk.java.net/browse/JDK-8187309
+     * Here: Tree - fails, probably reason for cell taking over itself
+     * (https://bugs.openjdk.java.net/browse/JDK-8187309)
      */
     @ConditionalIgnore (condition = IgnoreTreeEdit.class)
     @Test
