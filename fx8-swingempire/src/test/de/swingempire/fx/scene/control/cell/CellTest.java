@@ -526,10 +526,11 @@ public class CellTest {
         int editIndex = 1;
         IndexedCell cell =  getCell(control, editIndex, 0);
         // start edit on control
-        control.edit(editIndex, column);;
+        control.edit(editIndex, column);
         TableViewEditReport report = new TableViewEditReport(control);
         // cancel edit on control
-        control.edit(-1, null);
+        cell.cancelEdit();
+        assertNull("editing cell on control must be reset", control.getEditingCell());
         // test cell state
         assertFalse(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -609,8 +610,10 @@ public class CellTest {
         // test control state
         TablePosition pos = control.getEditingCell();
         assertNotNull("editingCell must not be null", pos);
-        assertEquals(editIndex, pos.getRow());
-        assertSame(first, pos.getTableColumn());
+        TablePosition expected = new TablePosition(control, editIndex, first);
+        assertEquals(expected, control.getEditingCell());
+//        assertEquals(editIndex, pos.getRow());
+//        assertSame(first, pos.getTableColumn());
         // test cell state
         assertTrue(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -618,6 +621,7 @@ public class CellTest {
         assertEquals(1, report.getEditEventSize());
         Optional<CellEditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
+        assertNotNull("position on start event must not be null", e.get().getTablePosition());
         assertEquals("index on start event", editIndex, e.get().getTablePosition().getRow());
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
     }
@@ -633,6 +637,8 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // start edit on control
         control.edit(editIndex, first);
+        TablePosition expected = new TablePosition(control, editIndex, first);
+        assertEquals(expected, control.getEditingCell());
         // test cell state
         assertTrue(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -641,9 +647,9 @@ public class CellTest {
         Optional<CellEditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
 //        LOG.info("what do we get?" + report.getEditText(e.get()));
-//        assertNotNull(e.get().getTablePosition());
         assertEquals("index on start event", editIndex, e.get().getTablePosition().getRow());
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
+        assertNotNull(e.get().getTablePosition());
     }
 
 //---------------- test editEvents and cell/control state on List    
