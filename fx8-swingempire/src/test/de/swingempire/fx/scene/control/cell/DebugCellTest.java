@@ -21,12 +21,17 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.IndexedCell;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTreeCell;
+import javafx.util.Callback;
 
 /**
  * Use debugging cells instead of core cells.
@@ -107,28 +112,16 @@ public class DebugCellTest extends CellTest {
     }
 
     /**
-     * Creates and returns an editable Tree configured with 3 child item,
-     * hidden root
-     * and DebugTextFieldTreeCell as cellFactory
+     * {@inheritDoc} <p>
      * 
-     * Note: we also install a custom commit handler because super doesn't 
-     * have any installed! 
+     * Overridden to install a custom default commit handler (core TreeView 
+     * does not have one)
      * 
      * @return
      */
     @Override
     protected TreeView<String> createEditableTree() {
-        TreeItem<String> rootItem = new TreeItem<>("root");
-        rootItem.getChildren().addAll(
-                new TreeItem<>("one"),
-                new TreeItem<>("two"),
-                new TreeItem<>("three")
-                
-                );
-        TreeView<String> treeView = new TreeView<>(rootItem);
-        treeView.setShowRoot(false);
-        treeView.setEditable(true);
-        treeView.setCellFactory(DebugTextFieldTreeCell.forTreeView());
+        TreeView<String> treeView = super.createEditableTree();
         treeView.setOnEditCommit(e -> {
             TreeItem editItem = e.getTreeItem();
             editItem.setValue(e.getNewValue());
@@ -140,37 +133,21 @@ public class DebugCellTest extends CellTest {
      * @return
      */
     @Override
-    protected TableView<TableColumn> createEditableTable(boolean withExtractor) {
-        ObservableList<TableColumn> items = withExtractor ? 
-        FXCollections.observableArrayList(e -> new Observable[] {e.textProperty()}) : FXCollections.observableArrayList();
-        items.addAll(new TableColumn("first"), new TableColumn("second"));
-        TableView<TableColumn> table = new TableView<>(
-                items);
-        table.setEditable(true);
-
-        TableColumn<TableColumn, String> first = new TableColumn<>("Text");
-        first.setCellFactory(DebugTextFieldTableCell.forTableColumn());
-        first.setCellValueFactory(new PropertyValueFactory<>("text"));
-
-        table.getColumns().addAll(first);
-        return table;
+    protected Callback<TreeView<String>, TreeCell<String>> createTextFieldTreeCell() {
+        return DebugTextFieldTreeCell.forTreeView();
     }
-    
-    
-    
-    /**
-     * Creates and returns an editable List configured with 4 items
-     * and DebugTextFieldListCell as cellFactory
-     * 
-     */
+
     @Override
-    protected ListView<String> createEditableList() {
-        ListView<String> control = new ListView<>(FXCollections
-                .observableArrayList("Item1", "Item2", "Item3", "Item4"));
-        control.setEditable(true);
-        control.setCellFactory(DebugTextFieldListCell.forListView());
-        return control;
+    protected Callback<TableColumn<TableColumn, String>, TableCell<TableColumn, String>> createTextFieldTableCell() {
+        return DebugTextFieldTableCell.forTableColumn();
     }
+
+    @Override
+    protected Callback<ListView<String>, ListCell<String>> createTextFieldListCell() {
+        return DebugTextFieldListCell.forListView();
+    }
+
+
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

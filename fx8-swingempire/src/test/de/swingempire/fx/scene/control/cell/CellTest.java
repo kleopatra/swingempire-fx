@@ -38,6 +38,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ListView.EditEvent;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TablePosition;
@@ -53,6 +54,7 @@ import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.control.skin.ListCellSkin;
 import javafx.scene.control.skin.TreeCellSkin;
 import javafx.scene.control.skin.TreeTableRowSkin;
+import javafx.util.Callback;
 /**
  * Divers tests around all cell types.
  * 
@@ -502,7 +504,7 @@ public class CellTest {
      */
     @ConditionalIgnore (condition = IgnoreTableEdit.class)
     @Test
-    public void testTableEditCommitOnCellWithExtractor() {
+    public void testTableEditCommitOnCellEventCount() {
         TableView<TableColumn> control = createEditableTable(true);
         TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
         new StageLoader(control);
@@ -1093,6 +1095,7 @@ public class CellTest {
         assertNull(control.getOnEditStart());
         assertNotNull("treeView must have default commit handler", control.getOnEditCommit());
     }
+    
 //------------ infrastructure methods
 
     /**
@@ -1127,16 +1130,20 @@ public class CellTest {
         table.setEditable(true);
 
         TableColumn<TableColumn, String> first = new TableColumn<>("Text");
-        first.setCellFactory(TextFieldTableCell.forTableColumn());
+        first.setCellFactory(createTextFieldTableCell());
         first.setCellValueFactory(new PropertyValueFactory<>("text"));
 
         table.getColumns().addAll(first);
         return table;
     }
-    
-    
-    
 
+    /**
+     * @return
+     */
+    protected Callback<TableColumn<TableColumn, String>, TableCell<TableColumn, String>> createTextFieldTableCell() {
+        return TextFieldTableCell.forTableColumn();
+    }
+    
     /**
      * Creates and returns an editable List configured with 4 items
      * and TextFieldListCell as cellFactory
@@ -1146,9 +1153,17 @@ public class CellTest {
         ListView<String> control = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4"));
         control.setEditable(true);
-        control.setCellFactory(TextFieldListCell.forListView());
+        control.setCellFactory(createTextFieldListCell());
         return control;
     }
+
+    /**
+     * @return
+     */
+    protected Callback<ListView<String>, ListCell<String>> createTextFieldListCell() {
+        return TextFieldListCell.forListView();
+    }
+    
     /**
      * Creates and returns an editable Tree configured with 3 child item,
      * hidden root
@@ -1167,8 +1182,15 @@ public class CellTest {
         TreeView<String> treeView = new TreeView<>(rootItem);
         treeView.setShowRoot(false);
         treeView.setEditable(true);
-        treeView.setCellFactory(TextFieldTreeCell.forTreeView());
+        treeView.setCellFactory(createTextFieldTreeCell());
         return treeView;
+    }
+
+    /**
+     * @return
+     */
+    protected Callback<TreeView<String>, TreeCell<String>> createTextFieldTreeCell() {
+        return TextFieldTreeCell.forTreeView();
     }
     
 //--------------------- old bugs, fixed in fx9    

@@ -112,7 +112,7 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
             list.fireEvent(new ListView.EditEvent<T>(list,
                     ListView.<T>editCommitEvent(),
                     newValue,
-                    list.getEditingIndex()));
+                    getIndex()));
             ignoreCancel = false;
         }
 
