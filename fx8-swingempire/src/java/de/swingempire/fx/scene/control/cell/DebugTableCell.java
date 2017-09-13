@@ -16,14 +16,42 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 
 /**
+ * Custom TableCell which overrides start/commit/cancelEdit and
+ * takes over completely (c&p from super and reflective access to Cell methods).
+ * This is (mostly) done to understand the editing mechanism. 
+ * <p>
+ * 
+ * Bug fixes:
+ * <ul>
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187474 -
+ *      in startEdit update editingCell of tableView,
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187229   
+ *    in startEdit and cancelEdit, pass correct editingCell into editEvent
+ * <li> not yet reported, but same problem as in ListCell, skin cancels edit 
+ *      during a commit - happens on TableView only if items have extractor on
+ *      the editing column
+ *      see DebugListCell for details    
+ * </ul>
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<T> {
 
     private boolean ignoreCancel;
 
-    /** {@inheritDoc} */
-    @Override public void startEdit() {
+    /** 
+     * {@inheritDoc} <p>
+     * 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> pass correct editingCell into editStartEvent, 
+     *  fix https://bugs.openjdk.java.net/browse/JDK-8187229   
+     * <li> update editingCell of tableView, 
+     *  fix https://bugs.openjdk.java.net/browse/JDK-8187474
+     * </ul>
+     */
+    @Override 
+    public void startEdit() {
         final TableView<S> table = getTableView();
         final TableColumn<S,T> column = getTableColumn();
         if (! isEditable() ||
@@ -62,7 +90,16 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         }
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> surround firing of editCommitEvent with ignoreCancel
+     * </ul>
+     * 
+     * @see DebugListCell#commitEdit(Object)
+     */
     @Override 
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
@@ -94,6 +131,9 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
 //        super.commitEdit(newValue);
         cellCommitEdit(newValue);
         // update the item within this cell, so that it represents the new value
+        // PENDING JW: probably regrab tree's value? otherwise we
+        // show incorrect data if handler rejects the edit
+        // https://bugs.openjdk.java.net/browse/JDK-8187314  
         updateItem(newValue, false);
 
         if (table != null) {
@@ -108,10 +148,21 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         }
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> do nothing if ignoreCancel
+     * <li> fire editCancelEvent with correct editingCell, 
+     *  fix for https://bugs.openjdk.java.net/browse/JDK-8187229
+     * </ul>
+     * 
+     * @see DebugListCell#commitEdit(Object)
+     */
     @Override 
     public void cancelEdit() {
-        if (! isEditing()) return;
+        if (ignoreCancel()) return;
         final TableView<S> table = getTableView();
 
 //        super.cancelEdit();

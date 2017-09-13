@@ -6,31 +6,49 @@ package de.swingempire.fx.scene.control.cell;
 
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.util.FXUtils;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import jdk.internal.jline.internal.Log;
 
 /**
+ * Custom TreeCell which overrides start/commit/cancelEdit and
+ * takes over completely (c&p from super and reflective access to Cell methods).
+ * This is (mostly) done to understand the editing mechanism. 
+ * <p>
+ * 
+ * Bug fixes:
+ * <ul>
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187474 -
+ *      in startEdit update editingItem of TreeView,
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187309
+ *      in commitEdit, don't change item value (that's the task of a commitHandler)
+ * <li> not yet reported, but same problem as in ListCell, 
+ *      skin cancels edit during a commit - happens on TreeView if
+ *      commitEdit behaves correctly and leaves the data update to the handler
+ *      see DebugListCell for details    
+ * </ul>
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
 
     private boolean ignoreCancel;
 
-    /** {@inheritDoc} */
-    @Override public void startEdit() {
+    /** 
+     * {@inheritDoc} <p>
+     * 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> update editingItem of TreeView, 
+     *  fix https://bugs.openjdk.java.net/browse/JDK-8187474
+     * </ul>
+     */
+    @Override 
+    public void startEdit() {
         if (isEditing()) return;
 
         final TreeView<T> tree = getTreeView();
         if (! isEditable() || (tree != null && ! tree.isEditable())) {
-//            if (Logging.getControlsLogger().isLoggable(PlatformLogger.SEVERE)) {
-//                Logging.getControlsLogger().severe(
-//                    "Can not call TreeCell.startEdit() on this TreeCell, as it "
-//                        + "is not allowed to enter its editing state (TreeCell: "
-//                        + this + ", TreeView: " + tree + ").");
-//            }
             return;
         }
 
@@ -55,7 +73,16 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         }
     }
 
-     /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> surround firing of editCommitEvent with ignoreCancel
+     * </ul>
+     * 
+     * @see DebugListCell#commitEdit(Object)
+     */
     @Override 
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
@@ -84,12 +111,17 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         cellCommitEdit(newValue);
 
         // update the item within this cell, so that it represents the new value
+        // JW: no, a cell must not change the data itself, but rely on a commitHandler
+        // to commit them 
 //        if (treeItem != null) {
 //            treeItem.setValue(newValue);
 //            updateTreeItem(treeItem);
 //            updateItem(newValue, false);
 //        }
 
+        // PENDING JW: probably regrab tree's value? otherwise we
+        // show incorrect data if handler rejects the edit
+        // https://bugs.openjdk.java.net/browse/JDK-8187314  
         updateItem(newValue, false);
         if (tree != null) {
             // reset the editing item in the TreetView
@@ -103,7 +135,16 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         }
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> do nothing if ignoreCancel
+     * </ul>
+     * 
+     * @see DebugListCell#commitEdit(Object)
+     */
     @Override public void cancelEdit() {
         if (ignoreCancel()) return;
 
@@ -116,7 +157,6 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
             // reset the editing index on the TreeView
 //            if (updateEditingIndex) tree.edit(null);
             if (resetListEditingIndexInCancel()) {
-//                Log.info("what?");
                 tree.edit(null);
             }
 

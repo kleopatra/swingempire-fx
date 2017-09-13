@@ -13,7 +13,27 @@ import javafx.scene.control.ListView;
  * Custom ListCell which overrides start/commit/cancelEdit and
  * takes over completely (c&p from super and reflective access to Cell methods).
  * This is (mostly) done to understand the editing mechanism. 
+ * <p>
  * 
+ * Bug fixes:
+ * <ul>
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187307 - 
+ *      The problem is that skin cancels any edit if it detects a change
+ *      of items. This change happens on commit. So the idea is to ignore
+ *      the cancel request during firing the editCommitEvent. So the fix 
+ *      consists of two parts: a) in commitEdit, surround firing of editCommit 
+ *      with a ignoreCancel flag 
+ *      b) in cancelEdit, do nothing if ignoreCancel() 
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187432 - 
+ *      in startEdit, pass correct index into editStartEvent
+ * <li> https://bugs.openjdk.java.net/browse/JDK-8187226 -
+ *      in cancelEdit, pass correct index into editCancelEvent
+ * </ul>
+ * 
+ * Note: the problem with skin canceling the edit is the same for all 
+ * virtual controls, though not so obvious in Tree-/TableView for different 
+ * reasons. Hacking around the problem with a flag seems whacky, but we might
+ * get away with it. Not thoroughly tested, though, beware!
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -21,6 +41,15 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 
     private boolean ignoreCancel;
 
+    /**
+     * {@inheritDoc} <p>
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> pass correct index into editStart, fix for https://bugs.openjdk.java.net/browse/JDK-8187432
+     * </ul>
+     * 
+     */
     @Override
     public void startEdit() {
         final ListView<T> list = getListView();
@@ -53,6 +82,16 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         }
     }
 
+    /**
+     * {@inheritDoc} <p>
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> surround firing of commitEvent with ignoreCancel, 
+     *    one part of fixing https://bugs.openjdk.java.net/browse/JDK-8187432
+     * </ul>
+     * 
+     */
     @Override
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
@@ -107,18 +146,23 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         }
     }
 
+    /**
+     * {@inheritDoc} <p>
+     * 
+     * Basically, a c&p of super except:
+     * 
+     * <ul>
+     * <li> do nothing if ignoreCancel, fix for https://bugs.openjdk.java.net/browse/JDK-8187307
+     * <li> pass correct index into editCancel, fix for https://bugs.openjdk.java.net/browse/JDK-8187226
+     * </ul>
+     * 
+     * @see #ignoreCancel()
+     */
     @Override
     public void cancelEdit() {
         if (ignoreCancel()) return; 
-//        if (! isEditing()) return;
-//        if (ignoreCancel) return;
         // Inform the ListView of the edit being cancelled.
        ListView<T> list = getListView();
-//       int editingIndex = -1;
-//       if (list != null) {
-//           editingIndex = list.getEditingIndex();
-//       }
-//       super.cancelEdit();
        cellCancelEdit();
        if (list != null) {
            int editingIndex = list.getEditingIndex();
@@ -150,6 +194,15 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
        }
     }
 
+    /**
+     * Hook to control whether or not cancelEdit should be processed.
+     * This implementation returns true if we are not in editing state or
+     * the ignoreCancel flag is set.
+     *  
+     * @return true if cancel request should be ignored.
+     * 
+     * @see #cancelEdit()
+     */
     protected boolean ignoreCancel() {
         return !isEditing() || ignoreCancel;
     }
