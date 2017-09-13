@@ -47,7 +47,8 @@ public class DebugTextFieldListCell<T> extends DebugListCell<T>
     
     @Override
     public void cancelEdit() {
-        if (!isEditing()) return;
+        if (ignoreCancel()) return;
+//        if (!isEditing() || ignoreCancel) return;
         super.cancelEdit();
         cancelEditTextField();
 //        CellUtils.cancelEdit(this, getConverter(), null);

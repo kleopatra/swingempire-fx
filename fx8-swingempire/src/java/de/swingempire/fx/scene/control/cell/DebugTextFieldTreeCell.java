@@ -57,7 +57,7 @@ public class DebugTextFieldTreeCell<T> extends DebugTreeCell<T>
     @Override 
     public void cancelEdit() {
         // do nothing if we are not editing .. 
-      if (!isEditing()) return; 
+      if (ignoreCancel()) return; 
       super.cancelEdit();
       cancelEditTextField();
 //      CellUtils.cancelEdit(this, getConverter(), null);

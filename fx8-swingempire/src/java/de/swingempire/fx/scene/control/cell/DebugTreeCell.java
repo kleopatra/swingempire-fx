@@ -10,11 +10,14 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import jdk.internal.jline.internal.Log;
 
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
+
+    private boolean ignoreCancel;
 
     /** {@inheritDoc} */
     @Override public void startEdit() {
@@ -53,17 +56,23 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
     }
 
      /** {@inheritDoc} */
-    @Override public void commitEdit(T newValue) {
+    @Override 
+    public void commitEdit(T newValue) {
         if (! isEditing()) return;
         final TreeItem<T> treeItem = getTreeItem();
         final TreeView<T> tree = getTreeView();
         if (tree != null) {
+            // experiment around commit-fires-cancel:
+            // surround with ignore-cancel to not react if skin
+            // cancels our edit due to data change triggered by this commit
+            ignoreCancel = true;
             // Inform the TreeView of the edit being ready to be committed.
             tree.fireEvent(new TreeView.EditEvent<T>(tree,
                     TreeView.<T>editCommitEvent(),
                     treeItem,
                     getItem(),
                     newValue));
+            ignoreCancel = false;
         }
 
         // inform parent classes of the commit, so that they can switch us
@@ -96,7 +105,7 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
 
     /** {@inheritDoc} */
     @Override public void cancelEdit() {
-        if (! isEditing()) return;
+        if (ignoreCancel()) return;
 
         TreeView<T> tree = getTreeView();
 
@@ -106,7 +115,10 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         if (tree != null) {
             // reset the editing index on the TreeView
 //            if (updateEditingIndex) tree.edit(null);
-            if (resetListEditingIndexInCancel()) tree.edit(null);
+            if (resetListEditingIndexInCancel()) {
+//                Log.info("what?");
+                tree.edit(null);
+            }
 
             // request focus back onto the tree, only if the current focus
             // owner has the tree as a parent (otherwise the user might have
@@ -122,13 +134,16 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
         }
     }
 
+    protected boolean ignoreCancel() {
+        return !isEditing() || ignoreCancel;
+    }
+    
+
 //------------------- reflection acrobatics
     
     protected void invokeUpdateItem(int index) {
         FXUtils.invokeGetMethodValue(TreeCell.class, this, "updateItem", Integer.TYPE, index);
     }
-    
-
     
     /**
      * Returns a flag indicating whether the list editingIndex should be 

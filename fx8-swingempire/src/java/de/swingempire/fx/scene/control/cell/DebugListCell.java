@@ -19,6 +19,8 @@ import javafx.scene.control.ListView;
  */
 public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 
+    private boolean ignoreCancel;
+
     @Override
     public void startEdit() {
         final ListView<T> list = getListView();
@@ -63,12 +65,16 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
                 throw new IllegalStateException("on cancelEdit, list editing index must be same as my own: "
                         + getIndex() + " but was: " + editingIndex);
 
-
+            // experiment around commit-fires-cancel:
+            // surround with ignore-cancel to not react if skin
+            // cancels our edit due to data change triggered by this commit
+            ignoreCancel = true;
             // Inform the ListView of the edit being ready to be committed.
             list.fireEvent(new ListView.EditEvent<T>(list,
                     ListView.<T>editCommitEvent(),
                     newValue,
                     list.getEditingIndex()));
+            ignoreCancel = false;
         }
 
         // inform parent classes of the commit, so that they can switch us
@@ -103,8 +109,9 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 
     @Override
     public void cancelEdit() {
-        if (! isEditing()) return;
-
+        if (ignoreCancel()) return; 
+//        if (! isEditing()) return;
+//        if (ignoreCancel) return;
         // Inform the ListView of the edit being cancelled.
        ListView<T> list = getListView();
 //       int editingIndex = -1;
@@ -143,6 +150,10 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
        }
     }
 
+    protected boolean ignoreCancel() {
+        return !isEditing() || ignoreCancel;
+    }
+    
     /**
      * Returns a flag indicating whether the list editingIndex should be 
      * reset in cancelEdit. Implemented to reflectively access super's

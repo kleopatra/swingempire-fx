@@ -4,20 +4,29 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.util.StageLoader;
+import de.swingempire.fx.util.TreeViewEditReport;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.control.cell.TextFieldTreeCell;
 
 /**
  * Use debugging cells instead of core cells.
@@ -44,11 +53,46 @@ public class DebugCellTest extends CellTest {
      * 
      * This fails in custom cell because TreeView has no default commit handler-
      * so adding a custom commit handler in createEditableTree
+     * 
+     * Still fails, because receiving two events .. passes with "fix" of
+     * ignoreCancel in DebugXX
+     * 
+     * @see #testTreeEditCommitOnCellEventCount()
      */
     @Override
     public void testTreeEditCommitOnCell() {
         super.testTreeEditCommitOnCell();
     }
+    
+    /**
+     * Digging into failure due to 2 events fired: 
+     * same reason as in ListView - skin cancels the edit on receiving tree modification
+     */
+    @Ignore
+    @Test
+    public void testTreeEditCommitOnCellEventCount() {
+        TreeView<String> control = createEditableTree();
+         new StageLoader(control);
+        int editIndex = 1;
+        TreeItem editItem = control.getTreeItem(editIndex);
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on control
+        control.edit(editItem);
+        TreeViewEditReport report = new TreeViewEditReport(control);
+        String editedValue = "edited";
+        control.addEventHandler(TreeView.editCancelEvent(), e -> {
+            new RuntimeException("who is calling?\n").printStackTrace();
+        });
+        // commit edit on cell
+        cell.commitEdit(editedValue);
+//        LOG.info(report.getAllEditEventTexts("after treecell commit with DebugTreeCell"));
+        // test editEvent
+        Optional<TreeView.EditEvent> commit = report.getLastEditCommit();
+        assertTrue(commit.isPresent());
+        assertEquals("index on commit event", editItem, commit.get().getTreeItem());
+        assertEquals(1, report.getEditEventSize());
+    }
+
 
     /**
      * Overridden to comment.
@@ -93,18 +137,15 @@ public class DebugCellTest extends CellTest {
     }
 
     /**
-     * Creates and returns an editable Table of TableColumns (as items ;)
-     * configured with 2 items
-     * and DebugTextFieldTableCell as cellFactory on first column (which represents
-     * the textProperty of a TableColumn
-     * 
      * @return
      */
     @Override
-    protected TableView<TableColumn> createEditableTable() {
+    protected TableView<TableColumn> createEditableTable(boolean withExtractor) {
+        ObservableList<TableColumn> items = withExtractor ? 
+        FXCollections.observableArrayList(e -> new Observable[] {e.textProperty()}) : FXCollections.observableArrayList();
+        items.addAll(new TableColumn("first"), new TableColumn("second"));
         TableView<TableColumn> table = new TableView<>(
-                FXCollections.observableArrayList(new TableColumn("first"),
-                        new TableColumn("second")));
+                items);
         table.setEditable(true);
 
         TableColumn<TableColumn, String> first = new TableColumn<>("Text");
@@ -113,10 +154,10 @@ public class DebugCellTest extends CellTest {
 
         table.getColumns().addAll(first);
         return table;
-
     }
     
-
+    
+    
     /**
      * Creates and returns an editable List configured with 4 items
      * and DebugTextFieldListCell as cellFactory

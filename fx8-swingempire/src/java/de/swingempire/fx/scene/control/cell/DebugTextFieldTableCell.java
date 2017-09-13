@@ -50,8 +50,8 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     /** {@inheritDoc} */
     @Override 
     public void cancelEdit() {
-        // do nothing if we are not editing ..
-      if (!isEditing()) return; 
+        // do nothing if we are not editing or should ignore for other reasons ..
+      if (ignoreCancel()) return; 
       super.cancelEdit();
       cancelEditTextField();
 //      CellUtils.cancelEdit(this, getConverter(), null);

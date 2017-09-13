@@ -28,9 +28,11 @@ import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TableViewEditReport;
 import de.swingempire.fx.util.TreeViewEditReport;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -99,11 +101,7 @@ public class CellTest {
         TreeViewEditReport report = new TreeViewEditReport(control);
         // switch editing to second
         control.edit(secondEditItem);
-        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-        // test control state
-        TreeItem editingPos = control.getEditingItem();
-        assertNotNull("editingPos must not be null", editingPos);
-        assertEquals(secondEditItem, editingPos);
+//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -148,11 +146,7 @@ public class CellTest {
         TreeViewEditReport report = new TreeViewEditReport(control);
         // switch editing to second
         control.edit(secondEditItem);
-        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-        // test control state
-        TreeItem editingPos = control.getEditingItem();
-        assertNotNull("editingPos must not be null", editingPos);
-        assertEquals(secondEditItem, editingPos);
+//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -238,8 +232,10 @@ public class CellTest {
         assertEquals("index on start event", editItem, commit.get().getTreeItem());
         // test control state: editing location m
         assertEquals("editing location must be reset: ", null, control.getEditingItem());
-        assertEquals(1, report.getEditEventSize());
+        assertEquals("treeCell must fire a single event", 1, report.getEditEventSize());
     }
+    
+    
     
     /**
      * Here: cancel the edit with control.edit(-1, null)
@@ -266,12 +262,10 @@ public class CellTest {
         Optional<TreeView.EditEvent> cancel = report.getLastEditCancel();
         assertTrue(cancel.isPresent());
         assertEquals("index on cancel event", editItem, cancel.get().getTreeItem());
-        // test control state: editing location m
-        assertEquals("editing location must be updated: ", null, control.getEditingItem());
     }
-    
+
     /**
-     * Here: cancel the edit with control.edit(-1, null)
+     * Here: cancel the edit with control.edit(null)
      * 
      */
     @ConditionalIgnore (condition = IgnoreTreeEdit.class)
@@ -295,29 +289,9 @@ public class CellTest {
         Optional<TreeView.EditEvent> cancel = report.getLastEditCancel();
         assertTrue(cancel.isPresent());
         assertEquals("index on cancel event", editItem, cancel.get().getTreeItem());
-        // test control state: editing location m
-        assertEquals("editing location must be updated: ", null, control.getEditingItem());
     }
     
     
-    /**
-     * Testing cell/editEvent: start edit on cell.startEdit
-     * 
-     * EditingCell not updated? This might be fixed with Jon's patch
-     * for commit-on-focuslost
-     */
-    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
-    @Test
-    public void testTreeEditStartOnCellHasEditingItem() {
-        TreeView<String> control = createEditableTree();
-        new StageLoader(control);
-        int editIndex = 1;
-        IndexedCell cell =  getCell(control, editIndex);
-        // start edit on cell
-        cell.startEdit();
-        // test control state
-        assertNotNull("editingCell on control must not be null", control.getEditingItem());
-    }
     /**
      * Test editing state after start
      */
@@ -339,11 +313,7 @@ public class CellTest {
         assertEquals(1, report.getEditEventSize());
         Optional<TreeView.EditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
-//        LOG.info("what do we get?" + report.getEditText(e.get()));
-//        assertNotNull(e.get().getTablePosition());
         assertEquals("index on start event", editItem, e.get().getTreeItem());
-        // test control state: editing location m
-        assertEquals("editing location must be updated: ", editItem, control.getEditingItem());
     }
     
     @ConditionalIgnore (condition = IgnoreTreeEdit.class)
@@ -364,16 +334,76 @@ public class CellTest {
         assertEquals(1, report.getEditEventSize());
         Optional<TreeView.EditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
-//        LOG.info("what do we get?" + report.getEditText(e.get()));
-//        assertNotNull(e.get().getTablePosition());
         assertEquals("index on start event", editItem, e.get().getTreeItem());
     }
     
 
     
+    
+    
+    /**
+     * Test update of editing location on control.
+     * Here: after commit edit with cell.commitEdit
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
+    @Test
+    public void testTreeEditCommitOnCellResetEditingItem() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        TreeItem editItem = control.getTreeItem(editIndex);
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on control
+        control.edit(editItem);
+        String value = "edited";
+        // cancel edit on cell
+        cell.commitEdit(value);
+        assertEquals("editing location must be reset: ", null, control.getEditingItem());
+    }
+    
+    /**
+     * Test update of editing location on control.
+     * Here: after cancel edit with cell.cancelEdit
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
+    @Test
+    public void testTreeEditCancelOnCellResetEditingItem() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        TreeItem editItem = control.getTreeItem(editIndex);
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on control
+        control.edit(editItem);
+        // cancel edit on cell
+        cell.cancelEdit();
+        assertEquals("editing location must be reset: ", null, control.getEditingItem());
+    }
+
+    /**
+     * Test update of editing location on control.
+     * Here: after start edit with cell.startEdit
+     * 
+     * This might be fixed with Jon's patch
+     * for commit-on-focuslost
+     */
+    @ConditionalIgnore (condition = IgnoreTreeEdit.class)
+    @Test
+    public void testTreeEditStartOnCellHasEditingItem() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        TreeItem editingItem = control.getTreeItem(1);
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on cell
+        cell.startEdit();
+        // test control state
+        assertEquals("editingCell on control ", editingItem, control.getEditingItem());
+    }
+
 //----------- test editEvents and cell/control state on Table  
-    
-    
     /**
      * Test notification/cell/list state with multiple edits
      * 
@@ -403,11 +433,7 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex, column);
-        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-        // test control state
-        TablePosition editingPos = control.getEditingCell();
-        assertNotNull("editingPos must not be null", editingPos);
-        assertEquals(secondEditIndex, editingPos.getRow());
+//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -453,11 +479,7 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex, column);
-        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-        // test control state
-        TablePosition editingPos = control.getEditingCell();
-        assertNotNull("editingPos must not be null", editingPos);
-        assertEquals(secondEditIndex, editingPos.getRow());
+//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -475,12 +497,25 @@ public class CellTest {
     }
 
     /**
-     * 
-     * start edit on list
-     * -> commit edit on cell with newValue (same with identical value)
-     * 
-     * Note: can't commit on control, missing api
+     * Focus on event count: fires incorrect cancel if items has extractor
+     * on edited column.
      */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCommitOnCellWithExtractor() {
+        TableView<TableColumn> control = createEditableTable(true);
+        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
+    }
+    
     @ConditionalIgnore (condition = IgnoreTableEdit.class)
     @Test
     public void testTableEditCommitOnCell() {
@@ -506,7 +541,7 @@ public class CellTest {
         assertEquals("index on cancel event", editIndex,
                 commit.get().getTablePosition().getRow());
         assertEquals("tableColumn must be colum", column, commit.get().getTableColumn());
-        assertEquals(1, report.getEditEventSize());
+        assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
     }
     
     /**
@@ -530,7 +565,6 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // cancel edit on control
         cell.cancelEdit();
-        assertNull("editing cell on control must be reset", control.getEditingCell());
         // test cell state
         assertFalse(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -575,25 +609,6 @@ public class CellTest {
     
 
     /**
-     * Testing cell/editEvent: start edit on cell.startEdit
-     * 
-     * EditingCell not updated? This might be fixed with Jon's patch
-     * for commit-on-focuslost
-     */
-    @ConditionalIgnore (condition = IgnoreTableEdit.class)
-    @Test
-    public void testTableEditStartOnCellHasEditingCell() {
-        TableView<TableColumn> control = createEditableTable();
-        new StageLoader(control);
-        int editIndex = 1;
-        IndexedCell cell =  getCell(control, editIndex, 0);
-        // start edit on cell
-        cell.startEdit();
-        // test control state
-        assertNotNull("editingCell on control must not be null", control.getEditingCell());
-    }
-    
-    /**
      * This test blows because table.editingCell isn't updated ... why not?
      */
     @ConditionalIgnore (condition = IgnoreTableEdit.class)
@@ -607,13 +622,6 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // start edit on cell
         cell.startEdit();
-        // test control state
-        TablePosition pos = control.getEditingCell();
-        assertNotNull("editingCell must not be null", pos);
-        TablePosition expected = new TablePosition(control, editIndex, first);
-        assertEquals(expected, control.getEditingCell());
-//        assertEquals(editIndex, pos.getRow());
-//        assertSame(first, pos.getTableColumn());
         // test cell state
         assertTrue(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -637,8 +645,6 @@ public class CellTest {
         TableViewEditReport report = new TableViewEditReport(control);
         // start edit on control
         control.edit(editIndex, first);
-        TablePosition expected = new TablePosition(control, editIndex, first);
-        assertEquals(expected, control.getEditingCell());
         // test cell state
         assertTrue(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
@@ -647,10 +653,72 @@ public class CellTest {
         Optional<CellEditEvent> e = report.getLastEditStart();
         assertTrue(e.isPresent());
 //        LOG.info("what do we get?" + report.getEditText(e.get()));
+        assertNotNull("position on event must not be null", e.get().getTablePosition());
         assertEquals("index on start event", editIndex, e.get().getTablePosition().getRow());
         assertEquals("column on start event", first, e.get().getTablePosition().getTableColumn());
-        assertNotNull(e.get().getTablePosition());
     }
+
+    /**
+     * Test update of editing location on control.
+     * Here: after commit edit with cell.cancelEdit
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCommitOnCellResetEditingCell() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn column = control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        control.edit(editIndex, column);
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // cancel edit on cell
+        cell.commitEdit("edited");
+        // test control state
+        assertEquals("editingCell on control be updated", null, control.getEditingCell());
+    }
+    /**
+     * Test update of editing location on control.
+     * Here: after cancel edit with cell.cancelEdit
+     * 
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditCancelOnCellResetEditingCell() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn column = control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        control.edit(editIndex, column);
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // cancel edit on cell
+        cell.cancelEdit();
+        // test control state
+        assertEquals("editingCell on control be updated", null, control.getEditingCell());
+    }
+    /**
+     * Test update of editing location on control.
+     * Here: after start edit with cell.startEdit
+     * 
+     * 
+     * This might be fixed with Jon's patch
+     * for commit-on-focuslost
+     */
+    @ConditionalIgnore (condition = IgnoreTableEdit.class)
+    @Test
+    public void testTableEditStartOnCellHasEditingCell() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn column = control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        TablePosition expected = new TablePosition(control, editIndex, column);
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on cell
+        cell.startEdit();
+        // test control state
+        assertEquals("editingCell on control be updated", expected, control.getEditingCell());
+    }
+    
 
 //---------------- test editEvents and cell/control state on List    
     
@@ -684,9 +752,7 @@ public class CellTest {
         ListViewEditReport report = new ListViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex);
-        LOG.info("" + report.getAllEditEventTexts("edit(1) -> edit(0): "));
-        // test control state
-        assertEquals(secondEditIndex, control.getEditingIndex());
+//        LOG.info("" + report.getAllEditEventTexts("edit(1) -> edit(0): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -717,7 +783,7 @@ public class CellTest {
      */
     @ConditionalIgnore (condition = IgnoreListEdit.class)
     @Test
-    public void testListEditChangeEditIndexOnList() {
+    public void testListEditChangeEditIndexOnControl() {
         ListView<String> control = createEditableList();
         new StageLoader(control);
         // initial edit index
@@ -732,9 +798,7 @@ public class CellTest {
         ListViewEditReport report = new ListViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex);
-        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
-        // test control state
-        assertEquals(secondEditIndex, control.getEditingIndex());
+//        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
         // test cell state
         assertFalse(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
@@ -928,6 +992,56 @@ public class CellTest {
         assertTrue(e.isPresent());
         assertEquals("index on start event", editIndex, e.get().getIndex());
     }
+    
+    /**
+     * Test update of editing location on control
+     */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
+    @Test
+    public void testListEditCommitOnCellResetEditingIndex() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex);
+        control.edit(editIndex);
+        // cancel edit on control
+        cell.commitEdit("edited");
+        // test editing location
+        assertEquals("editingIndex must be updated", -1, control.getEditingIndex());
+    }
+    
+    /**
+     * Test update of editing location on control
+     */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
+    @Test
+    public void testListEditCancelOnCellResetEditingIndex() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex);
+        control.edit(editIndex);
+        // cancel edit on control
+        cell.cancelEdit();
+        // test editing location
+        assertEquals("editingIndex must be updated", -1, control.getEditingIndex());
+    }
+    
+    /**
+     * Test update of editing location on control
+     */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
+    @Test
+    public void testListEditStartOnListHasEditingIndex() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on control
+        cell.startEdit();
+        // test editing location
+        assertEquals("editingIndex must be updated", editIndex, control.getEditingIndex());
+    }
 
 // ------------------ test default edit handlers
     /**
@@ -985,16 +1099,31 @@ public class CellTest {
      * Creates and returns an editable Table of TableColumns (as items ;)
      * configured with 3 items
      * and TextFieldTableCell as cellFactory on first column (which represents
-     * the textProperty of a TableColumn
+     * the textProperty of a TableColumn, no extractor
      * 
      * @return
      */
     protected TableView<TableColumn> createEditableTable() {
+        return createEditableTable(false);
+    }
+    
+    /**
+     * Creates and returns an editable Table of TableColumns (as items ;)
+     * configured with 3 items
+     * and TextFieldTableCell as cellFactory on first column (which represents
+     * the textProperty of a TableColumn, extractor as requested 
+     * 
+     * @param withExtractor flag to indicate whether or not install extractor on 
+     *   editing column
+     * @return
+     */
+    protected TableView<TableColumn> createEditableTable(boolean withExtractor) {
+        ObservableList<TableColumn> items = withExtractor ? 
+            FXCollections.observableArrayList(e -> new Observable[] {e.textProperty()})
+            : FXCollections.observableArrayList();
+        items.addAll(new TableColumn("first"), new TableColumn("second"), new TableColumn("third"));
         TableView<TableColumn> table = new TableView<>(
-                FXCollections.observableArrayList(new TableColumn("first"),
-                        new TableColumn("second"),
-                        new TableColumn("third")
-                ));
+                items);
         table.setEditable(true);
 
         TableColumn<TableColumn, String> first = new TableColumn<>("Text");
@@ -1003,10 +1132,11 @@ public class CellTest {
 
         table.getColumns().addAll(first);
         return table;
-
     }
     
     
+    
+
     /**
      * Creates and returns an editable List configured with 4 items
      * and TextFieldListCell as cellFactory

@@ -20,6 +20,8 @@ import javafx.scene.control.TableView;
  */
 public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<T> {
 
+    private boolean ignoreCancel;
+
     /** {@inheritDoc} */
     @Override public void startEdit() {
         final TableView<S> table = getTableView();
@@ -61,12 +63,18 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
     }
 
     /** {@inheritDoc} */
-    @Override public void commitEdit(T newValue) {
+    @Override 
+    public void commitEdit(T newValue) {
         if (! isEditing()) return;
 
         final TableView<S> table = getTableView();
         if (table != null) {
+            // experiment around commit-fires-cancel:
+            // surround with ignore-cancel to not react if skin
+            // cancels our edit due to data change triggered by this commit
+            ignoreCancel = true;
             // Inform the TableView of the edit being ready to be committed.
+            @SuppressWarnings({ "rawtypes", "unchecked" })
             CellEditEvent editEvent = new CellEditEvent(
                 table,
                 table.getEditingCell(),
@@ -75,6 +83,7 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
             );
 
             Event.fireEvent(getTableColumn(), editEvent);
+            ignoreCancel= false;
         }
 
         // inform parent classes of the commit, so that they can switch us
@@ -130,6 +139,11 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
             Event.fireEvent(getTableColumn(), editEvent);
         }
     }
+
+    protected boolean ignoreCancel() {
+        return !isEditing() || ignoreCancel;
+    }
+    
 
 //------------ reflection acrobatics
     
