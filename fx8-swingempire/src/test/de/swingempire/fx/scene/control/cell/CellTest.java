@@ -16,6 +16,7 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.sun.javafx.tk.Toolkit;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
@@ -34,7 +35,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.IndexedCell;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ListView.EditEvent;
@@ -56,7 +56,13 @@ import javafx.scene.control.skin.TreeCellSkin;
 import javafx.scene.control.skin.TreeTableRowSkin;
 import javafx.util.Callback;
 /**
+ * Note: since 15.sept.2017, tests are separated out per cell-type.
+ * 
  * Divers tests around all cell types.
+ * 
+ * @see ListCellTest
+ * @see TableCellTest
+ * @see TreeCellTest
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -1044,6 +1050,33 @@ public class CellTest {
         // test editing location
         assertEquals("editingIndex must be updated", editIndex, control.getEditingIndex());
     }
+
+//----------------------- focus state
+    
+    /**
+     * Experiments around focus
+     */
+    @ConditionalIgnore (condition = IgnoreListEdit.class)
+    @Test
+    public void testListEditStartFocus() {
+        ListView<String> control = createEditableList();
+        StageLoader sl = new StageLoader(control);
+        sl.getStage().requestFocus();
+        Toolkit.getToolkit().firePulse();
+        assertEquals(sl.getStage().getScene().getFocusOwner(), control);
+        int editIndex = 1;
+        control.getFocusModel().focus(editIndex);
+        IndexedCell cell =  getCell(control, editIndex);
+        // start edit on control
+        control.edit(editIndex);
+//        Toolkit.getToolkit().firePulse();
+        // test cell state
+        assertTrue(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        assertTrue("cell must be focused", cell.isFocused());
+        assertEquals("textField must be focused", cell.getGraphic(), sl.getStage().getScene().getFocusOwner());
+    }
+    
 
 // ------------------ test default edit handlers
     /**

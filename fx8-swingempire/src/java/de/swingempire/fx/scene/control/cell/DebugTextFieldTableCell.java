@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.logging.Logger;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TableCell;
@@ -72,6 +74,13 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     public TextField getTextField() {
         if (textField == null) {
             textField = createTextField();
+//            // focused for !cellSelectionEnabled is always false
+//            focusedProperty().addListener(obs -> {
+//                LOG.info("cell focused: " + isFocused() + " on: " + getIndex() + " / " + getItem() );
+//            });
+//            textField.focusedProperty().addListener(obs -> {
+//                LOG.info("field focused: " + textField.isFocused() + " on: " + getIndex() + " / " + getItem() );
+//            });
         }
         return textField;
     }
@@ -84,6 +93,7 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
      * The {@link StringConverter} property.
      * @return the {@link StringConverter} property
      */
+    @Override
     public final ObjectProperty<StringConverter<T>> converterProperty() {
         return converter;
     }
@@ -112,4 +122,7 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
     }
 
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(DebugTextFieldTableCell.class.getName());
 }

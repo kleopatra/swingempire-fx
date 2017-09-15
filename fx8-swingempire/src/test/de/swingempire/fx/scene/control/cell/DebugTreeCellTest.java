@@ -18,29 +18,20 @@ import static org.junit.Assert.*;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TreeViewEditReport;
 import javafx.scene.control.IndexedCell;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.util.Callback;
 
 /**
- * Use debugging cells instead of core cells.
- * Note: since 15.sept.2017, tests are separated out per cell-type.
- * 
- * @see DebugListCellTest
- * @see DebugTableCellTest
- * @see DebugTreeCellTest
- * 
+ * Divers tests around DebugTreeCell types. Initially copied all from 
+ * DebugCellTest, then deleted all tests that are not treeCell
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class DebugCellTest extends CellTest {
+public class DebugTreeCellTest extends TreeCellTest {
     
     
     /**
@@ -100,15 +91,6 @@ public class DebugCellTest extends CellTest {
 
 
     /**
-     * no-op here
-     */
-    @Override
-    public void testListEditStartOnCellStandalone() {
-        // TODO Auto-generated method stub
-//        super.testListEditStartOnCellStandalone();
-    }
-
-    /**
      * {@inheritDoc} <p>
      * 
      * Overridden to install a custom default commit handler (core TreeView 
@@ -132,16 +114,6 @@ public class DebugCellTest extends CellTest {
     @Override
     protected Callback<TreeView<String>, TreeCell<String>> createTextFieldTreeCell() {
         return DebugTextFieldTreeCell.forTreeView();
-    }
-
-    @Override
-    protected Callback<TableColumn<TableColumn, String>, TableCell<TableColumn, String>> createTextFieldTableCell() {
-        return DebugTextFieldTableCell.forTableColumn();
-    }
-
-    @Override
-    protected Callback<ListView<String>, ListCell<String>> createTextFieldListCell() {
-        return DebugTextFieldListCell.forListView();
     }
 
 

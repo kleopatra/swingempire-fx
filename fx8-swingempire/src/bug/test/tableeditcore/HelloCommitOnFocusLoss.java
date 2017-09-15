@@ -77,6 +77,10 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 /**
+ * from fix in fx10 to
+ * https://bugs.openjdk.java.net/browse/JDK-8089514
+ * webrev http://cr.openjdk.java.net/~jgiles/8089514.1/
+ * 
  * Can't really test, too many changes too deep in bowels..
  */
 public class HelloCommitOnFocusLoss extends Application {

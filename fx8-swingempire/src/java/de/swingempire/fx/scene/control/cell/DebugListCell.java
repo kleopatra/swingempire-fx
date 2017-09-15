@@ -27,15 +27,44 @@ import javafx.scene.control.ListView;
  *      with a ignoreCancel flag 
  *      b) in cancelEdit, do nothing if ignoreCancel() 
  * <li> https://bugs.openjdk.java.net/browse/JDK-8187432 - 
- *      in startEdit, pass correct index into editStartEvent
+ *      in startEdit, pass correct index into editStartEvent 
+ *      (core code looks fixed in fx10 webrev http://cr.openjdk.java.net/~jgiles/8089514.1/)
  * <li> https://bugs.openjdk.java.net/browse/JDK-8187226 -
  *      in cancelEdit, pass correct index into editCancelEvent
+ *      (core code looks fixed in fx10 webrev http://cr.openjdk.java.net/~jgiles/8089514.1/)
  * </ul>
  * 
  * Note: the problem with skin canceling the edit is the same for all 
  * virtual controls, though not so obvious in Tree-/TableView for different 
  * reasons. Hacking around the problem with a flag seems whacky, but we might
  * get away with it. Not thoroughly tested, though, beware!
+ * 
+ * <p>
+ * 
+ * Now testing another approach. The reason the cell is disturbed by backing
+ * data being changed (triggered by controls skin or any other collaborator)
+ * seems to be that it is still in editing state. So changing the sequence of
+ * steps from
+ * 
+ * Core commitEdit FX9:
+ * <ul>
+ * <li> notify commitHandler
+ * <li> switch out editing state 
+ * <li> updateVisuals
+ * <li> update editing location
+ * </ul>
+ * 
+ * Current here:
+ * <ul>
+ * <li> switch out editing state // no need for ignoreCancel
+ * <li> update editing location  // allow modifications of the list in commitHandler 
+ * <li> fire commithandler       
+ * <li> update visuals
+ * </ul>
+ * 
+ * That's similar to fx10 webrev http://cr.openjdk.java.net/~jgiles/8089514.1/)
+ *
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -151,7 +180,7 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
             int editingIndex = list.getEditingIndex();
             // this should be the same as cell index, if not, something is wrong!
             if (!(list.getEditingIndex() == getIndex())) 
-                throw new IllegalStateException("on cancelEdit, list editing index must be same as my own: "
+                throw new IllegalStateException("on commitEdit, list editing index must be same as my own: "
                         + getIndex() + " but was: " + editingIndex);
 
             list.edit(-1);
@@ -181,7 +210,6 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 //            // event is fired so that the developer on the other side can consult
 //            // the ListView editingIndex property (if they choose to do that
 //            // rather than just grab the int from the event).
-//            getPostCommit().accept(list);
 //
 //            // request focus back onto the list, only if the current focus
 //            // owner has the list as a parent (otherwise the user might have

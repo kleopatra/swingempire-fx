@@ -27,11 +27,13 @@ import javafx.scene.control.TableView;
  *      in startEdit update editingCell of tableView,
  * <li> https://bugs.openjdk.java.net/browse/JDK-8187229   
  *    in startEdit and cancelEdit, pass correct editingCell into editEvent
- * <li> not yet reported, but same problem as in ListCell, skin cancels edit 
+ * <li> same problem as in ListCell, skin cancels edit 
  *      during a commit - happens on TableView only if items have extractor on
  *      the editing column
  *      see DebugListCell for details    
  * </ul>
+ * 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<T> {
@@ -64,8 +66,10 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         // updateItem normally, when it comes to unit tests we can't have the
         // item change in all circumstances.
 //        if (! lockItemOnEdit) {
+        // PENDING JW:why do we need this? start edit should only happen on 
+        // fully configured cells?
         if (!lockItemOnEdit()) {
-            invokeUpdateItem(-1);
+//            invokeUpdateItem(-1);
         }
 
         // it makes sense to get the cell into its editing state before firing
@@ -73,6 +77,10 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         // by calling super.startEdit().
 //        super.startEdit();
         cellStartEdit();
+        // PENDING JW:shouldn't we back out if !isEditing? That is when
+        // super refused to switch into editing state?
+         // Inform the ListView of the edit starting.
+        if (!isEditing()) return;
 
         if (column != null) {
             TablePosition<S, ?> editingCell = new TablePosition<>(getTableView(), getIndex(), getTableColumn());
@@ -98,6 +106,7 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
      * <li> surround firing of editCommitEvent with ignoreCancel
      * </ul>
      * 
+     * Changed sequence of handlers, removed the flag again
      * @see DebugListCell#commitEdit(Object)
      */
     @Override 
@@ -113,23 +122,31 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         cellCommitEdit(newValue);
         final TableView<S> table = getTableView();
         if (table != null) {
+            TablePosition<S, ?> editingCell = new TablePosition<>(getTableView(), getIndex(), getTableColumn());
+            TablePosition<S, ?> tableEditingCell = table.getEditingCell();
+            if (!editingCell.equals(tableEditingCell)) {
+                throw new IllegalStateException("on commitEdit, table editing location must be same as my own: "
+                        + editingCell + " but was: " + tableEditingCell);
+            }
+            
             // experiment around commit-fires-cancel:
             // surround with ignore-cancel to not react if skin
             // cancels our edit due to data change triggered by this commit
 //            ignoreCancel = true;
+            // PENDING JW: trying to do this before firing the event
+            //will blow  ... yeah, because we use table.getEditingCell to build the event
+            // reset the editing cell on the TableView
+            table.edit(-1, null);
             // Inform the TableView of the edit being ready to be committed.
             @SuppressWarnings({ "rawtypes", "unchecked" })
             CellEditEvent editEvent = new CellEditEvent(
                 table,
-                table.getEditingCell(),
+                editingCell,
+//                table.getEditingCell(),
                 TableColumn.editCommitEvent(),
                 newValue
             );
 
-            // PENDING JW: trying to do this before firing the event
-            //will blow
-            // reset the editing cell on the TableView
-            table.edit(-1, null);
             Event.fireEvent(getTableColumn(), editEvent);
             ignoreCancel= false;
         }
