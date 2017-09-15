@@ -2,11 +2,14 @@
  * Created on 05.02.2016
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.tk.Toolkit;
+
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -50,6 +53,19 @@ import javafx.util.converter.DefaultStringConverter;
  * Update: table.layout _is_ working, provided the table's skin has registered its
  * listener to the items _before_ we do so.
  * 
+ * <p>
+ * 
+ * Setup here is:
+ * add(item)
+ * in itemsListener do layout and edit newly added item
+ * 
+ * if added by button -> okay, we need the layout so that focus
+ *   is in the textfield
+ * if added in commitHandler -> crazy behaviour, a bit less crazy 
+ *   if removing call to layout 
+ * 
+ * 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -64,7 +80,7 @@ public class TablePersonAddRowAndEdit extends Application {
                     new Person("Ethan", "Williams", "ethan.williams@example.com"),
                     new Person("Emma", "Jones", "emma.jones@example.com"),
                     new Person("Michael", "Brown", "michael.brown@example.com")
-                    , standIn
+//                    , standIn
                     );
 
    
@@ -77,14 +93,31 @@ public class TablePersonAddRowAndEdit extends Application {
         
         TableColumn<Person, String> firstName = new TableColumn<>("First Name");
         firstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        firstName.addEventHandler(TableColumn.editCommitEvent(), e -> {
+            int index = e.getTablePosition().getRow();
+            if (index == table.getItems().size() - 1) {//getInsertIndex(table) - 1) {
+                p("index in commithandler" + index);
+                Person person = createNewItem("edit", index);
+                table.getItems().add(person);
+//                table.edit(table.getItems().size(), firstName);
+            }
+        });
         
-        firstName.setCellFactory(v -> new MyTextFieldCell<>());
+//        firstName.setCellFactory(v -> new MyTextFieldCell<>());
+        firstName.setCellFactory(TextFieldTableCell.forTableColumn());
         ListChangeListener l = c -> {
             while (c.next()) {
                 // true added only
                 if (c.wasAdded() && ! c.wasRemoved()) {
+                    p("in itemslistener: " + c.getFrom());
                     // force the re-layout before starting the edit
-                    table.layout();
+                    // moved into table override below
+                    // leads to weird effects if item added in commitHandler
+//                    table.layout();
+//                    Toolkit.getToolkit().firePulse();
+                    table.getSelectionModel().select(c.getFrom());
+                    table.scrollTo(c.getFrom());
+                    table.requestFocus();
                     table.edit(c.getFrom(), firstName);
                     return;
                 }
@@ -102,18 +135,20 @@ public class TablePersonAddRowAndEdit extends Application {
         Button add = new Button("AddAndEdit");
         add.setOnAction(e -> {
             int standInIndex = table.getItems().indexOf(standIn);
-            int index = standInIndex < 0 ? table.getItems().size() : standInIndex;
-            index =1;
+            int index =  getInsertIndex(table);
+//                    standInIndex < 0 ? table.getItems().size() : standInIndex;
+//            index =1;
             Person person = createNewItem("edit", index);
             table.getItems().add(index, person);
             
         });
         Button edit = new Button("Edit");
         edit.setOnAction(e -> {
-            int index = 1;//table.getItems().size() -2;
+            int index = getInsertIndex(table);
+//            int index = 1;
             table.scrollTo(index);
             table.requestFocus();
-            table.edit(index, firstName);
+            table.edit(index - 1, firstName);
         });
         HBox buttons = new HBox(10, add, edit);
         BorderPane content = new BorderPane(table);
@@ -121,6 +156,10 @@ public class TablePersonAddRowAndEdit extends Application {
         return content;
     }
     
+    protected int getInsertIndex(TableView table) {
+        int standInIndex = table.getItems().indexOf(standIn);
+        return  standInIndex < 0 ? table.getItems().size() : standInIndex;
+    }
     public static class TTableView<S> extends TableView<S> {
 
         /**
@@ -237,6 +276,10 @@ public class TablePersonAddRowAndEdit extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private static void p(String text) {
+        System.out.println(text);
     }
 
     @SuppressWarnings("unused")

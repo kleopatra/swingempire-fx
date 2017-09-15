@@ -2,7 +2,7 @@
  * Created on 06.02.2016
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -17,7 +17,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
@@ -25,7 +24,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.util.converter.DefaultStringConverter;
 
 /**
  * 
@@ -34,53 +32,17 @@ import javafx.util.converter.DefaultStringConverter;
  * Solution is to _always_ make sure the target cell is visible
  * and force a complete layout!
  * 
- * To reproduce:
- * - click addAndEdit to insert cell off the visual range and start edit
- * - click scrollBar to scroll to inserted cell
- * - click addAndEdit again
- * - expected: cell with "initial 51" is edited
- * - actual: cell with "initial 50" is edited
- * - type x at beginning of editor text field, commit by enter
- * - note two cells with "xinitial 50"
- * - scroll back and forth to get rid of the visual artefact (only one is really changed)
- * - note that "initial 51" is changed to "xinitial 50" - corrupted data!
- * 
- * filed as:
- * https://bugs.openjdk.java.net/browse/JDK-8150525
- * fixed - the solution was to call updateEditing in indexChanged(int, int)
- * hacking around by reflectively calling updateEditing in updateIndex(int)
- * 
  * Also old bug:
  * https://bugs.openjdk.java.net/browse/JDK-8093922
  * 
  * resolved as can't reproduce
  * 
- * New issue (9ea-u180)
- * start editing anywhere, scroll by clicking -> editing is cancelled
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class TablePCoreAddAndEdit extends Application {
+public class TablePersonCoreAddAndEdit extends Application {
 
-    /**
-     * Subclass to test the fix of 
-     * https://bugs.openjdk.java.net/browse/JDK-8150525
-     * seems fixed!
-     */
-    public static class FixedTextFieldTableCell extends TextFieldTableCell {
-
-         public FixedTextFieldTableCell() {
-             super(new DefaultStringConverter());
-        }
-        @Override
-        public void updateIndex(int i) {
-            super.updateIndex(i);
-            FXUtils.invokeMethod(TableCell.class, this, "updateEditing");
-        }
-        
-        
-    }
-    
     private Parent getContent() {
         TableView<Dummy> table = new TableView<>(createData(50));
         table.setEditable(true);
@@ -88,15 +50,23 @@ public class TablePCoreAddAndEdit extends Application {
         TableColumn<Dummy, String> column = new TableColumn<>("Value");
         column.setCellValueFactory(c -> c.getValue().valueProperty());
         column.setCellFactory(TextFieldTableCell.forTableColumn());
-//        column.setCellFactory(p -> new FixedTextFieldTableCell());
         column.setMinWidth(200);
         table.getColumns().addAll(column);
         
-        // insert and start editing at an invisible row
-        // in my environment, I see about 12 rows
-        int insertIndex = 20; 
+        Button edit = new Button("Edit");
+        edit.setOnAction(e -> {
+            int selected = table.getSelectionModel().getSelectedIndex();
+            int insertIndex = selected < 0 ? 0 : selected;
+//            Dummy dummy = new Dummy();
+//            table.getItems().add(insertIndex, dummy);
+//            LOG.info("insertIndex" + insertIndex + "isAtIndex " + table.getItems().indexOf(dummy) + dummy);
+            table.edit(insertIndex,  column);
+        });
+        
         Button addAndEdit = new Button("AddAndEdit");
         addAndEdit.setOnAction(e -> {
+            int selected = table.getSelectionModel().getSelectedIndex();
+            int insertIndex = 20; //selected < 0 ? 0 : selected;
             Dummy dummy = new Dummy();
             table.getItems().add(insertIndex, dummy);
             table.edit(insertIndex,  column);
@@ -105,13 +75,19 @@ public class TablePCoreAddAndEdit extends Application {
         
         Button logEditing = new Button("LogEditing");
         logEditing.setOnAction(e-> {
-            TablePosition<?, ?> editingCell = table.getEditingCell();
-            LOG.info((editingCell != null 
-                    ? "editing row: " + editingCell.getRow() + table.getItems().get(editingCell.getRow()): "no editing cell")
-                    + "value at insertIndex: " + table.getItems().get(insertIndex)    
-                    );
+            TablePosition editingCell = table.getEditingCell();
+            LOG.info(editingCell != null ? "editing row: " + editingCell.getRow() : "no editing cell");
         });
-        HBox buttons = new HBox(10, addAndEdit, logEditing);
+        Button scrollAndEdit = new Button("ScrollAndEdit");
+        scrollAndEdit.setOnAction(e -> {
+            int selected = table.getSelectionModel().getSelectedIndex();
+            int insertIndex = selected < 0 ? 0 : selected;
+            table.requestFocus();
+            table.scrollTo(insertIndex);
+//            table.layout();
+            table.edit(insertIndex,  column);
+        });
+        HBox buttons = new HBox(10, edit, addAndEdit, logEditing, scrollAndEdit);
         BorderPane content = new BorderPane(table);
         content.setBottom(buttons);
         return content;
@@ -145,5 +121,5 @@ public class TablePCoreAddAndEdit extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(TablePCoreAddAndEdit.class.getName());
+            .getLogger(TablePersonCoreAddAndEdit.class.getName());
 }

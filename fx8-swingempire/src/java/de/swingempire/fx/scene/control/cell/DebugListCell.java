@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.function.Consumer;
+
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.ListCell;
@@ -41,6 +43,29 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 
     private boolean ignoreCancel;
 
+    /** 
+     * the idea was to not reset editing in commitEditing if
+     * list commitHandler did somehow start another edit.
+     * 
+     * didn't work out - gets totally confused.
+     */
+//    private static Consumer<ListView> defaultPostCommit = list -> {
+//        list.edit(-1);
+////        ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
+//    };
+//    
+//    private Consumer<ListView> postCommit;
+//    
+//    public void setPostCommit(Consumer<ListView> postCommit) {
+//        this.postCommit = postCommit;
+//    }
+//    
+//    public Consumer<ListView> getPostCommit() {
+//        return postCommit != null ? postCommit :  defaultPostCommit;
+//    }
+    
+    //------------- end of idea
+    
     /**
      * {@inheritDoc} <p>
      * Basically, a c&p of super except:
@@ -66,6 +91,7 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         // PENDING JW:shouldn't we back out if !isEditing? That is when
         // super refused to switch into editing state?
          // Inform the ListView of the edit starting.
+        if (!isEditing()) return;
         if (list != null) {
             list.fireEvent(new ListView.EditEvent<T>(list,
                     ListView.<T>editStartEvent(),
@@ -122,8 +148,8 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         // call cancelEdit(), resulting in both commit and cancel events being
         // fired (as identified in RT-29650)
 //        super.commitEdit(newValue);
-
         cellCommitEdit(newValue);
+
         // update the item within this cell, so that it represents the new value
         // PENDING: JW
         // this is the same as cellUpdateItem - 
@@ -132,16 +158,17 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         updateItem(newValue, false);
 
         if (list != null) {
-            // reset the editing index on the ListView. This must come after the
-            // event is fired so that the developer on the other side can consult
-            // the ListView editingIndex property (if they choose to do that
-            // rather than just grab the int from the event).
+//            // reset the editing index on the ListView. This must come after the
+//            // event is fired so that the developer on the other side can consult
+//            // the ListView editingIndex property (if they choose to do that
+//            // rather than just grab the int from the event).
             list.edit(-1);
-
-            // request focus back onto the list, only if the current focus
-            // owner has the list as a parent (otherwise the user might have
-            // clicked out of the list entirely and given focus to something else.
-            // It would be rude of us to request it back again.
+//            getPostCommit().accept(list);
+//
+//            // request focus back onto the list, only if the current focus
+//            // owner has the list as a parent (otherwise the user might have
+//            // clicked out of the list entirely and given focus to something else.
+//            // It would be rude of us to request it back again.
             ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
         }
     }

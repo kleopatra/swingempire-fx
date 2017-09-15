@@ -2,9 +2,9 @@
  * Created on 10.02.2016
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.scene.control.edit;
 
-import de.swingempire.fx.scene.control.cell.TablePJamesAddRowAndEdit.EditingCellWithMenuEtc;
+import de.swingempire.fx.scene.control.edit.TablePJamesAddRowAndEdit.EditingCellWithMenuEtc;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValueBase;
 import javafx.scene.Scene;

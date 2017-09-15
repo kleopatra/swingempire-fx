@@ -22,21 +22,6 @@ public class ListViewAutoEditInHandler2 extends Application {
     private ListView<String> simpleList;
     private int expectedEditIndex = -1;
     
-    /**
-     * Callback for editTimer. Implemented to scroll to and force
-     * edit of cell at expectedEditIndex.
-     */
-    private void checkEdit() {
-//        if (expectedEditIndex < 0) return;
-//        if (expectedEditIndex == simpleList.getEditingIndex()) {
-//            expectedEditIndex = -1;
-//            return;
-//        }
-//        int index = expectedEditIndex;
-//        expectedEditIndex = -1;
-//        simpleList.scrollTo(index);
-//        simpleList.edit(index);
-    }
 
     @Override
     public void start(Stage primaryStage) {
