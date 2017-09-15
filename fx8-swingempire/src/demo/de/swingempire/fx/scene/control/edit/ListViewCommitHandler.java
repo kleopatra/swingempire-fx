@@ -45,16 +45,19 @@ public class ListViewCommitHandler extends Application {
      */
     private void skinChanged() {
         simpleList.skinProperty().removeListener(skinListener);
+        // start in items listener - working if cell switched out of editing 
+        // before notification
         simpleList.getItems().addListener((Change<? extends String> c) -> {
-//            while (c.next()) {
-//                if (c.wasAdded() && ! c.wasRemoved()) {
-//                    // force the re-layout before starting the edit
-//                    simpleList.layout();
-//                    p("before edit");
-//                    simpleList.edit(c.getFrom());
-//                    return;
-//                }
-//            }
+            while (c.next()) {
+                if (c.wasAdded() && ! c.wasRemoved()) {
+                    // force the re-layout before starting the edit
+                    // still need
+                    simpleList.layout();
+                    p("before edit");
+                    simpleList.edit(c.getFrom());
+                    return;
+                }
+            }
         });
 
     }
@@ -64,16 +67,16 @@ public class ListViewCommitHandler extends Application {
     public void start(Stage primaryStage) {
         simpleList = new ListView<>(FXCollections.observableArrayList("Item1"// {
                , "Item2", "Item3", "Item4")) {
-
-                @Override
-                protected void layoutChildren() {
-                    super.layoutChildren();
-                    IndexedCell cell =  getCell(this, expectedEditIndex);
-                    if (cell != null) {
-                        cell.startEdit();
-                    }
-                }
-
+//              same as edit in commit handler
+//                @Override
+//                protected void layoutChildren() {
+//                    super.layoutChildren();
+//                    IndexedCell cell =  getCell(this, expectedEditIndex);
+//                    if (cell != null) {
+//                        cell.startEdit();
+//                    }
+//                }
+//
             
         };
         simpleList.setEditable(true);
@@ -98,13 +101,16 @@ public class ListViewCommitHandler extends Application {
             simpleList.getItems().set(t.getIndex(), t.getNewValue());
             if (t.getIndex() == simpleList.getItems().size() - 1) {
                 int index = t.getIndex() + 1;
-                // System.out.println("setOnEditCommit - last " + t.getIndex() +
-                // " /" + t);
+                 System.out.println("setOnEditCommit - last " + t.getIndex() +
+                 " /" + t);
                 simpleList.getItems().add("newItem");
                 expectedEditIndex = index;
                 simpleList.getSelectionModel().select(index);
                 simpleList.getFocusModel().focus(index);
                 simpleList.scrollTo(index);
+                //does not start edit and leads to cancel with weird index
+                // start == 4, cancel == 6
+//                simpleList.edit(index);
             }
 
         });

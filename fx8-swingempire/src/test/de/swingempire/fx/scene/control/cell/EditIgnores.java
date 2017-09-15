@@ -22,7 +22,7 @@ public class EditIgnores {
         
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }
@@ -42,7 +42,7 @@ public class EditIgnores {
 
         @Override
         public boolean isSatisfied() {
-            return false;
+            return true;
         }
         
     }

@@ -74,6 +74,10 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      * <li> pass correct index into editStart, fix for https://bugs.openjdk.java.net/browse/JDK-8187432
      * </ul>
      * 
+     * Sequence of mods core:
+     * - switch into editing state
+     * - notify start handlers
+     * - update editing location
      */
     @Override
     public void startEdit() {
@@ -117,30 +121,23 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      *    one part of fixing https://bugs.openjdk.java.net/browse/JDK-8187432
      * </ul>
      * 
+     * Sequence of mods core:
+     * - notify commitHandler
+     * - switch out editing state: if done first, no need for ignoreCancel
+     * - updateVisuals
+     * - update editing location
+     * 
+     * current here:
+     * - switch out editing state
+     * - update editing location
+     * - fire commithandler
+     * - update visuals
+     * now can modify items during commit without receiving cancel
      */
     @Override
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
         ListView<T> list = getListView();
-
-        if (list != null) {
-            int editingIndex = list.getEditingIndex();
-            // this should be the same as cell index, if not, something is wrong!
-            if (!(list.getEditingIndex() == getIndex())) 
-                throw new IllegalStateException("on cancelEdit, list editing index must be same as my own: "
-                        + getIndex() + " but was: " + editingIndex);
-
-            // experiment around commit-fires-cancel:
-            // surround with ignore-cancel to not react if skin
-            // cancels our edit due to data change triggered by this commit
-            ignoreCancel = true;
-            // Inform the ListView of the edit being ready to be committed.
-            list.fireEvent(new ListView.EditEvent<T>(list,
-                    ListView.<T>editCommitEvent(),
-                    newValue,
-                    getIndex()));
-            ignoreCancel = false;
-        }
 
         // inform parent classes of the commit, so that they can switch us
         // out of the editing state.
@@ -149,6 +146,28 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         // fired (as identified in RT-29650)
 //        super.commitEdit(newValue);
         cellCommitEdit(newValue);
+        
+        if (list != null) {
+            int editingIndex = list.getEditingIndex();
+            // this should be the same as cell index, if not, something is wrong!
+            if (!(list.getEditingIndex() == getIndex())) 
+                throw new IllegalStateException("on cancelEdit, list editing index must be same as my own: "
+                        + getIndex() + " but was: " + editingIndex);
+
+            list.edit(-1);
+            // experiment around commit-fires-cancel:
+            // surround with ignore-cancel to not react if skin
+            // cancels our edit due to data change triggered by this commit
+            // not needed if switching out of editing before notification
+//            ignoreCancel = true;
+            // Inform the ListView of the edit being ready to be committed.
+            list.fireEvent(new ListView.EditEvent<T>(list,
+                    ListView.<T>editCommitEvent(),
+                    newValue,
+                    getIndex()));
+            ignoreCancel = false;
+        }
+
 
         // update the item within this cell, so that it represents the new value
         // PENDING: JW
@@ -162,14 +181,14 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 //            // event is fired so that the developer on the other side can consult
 //            // the ListView editingIndex property (if they choose to do that
 //            // rather than just grab the int from the event).
-            list.edit(-1);
 //            getPostCommit().accept(list);
 //
 //            // request focus back onto the list, only if the current focus
 //            // owner has the list as a parent (otherwise the user might have
 //            // clicked out of the list entirely and given focus to something else.
 //            // It would be rude of us to request it back again.
-            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
+            // JW: can be rude anyway, f.i. when new edit has started on another cell
+//            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
         }
     }
 
@@ -182,6 +201,11 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      * <li> do nothing if ignoreCancel, fix for https://bugs.openjdk.java.net/browse/JDK-8187307
      * <li> pass correct index into editCancel, fix for https://bugs.openjdk.java.net/browse/JDK-8187226
      * </ul>
+     * 
+     * Sequence of mods core
+     * - switch out off editing state
+     * - update editing location (if not comming from updateEditing)
+     * - notify cancel handler
      * 
      * @see #ignoreCancel()
      */

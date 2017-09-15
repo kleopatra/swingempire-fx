@@ -6,10 +6,9 @@ package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.tk.Toolkit;
+import com.sun.javafx.scene.control.behavior.TableViewBehaviorBase;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -20,8 +19,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Control;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -90,7 +91,7 @@ public class TablePersonAddRowAndEdit extends Application {
         TableView<Person> table = new TableView<>();
         table.setItems(data);
         table.setEditable(true);
-        
+        TableViewBehaviorBase b;
         TableColumn<Person, String> firstName = new TableColumn<>("First Name");
         firstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         firstName.addEventHandler(TableColumn.editCommitEvent(), e -> {
@@ -105,6 +106,7 @@ public class TablePersonAddRowAndEdit extends Application {
         
 //        firstName.setCellFactory(v -> new MyTextFieldCell<>());
         firstName.setCellFactory(TextFieldTableCell.forTableColumn());
+//        firstName.setCellFactory(DebugTextFieldTableCell.forTableColumn());
         ListChangeListener l = c -> {
             while (c.next()) {
                 // true added only
@@ -117,7 +119,7 @@ public class TablePersonAddRowAndEdit extends Application {
 //                    Toolkit.getToolkit().firePulse();
                     table.getSelectionModel().select(c.getFrom());
                     table.scrollTo(c.getFrom());
-                    table.requestFocus();
+//                    table.requestFocus();
                     table.edit(c.getFrom(), firstName);
                     return;
                 }

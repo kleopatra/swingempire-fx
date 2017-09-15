@@ -104,12 +104,19 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
 
+        // inform parent classes of the commit, so that they can switch us
+        // out of the editing state.
+        // This MUST come before the updateItem call below, otherwise it will
+        // call cancelEdit(), resulting in both commit and cancel events being
+        // fired (as identified in RT-29650)
+//        super.commitEdit(newValue);
+        cellCommitEdit(newValue);
         final TableView<S> table = getTableView();
         if (table != null) {
             // experiment around commit-fires-cancel:
             // surround with ignore-cancel to not react if skin
             // cancels our edit due to data change triggered by this commit
-            ignoreCancel = true;
+//            ignoreCancel = true;
             // Inform the TableView of the edit being ready to be committed.
             @SuppressWarnings({ "rawtypes", "unchecked" })
             CellEditEvent editEvent = new CellEditEvent(
@@ -119,17 +126,14 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
                 newValue
             );
 
+            // PENDING JW: trying to do this before firing the event
+            //will blow
+            // reset the editing cell on the TableView
+            table.edit(-1, null);
             Event.fireEvent(getTableColumn(), editEvent);
             ignoreCancel= false;
         }
 
-        // inform parent classes of the commit, so that they can switch us
-        // out of the editing state.
-        // This MUST come before the updateItem call below, otherwise it will
-        // call cancelEdit(), resulting in both commit and cancel events being
-        // fired (as identified in RT-29650)
-//        super.commitEdit(newValue);
-        cellCommitEdit(newValue);
         // update the item within this cell, so that it represents the new value
         // PENDING JW: probably regrab tree's value? otherwise we
         // show incorrect data if handler rejects the edit
@@ -137,14 +141,11 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         updateItem(newValue, false);
 
         if (table != null) {
-            // reset the editing cell on the TableView
-            table.edit(-1, null);
-
             // request focus back onto the table, only if the current focus
             // owner has the table as a parent (otherwise the user might have
             // clicked out of the table entirely and given focus to something else.
             // It would be rude of us to request it back again.
-            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(table);
+//            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(table);
         }
     }
 

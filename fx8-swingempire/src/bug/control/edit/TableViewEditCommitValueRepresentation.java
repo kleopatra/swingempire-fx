@@ -23,6 +23,9 @@ import javafx.stage.Stage;
  * https://bugs.openjdk.java.net/browse/JDK-8187314
  * 
  * with not writable example
+ * 
+ * Not yet reported:
+ * another: starting edit with f2 throws npe in tableViewBehaviourBase 890 - no tableColumn?
  */
 public class TableViewEditCommitValueRepresentation extends Application {
 
