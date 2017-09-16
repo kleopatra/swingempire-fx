@@ -76,6 +76,26 @@ public class ControlUtils {
             }
         }
     }
+    
+    public static boolean isCurrentFocusOwnerChildOf(Control c) {
+        Scene scene = c.getScene();
+        final Node focusOwner = scene == null ? null : scene.getFocusOwner();
+        if (focusOwner == null) {
+//            c.requestFocus();
+            return true;
+        } else if (! c.equals(focusOwner)) {
+            Parent p = focusOwner.getParent();
+            while (p != null) {
+                if (c.equals(p)) {
+//                    c.requestFocus();
+//                    break;
+                    return true;
+                }
+                p = p.getParent();
+            }
+        }
+        return false;
+    }
 
     private ControlUtils() {}
 

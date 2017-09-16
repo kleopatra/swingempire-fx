@@ -196,7 +196,10 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
             // owner has the table as a parent (otherwise the user might have
             // clicked out of the table entirely and given focus to something else.
             // It would be rude of us to request it back again.
-            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(table);
+//            ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(table);
+            // if another cell isEditing, it's rude as well
+            if (ControlUtils.isCurrentFocusOwnerChildOf(table) && table.getEditingCell() == null)
+                table.requestFocus();
 
             CellEditEvent<S,?> editEvent = new CellEditEvent<>(
                 table,

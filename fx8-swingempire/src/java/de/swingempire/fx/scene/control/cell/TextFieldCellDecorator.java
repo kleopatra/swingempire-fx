@@ -81,11 +81,11 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 //            cell.setGraphic(textField);
 //        }
 //        
-        getTextField().selectAll();
 
         // requesting focus so that key input can immediately go into the
         // TextField (see RT-28132)
         getTextField().requestFocus();
+        getTextField().selectAll();
 
     }
     

@@ -4,8 +4,6 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import java.util.function.Consumer;
-
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.ListCell;

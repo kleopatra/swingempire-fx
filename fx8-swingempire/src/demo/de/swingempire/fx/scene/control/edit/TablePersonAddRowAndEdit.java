@@ -95,7 +95,7 @@ public class TablePersonAddRowAndEdit extends Application {
                     // leads to weird effects if item added in commitHandler
 //                     table.layout();
                     table.scrollTo(c.getFrom());
-//                    table.requestFocus();
+                    table.requestFocus();
                     table.edit(c.getFrom(), firstName);
                     return;
                 }
@@ -113,7 +113,7 @@ public class TablePersonAddRowAndEdit extends Application {
             table.getItems().add(person);
             table.getSelectionModel().select(index + 1);
             table.getFocusModel().focus(index + 1, firstName);
-   //                table.edit(table.getItems().size(), firstName);
+//                   table.edit(table.getItems().size(), firstName);
         }
     }
 
@@ -149,11 +149,12 @@ public class TablePersonAddRowAndEdit extends Application {
         });
         Button edit = new Button("Edit");
         edit.setOnAction(e -> {
-            int index = getInsertIndex(table);
+            int index = getInsertIndex(table) -1;
 //            int index = 1;
             table.scrollTo(index);
+            table.getSelectionModel().select(index);
             table.requestFocus();
-            table.edit(index - 1, firstName);
+            table.edit(index, firstName);
         });
         HBox buttons = new HBox(10, add, edit);
         BorderPane content = new BorderPane(table);
@@ -261,7 +262,7 @@ public class TablePersonAddRowAndEdit extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(getContent()));
+        primaryStage.setScene(new Scene(getContent(), 400, 204));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }
