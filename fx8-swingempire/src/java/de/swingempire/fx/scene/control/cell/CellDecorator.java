@@ -19,7 +19,12 @@ import javafx.scene.control.Cell;
  */
 public interface CellDecorator<T> {
     
-//----------------- item
+    default int getCounter() {
+        return -1;
+    }
+//----------------- item/index
+    
+    int getIndex();
     
     // ? final method cannot be decorated by an interface
     T getItem();

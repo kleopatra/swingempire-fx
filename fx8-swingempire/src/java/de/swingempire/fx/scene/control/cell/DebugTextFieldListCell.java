@@ -8,8 +8,11 @@ import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -69,9 +72,52 @@ public class DebugTextFieldListCell<T> extends DebugListCell<T>
     public TextField getTextField() {
         if (textField == null) {
             textField = createTextField();
-        }
+            // focused for !cellSelectionEnabled is always false
+            focusedProperty().addListener(obs -> {
+//                LOG.info("cell focused: " + isFocused() + " on: " + getIndex() 
+//                    + " / " + getItem() + " id " + getCounter() + " editing? " + isEditing());
+            });
+            textField.focusedProperty().addListener(obs -> {
+                Scene s = getScene();
+                Node focusOwner  = s != null ? s.getFocusOwner() : null;
+                boolean selfFocus = focusOwner == textField;
+                String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
+                int pos = getListView() != null ? getListView().getEditingIndex() : null;
+                String posText = "" + pos;
+//                LOG.info("field focused: " + textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
+//                 + " pos: " + posText + " focusOwner: " + focusOwner);
+////                if (!textField.isFocused())
+////                    new RuntimeException("who is calling? "+ " \n").printStackTrace();
+            });
+            textField.sceneProperty().addListener((src, ov, nv) -> {
+                sceneChanged();
+            });
+       }
         return textField;
     }
+    /**
+     * 
+     */
+    protected void sceneChanged() {
+        // frequent scene changes ... why?
+//        Scene s = getScene();
+//        Node focusOwner  = s != null ? s.getFocusOwner() : null;
+//        boolean selfFocus = focusOwner == textField;
+//        String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
+//        int pos = getListView() != null ? getListView().getEditingIndex() : null;
+//        String posText = "" + pos;
+////        LOG.info("scene changed: " +  s + " field focused" +  textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
+////         + " pos: " + posText + " focusOwner: " + focusOwner );
+//        if (s != null && match(pos)) {
+//            textField.requestFocus();
+//            textField.selectAll();
+//        }
+    }
+
+    private boolean match(int pos) {
+        return pos > -1 && pos == getIndex();
+    }
+
 
     // --- converter
     private ObjectProperty<StringConverter<T>> converter =
@@ -95,6 +141,7 @@ public class DebugTextFieldListCell<T> extends DebugListCell<T>
     public DebugTextFieldListCell(StringConverter<T> converter) {
         this.getStyleClass().add("text-field-list-cell");
         setConverter(converter);
+        getTextField();
     }
 
 

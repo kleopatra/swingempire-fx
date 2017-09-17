@@ -38,7 +38,23 @@ import javafx.scene.control.TableView;
  */
 public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<T> {
 
+    private static int counter;
+    private final int myId;
+    
     private boolean ignoreCancel;
+
+    /**
+     * Debug ... to identify a single cell.
+     */
+    public DebugTableCell() {
+        myId = counter++;
+    }
+    
+    @Override
+    public int getCounter() {
+        return myId;
+    }
+    
 
     /** 
      * {@inheritDoc} <p>
@@ -120,6 +136,7 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
         // fired (as identified in RT-29650)
 //        super.commitEdit(newValue);
         cellCommitEdit(newValue);
+        
         final TableView<S> table = getTableView();
         if (table != null) {
             TablePosition<S, ?> editingCell = new TablePosition<>(getTableView(), getIndex(), getTableColumn());
@@ -181,10 +198,11 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
     @Override 
     public void cancelEdit() {
         if (ignoreCancel()) return;
-        final TableView<S> table = getTableView();
 
 //        super.cancelEdit();
         cellCancelEdit();
+        
+        final TableView<S> table = getTableView();
         // reset the editing index on the TableView
         if (table != null) {
             // use editingCell based on cell state, not control state

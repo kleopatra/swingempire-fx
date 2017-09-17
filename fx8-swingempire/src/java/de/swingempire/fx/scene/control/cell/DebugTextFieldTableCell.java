@@ -82,35 +82,42 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
                 LOG.info("cell focused: " + isFocused() + " on: " + getIndex() + " / " + getItem() );
             });
             textField.focusedProperty().addListener(obs -> {
-                Scene s = getScene();
-                Node focusOwner  = s != null ? s.getFocusOwner() : null;
-                boolean selfFocus = focusOwner == textField;
-                String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
-                TablePosition pos = getTableView() != null ? getTableView().getEditingCell() : null;
-                String posText = pos != null ? pos.getRow() + " / " + pos.getColumn() : "no editingCell";
-                LOG.info("field focused: " + textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
-                 + " pos: " + posText + " focusOwner: " + focusOwner);
-//                if (!textField.isFocused())
-//                    new RuntimeException("who is calling? "+ " \n").printStackTrace();
+//                Scene s = getScene();
+//                Node focusOwner  = s != null ? s.getFocusOwner() : null;
+//                boolean selfFocus = focusOwner == textField;
+//                String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
+//                TablePosition pos = getTableView() != null ? getTableView().getEditingCell() : null;
+//                String posText = pos != null ? pos.getRow() + " / " + pos.getColumn() : "no editingCell";
+//                LOG.info("field focused: " + textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
+//                 + " pos: " + posText + " focusOwner: " + focusOwner);
+////                if (!textField.isFocused())
+////                    new RuntimeException("who is calling? "+ " \n").printStackTrace();
             });
             textField.sceneProperty().addListener((src, ov, nv) -> {
-                // frequent scene changes ... why?
-                Scene s = getScene();
-                Node focusOwner  = s != null ? s.getFocusOwner() : null;
-                boolean selfFocus = focusOwner == textField;
-                String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
-                TablePosition pos = getTableView() != null ? getTableView().getEditingCell() : null;
-                String posText = pos != null ? pos.getRow() + " / " + pos.getColumn() : "no editingCell";
-                LOG.info("scene changed: " +  s + " field focused" +  textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
-                 + " pos: " + posText + " focusOwner: " + focusOwner );
-                if (s != null && match(pos)) {
-                    textField.selectAll();
-                    textField.requestFocus();
-                }
+                sceneChanged();
             });
             
         }
         return textField;
+    }
+
+    /**
+     * 
+     */
+    protected void sceneChanged() {
+        // frequent scene changes ... why?
+        Scene s = getScene();
+        Node focusOwner  = s != null ? s.getFocusOwner() : null;
+        boolean selfFocus = focusOwner == textField;
+        String ownerText = selfFocus ? "" +selfFocus : "" +focusOwner;
+        TablePosition pos = getTableView() != null ? getTableView().getEditingCell() : null;
+        String posText = pos != null ? pos.getRow() + " / " + pos.getColumn() : "no editingCell";
+//        LOG.info("scene changed: " +  s + " field focused" +  textField.isFocused() + " on: " + getIndex() + " / " + getItem() 
+//         + " pos: " + posText + " focusOwner: " + focusOwner );
+        if (s != null && match(pos)) {
+            textField.requestFocus();
+            textField.selectAll();
+        }
     }
 
     private boolean match(TablePosition<S,?> pos) {

@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.edit;
 
+
 import de.swingempire.fx.scene.control.cell.DebugTextFieldListCell;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -27,11 +28,17 @@ import javafx.stage.Stage;
  * 
  * Working as long as no new cell was created, that is no scrolling to new value needed.
  * If so, the value in the newly editing cell is the last edited.
+ * 
+ * Playing with set vs addCommitHandler
+ * - with former: next cell edited, value incorrect after scrolling for new/re-used cell
+ * - with latter: editing is terminated, next not edited, value correct
  */
 public class ListViewCommitHandler extends Application {
 
     private ListView<String> list;
     private ChangeListener skinListener = (src, ov, nv) -> skinChanged();
+    
+    private boolean addHandler;
     /**
      * responsible for cancelEdit after modification of items is ListViewSkin as
      * side-effect of fix to
@@ -72,14 +79,16 @@ public class ListViewCommitHandler extends Application {
     }
 
     protected void commitEdit(EditEvent<String> t) {
-        list.getItems().set(t.getIndex(), t.getNewValue());
+        if (!addHandler) {
+            list.getItems().set(t.getIndex(), t.getNewValue());
+        }
         if (t.getIndex() == list.getItems().size() - 1) {
             int index = t.getIndex() + 1;
              System.out.println("editCommit: " + t.getIndex() +
-             " /" + t);
-            list.getItems().add("newItem");
+             " /" + t.getNewValue());
+            list.getItems().add("newItem" + index);
             list.getSelectionModel().select(index);
-            list.getFocusModel().focus(index);
+//            list.getFocusModel().focus(index);
 //            list.scrollTo(index);
             //does not start edit and leads to cancel with weird index
             // start == 4, cancel == 6
@@ -89,8 +98,8 @@ public class ListViewCommitHandler extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        list = new ListView<>(FXCollections.observableArrayList("Item1"// {
-               , "Item2", "Item3", "Item4")) {
+        list = new ListView<>(FXCollections.observableArrayList("Item0"// {
+               , "Item1", "Item2", "Item3")) {
             
         };
         list.setEditable(true);
@@ -103,17 +112,20 @@ public class ListViewCommitHandler extends Application {
 
         list.setOnEditStart(t -> {
             System.out.println(
-                    "setOnEditStart " + t.getIndex() + " /" + t.getNewValue());
+                    "onEditStart: " + t.getIndex() + " /" + list.getItems().get(t.getIndex()));
         });
-//        simpleList.addEventHandler(ListView.editCommitEvent(), t -> {
+        
+        addHandler = false;
         list.setOnEditCommit(this::commitEdit);
-
+//        addHandler = true;
+//        list.addEventHandler(ListView.editCommitEvent(), this::commitEdit);
+        
         list.setOnEditCancel(t -> {
-            p("setOnEditCancel " + t.getIndex() + " /" + t.getNewValue());
+            p("onEditCancel: " + t.getIndex() + " /" + t.getNewValue());
         });
 
         BorderPane root = new BorderPane(list);
-        Scene scene = new Scene(root, 300, 250);
+        Scene scene = new Scene(root, 300, 120);
 
         primaryStage.setTitle("Hello World!");
         primaryStage.setScene(scene);

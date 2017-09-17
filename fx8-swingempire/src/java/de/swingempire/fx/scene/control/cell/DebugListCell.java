@@ -68,6 +68,8 @@ import javafx.scene.control.ListView;
  */
 public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 
+    private static int counter;
+    private final int myId;
     private boolean ignoreCancel;
 
     /** 
@@ -92,6 +94,18 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
 //    }
     
     //------------- end of idea
+    
+    /**
+     * Debug ... to identify a single cell.
+     */
+    public DebugListCell() {
+        myId = counter++;
+    }
+    
+    @Override
+    public int getCounter() {
+        return myId;
+    }
     
     /**
      * {@inheritDoc} <p>
@@ -156,15 +170,15 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      * 
      * current here:
      * - switch out editing state
+     * - update visuals 
      * - update editing location
      * - fire commithandler
-     * - update visuals
-     * now can modify items during commit without receiving cancel
+     * now can modify items during commit without receiving cancel Note that 
+     * update visuals must happen before update of editing location
      */
     @Override
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
-        ListView<T> list = getListView();
 
         // inform parent classes of the commit, so that they can switch us
         // out of the editing state.
@@ -173,7 +187,18 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         // fired (as identified in RT-29650)
 //        super.commitEdit(newValue);
         cellCommitEdit(newValue);
-        
+
+        // update the item within this cell, so that it represents the new value
+        // PENDING: JW
+        // this is the same as cellUpdateItem - 
+        // this base-implementation does not yet have a custom implementation
+        // handled in subclasses like DebugTextFieldListCell
+        // NOTE: update the value must be done before notifying the list - 
+        // otherwise we get weird state when adding items during a commit
+        updateItem(newValue, false);
+
+
+        ListView<T> list = getListView();
         if (list != null) {
             int editingIndex = list.getEditingIndex();
             // this should be the same as cell index, if not, something is wrong!
@@ -201,7 +226,7 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         // this is the same as cellUpdateItem - 
         // this base-implementation does not yet have a custom implementation
         // handled in subclasses like DebugTextFieldListCell
-        updateItem(newValue, false);
+//        updateItem(newValue, false);
 
         if (list != null) {
 //            // reset the editing index on the ListView. This must come after the
@@ -239,8 +264,9 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
     public void cancelEdit() {
         if (ignoreCancel()) return; 
         // Inform the ListView of the edit being cancelled.
-       ListView<T> list = getListView();
        cellCancelEdit();
+       
+       ListView<T> list = getListView();
        if (list != null) {
            int editingIndex = list.getEditingIndex();
            // this should be the same as cell index, if not, something is wrong!
@@ -257,7 +283,9 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
            // owner has the list as a parent (otherwise the user might have
            // clicked out of the list entirely and given focus to something else.
            // It would be rude of us to request it back again.
-           ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
+//           ControlUtils.requestFocusOnControlOnlyIfCurrentFocusOwnerIsChild(list);
+           if (ControlUtils.isCurrentFocusOwnerChildOf(list) && list.getEditingIndex() == -1)
+               list.requestFocus();
 
            list.fireEvent(new ListView.EditEvent<T>(list,
                    ListView.<T>editCancelEvent(),

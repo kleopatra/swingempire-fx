@@ -4,10 +4,13 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.logging.Logger;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.util.StringConverter;
+import jdk.internal.jline.internal.Log;
 
 /**
  * 
@@ -30,9 +33,23 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
      * @param empty
      */
     default void updateItemTextField(T item, boolean empty) {
+        boolean isExpectedEmpty = empty ? (item == null) : false;
+        int last = -1;
+        if (!empty) {
+//            String text = itemToString(item);
+//            String lastCh = text.substring(text.length() - 1);
+//            last = Integer.valueOf(lastCh);
+        }
+        if (last >= 0 && last != getIndex()) {
+            LOG.info("UPDATE_TEXTFIELD: unexpected content - item/param/index/counter " + getItem() + " / " + item 
+                + " / " + getIndex() + " / " + getCounter());
+//            new RuntimeException("who is calling? \n").printStackTrace();
+        }
+//        boolean isExpectedItem = item != null ? 
         if (empty) { //isEmpty()) {
             setText(null);
             setGraphic(null);
+            getTextField().setText(null);
         } else {
             if (isEditing()) {
                 getTextField().setText(itemToString(item));
@@ -51,6 +68,7 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 //                }
             } else {
                 setText(itemToString(item));
+                getTextField().setText(itemToString(item));
                 setGraphic(null);
 //                cell.setText(getItemText(cell, converter));
 //                cell.setGraphic(graphic);
@@ -166,5 +184,7 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
     }
 
 
-
+    @SuppressWarnings("unused")
+    static final Logger LOG = Logger
+            .getLogger(TextFieldCellDecorator.class.getName());
 }

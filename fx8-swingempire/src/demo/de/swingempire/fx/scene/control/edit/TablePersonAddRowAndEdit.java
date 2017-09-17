@@ -109,7 +109,7 @@ public class TablePersonAddRowAndEdit extends Application {
         int index = e.getTablePosition().getRow();
         if (index == table.getItems().size() - 1) {//getInsertIndex(table) - 1) {
             p("index in commithandler" + index);
-            Person person = createNewItem("edit", index);
+            Person person = createNewItem("edit", index +1);
             table.getItems().add(person);
             table.getSelectionModel().select(index + 1);
             table.getFocusModel().focus(index + 1, firstName);
