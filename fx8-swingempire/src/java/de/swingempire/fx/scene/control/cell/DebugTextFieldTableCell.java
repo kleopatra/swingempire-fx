@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
@@ -79,7 +80,7 @@ public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
             textField = createTextField();
             // focused for !cellSelectionEnabled is always false
             focusedProperty().addListener(obs -> {
-                LOG.info("cell focused: " + isFocused() + " on: " + getIndex() + " / " + getItem() );
+//                LOG.info("cell focused: " + isFocused() + " on: " + getIndex() + " / " + getItem() );
             });
             textField.focusedProperty().addListener(obs -> {
 //                Scene s = getScene();

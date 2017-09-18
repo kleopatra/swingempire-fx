@@ -141,7 +141,6 @@ public class DebugTextFieldListCell<T> extends DebugListCell<T>
     public DebugTextFieldListCell(StringConverter<T> converter) {
         this.getStyleClass().add("text-field-list-cell");
         setConverter(converter);
-        getTextField();
     }
 
 

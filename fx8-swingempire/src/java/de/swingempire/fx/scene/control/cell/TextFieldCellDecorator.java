@@ -4,13 +4,13 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.util.StringConverter;
-import jdk.internal.jline.internal.Log;
 
 /**
  * 
@@ -49,7 +49,7 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
         if (empty) { //isEmpty()) {
             setText(null);
             setGraphic(null);
-            getTextField().setText(null);
+//            getTextField().setText(null);
         } else {
             if (isEditing()) {
                 getTextField().setText(itemToString(item));
@@ -68,11 +68,12 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 //                }
             } else {
                 setText(itemToString(item));
-                getTextField().setText(itemToString(item));
+//                getTextField().setText(itemToString(item));
                 setGraphic(null);
 //                cell.setText(getItemText(cell, converter));
 //                cell.setGraphic(graphic);
             }
+            LOG.info("textField: " + getTextField().getText());
         }
 
     }
@@ -159,6 +160,16 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
         }
         return item != null ? item.toString() : "null";
     }
+    
+    @Override
+    default Optional<T> getEditorValue() {
+        if (getConverter() != null) {
+            T fromString = getConverter().fromString(getTextField().getText());
+            return Optional.of(fromString);
+        }
+        return Optional.empty();
+    }
+    
 //------------------------ converter    
     /**
      * The {@link StringConverter} property.

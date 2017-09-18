@@ -4,9 +4,13 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.Optional;
+import java.util.logging.Logger;
+
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
+import jdk.internal.jline.internal.Log;
 
 /**
  * Interface for decorating cells: contains reflective access to super's hidden api.
@@ -72,6 +76,18 @@ public interface CellDecorator<T> {
     boolean isEditable();
     
     boolean isEmpty();
+    
+    default void attemptEditCommit() {
+        LOG.info("attempt?");
+        // The user has shifted focus, so we should cancel the editing on this cell
+        getEditorValue().ifPresentOrElse(this::commitEdit, this::cancelEdit);
+    }
+
+    default Optional<T> getEditorValue() {
+        return Optional.empty();
+    }
+
+
     
 //------------ access cell-level state
     
@@ -146,4 +162,7 @@ public interface CellDecorator<T> {
     }
     
 
+    @SuppressWarnings("unused")
+    public static final Logger LOG = Logger
+            .getLogger(CellDecorator.class.getName());
 }

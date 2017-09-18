@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.edit;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.TableViewBehaviorBase;
@@ -13,22 +14,24 @@ import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Control;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -74,6 +77,8 @@ public class TablePersonAddRowAndEdit extends Application {
     private TableColumn<Person, String> firstName;
     private ChangeListener skinListener = (src, ov, nv) -> skinChanged();
    
+    private boolean setData;
+    
     private void skinChanged() {
         table.skinProperty().removeListener(skinListener);
         installItemsListener();
@@ -91,7 +96,6 @@ public class TablePersonAddRowAndEdit extends Application {
                 if (c.wasAdded() && !c.wasRemoved()) {
                     p("in itemslistener: " + c.getFrom());
                     // force the re-layout before starting the edit
-                    // moved into table override below
                     // leads to weird effects if item added in commitHandler
 //                     table.layout();
                     table.scrollTo(c.getFrom());
@@ -105,8 +109,20 @@ public class TablePersonAddRowAndEdit extends Application {
         table.getItems().addListener(l);
     }
 
-    protected void commitEdit(CellEditEvent<Object, Object> e) {
-        int index = e.getTablePosition().getRow();
+    protected void commitEdit(CellEditEvent<Person, String> t) {
+        if (setData) {
+            int index = t.getTablePosition().getRow();
+            List<Person> list = t.getTableView().getItems();
+            if (list == null || index < 0 || index >= list.size()) return;
+            Person rowData = list.get(index);
+            ObservableValue ov = t.getTableColumn().getCellObservableValue(rowData);
+
+            if (ov instanceof WritableValue) {
+                ((WritableValue)ov).setValue(t.getNewValue());
+            }
+
+        }
+        int index = t.getTablePosition().getRow();
         if (index == table.getItems().size() - 1) {//getInsertIndex(table) - 1) {
             p("index in commithandler" + index);
             Person person = createNewItem("edit", index +1);
@@ -130,11 +146,15 @@ public class TablePersonAddRowAndEdit extends Application {
 //        firstName.setCellFactory(v -> new MyTextFieldCell<>());
 //        firstName.setCellFactory(TextFieldTableCell.forTableColumn());
         firstName.setCellFactory(DebugTextFieldTableCell.forTableColumn());
-        // tablecell is focused only if cellSelectionEnabled
-//        table.getSelectionModel().setCellSelectionEnabled(true);
         table.getColumns().addAll(firstName);
         
+        // tablecell is focused only if cellSelectionEnabled
+//        table.getSelectionModel().setCellSelectionEnabled(true);
         firstName.addEventHandler(TableColumn.editCommitEvent(), this::commitEdit);
+        
+//        setData = true;
+//        firstName.setOnEditCommit(this::commitEdit);
+        
         table.skinProperty().addListener(skinListener);
         
         Button add = new Button("AddAndEdit");
@@ -153,12 +173,29 @@ public class TablePersonAddRowAndEdit extends Application {
 //            int index = 1;
             table.scrollTo(index);
             table.getSelectionModel().select(index);
-            table.requestFocus();
+//            table.requestFocus();
             table.edit(index, firstName);
         });
+        
+        MenuBar bar = new MenuBar();
+        Menu menu = new Menu("Select/Focus");
+        bar.getMenus().add(menu);
+        MenuItem select = new MenuItem("select second last");
+        select.setOnAction(e -> {
+            table.getSelectionModel().select(table.getItems().size()-2);
+        });
+        select.setAccelerator(KeyCombination.valueOf("F6"));
+        MenuItem focus = new MenuItem("focus second last");
+        focus.setOnAction(e -> {
+            table.getFocusModel().focus(table.getItems().size()-2, firstName);
+        });
+        focus.setAccelerator(KeyCombination.valueOf("F7"));
+        
+        menu.getItems().addAll(select, focus);
         HBox buttons = new HBox(10, add, edit);
         BorderPane content = new BorderPane(table);
         content.setBottom(buttons);
+        content.setTop(bar);
         return content;
     }
 
@@ -262,7 +299,7 @@ public class TablePersonAddRowAndEdit extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(getContent(), 400, 204));
+        primaryStage.setScene(new Scene(getContent(), 400, 230));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }

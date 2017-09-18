@@ -52,7 +52,6 @@ public class TableCellTest {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
-
 //----------- test editEvents and cell/control state on Table  
     /**
      * Test notification/cell/list state with multiple edits
@@ -143,6 +142,24 @@ public class TableCellTest {
         assertNotNull("pos on cancelEvent must not be null", start.get().getTablePosition());
         assertEquals("cancel on initially edited", initialEditIndex, cancel.get().getTablePosition().getRow());
     }
+
+    @Test
+    public void testTableEditCommitCellSelection() {
+        TableView<TableColumn> control = createEditableTable(true);
+        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        control.getSelectionModel().setCellSelectionEnabled(true);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
+        
+    }
+
 
     /**
      * Focus on event count: fires incorrect cancel if items has extractor
