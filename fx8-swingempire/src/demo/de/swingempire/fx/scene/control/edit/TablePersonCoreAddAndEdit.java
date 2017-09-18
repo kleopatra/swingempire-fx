@@ -8,6 +8,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.swingempire.fx.util.VirtualFlowTestUtils.*
+;
+
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,15 +20,15 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-
-/**
+import javafx.scene.layout.FlowPane;
+import javafx.stage.Stage;/**
  * 
  * http://stackoverflow.com/q/35279377/203657
  * add and edit can confuse the tableView
@@ -37,14 +40,44 @@ import javafx.stage.Stage;
  * 
  * resolved as can't reproduce
  * 
+ * Inconsistent editingCell
+ * - add and start edit on a cell off the visible pane
+ * - click log the editing cell: has the row that was inserted
+ * - scrollto the inserted row with button: receiving cancel and no edit
  * 
+ * This was introduced as bug fix for data corruption, nevertheless its
+ * inconsistent
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TablePersonCoreAddAndEdit extends Application {
 
     private Parent getContent() {
-        TableView<Dummy> table = new TableView<>(createData(50));
+        TableView<Dummy> table = new TableView<>(createData(50)) {
+            @Override
+            public void edit(int row, TableColumn<Dummy, ?> column) {
+                Exception ex = new RuntimeException("dummy");
+                StackTraceElement[] stackTrace = ex.getStackTrace();
+                TablePosition old = getEditingCell();
+                String oldText = " no old editing";
+                if (old != null) {
+                    oldText = " old editing: " + old.getRow() + " / " + old.getColumn();
+                }
+                
+                String caller = "CALLER-OF-EDIT - new editing " + row + " / " + column +  oldText + "\n";
+                int max = Math.min(5, stackTrace.length);
+                for (int i = 1; i < max; i++) { // first is this method
+                        caller+= stackTrace[i].getClassName() + 
+                        " / "+  stackTrace[i].getMethodName() + " / " + stackTrace[i].getLineNumber() + "\n";
+                }
+                LOG.info(caller);
+//                layout();
+                super.edit(row, column);
+
+        }};
+        // only with cell selection enabled the listener to cell's focusedProperty
+        // ever jumps in
+//        table.getSelectionModel().setCellSelectionEnabled(true);
         table.setEditable(true);
         
         TableColumn<Dummy, String> column = new TableColumn<>("Value");
@@ -57,9 +90,6 @@ public class TablePersonCoreAddAndEdit extends Application {
         edit.setOnAction(e -> {
             int selected = table.getSelectionModel().getSelectedIndex();
             int insertIndex = selected < 0 ? 0 : selected;
-//            Dummy dummy = new Dummy();
-//            table.getItems().add(insertIndex, dummy);
-//            LOG.info("insertIndex" + insertIndex + "isAtIndex " + table.getItems().indexOf(dummy) + dummy);
             table.edit(insertIndex,  column);
         });
         
@@ -69,6 +99,7 @@ public class TablePersonCoreAddAndEdit extends Application {
             int insertIndex = 20; //selected < 0 ? 0 : selected;
             Dummy dummy = new Dummy();
             table.getItems().add(insertIndex, dummy);
+            table.getSelectionModel().select(insertIndex);
             table.edit(insertIndex,  column);
             LOG.info("insertIndex" + insertIndex + "isAtIndex " + table.getItems().indexOf(dummy) + dummy);
         });
@@ -78,6 +109,14 @@ public class TablePersonCoreAddAndEdit extends Application {
             TablePosition editingCell = table.getEditingCell();
             LOG.info(editingCell != null ? "editing row: " + editingCell.getRow() : "no editing cell");
         });
+        Button scroll = new Button("ScrollToSelected");
+        scroll.setOnAction(e -> {
+            int selected = table.getSelectionModel().getSelectedIndex();
+//            table.requestFocus();
+            table.scrollTo(selected);
+//            table.layout();
+        });
+        
         Button scrollAndEdit = new Button("ScrollAndEdit");
         scrollAndEdit.setOnAction(e -> {
             int selected = table.getSelectionModel().getSelectedIndex();
@@ -87,7 +126,26 @@ public class TablePersonCoreAddAndEdit extends Application {
 //            table.layout();
             table.edit(insertIndex,  column);
         });
-        HBox buttons = new HBox(10, edit, addAndEdit, logEditing, scrollAndEdit);
+        
+        Button tryEditingCell = new Button("setText on editing cell");
+        // first press AddAndEdit, then this
+        tryEditingCell.setOnAction(e -> {
+            TablePosition editingCell = table.getEditingCell();
+            if (editingCell == null) return;
+            IndexedCell cell = getCell(table, editingCell.getRow(), 0);
+            if (cell != null) {
+                TextField field = (TextField) cell.getGraphic();
+                LOG.info("has cell? "  + cell.getIndex() + cell.isEditing() + cell.getItem() 
+                   + (field != null ? field.getText() : "no field" ));
+                // this doesn't work - on scrolling (with button) the field has the initial text
+//                field.setText("edited");
+                // can commit though
+                cell.commitEdit("edited");
+            }
+        });
+        
+        FlowPane buttons = new FlowPane(10, 10); 
+        buttons.getChildren().addAll(edit, addAndEdit, logEditing, scroll, scrollAndEdit, tryEditingCell);
         BorderPane content = new BorderPane(table);
         content.setBottom(buttons);
         return content;

@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;

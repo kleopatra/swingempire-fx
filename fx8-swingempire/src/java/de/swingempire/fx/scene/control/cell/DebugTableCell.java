@@ -122,7 +122,6 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
     @Override 
     public void commitEdit(T newValue) {
         if (! isEditing()) return;
-        LOG.info("commit new value? " + newValue);
         // inform parent classes of the commit, so that they can switch us
         // out of the editing state.
         // This MUST come before the updateItem call below, otherwise it will
@@ -136,6 +135,13 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
             TablePosition<S, ?> editingCell = new TablePosition<>(getTableView(), getIndex(), getTableColumn());
             TablePosition<S, ?> tableEditingCell = table.getEditingCell();
             if (!editingCell.equals(tableEditingCell)) {
+                // JW: not true? table's editing might have been changed by some other class? 
+                // we get here if
+                // cell-selection enabled
+                // by-pass cell's focusListener (divert to commit)
+                // addItem in commitHandler and start edit in itemsListener and cell is re-used (?)
+                // that is, the next after the last is visible and empty, no scrollbar
+                // fine if scrolling before edit
                 throw new IllegalStateException("on commitEdit, table editing location must be same as my own: "
                         + editingCell + " but was: " + tableEditingCell);
             }

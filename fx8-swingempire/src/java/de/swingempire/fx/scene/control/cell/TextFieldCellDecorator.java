@@ -73,7 +73,6 @@ public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
 //                cell.setText(getItemText(cell, converter));
 //                cell.setGraphic(graphic);
             }
-            LOG.info("textField: " + getTextField().getText());
         }
 
     }

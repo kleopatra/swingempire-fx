@@ -136,7 +136,7 @@ public class TablePersonAddRowAndEdit extends Application {
     private Parent getContent() {
 //        InputMap m;
 //        ListViewSkin s;
-        table = new TableView<>();
+        table = new TTableView<>();
         table.setItems(data);
         table.setEditable(true);
         TableViewBehaviorBase b;
@@ -149,7 +149,7 @@ public class TablePersonAddRowAndEdit extends Application {
         table.getColumns().addAll(firstName);
         
         // tablecell is focused only if cellSelectionEnabled
-//        table.getSelectionModel().setCellSelectionEnabled(true);
+        table.getSelectionModel().setCellSelectionEnabled(true);
         firstName.addEventHandler(TableColumn.editCommitEvent(), this::commitEdit);
         
 //        setData = true;
@@ -207,11 +207,21 @@ public class TablePersonAddRowAndEdit extends Application {
     public static class TTableView<S> extends TableView<S> {
 
         /**
-         * Overridden to force a layout before calling super.
+         * was: Overridden to force a layout before calling super.
+         * can't, see class doc of example
          */
         @Override
         public void edit(int row, TableColumn<S, ?> column) {
-            layout();
+            Exception ex = new RuntimeException("dummy");
+            StackTraceElement[] stackTrace = ex.getStackTrace();
+            String caller = "CALLER-OF-EDIT " + row + " / " + column + "\n";
+            int max = Math.min(3, stackTrace.length);
+            for (int i = 1; i < max; i++) { // first is this method
+                    caller+= stackTrace[i].getClassName() + 
+                    " / "+  stackTrace[i].getMethodName() + " / " + stackTrace[i].getLineNumber() + "\n";
+            }
+            LOG.info(caller);
+//            layout();
             super.edit(row, column);
         }
         
