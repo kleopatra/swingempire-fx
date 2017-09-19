@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.ControlUtils;
+import de.swingempire.fx.scene.control.edit.TablePersonCoreAddAndEdit;
 import de.swingempire.fx.util.FXUtils;
 import javafx.event.Event;
 import javafx.scene.control.TableCell;
@@ -191,10 +192,13 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
      * <li> do nothing if ignoreCancel
      * <li> fire editCancelEvent with correct editingCell, 
      *  fix for https://bugs.openjdk.java.net/browse/JDK-8187229
-     * <li> do nothing if cancel request originated from cell's focused handler
+     * <li> hmm getting weird index inconsistencies (as seen in demo)
+     *     do nothing if cancel request originated from cell's focused handler
+     *     cant nail ... same for core
      * </ul>
      * 
      * @see DebugListCell#commitEdit(Object)
+     * @see TablePersonCoreAddAndEdit
      */
     @Override 
     public void cancelEdit() {

@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*
 ;
 
+import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -83,6 +84,7 @@ public class TablePersonCoreAddAndEdit extends Application {
         TableColumn<Dummy, String> column = new TableColumn<>("Value");
         column.setCellValueFactory(c -> c.getValue().valueProperty());
         column.setCellFactory(TextFieldTableCell.forTableColumn());
+//        column.setCellFactory(DebugTextFieldTableCell.forTableColumn());
         column.setMinWidth(200);
         table.getColumns().addAll(column);
         
@@ -133,10 +135,13 @@ public class TablePersonCoreAddAndEdit extends Application {
             TablePosition editingCell = table.getEditingCell();
             if (editingCell == null) return;
             IndexedCell cell = getCell(table, editingCell.getRow(), 0);
+            int cellCount = getCellCount(table);
             if (cell != null) {
                 TextField field = (TextField) cell.getGraphic();
+                // unreliably: getting a field the first time around, often not the
+                // second or third time
                 LOG.info("has cell? "  + cell.getIndex() + cell.isEditing() + cell.getItem() 
-                   + (field != null ? field.getText() : "no field" ));
+                   + (field != null ? field.getText() : "no field" ) + " cell count: " + cellCount);
                 // this doesn't work - on scrolling (with button) the field has the initial text
 //                field.setText("edited");
                 // can commit though
