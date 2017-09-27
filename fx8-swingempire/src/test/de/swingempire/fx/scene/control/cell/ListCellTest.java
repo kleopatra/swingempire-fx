@@ -24,8 +24,10 @@ import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -82,6 +84,7 @@ public class ListCellTest {
     
     /**
      * NPE on all TextFieldXXCell (not with base XXCell!)
+     * reported: https://bugs.openjdk.java.net/browse/JDK-8188026
      */
     @Test
     public void testTextFieldCellNullControlOnStartEditStandalone() {
@@ -114,6 +117,50 @@ public class ListCellTest {
         cell.startEdit();
         // test editEvent
         assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+    
+    @Test
+    public void testListEditStartOnBaseCellTwiceStandalone() {
+        ListView<String> control = new ListView<>(FXCollections
+                .observableArrayList("Item1", "Item2", "Item3", "Item4"));
+        control.setEditable(true);
+//        control.setCellFactory(TextFieldListCell.forListView());
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell = getCell(control, editIndex);
+        SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
+        control.addEventHandler(ListView.editStartEvent(), e -> counter.set(counter.get() + 1));
+        
+        // start edit on control
+        cell.startEdit();
+        // start again -> nothing changed, no event
+        cell.startEdit();
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, counter.get());
+    }
+    
+    /**
+     * Must not fire editStartEvent if editing
+     * reported: https://bugs.openjdk.java.net/browse/JDK-8188027
+     */
+    @Test
+    public void testListEditStartOnCellTwiceStandalone() {
+        ListView<String> control = new ListView<>(FXCollections
+                .observableArrayList("Item1", "Item2", "Item3", "Item4"));
+        control.setEditable(true);
+        control.setCellFactory(TextFieldListCell.forListView());
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell = getCell(control, editIndex);
+        SimpleIntegerProperty counter = new SimpleIntegerProperty(0);
+        control.addEventHandler(ListView.editStartEvent(), e -> counter.set(counter.get() + 1));
+       
+        // start edit on control
+        cell.startEdit();
+        // start again -> nothing changed, no event
+        cell.startEdit();
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, counter.get());
     }
     
     @Test

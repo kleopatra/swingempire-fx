@@ -22,6 +22,21 @@ import javafx.util.Callback;
 public class DebugListCellTest extends ListCellTest {
 
     
+    
+    /**
+     * no-op here
+     */
+    @Override
+    public void testListEditStartOnBaseCellTwiceStandalone() {
+    }
+
+    /**
+     * no-op here
+     */
+    @Override
+    public void testListEditStartOnCellTwiceStandalone() {
+    }
+
     /**
      * no-op here
      */
