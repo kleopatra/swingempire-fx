@@ -26,6 +26,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.IndexedCell;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
@@ -51,6 +52,63 @@ public class TableCellTest {
 
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
+
+    /**
+     * Cell.startEdit doesn't switch into editing if empty. That's
+     * the case for a cell without view.
+     */
+    @Test
+    public void testNullControlOnStartEdit() {
+        TableCell cell = createTextFieldTableCell().call(null);
+        cell.startEdit();
+        assertFalse("cell without control must not be editing", cell.isEditing());
+    }
+    
+    @Test
+    public void testNullControlOnCancelEdit() {
+        TableCell cell = createTextFieldTableCell().call(null);
+        cell.cancelEdit();
+    }
+    
+    @Test
+    public void testNullControlOnCommitEdit() {
+        TableCell cell = createTextFieldTableCell().call(null);
+        cell.commitEdit("dummy");
+    }
+
+    /**
+     */
+    @Test
+    public void testTableEditStartOnCellTwice() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn<TableColumn, String> first = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        TableViewEditReport report = new TableViewEditReport(control);
+        // start edit on cell
+        cell.startEdit();
+        // start again -> nothing changed, no event
+        cell.startEdit();
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+    
+    @Test
+    public void testTableEditStartOnControlTwice() {
+        TableView<TableColumn> control = createEditableTable();
+        TableColumn<TableColumn, String> first = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        TableViewEditReport report = new TableViewEditReport(control);
+        // start edit on cell
+        control.edit(editIndex, first);
+        // start again -> nothing changed, no event
+        control.edit(editIndex, first);
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+    
 
 //----------- test editEvents and cell/control state on Table  
     /**

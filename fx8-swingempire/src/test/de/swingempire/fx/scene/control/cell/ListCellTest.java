@@ -49,6 +49,87 @@ public class ListCellTest {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
+    /**
+     * Cell.startEdit doesn't switch into editing if empty. That's
+     * the case for a cell without view.
+     * 
+     * But: core bug - NPE on all TextFieldXXCell (not with base XXCell!)
+     */
+    @Test
+    public void testNullControlOnStartEdit() {
+        ListCell cell = createTextFieldListCell().call(null);
+        cell.startEdit();
+        assertFalse("cell without control must not be editing", cell.isEditing());
+    }
+    
+    /**
+     * Test cancel with null control
+     */
+    @Test
+    public void testNullControlOnCancelEdit() {
+        ListCell cell = createTextFieldListCell().call(null);
+        cell.cancelEdit();
+    }
+    
+    /**
+     * Test cancel with null control
+     */
+    @Test
+    public void testNullControlOnCommitEdit() {
+        ListCell cell = createTextFieldListCell().call(null);
+        cell.commitEdit("dummy");
+    }
+    
+    /**
+     * NPE on all TextFieldXXCell (not with base XXCell!)
+     */
+    @Test
+    public void testTextFieldCellNullControlOnStartEditStandalone() {
+        ListCell cell = TextFieldListCell.forListView().call(null);
+        cell.startEdit();
+    }
+
+    /**
+     * NPE on all TextFieldXXCell (not with base XXCell!)
+     */
+    @Test
+    public void testBaseNullControlOnStartEditStandalone() {
+        ListCell cell = new ListCell();
+        cell.startEdit();
+    }
+    
+    /**
+     * 
+     */
+    @Test
+    public void testListEditStartOnCellTwice() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell = getCell(control, editIndex);
+        ListViewEditReport report = new ListViewEditReport(control);
+        // start edit on control
+        cell.startEdit();
+        // start again -> nothing changed, no event
+        cell.startEdit();
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+    
+    @Test
+    public void testListEditStartOnControlTwice() {
+        ListView<String> control = createEditableList();
+        new StageLoader(control);
+        int editIndex = 1;
+        ListViewEditReport report = new ListViewEditReport(control);
+        // start edit on control
+        control.edit(editIndex);
+        // working as expected because index unchanged -> no change fired
+        control.edit(editIndex);
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+    
 
 //---------------- test editEvents and cell/control state on List    
     
@@ -297,7 +378,7 @@ public class ListCellTest {
     }
     
     @Test
-    public void testListEditStartOnList() {
+    public void testListEditStartOnControl() {
         ListView<String> control = createEditableList();
         new StageLoader(control);
         int editIndex = 1;

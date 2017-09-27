@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
@@ -66,7 +67,7 @@ import javafx.scene.control.ListView;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
+public class DebugListCell<T> extends ListCell<T> implements CellDecorator<ListView<T>, T> {
 
     private static int counter;
     private final int myId;
@@ -113,20 +114,26 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      * 
      * <ul>
      * <li> pass correct index into editStart, fix for https://bugs.openjdk.java.net/browse/JDK-8187432
+     * <li> do nothing if !canStartEdit
      * </ul>
      * 
      * Sequence of mods core:
      * - switch into editing state
      * - notify start handlers
      * - update editing location
+     * 
+     * @see #canStartEdit()
      */
     @Override
     public void startEdit() {
+        // PENDING JW: core is inconsistent if editing - tree returns, list/table start again
+//        if (isEditing()) return;
+        if (!canStartEdit()) return;
         final ListView<T> list = getListView();
-        if (!isEditable() || (list != null && ! list.isEditable())) {
-            return;
-        }
-
+//        if (!isEditable() || (list != null && ! list.isEditable())) {
+//            return;
+//        }
+//
         // it makes sense to get the cell into its editing state before firing
         // the event to the ListView below, so that's what we're doing here
         // by calling super.startEdit().
@@ -135,8 +142,8 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
         cellStartEdit();
         // PENDING JW:shouldn't we back out if !isEditing? That is when
         // super refused to switch into editing state?
-         // Inform the ListView of the edit starting.
         if (!isEditing()) return;
+        // Inform the ListView of the edit starting.
         if (list != null) {
             list.fireEvent(new ListView.EditEvent<T>(list,
                     ListView.<T>editStartEvent(),
@@ -255,14 +262,14 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
      * 
      * Sequence of mods core
      * - switch out off editing state
-     * - update editing location (if not comming from updateEditing)
+     * - update editing location (if not coming from updateEditing)
      * - notify cancel handler
      * 
      * @see #ignoreCancel()
      */
     @Override
     public void cancelEdit() {
-        if (ignoreCancel()) return; 
+       if (ignoreCancel()) return; 
         // Inform the ListView of the edit being cancelled.
        cellCancelEdit();
        
@@ -321,4 +328,19 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<T> {
     protected boolean resetListEditingIndexInCancel() {
         return (boolean) FXUtils.invokeGetFieldValue(ListCell.class, this, "updateEditingIndex");
     }
+
+    @Override
+    public ReadOnlyObjectProperty<ListView<T>> controlProperty() {
+        return listViewProperty();
+    }
+
+    /**
+     * Implemented check if the listView is editable in addition to super.
+     */
+    @Override
+    public boolean canStartEdit() {
+        return CellDecorator.super.canStartEdit() && getListView().isEditable();
+    }
+    
+    
 }

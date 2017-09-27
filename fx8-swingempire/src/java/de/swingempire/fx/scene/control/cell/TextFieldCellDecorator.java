@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.util.StringConverter;
@@ -16,7 +17,7 @@ import javafx.util.StringConverter;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public interface TextFieldCellDecorator<T> extends CellDecorator<T> {
+public interface TextFieldCellDecorator<C extends Control, T> extends CellDecorator<C, T> {
 
 //---------------- handle TextField    
     

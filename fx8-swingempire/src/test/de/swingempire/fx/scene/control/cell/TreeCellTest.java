@@ -25,6 +25,7 @@ import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreTreeEdit;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TreeViewEditReport;
 import javafx.scene.control.IndexedCell;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -46,6 +47,62 @@ public class TreeCellTest {
 
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
+
+    /**
+     * Cell.startEdit doesn't switch into editing if empty. That's
+     * the case for a cell without view.
+     */
+    @Test
+    public void testNullControlOnStartEdit() {
+        TreeCell cell = createTextFieldTreeCell().call(null);
+        cell.startEdit();
+        assertFalse("cell without control must not be editing", cell.isEditing());
+    }
+    
+    @Test
+    public void testNullControlOnCancelEdit() {
+        TreeCell cell = createTextFieldTreeCell().call(null);
+        cell.cancelEdit();
+    }
+    
+    @Test
+    public void testNullControlOnCommitEdit() {
+        TreeCell cell = createTextFieldTreeCell().call(null);
+        cell.commitEdit("dummy");
+    }
+
+    /**
+     * Test editing state after start
+     */
+    @Test
+    public void testTreeEditStartOnCellTwice() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex);
+        TreeViewEditReport report = new TreeViewEditReport(control);
+        // start edit on cell
+        cell.startEdit();
+        // start again -> nothing changed, no event
+        cell.startEdit();
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
+
+    @Test
+    public void testTreeEditStartOnControlTwice() {
+        TreeView<String> control = createEditableTree();
+        new StageLoader(control);
+        int editIndex = 1;
+        TreeItem editItem = control.getTreeItem(editIndex);
+        TreeViewEditReport report = new TreeViewEditReport(control);
+        // start edit on control
+        control.edit(editItem);
+        // start again -> nothing changed, no event
+        control.edit(editItem);
+        // test editEvent
+        assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
+    }
 
 //----------- test editEvents and cell/control state on Tree
     

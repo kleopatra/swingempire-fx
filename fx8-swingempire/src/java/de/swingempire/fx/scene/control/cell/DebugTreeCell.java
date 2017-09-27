@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -29,7 +30,7 @@ import javafx.scene.control.TreeView;
  * </ul>
  * @author Jeanette Winzenburg, Berlin
  */
-public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
+public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<TreeView<T>,T> {
 
     private boolean ignoreCancel;
 
@@ -41,16 +42,20 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
      * <ul>
      * <li> update editingItem of TreeView, 
      *  fix https://bugs.openjdk.java.net/browse/JDK-8187474
+     * <li> do nothing if !canStartEdit
      * </ul>
+     * 
+     * @see #canStartEdit()
      */
     @Override 
     public void startEdit() {
-        if (isEditing()) return;
-
+        // PENDING JW: core is inconsistent if editing - tree returns, list/table start again
+        //if (isEditing()) return;
+        if (!canStartEdit()) return;
         final TreeView<T> tree = getTreeView();
-        if (! isEditable() || (tree != null && ! tree.isEditable())) {
-            return;
-        }
+//        if (! isEditable() || (tree != null && ! tree.isEditable())) {
+//            return;
+//        }
 
         invokeUpdateItem(-1);
 
@@ -176,6 +181,19 @@ public class DebugTreeCell<T> extends TreeCell<T> implements CellDecorator<T> {
 
     protected boolean ignoreCancel() {
         return !isEditing() || ignoreCancel;
+    }
+    
+    @Override
+    public ReadOnlyObjectProperty<TreeView<T>> controlProperty() {
+        return treeViewProperty();
+    }
+
+    /**
+     * Implemented check if the treeView is editable in addition to super.
+     */
+    @Override
+    public boolean canStartEdit() {
+        return CellDecorator.super.canStartEdit() && getTreeView().isEditable();
     }
     
 

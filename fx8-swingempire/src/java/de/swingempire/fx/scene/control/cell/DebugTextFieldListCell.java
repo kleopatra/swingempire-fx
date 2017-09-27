@@ -22,15 +22,16 @@ import javafx.util.converter.DefaultStringConverter;
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTextFieldListCell<T> extends DebugListCell<T>
-        implements TextFieldCellDecorator<T> {
+        implements TextFieldCellDecorator<ListView<T>, T> {
     
     private TextField textField;
 
     @Override
     public void startEdit() {
-        if (! isEditable() || ! getListView().isEditable()) {
-            return;
-        }
+        if (!canStartEdit()) return;
+//        if (! isEditable() || ! getListView().isEditable()) {
+//            return;
+//        }
         super.startEdit();
 
         if (isEditing()) {
@@ -51,7 +52,6 @@ public class DebugTextFieldListCell<T> extends DebugListCell<T>
     @Override
     public void cancelEdit() {
         if (ignoreCancel()) return;
-//        if (!isEditing() || ignoreCancel) return;
         super.cancelEdit();
         cancelEditTextField();
 //        CellUtils.cancelEdit(this, getConverter(), null);

@@ -9,7 +9,9 @@ import java.util.logging.Logger;
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.scene.control.edit.TablePersonCoreAddAndEdit;
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.event.Event;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
@@ -39,7 +41,7 @@ import javafx.scene.control.TableView;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<T> {
+public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorator<TableView<S>, T> {
 
     
     private boolean ignoreCancel;
@@ -61,10 +63,16 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
      *  fix https://bugs.openjdk.java.net/browse/JDK-8187229   
      * <li> update editingCell of tableView, 
      *  fix https://bugs.openjdk.java.net/browse/JDK-8187474
+     * <li> do nothing if !canStartEdit
      * </ul>
+     * 
+     * @see #canStartEdit()
      */
     @Override 
     public void startEdit() {
+        // PENDING JW: core is inconsistent if editing - tree returns, list/table start again
+        //if (isEditing()) return;
+        if (!canStartEdit()) return;
         final TableView<S> table = getTableView();
         final TableColumn<S,T> column = getTableColumn();
         if (! isEditable() ||
@@ -294,6 +302,23 @@ public class DebugTableCell<S, T> extends TableCell<S, T> implements CellDecorat
     protected boolean resetTableEditingCellInCancel() {
         return (boolean) FXUtils.invokeGetFieldValue(TableCell.class, this, "updateEditingIndex");
     }
+
+    @Override
+    public ReadOnlyObjectProperty<TableView<S>> controlProperty() {
+        return tableViewProperty();
+    }
+
+    /**
+     * Implemented check if the tableView is editable and the column is not null and
+     * editable in addition to super.
+     */
+    @Override
+    public boolean canStartEdit() {
+        return CellDecorator.super.canStartEdit()
+                && getTableView().isEditable()
+                && getTableColumn() != null && getTableColumn().isEditable();
+    }
+    
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger

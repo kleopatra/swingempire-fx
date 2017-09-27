@@ -4,6 +4,11 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
@@ -16,13 +21,37 @@ import javafx.util.Callback;
  */
 public class DebugListCellTest extends ListCellTest {
 
+    
+    /**
+     * no-op here
+     */
+    @Override
+    public void testBaseNullControlOnStartEditStandalone() {
+    }
+
+    /**
+     * no-op here
+     */
+    @Override
+    public void testTextFieldCellNullControlOnStartEditStandalone() {
+    }
+
     /**
      * no-op here
      */
     @Override
     public void testListEditStartOnCellStandalone() {
-        // TODO Auto-generated method stub
-//        super.testListEditStartOnCellStandalone();
+    }
+    
+    @Test
+    public void testTyping() {
+        ListView<String> control = new ListView<>(FXCollections
+                .observableArrayList("Item1", "Item2", "Item3", "Item4")) {
+            
+        };
+        control.setEditable(true);
+        control.setCellFactory(createTextFieldListCell());
+
     }
 
     @Override

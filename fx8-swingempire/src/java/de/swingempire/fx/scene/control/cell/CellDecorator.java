@@ -8,9 +8,10 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
-import jdk.internal.jline.internal.Log;
+import javafx.scene.control.Control;
 
 /**
  * Interface for decorating cells: contains reflective access to super's hidden api.
@@ -21,7 +22,7 @@ import jdk.internal.jline.internal.Log;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public interface CellDecorator<T> {
+public interface CellDecorator<C extends Control, T> {
     
     default int getCounter() {
         return -1;
@@ -58,6 +59,14 @@ public interface CellDecorator<T> {
         }
         
     }
+//---------------- containing control
+    
+    default C getControl() {
+        return controlProperty().get();
+    };
+    
+    ReadOnlyObjectProperty<C> controlProperty();
+    
 //------------------------- labeled
     
     void setText(String text);
@@ -65,8 +74,25 @@ public interface CellDecorator<T> {
     void setGraphic(Node graphic);
     
 //------------------------- editing     
+    
+    /**
+     * Returns a boolean that indicates whether or not edit can be started. 
+     * This implementation will return true if this cell is editable, not editing, 
+     * not empty and the containing control not null. If any of the conditions
+     * are not met, it will return false. 
+     * 
+     * @return
+     */
+    default boolean canStartEdit() {
+        return !isEditing() && isEditable() && !isEmpty() && getControl() != null;
+    }
+    
     boolean isEditing();
 
+    /**
+     * Start editing, implementations should respect canStartEdit, that is do 
+     * nothing if false and try to switch into editing state if true.
+     */
     void startEdit();
     
     void commitEdit(T value);

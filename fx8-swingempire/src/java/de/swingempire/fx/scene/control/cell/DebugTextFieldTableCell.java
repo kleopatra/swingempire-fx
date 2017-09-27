@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -22,18 +23,19 @@ import javafx.util.converter.DefaultStringConverter;
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTextFieldTableCell<S, T> extends DebugTableCell<S, T>
-        implements TextFieldCellDecorator<T> {
+        implements TextFieldCellDecorator<TableView<S>,T> {
 
     
     
     /** {@inheritDoc} */
     @Override 
     public void startEdit() {
-        if (! isEditable()
-                || ! getTableView().isEditable()
-                || ! getTableColumn().isEditable()) {
-            return;
-        }
+        if (!canStartEdit()) return;
+//        if (! isEditable()
+//                || ! getTableView().isEditable()
+//                || ! getTableColumn().isEditable()) {
+//            return;
+//        }
         super.startEdit();
 
         if (isEditing()) {

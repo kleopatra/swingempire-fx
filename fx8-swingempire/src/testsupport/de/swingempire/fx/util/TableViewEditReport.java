@@ -16,6 +16,8 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ListView.EditEvent;
 /**
+ * Listener for editEvents on first column.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -25,9 +27,16 @@ public class TableViewEditReport {
     
     ObservableList<CellEditEvent> editEvents = FXCollections.observableArrayList();
     
-    public TableViewEditReport(TableView listView) {
-        this.source = listView;
-        TableColumn column = (TableColumn) listView.getColumns().get(0);
+    /**
+     * Instantiates and add an eventHandler for edit events on the first column
+     * of the given table.
+     * 
+     * @param table
+     * @throws NullPointerException if table is null or has no columns
+     */
+    public TableViewEditReport(TableView table) {
+        this.source = table;
+        TableColumn column = (TableColumn) table.getColumns().get(0);
         column.addEventHandler(editAnyEvent(), e -> addEvent((CellEditEvent) e));
     }
     

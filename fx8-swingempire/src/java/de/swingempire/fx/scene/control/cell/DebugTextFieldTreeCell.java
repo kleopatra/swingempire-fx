@@ -17,14 +17,15 @@ import javafx.util.converter.DefaultStringConverter;
  * @author Jeanette Winzenburg, Berlin
  */
 public class DebugTextFieldTreeCell<T> extends DebugTreeCell<T>
-        implements TextFieldCellDecorator<T> {
+        implements TextFieldCellDecorator<TreeView<T>, T> {
     
     /** {@inheritDoc} */
     @Override 
     public void startEdit() {
-        if (! isEditable() || ! getTreeView().isEditable()) {
-            return;
-        }
+        if (!canStartEdit()) return;
+//        if (! isEditable() || ! getTreeView().isEditable()) {
+//            return;
+//        }
         super.startEdit();
 
         if (isEditing()) {
