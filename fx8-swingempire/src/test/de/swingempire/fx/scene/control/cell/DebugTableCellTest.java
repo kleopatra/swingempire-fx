@@ -1,35 +1,29 @@
 /*
- * Created on 11.09.2017
+ * Created on 29.09.2017
  *
  */
 package de.swingempire.fx.scene.control.cell;
 
-import java.util.logging.Logger;
+import static org.junit.Assert.*;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
 
 /**
- * Use debugging cells instead of core cells.
- * 
  * @author Jeanette Winzenburg, Berlin
  */
-@RunWith(JUnit4.class)
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class DebugTableCellTest extends TableCellTest {
-    
-    
 
     @Override
-    protected Callback<TableColumn<TableColumn, String>, TableCell<TableColumn, String>> createTextFieldTableCell() {
-        return DebugTextFieldTableCell.forTableColumn();
+    protected void assertValueAt(int index, Object editedValue,
+            EditableControl control) {
+        fail("tbd: assert edited value");
     }
 
-    @SuppressWarnings("unused")
-    private static final Logger LOG = Logger
-            .getLogger(DebugTableCellTest.class.getName());
+    @Override
+    protected Callback createTextFieldCellFactory() {
+        return e -> new DebugTextFieldTableCell();
+//                (Callback<ListView, ListCell>)TextFieldListCell.forListView();
+    }
+
 }

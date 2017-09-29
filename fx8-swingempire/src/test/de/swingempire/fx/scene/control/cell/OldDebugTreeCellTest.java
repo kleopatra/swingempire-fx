@@ -1,13 +1,16 @@
 /*
- * Created on 29.09.2017
+ * Created on 11.09.2017
  *
  */
 package de.swingempire.fx.scene.control.cell;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
@@ -18,23 +21,28 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.control.TreeView.EditEvent;
 import javafx.util.Callback;
 
 /**
+ * obsolete -> moved into new test infrastructure
+ * Divers tests around DebugTreeCell types. Initially copied all from 
+ * DebugCellTest, then deleted all tests that are not treeCell
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
-public class DebugTreeCellTest extends TreeCellTest {
-
+@RunWith(JUnit4.class)
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class OldDebugTreeCellTest extends OldTreeCellTest {
+    
+    
     /**
      * Overridden to comment
      * This passes in custom cell.
      * 
      */
     @Override
-    public void testCommitEditRespectHandler() {
-        super.testCommitEditRespectHandler();
+    public void testTreeEditRespectCommitHandler() {
+        super.testTreeEditRespectCommitHandler();
     }
 
     /**
@@ -49,8 +57,8 @@ public class DebugTreeCellTest extends TreeCellTest {
      * @see #testTreeEditCommitOnCellEventCount()
      */
     @Override
-    public void testEditCommitOnCell() {
-        super.testEditCommitOnCell();
+    public void testTreeEditCommitOnCell() {
+        super.testTreeEditCommitOnCell();
     }
     
     /**
@@ -60,7 +68,7 @@ public class DebugTreeCellTest extends TreeCellTest {
     @Ignore
     @Test
     public void testTreeEditCommitOnCellEventCount() {
-        ETreeView control = (ETreeView) createEditableControl();
+        TreeView<String> control = createEditableTree();
          new StageLoader(control);
         int editIndex = 1;
         TreeItem editItem = control.getTreeItem(editIndex);
@@ -83,7 +91,6 @@ public class DebugTreeCellTest extends TreeCellTest {
     }
 
 
-  
     /**
      * {@inheritDoc} <p>
      * 
@@ -93,19 +100,26 @@ public class DebugTreeCellTest extends TreeCellTest {
      * @return
      */
     @Override
-    protected EditableControl<TreeView, TreeCell> createEditableControl() {
-        EditableControl treeView = super.createEditableControl();
-        treeView.setOnEditCommit(t -> {
-            EditEvent e = (EditEvent) t;
+    protected TreeView<String> createEditableTree() {
+        TreeView<String> treeView = super.createEditableTree();
+        treeView.setOnEditCommit(e -> {
             TreeItem editItem = e.getTreeItem();
             editItem.setValue(e.getNewValue());
         });
         return treeView;
     }
 
+    /**
+     * @return
+     */
     @Override
-    protected Callback createTextFieldCellFactory() {
-        return e -> new DebugTextFieldTreeCell();
+    protected Callback<TreeView<String>, TreeCell<String>> createTextFieldTreeCell() {
+        return DebugTextFieldTreeCell.forTreeView();
     }
 
+
+
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(DebugCellTest.class.getName());
 }

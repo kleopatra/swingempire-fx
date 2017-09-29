@@ -60,9 +60,9 @@ import javafx.util.Callback;
  * 
  * Divers tests around all cell types.
  * 
- * @see ListCellTest
- * @see TableCellTest
- * @see TreeCellTest
+ * @see OldListCellTest
+ * @see OldTableCellTest
+ * @see OldTreeCellTest
  * 
  * @author Jeanette Winzenburg, Berlin
  */

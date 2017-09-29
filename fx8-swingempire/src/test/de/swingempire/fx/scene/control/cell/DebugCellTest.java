@@ -31,9 +31,9 @@ import javafx.util.Callback;
  * Use debugging cells instead of core cells.
  * Note: since 15.sept.2017, tests are separated out per cell-type.
  * 
- * @see DebugListCellTest
- * @see DebugTableCellTest
- * @see DebugTreeCellTest
+ * @see OldDebugListCellTest
+ * @see OldDebugTableCellTest
+ * @see OldDebugTreeCellTest
  * 
  * 
  * @author Jeanette Winzenburg, Berlin

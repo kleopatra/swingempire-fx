@@ -12,32 +12,31 @@ import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
 /**
- * Test DebugListCell
- * Initially copied all from 
+ * Obsolete - refactored test/tool hierarchy to simplify.
+ * 
+ * Divers tests around all listCell types. Initially copied all from 
  * DebugCellTest, then deleted all tests that are not listCell
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
-public class DebugListCellTest extends ListCellTest {
+public class OldDebugListCellTest extends OldListCellTest {
 
+ 
     
     @Test
     public void testTyping() {
-        ListView control = new ListView(FXCollections
+        ListView<String> control = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4")) {
             
         };
         control.setEditable(true);
-        control.setCellFactory(createTextFieldCellFactory());
+        control.setCellFactory(createTextFieldListCell());
 
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    protected Callback<ListView, ListCell> createTextFieldCellFactory() {
-        return e -> new DebugTextFieldListCell();
-//                (Callback<ListView, ListCell>)DebugTextFieldListCell.forListView();
+    protected Callback<ListView<String>, ListCell<String>> createTextFieldListCell() {
+        return DebugTextFieldListCell.forListView();
     }
 
 
