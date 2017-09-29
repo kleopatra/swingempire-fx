@@ -5,12 +5,20 @@
 package de.swingempire.fx.util;
 
 import javafx.event.Event;
+
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.util.Callback;
 
+/**
+ * Decorator for editable virtualized controls. Useful
+ * in testing cells and their editing behaviour.
+ * 
+ * @author Jeanette Winzenburg, Berlin
+ */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public interface EditableControl<C extends Control, I extends IndexedCell> {
     void setEditable(boolean editable);
     void setCellFactory(Callback<C, I> factory);

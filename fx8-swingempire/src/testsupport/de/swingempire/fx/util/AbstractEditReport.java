@@ -8,8 +8,6 @@ import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-//import javafx.scene.control.ListView;
-//import javafx.scene.control.ListView.EditEvent;
 import javafx.event.Event;
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -24,7 +22,6 @@ public abstract class AbstractEditReport<E extends Event> {
     
     public AbstractEditReport(EditableControl listView) {
         this.source = listView;
-//        listView.addEventHandler(listView.editAny(), this::addEvent);
     }
     
     public EditableControl getSource() {
@@ -123,9 +120,4 @@ public abstract class AbstractEditReport<E extends Event> {
     
     public abstract String getEditEventText(E event); 
     
-//    {
-//        return "[ListViewEditEvent [type: " + event.getEventType() + " index " 
-//                + event.getIndex() + " newValue " + event.getNewValue() + "]";
-//        
-//    }
 }

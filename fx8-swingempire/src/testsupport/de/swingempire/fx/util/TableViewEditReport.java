@@ -23,9 +23,6 @@ public class TableViewEditReport extends AbstractEditReport<CellEditEvent> {
     public TableViewEditReport(EditableControl listView) {
         super(listView);
         listView.addEditEventHandler(listView.editAny(), e -> addEvent((CellEditEvent) e));
-//        TableView table = (TableView) listView.getControl();
-//        TableColumn column = (TableColumn) table.getColumns().get(0);
-//        column.addEventHandler(editAnyEvent(), e -> addEvent((CellEditEvent) e));
     }
 
     @Override
