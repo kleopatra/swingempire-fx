@@ -16,7 +16,8 @@ import static org.junit.Assert.*;
 
 import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreStandalone;
 import de.swingempire.fx.util.AbstractEditReport;
-import de.swingempire.fx.util.ListEditReport;
+import de.swingempire.fx.util.EditableControl;
+import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -219,7 +220,7 @@ public class ListCellTest extends AbstractCellTest<ListView, ListCell> {
 
     @Override
     protected AbstractEditReport createEditReport(EditableControl control) {
-        return new ListEditReport(control);
+        return new ListViewEditReport(control);
     }
 
     public static class EListView extends ListView 

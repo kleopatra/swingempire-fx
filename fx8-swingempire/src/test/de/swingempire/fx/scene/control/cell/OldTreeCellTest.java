@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.StageLoader;
-import de.swingempire.fx.util.TreeViewEditReport;
+import de.swingempire.fx.util.OldTreeViewEditReport;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -79,7 +79,7 @@ public class OldTreeCellTest {
         new StageLoader(control);
         int editIndex = 1;
         IndexedCell cell =  getCell(control, editIndex);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // start edit on cell
         cell.startEdit();
         // start again -> nothing changed, no event
@@ -94,7 +94,7 @@ public class OldTreeCellTest {
         new StageLoader(control);
         int editIndex = 1;
         TreeItem editItem = control.getTreeItem(editIndex);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // start edit on control
         control.edit(editItem);
         // start again -> nothing changed, no event
@@ -132,7 +132,7 @@ public class OldTreeCellTest {
         control.edit(initialEditItem);
         assertTrue(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // switch editing to second
         control.edit(secondEditItem);
 //        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
@@ -176,7 +176,7 @@ public class OldTreeCellTest {
         control.edit(initialEditItem);
         assertTrue(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // switch editing to second
         control.edit(secondEditItem);
 //        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
@@ -219,7 +219,7 @@ public class OldTreeCellTest {
         control.setOnEditCommit(e -> new String("dummy"));
         // start edit on control
         control.edit(editItem);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         String editedValue = "edited";
         // commit edit on cell
         cell.commitEdit(editedValue);
@@ -248,7 +248,7 @@ public class OldTreeCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editItem);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         String editedValue = "edited";
         // commit edit on cell
         cell.commitEdit(editedValue);
@@ -281,7 +281,7 @@ public class OldTreeCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editItem);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // cancel edit on cell
         cell.cancelEdit();
         // test cell state
@@ -307,7 +307,7 @@ public class OldTreeCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editItem);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // cancel edit on control
         control.edit(null);
         // test cell state
@@ -331,7 +331,7 @@ public class OldTreeCellTest {
         int editIndex = 1;
         TreeItem editItem = control.getTreeItem(editIndex);
         IndexedCell cell =  getCell(control, editIndex);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // start edit on cell
         cell.startEdit();
         // test cell state
@@ -351,7 +351,7 @@ public class OldTreeCellTest {
         int editIndex = 1;
         TreeItem editItem = control.getTreeItem(editIndex);
         IndexedCell cell =  getCell(control, editIndex);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         // start edit on control
         control.edit(editItem);
         // test cell state

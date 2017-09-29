@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreStandalone;
-import de.swingempire.fx.util.ListViewEditReport;
+import de.swingempire.fx.util.OldListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -115,7 +115,7 @@ public class OldListCellTest {
         new StageLoader(control);
         int editIndex = 1;
         IndexedCell cell = getCell(control, editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // start edit on control
         cell.startEdit();
         // start again -> nothing changed, no event
@@ -175,7 +175,7 @@ public class OldListCellTest {
         ListView<String> control = createEditableList();
         new StageLoader(control);
         int editIndex = 1;
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // start edit on control
         control.edit(editIndex);
         // working as expected because index unchanged -> no change fired
@@ -213,7 +213,7 @@ public class OldListCellTest {
         control.edit(initialEditIndex);
         assertTrue(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex);
 //        LOG.info("" + report.getAllEditEventTexts("edit(1) -> edit(0): "));
@@ -258,7 +258,7 @@ public class OldListCellTest {
         control.edit(initialEditIndex);
         assertTrue(initialEditingCell.isEditing());
         assertEquals(initialEditIndex, initialEditingCell.getIndex());
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // switch editing to second
         control.edit(secondEditIndex);
 //        LOG.info("" + report.getAllEditEventTexts("edit(0) -> edit(1): "));
@@ -300,7 +300,7 @@ public class OldListCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // commit value on cell
         String editedValue = "edited";
         cell.commitEdit(editedValue);
@@ -334,7 +334,7 @@ public class OldListCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // cancel edit on cell
         cell.cancelEdit();
         // test cell state
@@ -363,7 +363,7 @@ public class OldListCellTest {
         IndexedCell cell = getCell(control, editIndex);
         // start edit on control
         control.edit(editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // cancel edit on control
         control.edit(-1);
         // test cell state
@@ -391,7 +391,7 @@ public class OldListCellTest {
         new StageLoader(control);
         int editIndex = 1;
         IndexedCell cell = getCell(control, editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // start edit on control
         cell.startEdit();
         // test cell state
@@ -438,7 +438,7 @@ public class OldListCellTest {
         new StageLoader(control);
         int editIndex = 1;
         IndexedCell cell =  getCell(control, editIndex);
-        ListViewEditReport report = new ListViewEditReport(control);
+        OldListViewEditReport report = new OldListViewEditReport(control);
         // start edit on control
         control.edit(editIndex);
         // test cell state

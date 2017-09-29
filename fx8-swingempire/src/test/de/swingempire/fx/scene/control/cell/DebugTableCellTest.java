@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import static org.junit.Assert.*;
 
+import de.swingempire.fx.util.EditableControl;
 import javafx.util.Callback;
 
 /**

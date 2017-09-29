@@ -11,8 +11,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.util.AbstractEditReport;
+import de.swingempire.fx.util.EditableControl;
 import de.swingempire.fx.util.StageLoader;
-import de.swingempire.fx.util.TreeEditReport;
+import de.swingempire.fx.util.TreeViewEditReport;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -98,7 +99,7 @@ public class TreeCellTest extends AbstractCellTest<TreeView, TreeCell> {
 
     @Override
     protected AbstractEditReport createEditReport(EditableControl control) {
-        return new TreeEditReport(control);
+        return new TreeViewEditReport(control);
     }
 
     @Override

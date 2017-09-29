@@ -12,9 +12,10 @@ import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.util.AbstractEditReport;
+import de.swingempire.fx.util.EditableControl;
 import de.swingempire.fx.util.StageLoader;
-import de.swingempire.fx.util.TableEditReport;
 import de.swingempire.fx.util.TableViewEditReport;
+import de.swingempire.fx.util.OldTableViewEditReport;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,7 +54,7 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
         IndexedCell cell =  getCell(control, editIndex, 0);
         // start edit on control
         control.edit(editIndex, column);;
-        TableViewEditReport report = new TableViewEditReport(control);
+        OldTableViewEditReport report = new OldTableViewEditReport(control);
         String editedValue = "edited";
         cell.commitEdit(editedValue);
         assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
@@ -73,7 +74,7 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
         IndexedCell cell =  getCell(control, editIndex, 0);
         // start edit on control
         control.edit(editIndex, column);;
-        TableViewEditReport report = new TableViewEditReport(control);
+        OldTableViewEditReport report = new OldTableViewEditReport(control);
         String editedValue = "edited";
         cell.commitEdit(editedValue);
         assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
@@ -176,7 +177,7 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
 
     @Override
     protected AbstractEditReport createEditReport(EditableControl control) {
-        return new TableEditReport(control);
+        return new TableViewEditReport(control);
     }
 
     /**

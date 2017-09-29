@@ -12,8 +12,9 @@ import org.junit.Test;
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
+import de.swingempire.fx.util.EditableControl;
 import de.swingempire.fx.util.StageLoader;
-import de.swingempire.fx.util.TreeViewEditReport;
+import de.swingempire.fx.util.OldTreeViewEditReport;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -67,7 +68,7 @@ public class DebugTreeCellTest extends TreeCellTest {
         IndexedCell cell =  getCell(control, editIndex);
         // start edit on control
         control.edit(editItem);
-        TreeViewEditReport report = new TreeViewEditReport(control);
+        OldTreeViewEditReport report = new OldTreeViewEditReport(control);
         String editedValue = "edited";
         control.addEventHandler(TreeView.editCancelEvent(), e -> {
             new RuntimeException("who is calling?\n").printStackTrace();

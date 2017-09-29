@@ -6,35 +6,31 @@ package de.swingempire.fx.util;
 
 import java.util.Optional;
 
+import static javafx.scene.control.TreeView.*;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-//import javafx.scene.control.ListView;
-//import javafx.scene.control.ListView.EditEvent;
-import javafx.event.Event;
+import javafx.scene.control.TreeView;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AbstractEditReport<E extends Event> {
+public class OldTreeViewEditReport {
 
-
-    private EditableControl source;
+    private TreeView source;
     
-    protected ObservableList<E> editEvents = FXCollections.<E>observableArrayList();
+    private ObservableList<EditEvent> editEvents = FXCollections.observableArrayList();
     
-    public AbstractEditReport(EditableControl listView) {
+    public OldTreeViewEditReport(TreeView listView) {
         this.source = listView;
-//        listView.addEventHandler(listView.editAny(), this::addEvent);
+        listView.addEventHandler(editAnyEvent(), this::addEvent);
     }
     
-    public EditableControl getSource() {
-        return source;
-    }
     /**
      * Returns the list of editEvents as unmodifiable list, most recent first.
      * @return
      */
-    public ObservableList<E> getEditEvents(){
+    public ObservableList<EditEvent> getEditEvents(){
         return FXCollections.unmodifiableObservableList(editEvents);
     }
     /**
@@ -48,20 +44,20 @@ public abstract class AbstractEditReport<E extends Event> {
         return editEvents.size();
     }
     
-    public Optional<E> getLastEditStart() {
+    public Optional<EditEvent> getLastEditStart() {
         return editEvents.stream()
-                .filter(e -> e.getEventType().equals(source.editStart()))
+                .filter(e -> e.getEventType().equals(editStartEvent()))
                 .findFirst();
     }
     
-    public Optional<E> getLastEditCancel() {
+    public Optional<EditEvent> getLastEditCancel() {
         return editEvents.stream()
-                .filter(e -> e.getEventType().equals(source.editCancel()))
+                .filter(e -> e.getEventType().equals(editCancelEvent()))
                 .findFirst();
     }
-    public Optional<E> getLastEditCommit() {
+    public Optional<EditEvent> getLastEditCommit() {
         return editEvents.stream()
-                .filter(e -> e.getEventType().equals(source.editCommit()))
+                .filter(e -> e.getEventType().equals(editCommitEvent()))
                 .findFirst();
     }
     
@@ -71,7 +67,7 @@ public abstract class AbstractEditReport<E extends Event> {
      * @return
      */
     public boolean isLastEditStart() {
-        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(source.editStart()) : false;
+        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(editStartEvent()) : false;
     }
     
     /**
@@ -80,7 +76,7 @@ public abstract class AbstractEditReport<E extends Event> {
      * @return
      */
     public boolean isLastEditCommit() {
-        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(source.editCommit()) : false;
+        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(editCommitEvent()) : false;
     }
     
     /**
@@ -89,10 +85,10 @@ public abstract class AbstractEditReport<E extends Event> {
      * @return
      */
     public boolean isLastEditCancel() {
-        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(source.editCancel()) : false;
+        return hasEditEvents() ? getLastAnyEvent().getEventType().equals(editCancelEvent()) : false;
     }
     
-    public E getLastAnyEvent() {
+    public EditEvent getLastAnyEvent() {
         return hasEditEvents() ? editEvents.get(0) : null;
     }
     
@@ -101,7 +97,7 @@ public abstract class AbstractEditReport<E extends Event> {
     }
     
     
-    protected void addEvent(E event) {
+    protected void addEvent(EditEvent event) {
         editEvents.add(0, event);
     }
     
@@ -115,17 +111,15 @@ public abstract class AbstractEditReport<E extends Event> {
     public String getAllEditEventTexts(String message) {
         if (!hasEditEvents()) return "noEvents";
         String edits = message + "\n";
-        for (E editEvent : editEvents) {
+        for (EditEvent editEvent : editEvents) {
             edits += getEditEventText(editEvent) + "\n";
         }
         return edits;
     }
     
-    public abstract String getEditEventText(E event); 
-    
-//    {
-//        return "[ListViewEditEvent [type: " + event.getEventType() + " index " 
-//                + event.getIndex() + " newValue " + event.getNewValue() + "]";
-//        
-//    }
+    public static String getEditEventText(EditEvent event) {
+        return "[TreeViewEditEvent [type: " + event.getEventType() + " treeItem " 
+                + event.getTreeItem() + " newValue " + event.getNewValue() + "]";
+        
+    }
 }
