@@ -27,6 +27,7 @@ public interface CellDecorator<C extends Control, T> {
     default int getCounter() {
         return -1;
     }
+    
 //----------------- item/index
     
     int getIndex();
@@ -175,20 +176,20 @@ public interface CellDecorator<C extends Control, T> {
 
     //---------------------- reflection acrobatics
     
-    default void invokeSetEditing(boolean selected) {
+    private void invokeSetEditing(boolean selected) {
         FXUtils.invokeGetMethodValue(Cell.class, this, "setEditing", Boolean.TYPE, selected);
     }
     
-    default void invokeSetSelected(boolean selected) {
+    private void invokeSetSelected(boolean selected) {
         FXUtils.invokeGetMethodValue(Cell.class, this, "setSelected", Boolean.TYPE, selected);
     }
     
-    default void invokeSetEmpty(boolean empty) {
+    private void invokeSetEmpty(boolean empty) {
         FXUtils.invokeGetMethodValue(Cell.class, this, "setEmpty", Boolean.TYPE, empty);
     }
     
 
     @SuppressWarnings("unused")
-    public static final Logger LOG = Logger
+    static final Logger LOG = Logger
             .getLogger(CellDecorator.class.getName());
 }

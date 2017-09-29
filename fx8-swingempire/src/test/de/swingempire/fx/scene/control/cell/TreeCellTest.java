@@ -15,17 +15,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreTreeEdit;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TreeViewEditReport;
 import javafx.scene.control.IndexedCell;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
