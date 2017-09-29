@@ -15,19 +15,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.tk.Toolkit;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.cell.EditIgnores.IgnoreStandalone;
 import de.swingempire.fx.util.ListViewEditReport;
 import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.event.EventHandler;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -36,6 +37,8 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.control.skin.ListCellSkin;
 import javafx.util.Callback;
 /**
+ * Now moved into AbstractCellTest - verified complete coverage.
+ * 
  * Divers tests around all listCell types. Initially copied all from 
  * CellTest, then deleted all tests that are not listCell
  * 
@@ -86,8 +89,9 @@ public class ListCellTest {
      * NPE on all TextFieldXXCell (not with base XXCell!)
      * reported: https://bugs.openjdk.java.net/browse/JDK-8188026
      */
+    @ConditionalIgnore (condition = IgnoreStandalone.class)
     @Test
-    public void testTextFieldCellNullControlOnStartEditStandalone() {
+    public void standaloneTextFieldCellNullControlOnStartEdit() {
         ListCell cell = TextFieldListCell.forListView().call(null);
         cell.startEdit();
     }
@@ -95,8 +99,9 @@ public class ListCellTest {
     /**
      * NPE on all TextFieldXXCell (not with base XXCell!)
      */
+    @ConditionalIgnore (condition = IgnoreStandalone.class)
     @Test
-    public void testBaseNullControlOnStartEditStandalone() {
+    public void standaloneBaseNullControlOnStartEdit() {
         ListCell cell = new ListCell();
         cell.startEdit();
     }
@@ -119,8 +124,9 @@ public class ListCellTest {
         assertEquals("second start on same must not fire event", 1, report.getEditEventSize());
     }
     
+    @ConditionalIgnore (condition = IgnoreStandalone.class)
     @Test
-    public void testListEditStartOnBaseCellTwiceStandalone() {
+    public void standaloneListEditStartOnBaseCellTwice() {
         ListView<String> control = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4"));
         control.setEditable(true);
@@ -143,8 +149,9 @@ public class ListCellTest {
      * Must not fire editStartEvent if editing
      * reported: https://bugs.openjdk.java.net/browse/JDK-8188027
      */
+    @ConditionalIgnore (condition = IgnoreStandalone.class)
     @Test
-    public void testListEditStartOnCellTwiceStandalone() {
+    public void standaloneListEditStartOnCellTwice() {
         ListView<String> control = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4"));
         control.setEditable(true);
@@ -402,8 +409,9 @@ public class ListCellTest {
      * reported as
      * https://bugs.openjdk.java.net/browse/JDK-8187432
      */
+    @ConditionalIgnore (condition = IgnoreStandalone.class)
     @Test
-    public void testListEditStartOnCellStandalone() {
+    public void standaloneListEditStartOnCell() {
         ListView<String> control = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4"));
         control.setEditable(true);
@@ -479,7 +487,7 @@ public class ListCellTest {
      * Test update of editing location on control
      */
     @Test
-    public void testListEditStartOnListHasEditingIndex() {
+    public void testListEditStartOnCellHasEditingIndex() {
         ListView<String> control = createEditableList();
         new StageLoader(control);
         int editIndex = 1;

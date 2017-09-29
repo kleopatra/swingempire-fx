@@ -30,6 +30,8 @@ import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.control.skin.TreeCellSkin;
 import javafx.util.Callback;
 /**
+ * Now moved into AbstractCellTest - verified complete coverage.
+ * 
  * Divers tests around all treeCell types. Initially copied all from 
  * CellTest, then deleted all tests that are not treeCell
  * 

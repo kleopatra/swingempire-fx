@@ -38,6 +38,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.skin.TreeTableRowSkin;
 import javafx.util.Callback;
 /**
+ * Now moved into AbstractCellTest - verified complete coverage.
+ * 
  * Divers tests around all tableCell types. Initially copied all from 
  * CellTest, then deleted all tests that are not tableCell
  * 
@@ -124,7 +126,7 @@ public class TableCellTest {
      * edit(1)
      */
     @Test
-    public void testTableEditChangeEditOnTableReversed() {
+    public void testTableEditChangeEditOnControlReversed() {
         TableView<TableColumn> control = createEditableTable();
         TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
         new StageLoader(control);
@@ -169,7 +171,7 @@ public class TableCellTest {
      * edit(1)
      */
     @Test
-    public void testTableEditChangeEditOnTable() {
+    public void testTableEditChangeEditOnControl() {
         TableView<TableColumn> control = createEditableTable();
         TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
         new StageLoader(control);
@@ -303,7 +305,7 @@ public class TableCellTest {
      * 
      */
     @Test
-    public void testTableEditCancelOnTable() {
+    public void testTableEditCancelOnControl() {
         TableView<TableColumn> control = createEditableTable();
         TableColumn column = control.getColumns().get(0);
         new StageLoader(control);
@@ -353,7 +355,7 @@ public class TableCellTest {
     }
     
     @Test
-    public void testTableEditStartOnTable() {
+    public void testTableEditStartOnControl() {
         TableView<TableColumn> control = createEditableTable();
         TableColumn<TableColumn, String> first = (TableColumn<TableColumn, String>) control.getColumns().get(0);
         new StageLoader(control);

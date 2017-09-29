@@ -25,6 +25,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TreeView.EditEvent;
 import javafx.scene.control.cell.TextFieldTreeCell;
+import javafx.scene.control.skin.TreeCellSkin;
 import javafx.util.Callback;
 
 /**
@@ -53,6 +54,15 @@ public class TrCellTest extends AbstractCellTest<TreeView, TreeCell> {
         assertEquals("value must not be changed", oldValue, control.getControl().getTreeItem(editIndex).getValue());
         assertEquals(1, report.getEditEventSize());
     }
+    
+  //--------------------- old bugs, fixed in fx9    
+    @Test
+    public void testTreeCellSkin() {
+        TreeCell cell = new TreeCell();
+        cell.setSkin(new TreeCellSkin(cell));
+    }
+
+//----------------- implement super's assertions in terms of TreeView
     
     @Override
     protected void assertValueAt(int index, Object editedValue,

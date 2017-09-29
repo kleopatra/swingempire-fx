@@ -4,9 +4,17 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import de.swingempire.fx.scene.control.cell.AbstractCellTest.EditableControl;
+import java.util.Optional;
+
+import org.junit.Test;
+
+import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.util.AbstractEditReport;
+import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TableEditReport;
+import de.swingempire.fx.util.TableViewEditReport;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,24 +24,75 @@ import javafx.event.EventType;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.skin.TreeTableRowSkin;
 import javafx.util.Callback;
-
-import java.util.Optional;
-
-import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
-import static org.junit.Assert.*;
 
 /**
  * core tableView/cell test
+ * 
+ * moved cellSelection and extractor testing into this, not applicable in abstract layer.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class TCellTest extends AbstractCellTest<TableView, TableCell> {
+
+    @Test
+    public void testTableEditCommitCellSelection() {
+        ETableView control = (ETableView) createEditableControl(true);
+        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        control.getSelectionModel().setCellSelectionEnabled(true);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
+        
+    }
+
+    /**
+     * Focus on event count: fires incorrect cancel if items has extractor
+     * on edited column.
+     */
+    @Test
+    public void testTableEditCommitOnCellEventCount() {
+        ETableView control = (ETableView) createEditableControl(true);
+        TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
+        new StageLoader(control);
+        int editIndex = 1;
+        IndexedCell cell =  getCell(control, editIndex, 0);
+        // start edit on control
+        control.edit(editIndex, column);;
+        TableViewEditReport report = new TableViewEditReport(control);
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
+    }
+
+    /**
+     * Test about treeTableRowSkin: registers
+     * a listener on the treeTableView treeColumn in constructor 
+     * - throws if not yet bound to a treeTable
+     * 
+     * reported:
+     * https://bugs.openjdk.java.net/browse/JDK-8151524
+     */
+    @Test
+    public void testTreeTableRowSkinInit() {
+        TreeTableRow row = new TreeTableRow();
+        row.setSkin(new TreeTableRowSkin(row));
+    }
+    
 
     @Override
     protected void assertValueAt(int index, Object editedValue,

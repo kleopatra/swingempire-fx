@@ -6,14 +6,14 @@ package de.swingempire.fx.scene.control.cell;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import javafx.collections.FXCollections;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
 /**
+ * Obsolete - refactored test/tool hierarchy to simplify.
+ * 
  * Divers tests around all listCell types. Initially copied all from 
  * DebugCellTest, then deleted all tests that are not listCell
  * 
@@ -21,42 +21,7 @@ import javafx.util.Callback;
  */
 public class DebugListCellTest extends ListCellTest {
 
-    
-    
-    /**
-     * no-op here
-     */
-    @Override
-    public void testListEditStartOnBaseCellTwiceStandalone() {
-    }
-
-    /**
-     * no-op here
-     */
-    @Override
-    public void testListEditStartOnCellTwiceStandalone() {
-    }
-
-    /**
-     * no-op here
-     */
-    @Override
-    public void testBaseNullControlOnStartEditStandalone() {
-    }
-
-    /**
-     * no-op here
-     */
-    @Override
-    public void testTextFieldCellNullControlOnStartEditStandalone() {
-    }
-
-    /**
-     * no-op here
-     */
-    @Override
-    public void testListEditStartOnCellStandalone() {
-    }
+ 
     
     @Test
     public void testTyping() {

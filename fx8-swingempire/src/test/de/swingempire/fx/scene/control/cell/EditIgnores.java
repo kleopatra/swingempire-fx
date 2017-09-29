@@ -17,6 +17,20 @@ import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
 public class EditIgnores {
 
     /**
+     * Standalone test variants are created for bug reports. Typically,
+     * are covered (should be) in local infrastructure, so it's safe 
+     * to ignore after reporting.
+     * 
+     */
+    public static class IgnoreStandalone implements IgnoreCondition {
+
+        @Override
+        public boolean isSatisfied() {
+            return true;
+        }
+        
+    }
+    /**
      */
     public static class IgnoreTreeEdit implements IgnoreCondition {
         
