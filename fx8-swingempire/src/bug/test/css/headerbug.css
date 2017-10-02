@@ -1,0 +1,17 @@
+/* https://bugs.openjdk.java.net/browse/JDK-8188164
+here we get two "additional" filler headers, on top of the normal and the filterHeader
+specifics don't work, see fx css reference
+"Note that JavaFX does not currently support structural pseudo-classes. "
+*/
+.column-header-background > .nested-column-header:first-of-type > .column-header:first-of-type {
+    -fx-pref-height: 0px; 
+	-fx-background-color: red;
+}
+.column-header { 
+ /*
+ */   
+    -fx-pref-height: 100px; 
+} 
+
+.column-header#dummy {
+}
