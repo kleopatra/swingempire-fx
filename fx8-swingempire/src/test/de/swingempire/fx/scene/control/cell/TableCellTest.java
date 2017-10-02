@@ -250,6 +250,13 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
             return (TableColumn) getColumns().get(0);
         }
 
+        
+//        @Override
+//        public Object getValueAt(int index) {
+//            TableColumn column = getTargetColumn();
+//            return column.getCellObservableValue(index);
+//        }
+
         @Override
         public EventHandler getOnEditCommit() {
             return getTargetColumn().getOnEditCommit();

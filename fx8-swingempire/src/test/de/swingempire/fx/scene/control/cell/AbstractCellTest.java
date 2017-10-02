@@ -106,8 +106,12 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
     }
     
 
-//---------------- test editEvents and cell/control state on List    
+//---------------- test editEvents and cell/control state   
     
+    @Test
+    public void testNoCommitNotEditing() {
+        
+    }
     
     /**
      * Test notification/cell/list state with multiple edits
@@ -165,12 +169,6 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         // test editEvent
         assertLastStartIndex(report, secondEditIndex, control.getTargetColumn());
         assertLastCancelIndex(report, editIndex, control.getTargetColumn());
-//        Optional<EditEvent> start = report.getLastEditStart();
-//        assertTrue(start.isPresent());
-//        assertEquals("start on changed edited", secondEditIndex, start.get().getIndex());
-//        Optional<EditEvent> cancel = report.getLastEditCancel();
-//        assertTrue(cancel.isPresent());
-//        assertEquals("cancel on initially edited", editIndex, cancel.get().getIndex());
         
     }
     
@@ -208,12 +206,51 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         assertFalse(cell.isEditing());
         assertEquals(editIndex, cell.getIndex());
         assertLastCommitIndex(report, editIndex, control.getTargetColumn(), editedValue);
-        // test editEvent
-//        Optional<EditEvent> commit = report.getLastEditCommit();
-//        assertTrue(commit.isPresent());
-//        assertEquals("index on commit event", editIndex, commit.get().getIndex());
-//        assertEquals("newValue on commit event", editedValue, commit.get().getNewValue());
-//        assertEquals("commit must fire a single event", 1, report.getEditEventSize());
+    }
+    
+    /**
+     * Test that nothing changed by a cancel if not editing. 
+     */
+    @Test
+    public void testEditCancelNotEditing() {
+        EditableControl control = createEditableControl();
+        new StageLoader(control.getControl());
+        int editIndex = 1;
+        IndexedCell cell = getCellAt(control, editIndex);
+        Object value = cell.getItem();
+        AbstractEditReport report = createEditReport(control);
+        // cancel edit on cell
+        cell.cancelEdit();
+        // test control state
+        assertEquals(-1, control.getEditingIndex());
+        assertValueAt(editIndex, value, control);
+        // test cell state
+        assertFalse(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        assertEquals(0, report.getEditEventSize());
+    }
+    
+    /**
+     * Test that nothing changed by a commit if not editing. 
+     */
+    @Test
+    public void testEditCommitNotEditing() {
+        EditableControl control = createEditableControl();
+        new StageLoader(control.getControl());
+        int editIndex = 1;
+        IndexedCell cell = getCellAt(control, editIndex);
+        Object value = cell.getItem();
+        AbstractEditReport report = createEditReport(control);
+        // commit value on cell
+        String editedValue = "edited";
+        cell.commitEdit(editedValue);
+        // test control state
+        assertEquals(-1, control.getEditingIndex());
+        assertValueAt(editIndex, value, control);
+        // test cell state
+        assertFalse(cell.isEditing());
+        assertEquals(editIndex, cell.getIndex());
+        assertEquals(0, report.getEditEventSize());
     }
     
     protected abstract void assertValueAt(int index, Object editedValue, EditableControl<C, I> control);
@@ -244,9 +281,6 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         // test editEvent
         assertEquals(1, report.getEditEventSize());
         assertLastCancelIndex(report, editIndex, control.getTargetColumn());
-//        Optional<EditEvent> cancel = report.getLastEditCancel();
-//        assertTrue(cancel.isPresent());
-//        assertEquals("index on cancel event", editIndex, cancel.get().getIndex());
     }
     
     /**
@@ -273,10 +307,6 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         // test editEvent
         assertEquals(1, report.getEditEventSize());
         assertLastCancelIndex(report, editIndex, control.getTargetColumn());
-//        Optional<EditEvent> cancel = report.getLastEditCancel();
-//        assertTrue(cancel.isPresent());
-//        assertEquals("index on cancel event", editIndex,
-//                cancel.get().getIndex());
     }
     
     /**
@@ -321,9 +351,6 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         // test editEvent
         assertEquals(1, report.getEditEventSize());
         assertLastStartIndex(report, editIndex, control.getTargetColumn());
-//        Optional<EditEvent> e = report.getLastEditStart();
-//        assertTrue(e.isPresent());
-//        assertEquals("index on start event", editIndex, e.get().getIndex());
     }
     
     protected abstract void assertLastCancelIndex(AbstractEditReport report, int index, Object column);

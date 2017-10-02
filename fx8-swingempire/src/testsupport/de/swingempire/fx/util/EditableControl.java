@@ -38,6 +38,13 @@ public interface EditableControl<C extends Control, I extends IndexedCell> {
     int getEditingIndex();
     void edit(int index);
     
+    /**
+     * Returns the value at index if targetColumn is null or at index and targetColumn if not.
+     * 
+     * @param index
+     * @return
+     */
+//    Object getValueAt(int index);
     default Object getTargetColumn() {
         return null;
     }

@@ -38,6 +38,9 @@ import javafx.scene.control.TableView;
  *      even with the changed sequence     
  * </ul>
  * 
+ * @param <S> The type of the TableView generic type (i.e. S == TableView&lt;S&gt;).
+ *           This should also match with the first generic type in TableColumn.
+ * @param <T> The type of the item contained within the Cell.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
