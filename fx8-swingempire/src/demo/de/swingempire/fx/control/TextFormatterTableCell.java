@@ -22,6 +22,11 @@ import javafx.scene.control.TextFormatter;
 import javafx.util.StringConverter;
 
 /**
+ * fx9: doesn't work at all - even an explicit commit via enter produces a empty cell
+ * fishy, might have been dysfunctional earlier as well ... seems to have been
+ * the incorrect usage of editStarted flag
+ * 
+ * ------------------
  * Experimenting with TextFormatter
  * 
  * PENDING
@@ -88,13 +93,15 @@ public class TextFormatterTableCell<S, T> extends TableCell<S, T> {
         field.setTextFormatter(formatter);
         // PENDING wire to commits
         formatter.valueProperty().addListener((s, ov, nv) -> {
-            LOG.info("value changed in formatter: " + ov + "/" + nv);
 //                formatter.setValue(null);
                 if (editStarted) {
+                    LOG.info("value changed in formatter: " + ov + "/" + nv);
                     // same problem as with plain focuslistener:
                     // isEditing == false and commitEdit does nothing
-                    doCommitEdit(nv);
                     editStarted = false;
+                    doCommitEdit(nv);
+                    LOG.info("after commit");
+                
             }    
         });
         return field;
