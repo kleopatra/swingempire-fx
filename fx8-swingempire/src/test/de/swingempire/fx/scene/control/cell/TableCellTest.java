@@ -4,9 +4,14 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
@@ -41,24 +46,38 @@ import javafx.util.Callback;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
+@RunWith(Parameterized.class)
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
 
+    protected boolean cellSelectionEnabled; 
+    
+    @Parameters(name = "{index} - cell {0}")
+    public static Collection selectionModes() {
+        return Arrays.asList(new Object[][] { { false }, { true } });
+    }
+
+    /**
+     * 
+     */
+    public TableCellTest(boolean cellSelection) {
+        this.cellSelectionEnabled = cellSelection;
+    }
+    
     @Test
     public void testTableEditCommitCellSelection() {
         ETableView control = (ETableView) createEditableControl(true);
         TableColumn<TableColumn, String> column = (TableColumn<TableColumn, String>) control.getColumns().get(0);
-        control.getSelectionModel().setCellSelectionEnabled(true);
+        assertEquals(cellSelectionEnabled, control.getSelectionModel().isCellSelectionEnabled());
         new StageLoader(control);
         int editIndex = 1;
         IndexedCell cell =  getCell(control, editIndex, 0);
         // start edit on control
-        control.edit(editIndex, column);;
-        OldTableViewEditReport report = new OldTableViewEditReport(control);
+        control.edit(editIndex, column);
+        AbstractEditReport report = createEditReport(control);
         String editedValue = "edited";
         cell.commitEdit(editedValue);
         assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
-        
     }
 
     /**
@@ -74,7 +93,7 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
         IndexedCell cell =  getCell(control, editIndex, 0);
         // start edit on control
         control.edit(editIndex, column);;
-        OldTableViewEditReport report = new OldTableViewEditReport(control);
+        AbstractEditReport report = createEditReport(control);
         String editedValue = "edited";
         cell.commitEdit(editedValue);
         assertEquals("tableCell must fire a single event", 1, report.getEditEventSize());
@@ -97,9 +116,11 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
 
     @Override
     protected void assertValueAt(int index, Object editedValue,
-            EditableControl control) {
-        fail("tbd: assert edited value");
-
+            EditableControl<TableView, TableCell> control) {
+        ETableView table = (ETableView) control;
+        TableColumn column = table.getTargetColumn();
+        assertEquals("editedValue must be committed", editedValue, 
+                column.getCellObservableValue(index).getValue());
     }
     
     @Override
@@ -144,11 +165,31 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
 
 
 
+    /**
+     * Creates and returns an editable Table of TableColumns (as items ;)
+     * configured with 3 items
+     * and TextFieldTableCell as cellFactory on first column (which represents
+     * the textProperty of a TableColumn, no extractor, cellSelectionEnabled
+     * as defined by parameter.
+     * 
+     * @return
+     */
     @Override
     protected EditableControl<TableView, TableCell> createEditableControl() {
         return createEditableControl(false);
     }
     
+    /**
+      * Creates and returns an editable Table of TableColumns (as items ;)
+     * configured with 3 items
+     * and TextFieldTableCell as cellFactory on first column (which represents
+     * the textProperty of a TableColumn, extractor as requested cellSelectionEnabled
+     * as defined by parameter.
+     * 
+     * 
+     * @param withExtractor
+     * @return
+     */
     protected EditableControl<TableView, TableCell> createEditableControl(
             boolean withExtractor) {
 
@@ -160,6 +201,7 @@ public class TableCellTest extends AbstractCellTest<TableView, TableCell> {
                 new TableColumn("third"));
         ETableView table = new ETableView(items);
         table.setEditable(true);
+        table.getSelectionModel().setCellSelectionEnabled(cellSelectionEnabled);
 
         TableColumn<TableColumn, String> first = new TableColumn<>("Text");
         first.setCellFactory(createTextFieldCellFactory());

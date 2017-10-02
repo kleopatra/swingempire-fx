@@ -4,9 +4,6 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import static org.junit.Assert.*;
-
-import de.swingempire.fx.util.EditableControl;
 import javafx.util.Callback;
 
 /**
@@ -15,16 +12,16 @@ import javafx.util.Callback;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class DebugTableCellTest extends TableCellTest {
 
-    @Override
-    protected void assertValueAt(int index, Object editedValue,
-            EditableControl control) {
-        fail("tbd: assert edited value");
+    /**
+     * @param cellSelection
+     */
+    public DebugTableCellTest(boolean cellSelection) {
+        super(cellSelection);
     }
 
     @Override
     protected Callback createTextFieldCellFactory() {
         return e -> new DebugTextFieldTableCell();
-//                (Callback<ListView, ListCell>)TextFieldListCell.forListView();
     }
 
 }
