@@ -22,6 +22,8 @@ import javafx.stage.Stage;
  * reported: 
  * https://bugs.openjdk.java.net/browse/JDK-8166025
  * 
+ * fixed in fx9
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

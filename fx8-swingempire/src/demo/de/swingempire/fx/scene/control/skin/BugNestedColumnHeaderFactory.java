@@ -25,6 +25,7 @@ import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 
 /**
+ * Note: fixed in fx9, changed overall setup, will no longer compile!
  * NestedTableColumnHeader must use factory method for creating
  * TableColumns always.
  * 

@@ -21,6 +21,8 @@ import javafx.stage.Stage;
  * Reported
  * https://bugs.openjdk.java.net/browse/JDK-8150636
  * 
+ * fixed in fx9
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class InputMapCleanupBug extends Application {

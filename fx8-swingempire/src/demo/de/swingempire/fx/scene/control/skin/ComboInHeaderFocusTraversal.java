@@ -18,6 +18,8 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 
 /**
+ * fixed in fx9
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

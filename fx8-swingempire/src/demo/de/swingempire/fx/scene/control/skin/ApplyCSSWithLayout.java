@@ -24,6 +24,9 @@ public class ApplyCSSWithLayout extends Application {
        Button button = new Button("Hello World");
        root.getChildren().add(button);
 
+       /*
+        * need both to init pref
+        */
        root.applyCss();
        root.layout();
 
