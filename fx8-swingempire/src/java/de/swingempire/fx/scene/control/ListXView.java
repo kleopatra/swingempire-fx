@@ -10,6 +10,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
+import javafx.collections.ObservableList;
 import javafx.event.EventType;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
@@ -38,12 +39,20 @@ public class ListXView<T, C> extends ListView<T> {
     
     
     public ListXView() {
-        super();
+        this(null);
+    }
+    
+
+    /**
+     * @param items
+     */
+    public ListXView(ObservableList<T> items) {
+        super(items);
         cellValueFactory = new SimpleObjectProperty<>(this, "cellValueFactory");
         setCellFactory(v -> new ListXCell<>());
         setOnEditCommit(e -> commitEdit(e));
     }
-    
+
 
     /**
      * Callback for default commit handler, it can handle both basic 

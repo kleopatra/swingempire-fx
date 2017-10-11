@@ -43,6 +43,14 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
     public static TestRule classRule = new JavaFXThreadingRule();
 
     /**
+     * Must not fire null events.
+     */
+    @Test (expected = NullPointerException.class)
+    public void testNullEventFire() {
+        EditableControl control = createEditableControl();
+        control.fireEvent(null);
+    }
+    /**
      * Cell.startEdit doesn't switch into editing if empty. That's
      * the case for a cell without view.
      * 
@@ -110,7 +118,7 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
     
     @Test
     public void testNoCommitNotEditing() {
-        
+        fail("tbd: not implemented - what should go in here");
     }
     
     /**

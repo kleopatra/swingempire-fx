@@ -9,6 +9,7 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ListView.EditEvent;
 
 /**
  * Custom ListCell which overrides start/commit/cancelEdit and
@@ -146,15 +147,15 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<ListV
         // Inform the ListView of the edit starting.
         if (list != null) {
             list.fireEvent(new ListView.EditEvent<T>(list,
-                    ListView.<T>editStartEvent(),
-                    null,
-                    // PENDING JW: this looks fishy - the index that will become 
-                    // editing is not the list's but this cell's index
-                    // reported as https://bugs.openjdk.java.net/browse/JDK-8187432
-//                    list.getEditingIndex()
-                    // changed to our own index
-                    getIndex()
-                    ));
+                            ListView.<T>editStartEvent(),
+                            null,
+                            // PENDING JW: this looks fishy - the index that will become 
+                            // editing is not the list's but this cell's index
+                            // reported as https://bugs.openjdk.java.net/browse/JDK-8187432
+            //                    list.getEditingIndex()
+                            // changed to our own index
+                            getIndex()
+                            ));
             list.edit(getIndex());
             list.requestFocus();
         }
@@ -220,10 +221,10 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<ListV
             // not needed if switching out of editing before notification
 //            ignoreCancel = true;
             // Inform the ListView of the edit being ready to be committed.
-            list.fireEvent(new ListView.EditEvent<T>(list,
-                    ListView.<T>editCommitEvent(),
-                    newValue,
-                    getIndex()));
+            list.fireEvent(new ListView.EditEvent<T>(getListView(),
+            ListView.<T>editCommitEvent(),
+            newValue,
+            getIndex()));
             ignoreCancel = false;
         }
 
@@ -233,6 +234,7 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<ListV
         // this is the same as cellUpdateItem - 
         // this base-implementation does not yet have a custom implementation
         // handled in subclasses like DebugTextFieldListCell
+        // PENDING: JW - why commented? moved up in this method
 //        updateItem(newValue, false);
 
         if (list != null) {
@@ -295,14 +297,14 @@ public class DebugListCell<T> extends ListCell<T> implements CellDecorator<ListV
                list.requestFocus();
 
            list.fireEvent(new ListView.EditEvent<T>(list,
-                   ListView.<T>editCancelEvent(),
-                   null,
-                   // PENDING JW
-                   // list has different editingIndex when we get here from
-                   // listener to editingIndex
-                   getIndex()
-//                   editingIndex
-                   ));
+                           ListView.<T>editCancelEvent(),
+                           null,
+                           // PENDING JW
+                           // list has different editingIndex when we get here from
+                           // listener to editingIndex
+                           getIndex()
+        //                   editingIndex
+                           ));
        }
     }
 

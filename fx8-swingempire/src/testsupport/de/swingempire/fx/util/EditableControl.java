@@ -22,6 +22,7 @@ import javafx.util.Callback;
 public interface EditableControl<C extends Control, I extends IndexedCell> {
     void setEditable(boolean editable);
     void setCellFactory(Callback<C, I> factory);
+    void fireEvent(Event ev);
     EventHandler getOnEditCommit();
     EventHandler getOnEditCancel();
     EventHandler getOnEditStart();

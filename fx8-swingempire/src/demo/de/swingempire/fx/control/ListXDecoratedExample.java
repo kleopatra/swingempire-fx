@@ -7,8 +7,10 @@ package de.swingempire.fx.control;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.ListXDecoratedCell;
 import de.swingempire.fx.scene.control.ListXView;
 import de.swingempire.fx.scene.control.TextFieldListXCell;
+import de.swingempire.fx.scene.control.TextFieldListXDecoratedCell;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,25 +28,26 @@ import javafx.util.converter.DefaultStringConverter;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ListXExample extends Application{
+public class ListXDecoratedExample extends Application{
 
     private ListXView<Person, String> listView;
     private EventHandler<ActionEvent> updateFirstTitle;
     private EventHandler<ActionEvent> logComboValue;
     private ComboBox<Person> comboBox;
 
-    public ListXExample() {
+    public ListXDecoratedExample() {
         // BUG: scrollbar missing default context menu
 //        manager.addAlbums(10000);
         
         listView = new ListXView<Person, String>();
         listView.setCellValueFactory(p -> p.lastNameProperty());
-        listView.setCellFactory(p -> new TextFieldListXCell<>(new DefaultStringConverter()));
+        listView.setCellFactory(p -> new TextFieldListXDecoratedCell<>(new DefaultStringConverter()));
+//        listView.setCellFactory(p -> new ListXDecoratedCell<>());
         listView.setEditable(true);
         listView.setItems(Person.persons());
 //        listView.setItems(FXCollections.observableList(Person.persons(), p -> new Observable[] { p.lastNameProperty()}));
 
-        comboBox = new ComboBox<>(); //listView.getItems());
+        comboBox = new ComboBox<>(listView.getItems());
         
         StringConverter<Person> converter = new StringConverter<Person>() {
 
@@ -95,6 +98,6 @@ public class ListXExample extends Application{
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ListXExample.class
+    private static final Logger LOG = Logger.getLogger(ListXDecoratedExample.class
             .getName());
 }
