@@ -6,10 +6,7 @@ package de.swingempire.fx.scene.control;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.cell.DebugListCellTest;
-import de.swingempire.fx.scene.control.cell.DebugTextFieldListCell;
-import de.swingempire.fx.scene.control.cell.ListCellTest.EListView;
 import de.swingempire.fx.util.EditableControl;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;

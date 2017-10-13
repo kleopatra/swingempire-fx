@@ -16,6 +16,8 @@ import javafx.stage.Stage;
  * 
  * Drag circle around and see cursor moving ahead (outside)
  * of the circle 
+ * 
+ * Still virulent fx9.
  */
 public class DragTest extends Application {
     @Override
