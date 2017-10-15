@@ -50,8 +50,8 @@ public class TreeSelectionIssue_8152396 extends Application {
         childNode2.getChildren().addAll(
 //                new TreeItem<String>("Node 2-1"),
 //                new TreeItem<String>("Node 2-2"),
-                new TreeItem<String>("Node 2-3"),
-                new TreeItem<String>("Node 2-4"),
+//                new TreeItem<String>("Node 2-3"),
+//                new TreeItem<String>("Node 2-4"),
                 new TreeItem<String>("Node 2-5"),
                 new TreeItem<String>("Node 2-6")
                 );

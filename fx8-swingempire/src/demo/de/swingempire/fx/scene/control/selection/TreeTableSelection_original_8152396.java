@@ -1,5 +1,5 @@
 /*
- * Created on 29.03.2016
+ * Created on 15.10.2017
  *
  */
 package de.swingempire.fx.scene.control.selection;
@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Collection;
 import java.util.Objects;
 
-import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ListChangeListener;
@@ -22,17 +21,17 @@ import javafx.scene.control.TreeTableView;
 import javafx.stage.Stage;
 
 /**
- * variant for TreeTable (was original report on treeTable)
+ * This her is the original example - seems to work.
  * 
- * fx9-ea-180
+ * Check why the adaption doesn't.
  * 
- * for 2 items: no error
- * for 3 items: error after 5 expands
+ * depends on count of items:  
+ * fails on 5th expand with 3 items
  * 
+ * @author Jeanette Winzenburg, Berlin
  */
-public class TreeTableSelectionIssue_8152396 extends Application {
+public class TreeTableSelection_original_8152396 extends Application {
 
-    int count;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -41,13 +40,13 @@ public class TreeTableSelectionIssue_8152396 extends Application {
     public void start(Stage stage) {
         final TreeItem<String> childNode1 = new TreeItem<>("Child Node 1");
         childNode1.getChildren().addAll(
-//              new TreeItem<String>("Node 1-1"),
-//              new TreeItem<String>("Node 1-2"),
-//              new TreeItem<String>("Node 1-1"),
-              new TreeItem<String>("Node 1-2"),
-          new TreeItem<String>("Node 1-3"),
-          new TreeItem<String>("Node 1-4")
+            new TreeItem<String>("Node 1-1"),
+            new TreeItem<String>("Node 1-2"),
+//            new TreeItem<String>("Node 1-2"),
+            new TreeItem<String>("Node 1-2"),
+            new TreeItem<String>("Node 1-3")
         );
+
         final TreeItem<String> root = new TreeItem<>("Root node");
         root.setExpanded(true);
         root.getChildren().add(childNode1);
@@ -65,22 +64,14 @@ public class TreeTableSelectionIssue_8152396 extends Application {
 
         // Select all children of expanded node.
         treeTableView.expandedItemCountProperty().addListener((observable, oldCount, newCount) -> {
-            
-            
             if (newCount.intValue() > oldCount.intValue()) {
-                System.out.println("expandedItems/expansionCount: " + newCount + " / " + count++);
                 selectChildrenOfRows(treeTableView, treeTableView.getSelectionModel().getSelectedIndices());
-            } else {
-                System.out.println("collapsed, selectedItems: " + treeTableView.getSelectionModel().getSelectedItems().size());
             }
         });
 
-        new FXUtils.PrintingListChangeListener("selectedItems", treeTableView.getSelectionModel().getSelectedItems());
-        
-
         filteredList = treeTableView.getSelectionModel().getSelectedItems().filtered(Objects::nonNull);
         filteredList.addListener((ListChangeListener.Change<? extends TreeItem<String>> change) -> {
-            System.out.printf("Change on filtered: %s\n", change);
+            System.out.printf("Change: %s\n", change);
         });
 
         final Scene scene = new Scene(new Group(), 200, 400);
@@ -107,4 +98,3 @@ public class TreeTableSelectionIssue_8152396 extends Application {
         }
     }
 }
-
