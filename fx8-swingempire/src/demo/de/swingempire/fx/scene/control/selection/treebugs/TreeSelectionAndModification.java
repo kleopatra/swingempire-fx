@@ -2,7 +2,7 @@
  * Created on 08.12.2014
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.treebugs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +33,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.DebugUtils;
 

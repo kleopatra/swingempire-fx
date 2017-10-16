@@ -2,7 +2,7 @@
  * Created on 19.03.2015
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.treebugs;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 /**
  * Was: selection moved up if item below was removed. 
  * Fixed for 8u40/8u60 - check u20!
+ * fixed fx9
  */
 public class TreeViewSelection_16068 extends Application {
 

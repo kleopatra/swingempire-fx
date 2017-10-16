@@ -2,7 +2,7 @@
  * Created on 29.03.2016
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.treebugs;
 
 import java.util.Collection;
 import java.util.Objects;

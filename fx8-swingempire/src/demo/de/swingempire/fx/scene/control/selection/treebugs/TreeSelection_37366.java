@@ -2,7 +2,7 @@
  * Created on 19.03.2015
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.treebugs;
 
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
@@ -15,6 +15,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * verified fixed fx9
+ * 
+ * ++++++++++++++++
  * Was: invalid change events
 Case 1: fixed 8u60b5
 - select items: 'Item 1' and 'Item 2'

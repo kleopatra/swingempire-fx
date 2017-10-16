@@ -2,7 +2,7 @@
  * Created on 09.03.2015
  *
  */
-package de.swingempire.fx.scene.control.selection;
+package de.swingempire.fx.scene.control.selection.treebugs;
 
 import javafx.application.Application;
 import javafx.collections.ListChangeListener.Change;
@@ -12,6 +12,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.FXUtils;
 
@@ -29,7 +30,7 @@ Steps to reproduce:
 - expand Root 1
 - select Child 1
 - press Delete on keyboard
-Result: Root 1 is visually selected
+Result/bug was: Root 1 is visually selected without having fired the notification on selectedItems
 
 output >>
 { [TreeItem [ value: Child 1 ]] added at 0, }
