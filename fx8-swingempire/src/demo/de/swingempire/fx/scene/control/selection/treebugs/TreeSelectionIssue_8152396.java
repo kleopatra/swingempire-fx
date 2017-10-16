@@ -7,6 +7,8 @@ package de.swingempire.fx.scene.control.selection.treebugs;
 import java.util.Collection;
 import java.util.Objects;
 
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
@@ -55,26 +57,42 @@ public class TreeSelectionIssue_8152396 extends Application {
                 new TreeItem<String>("Node 2-5"),
                 new TreeItem<String>("Node 2-6")
                 );
+        
         final TreeItem<String> childNode1 = new TreeItem<>("Child Node 1");
         childNode1.getChildren().addAll(
-//                new TreeItem<String>("Node 1-1"),
-//                new TreeItem<String>("Node 1-2"),
                 new TreeItem<String>("Node 1-1"),
                 new TreeItem<String>("Node 1-2"),
-            new TreeItem<String>("Node 1-3"),
-            new TreeItem<String>("Node 1-4")
+                new TreeItem<String>("Node 1-3"),
+//            new TreeItem<String>("Node 1-4"),
+            new TreeItem<String>("Node 1-last")
         );
-
         final TreeItem<String> root = new TreeItem<>("Root node");
         root.setExpanded(true);
         root.getChildren().addAll(childNode1); //, childNode2);
+        
 
+        // use fixed selectionModel: all fine
+        final TreeItemX<String> childNode1X = new TreeItemX<>("Child Node 1");
+        childNode1X.getChildren().addAll(
+                new TreeItemX<String>("Node 1-1"),
+                new TreeItemX<String>("Node 1-2"),
+                new TreeItemX<String>("Node 1-3"),
+            new TreeItemX<String>("Node 1-4"),
+            new TreeItemX<String>("Node 1-last")
+        );
+        final TreeItemX<String> rootX = new TreeItemX<>("Root node");
+        rootX.setExpanded(true);
+        rootX.getChildren().addAll(childNode1X); //, childNode2);
+        
+        
 //        TreeTableColumn<String,String> column = new TreeTableColumn<>("Column");
 //        column.setPrefWidth(190);
 //        column.setCellValueFactory((CellDataFeatures<String, String> p) ->
 //            new ReadOnlyStringWrapper(p.getValue().getValue()));
 
-        final TreeView<String> treeView = new TreeView<>(root);
+        final TreeView<String> treeView = new TreeView<>(rootX);
+        treeView.setSelectionModel(new SimpleTreeSelectionModel(treeView));
+        
         treeView.setPrefWidth(200);
         treeView.setShowRoot(true);
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

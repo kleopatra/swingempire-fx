@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection.treebugs;
 import java.util.Collection;
 import java.util.Objects;
 
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -28,7 +29,7 @@ import javafx.stage.Stage;
  * 
  * for 2 items: no error
  * for 3 items: error after 5 expands
- * 
+ * for 4 items: error after 3 expands
  */
 public class TreeTableSelectionIssue_8152396 extends Application {
 
@@ -41,12 +42,12 @@ public class TreeTableSelectionIssue_8152396 extends Application {
     public void start(Stage stage) {
         final TreeItem<String> childNode1 = new TreeItem<>("Child Node 1");
         childNode1.getChildren().addAll(
-//              new TreeItem<String>("Node 1-1"),
-//              new TreeItem<String>("Node 1-2"),
-//              new TreeItem<String>("Node 1-1"),
+              new TreeItem<String>("Node 1-1"),
               new TreeItem<String>("Node 1-2"),
-          new TreeItem<String>("Node 1-3"),
-          new TreeItem<String>("Node 1-4")
+              new TreeItem<String>("Node 1-3"),
+//              new TreeItem<String>("Node 1-4"),
+//          new TreeItem<String>("Node 1-5"),
+          new TreeItem<String>("Node 1-last")
         );
         final TreeItem<String> root = new TreeItem<>("Root node");
         root.setExpanded(true);
@@ -61,6 +62,7 @@ public class TreeTableSelectionIssue_8152396 extends Application {
         treeTableView.getColumns().add(column);
         treeTableView.setPrefWidth(200);
         treeTableView.setShowRoot(true);
+//        treeTableView.setSelectionModel(new SimpleTreeSelectionModel(treeTableView));
         treeTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // Select all children of expanded node.

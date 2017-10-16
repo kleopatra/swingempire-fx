@@ -49,7 +49,7 @@ public class TreeTableSelection_original_8152396 extends Application {
         childNode1.getChildren().addAll(
             new TreeItem<String>("Node 1-1"),
             new TreeItem<String>("Node 1-2"),
-//            new TreeItem<String>("Node 1-3"),
+            new TreeItem<String>("Node 1-3"),
 //            new TreeItem<String>("Node 1-4"),
 //            new TreeItem<String>("Node 1-5"),
             new TreeItem<String>("Node 1-last")
@@ -77,10 +77,16 @@ public class TreeTableSelection_original_8152396 extends Application {
             }
         });
 
+        
         filteredList = treeTableView.getSelectionModel().getSelectedItems().filtered(Objects::nonNull);
         filteredList.addListener((ListChangeListener.Change<? extends TreeItem<String>> change) -> {
             System.out.printf("Change: %s\n", change);
         });
+        
+        // JW: listening directly
+//        treeTableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener.Change<? extends TreeItem<String>> change) -> {
+//            System.out.printf("Change: %s\n", change);
+//        });
 
         final Scene scene = new Scene(new Group(), 200, 400);
         Group sceneRoot = (Group)scene.getRoot();
