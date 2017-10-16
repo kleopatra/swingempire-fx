@@ -42,9 +42,9 @@ public class TreeTableSelectionIssue_8152396 extends Application {
     public void start(Stage stage) {
         final TreeItem<String> childNode1 = new TreeItem<>("Child Node 1");
         childNode1.getChildren().addAll(
-              new TreeItem<String>("Node 1-1"),
-              new TreeItem<String>("Node 1-2"),
-              new TreeItem<String>("Node 1-3"),
+//              new TreeItem<String>("Node 1-1"),
+//              new TreeItem<String>("Node 1-2"),
+//              new TreeItem<String>("Node 1-3"),
 //              new TreeItem<String>("Node 1-4"),
 //          new TreeItem<String>("Node 1-5"),
           new TreeItem<String>("Node 1-last")
