@@ -20,6 +20,7 @@ import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.InvalidationReport;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
@@ -34,6 +35,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 
@@ -44,6 +46,14 @@ import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ObservableTest {
 
+// bindings and unwanted logging
+    
+    @Test
+    public void testSelectBindungToNull() {
+        ObjectProperty<MenuItem> item = new SimpleObjectProperty<>();
+        Bindings.selectString(item, "text");
+    }
+    
 //--------- using method references
     
     public static class ClassWithProperty {

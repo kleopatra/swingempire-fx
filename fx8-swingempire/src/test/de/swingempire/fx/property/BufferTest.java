@@ -34,7 +34,7 @@ public class BufferTest {
      * BooleanProperty converts a null to false, and logs an info with NPE ...
      * The test passes, though, due to the automatic conversion
      */
-    @Test @Ignore
+    @Test //@Ignore
     public void testBooleanNull() {
         BooleanProperty simple = new SimpleBooleanProperty();
         simple.set(true);
