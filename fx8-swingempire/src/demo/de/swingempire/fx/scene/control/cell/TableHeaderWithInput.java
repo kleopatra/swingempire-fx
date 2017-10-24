@@ -28,8 +28,8 @@
     import javafx.stage.Stage;
     
     /**
-     * Format/style parts of a TableCell
-     * https://stackoverflow.com/q/46880705/203657
+     * dynamic add/remove input component in tableHeader
+     * https://stackoverflow.com/q/46904932/203657
      */
     public class TableHeaderWithInput extends Application {
         TableView<Locale> table;
