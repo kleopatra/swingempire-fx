@@ -17,6 +17,7 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -24,6 +25,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -61,9 +63,9 @@ logger.addHandler(consoleHandler);
         Logger.getLogger("javafx.beans").setLevel(Level.SEVERE);
         }
     private int counter;
-
+    TableView<Locale> table; 
     private Parent getContent() {
-        TableView<Locale> table = new TableView<>(FXCollections.observableArrayList(
+        table = new TableView<>(FXCollections.observableArrayList(
                 Locale.getAvailableLocales()));
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
@@ -86,7 +88,11 @@ logger.addHandler(consoleHandler);
         primaryStage.setScene(new Scene(getContent(), 800, 400));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
-        LOG.info("want to grab this ...");
+        
+        // can lookup by class (not only style)
+        final Node header = table.lookup("Label");
+
+        LOG.info("want to grab this ... " + header);
 
     }
     
