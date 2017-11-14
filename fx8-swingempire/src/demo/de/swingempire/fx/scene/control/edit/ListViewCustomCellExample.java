@@ -18,7 +18,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import jdk.internal.jline.internal.Log;
+//import jdk.internal.jline.internal.Log;
 
 /**
  * TreeView: receives cancel event on commit

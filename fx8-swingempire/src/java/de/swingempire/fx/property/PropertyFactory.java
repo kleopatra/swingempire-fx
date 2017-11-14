@@ -8,8 +8,8 @@ package de.swingempire.fx.property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.util.Callback;
-import sun.util.logging.PlatformLogger;
-import sun.util.logging.PlatformLogger.Level;
+//import sun.util.logging.PlatformLogger;
+//import sun.util.logging.PlatformLogger.Level;
 
 import com.sun.javafx.property.PropertyReference;
 import com.sun.javafx.scene.control.Logging;
@@ -87,12 +87,13 @@ public class PropertyFactory<T,C> implements Callback<T, ObservableValue<C>> {
             }
         } catch (IllegalStateException e) {
             // log the warning and move on
-            final PlatformLogger logger = Logging.getControlsLogger();
-            if (logger.isLoggable(Level.WARNING)) {
-               logger.finest("Can not retrieve property '" + getPropertyName() +
-                        "' in PropertyValueFactory: " + this +
-                        " with provided class type: " + rowData.getClass(), e);
-            }
+//            PENDING JW: logging .. something .. really?
+//            final PlatformLogger logger = Logging.getControlsLogger();
+//            if (logger.isLoggable(Level.WARNING)) {
+//               logger.finest("Can not retrieve property '" + getPropertyName() +
+//                        "' in PropertyValueFactory: " + this +
+//                        " with provided class type: " + rowData.getClass(), e);
+//            }
         }
 
         return null;
