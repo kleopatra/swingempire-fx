@@ -127,7 +127,9 @@ public class DebugUtils {
                 + choice.getSelectionModel().getSelectedIndex() + " / "
                 + choice.getSelectionModel().getSelectedItem() + " / "
                 + choice.getFocusModel().getFocusedIndex() + " / "
-                + choice.getFocusModel().getFocusedItem());
+                + choice.getFocusModel().getFocusedItem()
+                + "\n selectedIndices: " + choice.getSelectionModel().getSelectedIndices()
+                + "\n selectedItems: " + choice.getSelectionModel().getSelectedItems());
     }
     
     public static void printSelectionState(TreeView<?> choice) {

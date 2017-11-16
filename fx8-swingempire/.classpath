@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/demo9"/>
+	<classpathentry kind="src" path="src/test9"/>
+	<classpathentry kind="src" path="src/java9"/>
+	<classpathentry kind="src" path="src/demo"/>
 	<classpathentry kind="src" path="src/tableedit"/>
 	<classpathentry kind="src" path="src/bug"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="src" path="src/testsupport"/>
-	<classpathentry kind="src" path="src/demo"/>
-	<classpathentry kind="src" path="src/java9"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/190-64">
 		<attributes>
 			<attribute name="module" value="true"/>
