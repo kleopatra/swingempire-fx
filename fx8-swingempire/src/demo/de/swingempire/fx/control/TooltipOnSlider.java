@@ -37,7 +37,7 @@ import javafx.util.StringConverter;
  * 
  * Both using axis/thumb have a slight offset against value. 
  * For axis, that's caused by a bug in core
- * <li> not adjusting for offset (aka: radius) in mouseHandler.
+ * <li> not adjusting for offset (aka: radius) in mouseHandler. Still not fixed in 9.0.1
  * 
  * Using track (instead of axis) can't work because we don't know the
  * internal layout.
