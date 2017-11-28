@@ -37,6 +37,8 @@ import javafx.stage.Stage;
  * reported:
  * https://bugs.openjdk.java.net/browse/JDK-8152557
  * 
+ * fixed in fx9.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TextFieldAction extends Application {
