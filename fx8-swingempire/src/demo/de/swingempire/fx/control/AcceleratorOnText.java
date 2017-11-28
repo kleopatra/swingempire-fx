@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 /**
  * Original bug report: https://bugs.openjdk.java.net/browse/JDK-8088068
  * 
+ * @see AcceleratorOnTab
  */
 public class AcceleratorOnText extends Application {
 
@@ -53,7 +54,7 @@ public class AcceleratorOnText extends Application {
 
         Scene scene = new Scene(vBox, 300, 300);
         // win
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleShortcut);
+//        scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleShortcut);
         // original
 //        scene.addEventFilter(KeyEvent.KEY_RELEASED, this::handleShortcut);
         

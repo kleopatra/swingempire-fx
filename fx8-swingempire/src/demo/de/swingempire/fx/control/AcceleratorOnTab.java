@@ -22,6 +22,7 @@ import javafx.stage.Stage;
  * it's a bug: 
  * https://bugs.openjdk.java.net/browse/JDK-8088068
  * 
+ *  
  * It's a rather crude bug:
  * <li> all accelerators of all contextMenus are collected into a single
  * Map (on the Scene) with the accelerator as key
@@ -35,6 +36,8 @@ import javafx.stage.Stage;
  *  <p>
  *  Note though, that accelerators in Swing's popup don't work at all!
  *  https://docs.oracle.com/javase/tutorial/uiswing/components/menu.html
+ *  
+ *  @see AcceleratorOnText
  */
 public class AcceleratorOnTab extends Application {
 
