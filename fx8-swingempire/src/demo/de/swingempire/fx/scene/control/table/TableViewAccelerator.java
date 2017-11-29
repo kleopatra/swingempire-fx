@@ -41,7 +41,7 @@ public class TableViewAccelerator extends Application {
         
         table.setTableMenuButtonVisible(true);
         
-        Button addMenu = new Button("add MenuItem to corner");
+        Button addMenu = new Button("add MenuItem to corner - F3");
         addMenu.setOnAction(e -> {
             TableViewSkin skin = (TableViewSkin) table.getSkin();
             
@@ -53,7 +53,7 @@ public class TableViewAccelerator extends Application {
                     header, "columnPopupMenu");
             MenuItem item = new MenuItem("do stuff");
             item.setOnAction(me -> {
-                LOG.info("from corner");
+                LOG.info("from corner - F3");
             });
             item.setAccelerator(KeyCombination.valueOf("F3"));
             menu.getItems().add(item);
@@ -69,10 +69,10 @@ public class TableViewAccelerator extends Application {
         contextItem.setAccelerator(KeyCombination.valueOf("F4"));
         menu.getItems().addAll(contextItem);
         table.setContextMenu(menu);
-        Button addToContext = new Button("add MenuItem to context");
+        Button addToContext = new Button("add MenuItem to context - F5");
         addToContext.setOnAction(e -> {
             MenuItem added = new MenuItem("added");
-            added.setOnAction(me -> LOG.info("from added"));
+            added.setOnAction(me -> LOG.info("from added - F5"));
             added.setAccelerator(KeyCombination.valueOf("F5"));
             menu.getItems().addAll(added);
             addToContext.setDisable(true);
