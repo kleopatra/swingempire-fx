@@ -292,6 +292,7 @@ public class DebugUtils {
                 inParent.getWidth(), inParent.getHeight());
         r.setStroke(strokePaint);
         r.setFill(Color.TRANSPARENT);
+        r.setMouseTransparent(true);
         if (root instanceof Pane) {
             ((Pane) root).getChildren().add(r);
         } else if (root instanceof Group) {
