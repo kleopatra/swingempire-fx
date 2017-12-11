@@ -30,6 +30,12 @@ import javafx.stage.Stage;
  *  You will see that the button (which is set to "defaultButton") is pressed.
  *  Now click on the ComboBox textField like you would want to type something. 
  *  Press enter and you will see that the button is not being pressed. 
+ *  
+ *  Fixed for ComboBox, DatePicker
+ *  
+ *  Spinner has similar misbehaviour (except that it does activate the cancel)
+ *  reported as:
+ *  https://bugs.openjdk.java.net/browse/JDK-8193311
  */
 public class CommitAndDefaultButton extends Application {
     

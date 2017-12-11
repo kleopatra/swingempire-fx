@@ -5,6 +5,8 @@
 package de.swingempire.fx.control;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -19,6 +21,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -27,7 +30,9 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
@@ -54,8 +59,16 @@ import javafx.stage.Stage;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class CommitOnFocusLost extends Application {
 
+    private boolean hasAction;
+    private boolean printFocusChange;
+    List<Spinner> spinners = new ArrayList<>();
+    List<TextField> textFields = new ArrayList<>();
+    List<ComboBox> combos = new ArrayList<>();
+    List<DatePicker> pickers = new ArrayList<>();
+    
     private void addSpinner(GridPane grid, int row, boolean bind, boolean useFormatter) {
         Spinner control = new Spinner();
+        spinners.add(control);
         // normal setup of spinner
         SpinnerValueFactory factory = new IntegerSpinnerValueFactory(0, 10000, 0);
         control.setValueFactory(factory);
@@ -77,7 +90,7 @@ public class CommitOnFocusLost extends Application {
           
         }
         control.focusedProperty().addListener((src, ov, nv) -> {
-            if (!nv) {
+            if (printFocusChange && !nv) {
                 LOG.info("formatter/spinner: " + valueSupplier.get() + " / " + control.getValue());
             }
         });
@@ -94,19 +107,30 @@ public class CommitOnFocusLost extends Application {
         addRow(grid, row, labelText, control, valueLabel);
     }
 
-    private void addTextField(GridPane grid, int row) {
+    private void addTextField(GridPane grid, int row, boolean useFormatter) {
         TextField control = new TextField();
-        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
-        control.setTextFormatter(formatter);
+        textFields.add(control);
+        Supplier<String> valueSupplier; 
+        
+        TextFormatter<String> formatter;
+        if (useFormatter) {
+            formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
+            control.setTextFormatter(formatter);
+            valueSupplier = () -> formatter.getValue();
+            
+        } else {
+            formatter = null;
+            valueSupplier = () -> " not available ";
+        }
         control.focusedProperty().addListener((src, ov, nv) -> {
-            if (!nv) {
-                LOG.info("formatter/textfield: " + formatter.getValue() + " / " + control.getText());
+            if (printFocusChange && !nv) {
+                LOG.info("formatter/textfield: " + valueSupplier.get() + " / " + control.getText());
             }
         });
         Label valueLabel = new Label(); 
-        valueLabel.textProperty().bind(stringExpression(formatter.valueProperty()));
-
-        String labelText = "TextField: ";
+        valueLabel.textProperty().bind(stringExpression(formatter != null ? formatter.valueProperty() : control.textProperty()));
+        String formatted = useFormatter ? " (withFormatter) " : "";
+        String labelText = "TextField: " + formatted;
         addRow(grid, row, labelText, control, valueLabel);
 
     }
@@ -114,6 +138,8 @@ public class CommitOnFocusLost extends Application {
     private void addComboBox(GridPane grid, int row, boolean bind, boolean useFormatter) {
         ObservableList<String> items = FXCollections.observableArrayList("One", "Two", "All");
         ComboBox<String> comboBox = new ComboBox(items);
+        combos.add(comboBox);
+        comboBox.getSelectionModel().selectFirst();
         comboBox.setConverter(IDENTITY_STRING_CONVERTER);
         comboBox.setEditable(true);
         Supplier<String> valueSupplier; 
@@ -133,7 +159,7 @@ public class CommitOnFocusLost extends Application {
          * https://bugs.openjdk.java.net/browse/JDK-8151129
          */ 
         comboBox.focusedProperty().addListener((src, ov, nv) -> {
-            if (!nv) {
+            if (printFocusChange && !nv) {
                 LOG.info("formatter/combo: " + valueSupplier.get() + " / " + comboBox.getValue());
             }
         });
@@ -154,7 +180,8 @@ public class CommitOnFocusLost extends Application {
     
     private void addDatePicker(GridPane grid, int row, boolean bind, boolean useFormatter) {
             
-            DatePicker datePicker = new DatePicker();
+            DatePicker datePicker = new DatePicker(LocalDate.now());
+            pickers.add(datePicker);
             datePicker.setEditable(true);
             Supplier<Object> valueSupplier; 
             if (useFormatter) {
@@ -173,7 +200,7 @@ public class CommitOnFocusLost extends Application {
              * https://bugs.openjdk.java.net/browse/JDK-8151129
              */ 
             datePicker.focusedProperty().addListener((src, ov, nv) -> {
-                if (!nv) {
+                if (printFocusChange && !nv) {
                     LOG.info("formatter/datepicker: " + valueSupplier.get() + " / " + datePicker.getValue());
                 }
             });
@@ -198,11 +225,8 @@ public class CommitOnFocusLost extends Application {
         grid.add(control, col++, row);
         grid.add(new Label("value: "), col++, row);
         grid.add(valueLabel, col++, row);
-        
     }
-    /**
-     * @return
-     */
+    
     private Parent getContent() {
         
         GridPane grid = new GridPane();
@@ -211,21 +235,50 @@ public class CommitOnFocusLost extends Application {
         grid.setPadding(new Insets(10));
 
         int row = 0;
-        addTextField(grid, row++);
-        addSpinner(grid, row++, true, true);
-        addSpinner(grid, row++, false, true);
-        addSpinner(grid, row++, false, false);
-        addComboBox(grid, row++, true, true);
-        addComboBox(grid, row++, false, true);
+        // textfields
+        addTextField(grid, row++, false);
+        addTextField(grid, row++, true);
+        // combos
         addComboBox(grid, row++, false, false);
+        addComboBox(grid, row++, false, true);
+        addComboBox(grid, row++, true, true);
+        // pickers
         addDatePicker(grid, row++, false, false);
-        return grid;
+        // spinners
+        addSpinner(grid, row++, false, false);
+        addSpinner(grid, row++, false, true);
+        addSpinner(grid, row++, true, true);
+        
+        Button ok = new Button("Default OK");
+        ok.setDefaultButton(true);
+        ok.setOnAction(e -> LOG.info("OK triggered " + hasAction));
+        
+        Button cancel = new Button("Cancel");
+        cancel.setCancelButton(true);
+        cancel.setOnAction(e -> LOG.info("Cancel triggered " + hasAction));
+        
+        Button addActions = new Button("add actionHandler");
+        addActions.setOnAction(e -> {
+            pickers.forEach(t -> t.setOnAction(a -> LOG.info("action from " + t)));
+            combos.forEach(t -> t.setOnAction(a -> LOG.info("action from " + t)));
+            textFields.forEach(t -> t.setOnAction(a -> LOG.info("action from " + t)));
+            hasAction = true;
+            addActions.setDisable(true);
+        });
+        
+        HBox buttons = new HBox(10, addActions);
+        buttons.getChildren().addAll(ok, cancel);
+        
+        BorderPane content = new BorderPane(grid);
+        content.setPadding(new Insets(10));
+        content.setBottom(buttons);
+        return content;
     }
 
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(getContent(), 600, 300));
+        primaryStage.setScene(new Scene(getContent(), 600, 400)); //, 600, 300));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }

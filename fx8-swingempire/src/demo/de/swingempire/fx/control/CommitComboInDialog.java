@@ -6,6 +6,8 @@ package de.swingempire.fx.control;
 
 import java.util.Optional;
 
+import com.sun.javafx.stage.StageHelper;
+
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,15 +15,14 @@ import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -64,6 +65,9 @@ public class CommitComboInDialog extends Application {
     
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // fx9: gets only windows that are showing (vs. all created)
+        // but: was same in fx8 StageHelper.getStages
+//        Window.getWindows();
         primaryStage.setScene(new Scene(getContent()));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
