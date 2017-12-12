@@ -122,7 +122,7 @@ public class TreeTableExample extends Application {
             editableProperty().addListener((s, ov, nv) -> {
                 LOG.info("editable changed: " + nv + " on " + getItem()); 
                 if (!nv) {
-                    new RuntimeException("caller: \n").printStackTrace();
+//                    new RuntimeException("caller: \n").printStackTrace();
                 }
             });
         }
