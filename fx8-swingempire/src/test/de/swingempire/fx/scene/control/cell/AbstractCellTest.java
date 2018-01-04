@@ -406,7 +406,7 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         new StageLoader(control.getControl());
         int editIndex = 1;
         IndexedCell cell =  getCellAt(control, editIndex);
-        // start edit on control
+        // start edit on cell
         cell.startEdit();
         // test editing location
         assertEquals("editingIndex must be updated", editIndex, control.getEditingIndex());
