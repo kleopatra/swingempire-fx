@@ -29,8 +29,19 @@ import javafx.stage.Stage;
  * If so, the value in the newly editing cell is the last edited.
  * 
  * Playing with set vs addCommitHandler
- * - with former: next cell edited, value incorrect after scrolling for new/re-used cell
- * - with latter: editing is terminated, next not edited, value correct
+ * <li> with former: next cell edited, value incorrect after scrolling for new/re-used cell
+ * <li> with latter: editing is terminated, next not edited, value correct
+ * 
+ * Looks like the order of actions in cell.commitEdit is important, setting the commitHandler
+ * (which then is responsible for updating the data) seems to work always (as of Jan '18, fx 9.01)
+ * if commitEdit sequence is 
+ * <ol>
+ * <li> switch out editing state
+ * <li> update visuals 
+ * <li> update editing location
+ * <li> notify commithandler
+ * </ol>
+ * 
  */
 public class ListViewCommitHandler extends Application {
 

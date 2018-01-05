@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.cell.CellDecorator;
 import javafx.application.Application;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -18,26 +19,36 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-//import jdk.internal.jline.internal.Log;
 
 /**
- * TreeView: receives cancel event on commit
- * https://bugs.openjdk.java.net/browse/JDK-8124615
- * TreeView: F2 fires cancel
- * https://bugs.openjdk.java.net/browse/JDK-8123783
+ * ?? This does not support editing ... and is about ListView (not TreeView)
+ * 
+ * <p>
+ * <li>TreeView: receives cancel event on commit
+ * <li>https://bugs.openjdk.java.net/browse/JDK-8124615
+ * <li>TreeView: F2 fires cancel
+ * <li>https://bugs.openjdk.java.net/browse/JDK-8123783
  * 
  * Bug still for ListView, but for a different reason:
  * default handler replaces value in items -> skin cancels edit  
  * 
- * Modified TVEvents to handle ListView
+ * Modified TVEvents to handle ListView. 
  */
 public class ListViewCustomCellExample extends Application {
     
-    public static class MyListCell<T> extends ListCell<T> implements CellDecorator<T> {
+    /**
+     * Plain ListCell that is based on CellDecorator - no editing.
+     */
+    public static class MyListCell<T> extends ListCell<T> implements CellDecorator<ListView<T>, T> {
         @Override 
         protected void updateItem(T item, boolean empty) {
             super.updateItem(item, empty);
             updateItemNode(item, empty);
+        }
+
+        @Override
+        public ReadOnlyObjectProperty<ListView<T>> controlProperty() {
+            return listViewProperty();
         }
     }
         

@@ -375,7 +375,7 @@ public abstract class AbstractCellTest<C extends Control, I extends IndexedCell>
         int editIndex = 1;
         IndexedCell cell = getCellAt(control, editIndex);
         control.edit(editIndex);
-        // cancel edit on control
+        // commit edit on cell
         cell.commitEdit("edited");
         // test editing location
         assertEquals("editingIndex must be updated", -1, control.getEditingIndex());
