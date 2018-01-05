@@ -26,8 +26,8 @@ public class SliderBug_8089730 extends Application {
     public void start(Stage stage) throws Exception {
 
         Slider s = new Slider();
-//        s.setSkin(new MySliderSkin(s)); 
-        s.setSkin(new XSliderSkin(s));
+        s.setSkin(new MySliderSkin(s)); 
+//        s.setSkin(new XSliderSkin(s));
         s.setMinWidth(500.0);
         s.setPrefWidth(500.0);
         s.setMax(200.0);
