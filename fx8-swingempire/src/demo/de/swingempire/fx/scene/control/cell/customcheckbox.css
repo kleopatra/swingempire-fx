@@ -1,0 +1,23 @@
+/**
+ * Just want to see an effect, doesn't matter what
+ */
+.custom-cell > .check-box {
+	-fx-background-color: blue;
+}
+.custom-cell > .check-box:selected {
+	-fx-background-color: red;
+}
+
+.table-cell-fixed {
+    -fx-background: -fx-control-inner-background;
+    -fx-background-color: -fx-table-cell-border-color, -fx-background;
+}
+
+.table-row-cell:odd > .table-cell-fixed{
+    -fx-background: -fx-control-inner-background-alt;
+}
+/*
+.x-column-header {
+	-fx-background-color: yellow;
+}
+*/

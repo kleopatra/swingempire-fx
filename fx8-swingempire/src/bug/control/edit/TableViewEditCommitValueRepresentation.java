@@ -4,6 +4,7 @@
  */
 package control.edit;
 
+import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
@@ -39,7 +40,8 @@ public class TableViewEditCommitValueRepresentation extends Application {
         table.setEditable(true);
 
         TableColumn<TableColumn, String> first = new TableColumn<>("Text");
-        first.setCellFactory(TextFieldTableCell.forTableColumn());
+//        first.setCellFactory(TextFieldTableCell.forTableColumn());
+        first.setCellFactory(DebugTextFieldTableCell.forTableColumn());
         first.setCellValueFactory(new PropertyValueFactory<>("text"));
 
         first.setOnEditStart(t -> editPosition = t.getTablePosition());

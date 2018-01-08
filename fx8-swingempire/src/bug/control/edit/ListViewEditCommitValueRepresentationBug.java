@@ -4,6 +4,7 @@
  */
 package control.edit;
 
+import de.swingempire.fx.scene.control.cell.DebugTextFieldListCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
@@ -18,7 +19,15 @@ import javafx.stage.Stage;
  * to commit it back to the list
  *  
  * but okay ... cell always shows value of backing data, not the edited 
- * Why? Code in commitEdit looks very much the same
+ * Why? Code in commitEdit looks very much the same. 
+ * 
+ * Debugging reveals:
+ * 
+ * - triggered layout pass
+ * - VirtualFlow addTrailingCells
+ * - VirualFlow setCellIndex
+ * - indexedCell.indexChanged
+ * - listCell updateItem(oldIndex) 
  * 
  * <ul> diffs
  * <li>ListCell listens to itemsList changes - but nothing changed, shouldn't be triggered
@@ -33,7 +42,8 @@ public class ListViewEditCommitValueRepresentationBug extends Application {
         ListView<String> simpleList = new ListView<>(FXCollections
                 .observableArrayList("Item1", "Item2", "Item3", "Item4"));
         simpleList.setEditable(true);
-        simpleList.setCellFactory(TextFieldListCell.forListView());
+//        simpleList.setCellFactory(TextFieldListCell.forListView());
+        simpleList.setCellFactory(DebugTextFieldListCell.forListView());
 
         simpleList.setOnEditCommit(e -> {
             editIndex = e.getIndex();
