@@ -38,6 +38,8 @@ import javafx.util.StringConverter;
  * Both using axis/thumb have a slight offset against value. 
  * For axis, that's caused by a bug in core
  * <li> not adjusting for offset (aka: radius) in mouseHandler. Still not fixed in 9.0.1
+ * But: doesn't need to, the trackStart/-Length is adjusted such that the full width of 
+ * the thumb fits into the slider (ok with assumption that radius < thumbWidth/2)
  * 
  * Using track (instead of axis) can't work because we don't know the
  * internal layout.
@@ -61,8 +63,8 @@ public class TooltipOnSlider extends Application {
         
 //        slider.setOrientation(Orientation.VERTICAL);
         // hacking around the bugs in a custom skin
-//        slider.setSkin(new MySliderSkin(slider));
-        slider.setSkin(new XSliderSkin(slider));
+        slider.setSkin(new MySliderSkin(slider));
+//        slider.setSkin(new XSliderSkin(slider));
         
         Label label = new Label();
         Popup popup = new Popup();

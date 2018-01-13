@@ -19,6 +19,8 @@ import de.swingempire.fx.scene.control.slider.XSliderSkin;
  * https://bugs.openjdk.java.net/browse/JDK-8089730
  * 
  * MySliderSkin is better, but not optimal - rounding error?
+ * 
+ * @see de.swingempire.fx.control.TooltipOnSlider
  */
 public class SliderBug_8089730 extends Application {
 
