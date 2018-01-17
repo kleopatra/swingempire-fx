@@ -14,10 +14,10 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -95,6 +95,10 @@ public class TableViewDemo extends Application {
         
         HBox buttons = new HBox(10, button, addNested, addNormal);
         pane.setBottom(buttons);
+        // select first row (it's focused only)
+//        table.getSelectionModel().select(0);
+        // table always has initial focus (aka: focusOwner) due to being in the center?
+//        pane.setTop(new TextField("some dummy to focus"));
         return pane;
     }
 
