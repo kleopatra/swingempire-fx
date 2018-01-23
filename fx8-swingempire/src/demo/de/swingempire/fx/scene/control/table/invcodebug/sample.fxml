@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?language JavaScript?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.input.KeyCodeCombination?>
+
+<VBox fx:id="vbox" layoutX="10.0" layoutY="10.0" prefHeight="250.0" prefWidth="300.0" spacing="10" 
+         xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" 
+         fx:controller="de.swingempire.fx.scene.control.table.invcodebug.SampleController">
+  <style>
+	-fx-padding: 10;
+	-fx-border-style: solid inside;
+	-fx-border-width: 2;
+	-fx-border-insets: 5;
+	-fx-border-radius: 5;
+	-fx-border-color: blue;
+  </style>
+  <children>
+   <MenuBar BorderPane.alignment="CENTER">
+    <menus>
+      <Menu mnemonicParsing="false" text="File">
+        <items>
+          <MenuItem mnemonicParsing="false" onAction="#handleExit" text="Exit" />
+        </items>
+      </Menu>
+      <Menu mnemonicParsing="false" text="Edit">
+        <items>
+          <MenuItem mnemonicParsing="false" onAction="#handleClearAll" 
+          	onMenuValidation="#handleClearAll" text="Clear All Markers" accelerator="ShortCut + Shift+ E">
+ <!--  original, can use property in item>       
+                 <accelerator>
+                    <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
+                 </accelerator>
+ </!-->       
+                 </MenuItem>
+        </items>
+      </Menu>
+      <Menu mnemonicParsing="false" text="Help">
+        <items>
+          <MenuItem mnemonicParsing="false" onAction="#handleAbout" text="About" />
+        </items>
+      </Menu>
+    </menus>
+  </MenuBar>
+    <Label fx:id="inputLbl" alignment="CENTER_LEFT" cache="true" cacheHint="SCALE" prefHeight="30.0" prefWidth="200.0" text="Please insert Your Input here:" textAlignment="LEFT" />
+    <TextField fx:id="inputText" prefWidth="100.0" />
+    <Button fx:id="okBtn" alignment="CENTER_RIGHT" contentDisplay="CENTER" 
+    	mnemonicParsing="false" onAction="#printOutput" text="OK" textAlignment="CENTER" />
+    <Label fx:id="outputLbl" alignment="CENTER_LEFT" cache="true" cacheHint="SCALE" prefHeight="30.0" prefWidth="200.0" text="Your Input:" textAlignment="LEFT" />
+    <TextArea fx:id="outputText" prefHeight="100.0" prefWidth="200.0" wrapText="true" />
+  </children>
+</VBox>
