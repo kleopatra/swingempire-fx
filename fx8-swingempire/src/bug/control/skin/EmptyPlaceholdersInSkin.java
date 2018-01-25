@@ -4,19 +4,11 @@
  */
 package control.skin;
 
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -24,12 +16,8 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.TableHeaderRow;
-import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
@@ -59,127 +47,15 @@ import javafx.stage.Stage;
  */
 public class EmptyPlaceholdersInSkin extends Application {
 
-    TableView<Person> table;
-    
-    
-    public static class NoPlaceHolderSkin<T> extends TableViewSkin<T>{
-
-        VirtualFlow<?> flowAlias;
-        TableHeaderRow headerAlias;
-        Parent placeholderRegion;
-        Node placeholderNode; // don't really care it's only the initial placeholder
-        ChangeListener<Boolean> visibleListener = (src, ov, nv) -> visibleChanged(nv);
-        ChangeListener<Parent> parentListener = (src, ov, nv) -> parentChanged(nv);
-        ListChangeListener<Node> childrenListener = c -> childrenChanged(c);
-        /**
-         * @param table
-         */
-        public NoPlaceHolderSkin(TableView<T> table) {
-            super(table);
-            flowAlias = (VirtualFlow<?>) table.lookup(".virtual-flow");
-            headerAlias = (TableHeaderRow) table.lookup(".column-header-background");
-            // default placeholder - don't really care, interested in parent
-            // which is lazily created
-            placeholderNode = new StackPane();
-            placeholderNode.parentProperty().addListener(parentListener);
-            table.setPlaceholder(placeholderNode);
-            
-//            LOG.info("has parent?" + placeholderNode.getParent());
-//            placeholderRegion = placeholderNode.getParent();
-//            
-//            if (placeholderRegion != null) {
-//                placeholderRegion.visibleProperty().addListener(visibleListener);
-//                visibleChanged(true);
-//                // hmm ... maybe the flow is not yet instantiated with row cells?
-////                flow.setVisible(true);
-////                placeholderRegion.setVisible(false);
-//            }
-//            table.sceneProperty().addListener(sceneListener);
-//            LOG.info("has scene? " + table.getScene());
-//            if (table.getScene() != null) {
-//                LOG.info("window" + table.getScene().getWindow());
-//                sceneChanged(table.getScene());
-//            }
-        }
-        
-        
-        /**
-         * @param c
-         * @return
-         */
-        protected void childrenChanged(Change<? extends Node> c) {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    List<? extends Node> addedSubList = c.getAddedSubList();
-                    boolean added = hasPlaceHolderRegion(addedSubList);
-                    
-                }
-            }
-        }
-
-
-        /**
-         * @param addedSubList
-         */
-        private boolean hasPlaceHolderRegion(
-                List<? extends Node> addedSubList) {
-            List<Node> parents = addedSubList.stream()
-                    .filter(e -> e.getStyleClass().contains("placeholder"))
-                    .collect(Collectors.toList());
-            if (!parents.isEmpty()) {
-                
-            }
-            return false;
-        }
-
-
-        @Override
-        protected void layoutChildren(double x, double y, double width,
-                double height) {
-            super.layoutChildren(x, y, width, height);
-            if (getItemCount()> 0) return;
-            // super didn't layout the flow if empty- do it now
-            final double baselineOffset = getSkinnable().getLayoutBounds().getHeight() / 2;
-            double headerHeight = headerAlias.getHeight();
-            y += headerHeight;
-            double flowHeight = Math.floor(height - headerHeight);
-            layoutInArea(flowAlias, x, y,
-                    width, flowHeight,
-                    baselineOffset, HPos.CENTER, VPos.CENTER);
-
-
-        }
-
-        private void parentChanged(Parent nv) {
-            LOG.info("getting parent: " + nv);
-            if (nv == null) return;
-            placeholderRegion =  nv;
-            placeholderRegion.visibleProperty().addListener(visibleListener);
-            visibleChanged(true);
-//            placeholderRegion.setVisible(false);
-        }
-
-        /**
-         * @param nv
-         * @return
-         */
-        private void visibleChanged(Boolean nv) {
-            LOG.info("visible: " + nv);
-            if (nv) {
-                flowAlias.setVisible(true);
-                placeholderRegion.setVisible(false);
-            }
-        }
-        
-        
-    }
     private Parent createContent() {
-        // okay if initially populated
-        table = new TableView<>() {
+        // initially populated
+        //TableView<Person> table = new TableView<>(Person.persons()) {
+        // initially empty
+        TableView<Person> table = new TableView<>() {
 
             @Override
             protected Skin<?> createDefaultSkin() {
-                return new NoPlaceHolderSkin<>(this);
+                return new NoPlaceHolderTableViewSkin<>(this);
             }
             
         };
