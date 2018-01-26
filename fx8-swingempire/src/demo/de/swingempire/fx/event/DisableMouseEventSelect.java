@@ -6,18 +6,14 @@ package de.swingempire.fx.event;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-
 import javafx.application.Application;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -27,9 +23,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.TableCellSkinBase;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -159,6 +153,7 @@ public class DisableMouseEventSelect extends Application {
 //        
 //    }
 
+    boolean installed;
     @Override
     public void start(Stage stage) throws Exception{
         ContextMenuEvent e;
@@ -171,7 +166,26 @@ public class DisableMouseEventSelect extends Application {
         label.setFont(new Font("Arial", 20));
 
         ContextMenu tableContext = new ContextMenu();
-        tableContext.getItems().add(new MenuItem("my world on table"));
+        MenuItem tableMenuItem = new MenuItem("my world on table");
+        // unrelated to selection - quick check: right click on menu
+        // must not fire
+        // https://stackoverflow.com/q/48438436/203657
+        tableMenuItem.setOnAction(a ->  {
+            Skin<?> skin = tableContext.getSkin();
+            LOG.info("context: " + skin);
+            if (skin != null && !installed) {
+                installed = true;
+                Node root = skin.getNode();
+                root.addEventFilter(MouseEvent.MOUSE_RELEASED, ev -> {
+                    if (ev.getButton() == MouseButton.SECONDARY) {
+                        LOG.info("consume");
+                        ev.consume();
+                    }
+                });
+            }
+            
+        });
+       tableContext.getItems().add(tableMenuItem);
         table.setContextMenu(tableContext);
         table.setEditable(true);
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -218,6 +232,7 @@ public class DisableMouseEventSelect extends Application {
 
         stage.setScene(scene);
         stage.show();
+        LOG.info("context: " + tableContext.getSkin());
     }
 
 

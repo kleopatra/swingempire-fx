@@ -16,6 +16,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -26,7 +27,7 @@ import javafx.stage.Stage;
  * 
  * on SO: https://stackoverflow.com/q/16992631/203657
  * 
- * Trying to hack around:
+ * Trying to hack around: (experimented with fx9)
  * 
  * - handled in TableViewSkinBase updatePlaceHolderRegionVisibility which sets the
  *   placeholder visible to true and the flow visible to false
@@ -41,12 +42,31 @@ import javafx.stage.Stage;
  * - except for the very beginning: the placeholder is added lazily the
  *   very first time that updatePlaceHolderRegionvisible is called  
  * - and except when resizing window while empty  
- * - can be remedied by faking the itemCount to min of 1 -> problem with
- *   keys to move the selection (cells disappear)  
+ * - fx9 only (checked against fx8 is fine): 
+ *   can be remedied by faking the itemCount to min of 1 -> problem with
+ *   keys to move the selection (cells disappear) 
+ *   
+ *   
  * @author Jeanette Winzenburg, Berlin
  */
 public class EmptyPlaceholdersInSkin extends Application {
 
+    public static class FakeItemCount<T> extends TableViewSkin<T> {
+
+        /**
+         * @param arg0
+         */
+        public FakeItemCount(TableView<T> arg0) {
+            super(arg0);
+        }
+        
+        @Override
+        public int getItemCount() {
+            int r = super.getItemCount();
+            return r == 0 ? 1 : r;
+        }
+        
+    }
     private Parent createContent() {
         // initially populated
         //TableView<Person> table = new TableView<>(Person.persons()) {
@@ -55,7 +75,8 @@ public class EmptyPlaceholdersInSkin extends Application {
 
             @Override
             protected Skin<?> createDefaultSkin() {
-                return new NoPlaceHolderTableViewSkin<>(this);
+                return new FakeItemCount(this);
+//                return new NoPlaceHolderTableViewSkin<>(this);
             }
             
         };

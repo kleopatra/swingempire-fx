@@ -1,0 +1,8 @@
+.context-menu {
+     -fx-skin: "de.swingempire.fx.event.ExContextMenuSkin";
+}
+
+.menu-bar {
+     -fx-skin: "de.swingempire.fx.event.ExMenuBarSkin";
+
+}
