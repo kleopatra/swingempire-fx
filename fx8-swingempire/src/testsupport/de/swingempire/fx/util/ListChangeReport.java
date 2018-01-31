@@ -6,8 +6,8 @@ package de.swingempire.fx.util;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import javafx.beans.value.ObservableListValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
@@ -31,6 +31,7 @@ public class ListChangeReport implements ListChangeListener {
     
     @Override
     public void onChanged(Change c) {
+        LOG.info("in report?" + c);
         changes.add(0, c);
     }
     
@@ -95,4 +96,16 @@ public class ListChangeReport implements ListChangeListener {
         changes.clear();
     }
 
+    
+    
+    @Override
+    public String toString() {
+        return "changes: " + changes + " on source: " + source;
+    }
+
+
+
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(ListChangeReport.class.getName());
 }

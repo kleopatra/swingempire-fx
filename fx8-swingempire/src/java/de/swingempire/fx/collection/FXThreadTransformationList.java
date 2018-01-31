@@ -12,6 +12,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
 
 /**
+ * PENDING: Incomplete and not tested. 
+ * 
  * A 1:1 transform of the sourceList that guarantees to fire change notification
  * on the fx-thread.
  * 
@@ -19,9 +21,6 @@ import javafx.collections.transformation.TransformationList;
  */
 public class FXThreadTransformationList<E> extends TransformationList<E, E> {
 
-    /**
-     * @param source
-     */
     public FXThreadTransformationList(ObservableList<E> source) {
         super(source);
     }
@@ -30,30 +29,24 @@ public class FXThreadTransformationList<E> extends TransformationList<E, E> {
     protected void sourceChanged(Change<? extends E> c) {
         beginChange();
         while (c.next()) {
-            LOG.info("any: " + c.getFrom());
             if (c.wasPermutated()) {
-                
+                // tbd
             } else if (c.wasUpdated()) {
                 update(c);
             } else if (c.wasReplaced()) {
-                
+                // tbd
             } else {
                 addedOrRemoved(c);
             }
         }
+        // commit on fx-thread
         endChangeOnFXThread();
     }
 
-    /**
-     * 
-     */
     public void endChangeOnFXThread() {
         Platform.runLater(() -> endChange());
     }
 
-    /**
-     * @param c
-     */
     private void addedOrRemoved(Change<? extends E> c) {
         if (c.wasRemoved()) {
             nextRemove(c.getFrom(), c.getRemoved());
@@ -64,11 +57,7 @@ public class FXThreadTransformationList<E> extends TransformationList<E, E> {
         }
     }
 
-    /**
-     * @param c
-     */
     private void update(Change<? extends E> c) {
-        LOG.info("update: " + c);
         for (int pos = c.getFrom(); pos < c.getTo(); pos++) {
             nextUpdate(pos);
         }
