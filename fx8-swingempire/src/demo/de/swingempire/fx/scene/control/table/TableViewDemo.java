@@ -16,14 +16,24 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
+ * Multi-purpose test driver.
+ * <p>
+ * auto-size columns programmatically (fx9 version)
+ * https://stackoverflow.com/a/48665254/203657
+ * <p>
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -31,6 +41,7 @@ public class TableViewDemo extends Application {
 
     private TableView<Person> table;
     private TableColumn emailHeader;
+    private TableColumn emailColumn;
     
     public static class PlainTableCell<S, T> extends TableCell<S, T> {
         
@@ -53,7 +64,6 @@ public class TableViewDemo extends Application {
                 super.setGraphic(null);
             }
         }
-
 
     }
 
@@ -79,27 +89,125 @@ public class TableViewDemo extends Application {
         Button button = new Button("debug");
         button.setOnAction(e -> debugHeaders(table));
         
-        Button addNested = new Button("add nested column");
+        
+        Button addNested = new Button("add hidden column to nested");
         addNested.setOnAction(e -> {
             TableColumn column = new TableColumn("hidden");
             column.setVisible(false);
             emailHeader.getColumns().add(column);
         });
         
-        Button addNormal = new Button("add normal column");
+        Button addNormal = new Button("add hidden normal column");
         addNormal.setOnAction(e -> {
             TableColumn column = new TableColumn("normal");
             column.setVisible(false);
             table.getColumns().add(column);
         });
         
-        HBox buttons = new HBox(10, button, addNested, addNormal);
+        Button autoSizeEmail = new Button("autoSize email column");
+        autoSizeEmail.setOnAction(e -> {
+            doAutoSize(table, emailColumn);
+        });
+        Button prefEmail =  new Button("toggle pref of email column ");
+        prefEmail.setOnAction(e -> {
+            boolean isDefault = emailColumn.getPrefWidth() == 80;
+            // toggling pref width of a column does resize it to its pref
+            // this is done in the tableColumn itself, which updates its width
+            // in prefWidth.invalidated
+            // columnHeader is listening to width and updates itself in next layout pass
+            emailColumn.setPrefWidth(isDefault? 200 : 80);
+        });
+        
+        Button autoSizeAll = new Button("autoSize all columns");
+        autoSizeAll.setOnAction(e -> {
+            doAutoSize(table);
+        });
+        FlowPane buttons = new FlowPane();
+        buttons.getChildren().addAll(button, addNested, addNormal, autoSizeEmail, prefEmail, autoSizeAll);
+        buttons.setHgap(10);
+        buttons.setVgap(10);
         pane.setBottom(buttons);
         // select first row (it's focused only)
 //        table.getSelectionModel().select(0);
         // table always has initial focus (aka: focusOwner) due to being in the center?
 //        pane.setTop(new TextField("some dummy to focus"));
         return pane;
+    }
+
+    /**
+     * Resizes the email column such that column width fits content.
+     * The (reflective) access changed considerably from fx8 -> fx9.
+     * This implementation is fx9.
+     */
+    private void doAutoSize() {
+//        TableViewSkin skin = (TableViewSkin) table.getSkin();
+//        TableHeaderRow tableHeader = getTableHeaderRow(skin);
+//        TableColumnHeader columnHeader = tableHeader.getColumnHeaderFor(emailColumn);
+//        if (columnHeader != null) {
+//            columnHeader.doColumnAutoSize(emailColumn, -1);
+//        }
+    }
+
+    private void doAutoSizeWithLookup(TableView table, TableColumn column) {
+        // good enough to find an arbitrary column header
+        // due to sub-optimal api
+        TableColumnHeader header = (TableColumnHeader) table.lookup(".column-header");
+        if (header != null) {
+            // not accessible, need reflection
+            //  header.doColumnAutoSize(emailColumn, -1);
+            // works only if prefWidth == default == 80 (hard-coded)
+            // resetting here has no effect, might be due to lazy layout
+            double oldPref = column.getPrefWidth();
+            column.setPrefWidth(80);
+            doColumnAutoSize(header, column);
+            column.setPrefWidth(oldPref);
+        }
+    }
+    
+    /**
+     * Resizes column to fit its content. Note that this does nothing if the column's 
+     * prefWidth is != 80.
+     * 
+     * @param table
+     * @param column
+     */
+    public static void doAutoSize(TableView table, TableColumn column) {
+        // good enough to find an arbitrary column header
+        // due to sub-optimal api
+        TableColumnHeader header = (TableColumnHeader) table.lookup(".column-header");
+        if (header != null) {
+            doColumnAutoSize(header, column);
+        }
+    }
+    
+    /**
+     * Resizes all visible columns to fit its content. Note that this does nothing if a column's 
+     * prefWidth is != 80.
+     * 
+     * @param table
+     */
+    public static void doAutoSize(TableView<?> table) {
+        // good enough to find an arbitrary column header
+        // due to sub-optimal api
+        TableColumnHeader header = (TableColumnHeader) table.lookup(".column-header");
+        if (header != null) {
+            table.getVisibleLeafColumns().stream().forEach(column -> doColumnAutoSize(header, column));
+        }
+    }
+    
+    public static void doColumnAutoSize(TableColumnHeader columnHeader, TableColumn column) {
+        // use your preferred reflection utility method 
+        FXUtils.invokeGetMethodValue(TableColumnHeader.class, columnHeader, "doColumnAutoSize", 
+                new Class[] {TableColumnBase.class, Integer.TYPE}, 
+                new Object[] {column, -1});
+    }
+    
+    /**
+     * @param skin
+     * @return
+     */
+    private TableHeaderRow getTableHeaderRow(TableViewSkin skin) {
+        return (TableHeaderRow) FXUtils.invokeGetMethodValue(TableViewSkinBase.class, skin, "getTableHeaderRow");
     }
 
     /**
@@ -111,16 +219,6 @@ public class TableViewDemo extends Application {
 //        TableColumnHeader first = (TableColumnHeader) root.getColumnHeaders().get(0);
     }
     
-    /**
-     * @param first
-     */
-    private void installColumnFilter(TableColumn<Person, String> first) {
-//        Function<Person, String> f = p -> first.getCellObservableValue(p).getValue();
-//        BiPredicate<String, String> pred = (value, match) -> value.startsWith(match);
-//        SimpleFilterModel model = new SimpleFilterModel(f, pred);
-//        ColumnFilter filter = new ColumnFilter(model);
-//        first.setColumnFilter(filter);
-    }
     
     protected TableView<Person> createTableWithColumns() {
         // can't sort a filtered list?
@@ -133,18 +231,20 @@ public class TableViewDemo extends Application {
         table.getColumns().addAll(first);
         emailHeader = new TableColumn("Emails");
         table.getColumns().addAll(emailHeader);
+        TableColumn nestedPrimary = new TableColumn("Nested Primary");
+        nestedPrimary.setCellValueFactory(new PropertyValueFactory<>("email"));
+        TableColumn nestedSecondary = new TableColumn("Secondary");
+        nestedSecondary.setCellValueFactory(new PropertyValueFactory<>("secondaryMail"));
+        emailHeader.getColumns().addAll(nestedPrimary, nestedSecondary);
         
-        TableColumn email = new TableColumn("Primary");
-        email.setCellValueFactory(new PropertyValueFactory<>("email"));
-//        installColumnFilter(email);
+        emailColumn = new TableColumn("Primary");
+        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         
         TableColumn secondary = new TableColumn("Secondary");
         secondary.setCellValueFactory(new PropertyValueFactory<>("secondaryMail"));
-//        installColumnFilter(secondary);
         
 //        emailHeader.getColumns().addAll(email, secondary);
-        table.getColumns().addAll(email, secondary);
-        // not filterable column
+        table.getColumns().addAll(emailColumn, secondary);
         TableColumn last = new TableColumn("Last Name");
         last.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         table.getColumns().addAll(last);
@@ -154,7 +254,7 @@ public class TableViewDemo extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        primaryStage.setScene(new Scene(getContent(), 600, 400));
+        primaryStage.setScene(new Scene(getContent(), 1000, 400));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }

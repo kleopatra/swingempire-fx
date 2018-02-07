@@ -128,15 +128,36 @@ public class FXUtils {
      */
     public static Object invokeGetMethodValue(Class declaringClass, Object target, String name, Class paramType, Object param) {
         try {
-            Method field = declaringClass.getDeclaredMethod(name, paramType);
-            field.setAccessible(true);
-            return field.invoke(target, param);
+            Method method = declaringClass.getDeclaredMethod(name, paramType);
+            method.setAccessible(true);
+            return method.invoke(target, param);
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return null;
     }
 
+    /**
+     * Invokes a multi-parameter method on target and returns its result.
+     * 
+     * @param declaringClass the declaring class
+     * @param target the instance to look up
+     * @param name the field name
+     * @param paramTypes the types of the parameters
+     * @param paramValues the values of the parameter (note: same order as types is assumed)
+     * @return the return value of the method or null if anything happened 
+     */
+    public static Object invokeGetMethodValue(Class declaringClass, Object target, String name, Class[] paramTypes, Object[] paramValues) {
+        try {
+            Method method = declaringClass.getDeclaredMethod(name, paramTypes);
+            method.setAccessible(true);
+            return method.invoke(target, paramValues);
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+        
+    }
     public static void invokeSetFieldValue(Class<?> declaringClass, Object target, String name, Object value) {
         try {
             Field field = declaringClass.getDeclaredField(name);
