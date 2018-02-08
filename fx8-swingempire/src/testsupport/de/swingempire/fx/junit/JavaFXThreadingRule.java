@@ -38,6 +38,9 @@ import com.sun.javafx.application.PlatformImpl;
 * think about reverting
 * <p>
 * trying to integrate a custom uncaughtExceptionHelper didn't work out ... why not?
+* Installing inside the runnable that's passed over to Platform.runLater seems to
+* work. Leaving inside for now, need to look out for side-effects. Currrently done
+* once on startup of the fx-app thread .. good enough?
 */
 public class JavaFXThreadingRule implements TestRule {
 
@@ -99,6 +102,7 @@ public class JavaFXThreadingRule implements TestRule {
             long timeMillis = System.currentTimeMillis();
             final CountDownLatch latch = new CountDownLatch(1);
             PlatformImpl.startup(() -> {
+                installUncaughtExceptionHandler();
                 latch.countDown();
             });
             // --- commented original
@@ -112,17 +116,24 @@ public class JavaFXThreadingRule implements TestRule {
 //            });
 //            System.out.println("javafx initialising...");
             latch.await();
-//            Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-//                if (throwable instanceof RuntimeException) {
-//                    throw (RuntimeException)throwable;
-//                } else {
-//                    Thread.currentThread().getThreadGroup().uncaughtException(thread, throwable);
-//
-////                    throw new RuntimeException(throwable);
-//                }
-//                });
-
 //            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
+        }
+
+        /**
+         * Installs a custom uncaughtExceptionHandler. This implementation
+         * installs a handler that re-throws runtimeExceptions and passes
+         * other types to the threadGroup.
+         */
+        protected void installUncaughtExceptionHandler() {
+            Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+                if (throwable instanceof RuntimeException) {
+                    throw (RuntimeException)throwable;
+                } else {
+                    Thread.currentThread().getThreadGroup().uncaughtException(thread, throwable);
+
+//                            throw new RuntimeException(throwable);
+                }
+                });
         }
     }
 }

@@ -26,13 +26,17 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 
 /**
- * @author Jeanette Winzenburg, Berlin
  * 
  * Quickcheck: https://bugs.openjdk.java.net/browse/JDK-8196827
  * NPE in tests
+ * <p>
+ * To make the tests fail, we need to hook into the uncaughtExceptionHandler to
+ * catch errors in listeners.
  * 
+ * <p>
  * This is copied from 
  * http://hg.openjdk.java.net/openjfx/9/rt/file/c734b008e3e8/modules/javafx.controls/src/test/java/test/javafx/scene/control/ComboBoxTest.java
+ * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(JUnit4.class)
@@ -105,15 +109,16 @@ public class ComboBoxTest {
 
     @Before 
     public void setup() {
-        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-            if (throwable instanceof RuntimeException) {
-                throw (RuntimeException)throwable;
-            } else {
-                Thread.currentThread().getThreadGroup().uncaughtException(thread, throwable);
-
-//                throw new RuntimeException(throwable);
-            }
-            });
+        // this is possible, but moved into JavaFXThreadingRule
+//        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+//            if (throwable instanceof RuntimeException) {
+//                throw (RuntimeException)throwable;
+//            } else {
+//                Thread.currentThread().getThreadGroup().uncaughtException(thread, throwable);
+//
+////                throw new RuntimeException(throwable);
+//            }
+//            });
         comboBox = new ComboBox<String>();
         comboBox.setSkin(new ComboBoxListViewSkin<>(comboBox));
         sm = comboBox.getSelectionModel();
