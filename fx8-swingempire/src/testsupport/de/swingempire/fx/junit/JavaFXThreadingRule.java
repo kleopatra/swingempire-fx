@@ -39,8 +39,9 @@ import com.sun.javafx.application.PlatformImpl;
 * <p>
 * trying to integrate a custom uncaughtExceptionHelper didn't work out ... why not?
 * Installing inside the runnable that's passed over to Platform.runLater seems to
-* work. Leaving inside for now, need to look out for side-effects. Currrently done
+* work.  Currrently done
 * once on startup of the fx-app thread .. good enough?
+* Leaving inside for now, need to look out for side-effects.
 */
 public class JavaFXThreadingRule implements TestRule {
 
