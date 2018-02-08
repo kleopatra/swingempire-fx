@@ -25,7 +25,6 @@ import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**

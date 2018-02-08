@@ -33,9 +33,11 @@ import com.sun.javafx.application.PlatformImpl;
 * PENDING JW:
 * JDK9 - problem with running Swing on main
 * http://stackoverflow.com/q/35726049/203657
-* 
+* <p>
 * changed the rule to start up via PlatformUtils.start (instead of JFXPanel)
 * think about reverting
+* <p>
+* trying to integrate a custom uncaughtExceptionHelper didn't work out ... why not?
 */
 public class JavaFXThreadingRule implements TestRule {
 
@@ -66,6 +68,7 @@ public class JavaFXThreadingRule implements TestRule {
                 setupJavaFX();
                 jfxIsSetup = true;
             }
+
             final CountDownLatch countDownLatch = new CountDownLatch(1);
             Platform.runLater(new Runnable() {
                 @Override
@@ -84,6 +87,7 @@ public class JavaFXThreadingRule implements TestRule {
             if (rethrownException != null) {
                 throw rethrownException;
             }
+
         }
 
         /**
@@ -108,6 +112,16 @@ public class JavaFXThreadingRule implements TestRule {
 //            });
 //            System.out.println("javafx initialising...");
             latch.await();
+//            Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+//                if (throwable instanceof RuntimeException) {
+//                    throw (RuntimeException)throwable;
+//                } else {
+//                    Thread.currentThread().getThreadGroup().uncaughtException(thread, throwable);
+//
+////                    throw new RuntimeException(throwable);
+//                }
+//                });
+
 //            System.out.println("javafx is initialised in " + (System.currentTimeMillis() - timeMillis) + "ms");
         }
     }
