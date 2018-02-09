@@ -31,7 +31,7 @@ public class ListChangeReport implements ListChangeListener {
     
     @Override
     public void onChanged(Change c) {
-        LOG.info("in report?" + c);
+//        LOG.info("in report?" + c);
         changes.add(0, c);
     }
     

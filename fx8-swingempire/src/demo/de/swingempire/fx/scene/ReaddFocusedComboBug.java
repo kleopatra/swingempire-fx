@@ -1,0 +1,161 @@
+/*
+ * Created on 31.01.2018
+ *
+ */
+package de.swingempire.fx.scene;
+
+import java.util.logging.Logger;
+
+import de.swingempire.fx.util.FXUtils;
+import javafx.application.Application;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.PopupControl;
+import javafx.scene.control.Skin;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
+import javafx.scene.control.skin.ComboBoxPopupControl;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+
+/**
+ * https://stackoverflow.com/q/48538763/203657
+ * re-added combo is focused but not clickable
+ * 
+ * Here: extract for bug report - remove/add via button
+ * can't use button (will close the popup) - use key events
+ * 
+ * problem happens if combo is removed from parent while the 
+ * popup is open: on re-adding, the combo's showing is true (while
+ * popup's showing is false) trying to open the popup via mouse does
+ * nothing (because the combo's showing doesn't change)
+ * 
+ * Fix: make sure to keep the popup's showing in sync with combo's, f.i.
+ * by listening to its parent property and hide/show the popup as appropriate.
+ * This is analogous to the fix of JDK-8095306, which handles the sync
+ * in the skin's constructor.
+ * 
+ */
+public class ReaddFocusedComboBug extends Application {
+
+    /**
+     * Skin that keeps the combo's showing and the popup's showing in sync
+     * on dynamic add/remove of the combo.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class YComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+
+        /**
+         * @param combo
+         */
+        public YComboBoxListViewSkin(ComboBox<T> combo) {
+            super(combo);
+            combo.sceneProperty().addListener((src, ov, nv) -> {
+                if (nv != null) {
+                    if (combo.isShowing()) show();
+                } else {
+                    combo.hide();
+                }
+            });
+        }
+        
+    }
+    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+
+        public XComboBoxListViewSkin(ComboBox<T> combo) {
+            super(combo);
+            // enforce creation of the popup
+            getPopupControl();
+        }
+        
+        protected PopupControl getPopupControl() {
+            return invokeGetPopup();
+        }
+
+        /**
+         * @return
+         */
+        private PopupControl invokeGetPopup() {
+            return (PopupControl) FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, this, "getPopup");
+        }
+    }
+    @Override
+    public void start(Stage stage) {
+        VBox root = new VBox(10);
+        Scene scene = new Scene(root, 200, 200);
+
+        final ComboBox<String> combo = new ComboBox<>() {
+
+            @Override
+            protected Skin<?> createDefaultSkin() {
+//                return new XComboBoxListViewSkin<>(this);
+                return new YComboBoxListViewSkin<>(this);
+            }
+            
+        };
+        combo.getItems().add("Test1");
+        combo.getItems().add("Test2");
+        
+        SimpleObjectProperty<Window> popup = new SimpleObjectProperty<>();
+        
+        ChangeListener<? super Boolean> showingComboListener = (src, ov, nv) -> {
+//                LOG.info("showing on combo - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
+        };
+        ChangeListener<? super Boolean> showingPopupListener = (src, ov, nv) -> {
+//                LOG.info("showing on popup - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
+        };
+        combo.skinProperty().addListener((src, ov, nv) -> {
+            if (!(nv instanceof XComboBoxListViewSkin)) return;
+            XComboBoxListViewSkin<?> skin = (XComboBoxListViewSkin<?>) nv;
+            popup.set(skin.getPopupControl());
+            combo.showingProperty().addListener(showingComboListener);
+            popup.get().showingProperty().addListener(showingPopupListener);
+        });
+        scene.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
+            if (e.getCode() == KeyCode.F1) {
+                combo.show();
+            }
+            if (e.getCode() == KeyCode.F2) {
+                root.getChildren().remove(combo);
+                if (popup.get() != null) {
+                    LOG.info("removed - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
+                }
+                
+            }
+            if (e.getCode() == KeyCode.F3) {
+                root.getChildren().add(combo);
+                if (popup.get() != null) {
+                    LOG.info("added - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
+                }
+            }
+            if (e.getCode() == KeyCode.F5) {
+                combo.hide();
+                if (popup.get() != null) {
+                    LOG.info("hide - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
+                }
+            }
+        });
+        root.getChildren().addAll(
+                // need something that's focused all the time
+                // all fine if the combo is focused when removing
+                new Button("dummy"), 
+                combo);
+        stage.setScene(scene);
+        stage.show();
+    }
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(ReaddFocusedComboBug.class.getName());
+}
+

@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -21,6 +22,7 @@ import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -120,10 +122,30 @@ public class ComboBoxTest {
 //            }
 //            });
         comboBox = new ComboBox<String>();
-        comboBox.setSkin(new ComboBoxListViewSkin<>(comboBox));
+//        comboBox.setSkin(new ComboBoxListViewSkin<>(comboBox));
+        comboBox.setSkin(new XComboBoxListViewSkin<>(comboBox));
         sm = comboBox.getSelectionModel();
     }
     
+    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+        
+        /**
+         * @param combo
+         */
+        public XComboBoxListViewSkin(ComboBox<T> combo) {
+            super(combo);
+        }
+
+        @Override
+        public void show() {
+            // poc - this should happen in positionAndShowPopup
+            if (getSkinnable().getScene() == null) return;
+            super.show();
+        }
+        
+        
+        
+    }
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(ComboBoxTest.class.getName());
