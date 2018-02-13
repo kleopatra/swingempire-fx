@@ -41,6 +41,9 @@ import javafx.stage.Window;
  * This is analogous to the fix of JDK-8095306, which handles the sync
  * in the skin's constructor.
  * 
+ * Reported as (with the original example):
+ * https://bugs.openjdk.java.net/browse/JDK-8197846
+ * 
  */
 public class ReaddFocusedComboBug extends Application {
 
@@ -48,7 +51,6 @@ public class ReaddFocusedComboBug extends Application {
      * Skin that keeps the combo's showing and the popup's showing in sync
      * on dynamic add/remove of the combo.
      * 
-     * @author Jeanette Winzenburg, Berlin
      */
     public static class YComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
 
@@ -57,16 +59,26 @@ public class ReaddFocusedComboBug extends Application {
          */
         public YComboBoxListViewSkin(ComboBox<T> combo) {
             super(combo);
-            combo.sceneProperty().addListener((src, ov, nv) -> {
-                if (nv != null) {
-                    if (combo.isShowing()) show();
-                } else {
+            // listener to keep popup showing in sync with combo showing
+            registerChangeListener(combo.sceneProperty(), e -> {
+                if (combo.getScene() == null) {
+                    // arguable: 
+                    // on removal, the popup is hidden,
+                    // force combo to hide also
                     combo.hide();
+                } else if (combo.isShowing()) {
+                    // ensure popup is showing 
+                    show();
                 }
             });
         }
         
     }
+    
+    /**
+     * ComboSkin with access to its popup.
+     * 
+     */
     public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
 
         public XComboBoxListViewSkin(ComboBox<T> combo) {
