@@ -8,8 +8,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-
-import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.util.SkinUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -21,8 +20,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.TableViewSkinBase;
-import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -100,9 +97,10 @@ public class FXMLDocumentController implements Initializable {
      * @return
      */
     private VirtualFlow<?> getVirtualFlow(TableViewSkin skin) {
+        return SkinUtils.getVirtualFlow(skin);
 //        return (VirtualFlow<?>) FXUtils.invokeGetFieldValue(TableViewSkinBase.class, skin, "flow");
         // following throws NoSuchMethodDeclaration - was wrong import (from swingempire.patch)
-        return (VirtualFlow<?>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, skin, "getVirtualFlow");
+//        return (VirtualFlow<?>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, skin, "getVirtualFlow");
     }
     /**
      * 
