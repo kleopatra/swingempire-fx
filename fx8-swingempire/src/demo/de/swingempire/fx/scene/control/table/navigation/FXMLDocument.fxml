@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="449.0" prefWidth="586.0" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.swingempire.fx.scene.control.table.navigation.FXMLDocumentController">
+  <children>
+    <TextField layoutX="495.0" layoutY="54.0" prefHeight="25.0" prefWidth="82.0" />
+    <TableView fx:id="table" prefHeight="449.0" prefWidth="330.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="10.0" />
+  </children>
+</AnchorPane>
+
