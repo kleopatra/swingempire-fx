@@ -2,7 +2,7 @@
  * Created on 21.03.2016
  *
  */
-package de.swingempire.fx.scene.control.skin.patch;
+package de.swingempire.fx.scene.control.skin.impl;
 
 import java.util.Map;
 

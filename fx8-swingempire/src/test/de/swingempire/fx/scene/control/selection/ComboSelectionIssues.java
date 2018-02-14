@@ -12,8 +12,13 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -35,6 +40,47 @@ import javafx.scene.control.skin.ComboBoxListViewSkin;
 @RunWith(JUnit4.class)
 public class ComboSelectionIssues 
     extends AbstractChoiceInterfaceSelectionIssues<ComboBox, SingleSelectionModel> {
+
+    
+    /**
+     * Used in bug report for ChoiceBox. Here adjusted for comboBox
+     * Standalone test: setting a selectionModel which has a selected item
+     * must update the value.
+     * 
+     * still broken in fx9. 
+     */
+    @Test
+    @ConditionalIgnore (condition = IgnoreSetSelectionModel.class)
+    public void testSetSelectionModelUpdatesValueStandalone() {
+        ObservableList<String> items = FXCollections.observableArrayList(
+                "9-item", "8-item", "7-item", "6-item", 
+                "5-item", "4-item", "3-item", "2-item", "1-item");
+        
+        ComboBox box = new ComboBox(items);
+        SingleSelectionModel model = new SingleSelectionModel() {
+            @Override
+            protected Object getModelItem(int index) {
+                if (index < 0 || index >= getItemCount()) return null;
+                return box.getItems().get(index);
+            }
+            
+            @Override
+            protected int getItemCount() {
+                return box.getItems() != null ? box.getItems().size() : 0;
+            }
+            
+        };
+        // just to be on the safe side in case the skin/behaviour is
+        // responsible for the update
+        // doesn't make a difference, though
+//        StageLoader loader = new StageLoader(box);
+        int index = 2;
+        model.select(index);
+        assertEquals("sanity: model is selecting index and item", items.get(index), 
+                model.getSelectedItem());
+        box.setSelectionModel(model);
+        assertEquals("box value must be same as selected item", items.get(index), box.getValue());
+    }
 
     /**
      * commented for jdk9: builders removed.

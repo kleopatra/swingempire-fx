@@ -6,18 +6,15 @@ package de.swingempire.fx.scene;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.scene.control.skin.ComboSkinDecorator;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.PopupControl;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
-import javafx.scene.control.skin.ComboBoxPopupControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
@@ -52,7 +49,8 @@ public class ReaddFocusedComboBug extends Application {
      * on dynamic add/remove of the combo.
      * 
      */
-    public static class YComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+    public static class YComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> 
+        implements ComboSkinDecorator {
 
         /**
          * @param combo
@@ -71,15 +69,26 @@ public class ReaddFocusedComboBug extends Application {
                     show();
                 }
             });
+            // this listener (its fx8 equivalent) has been removed in 
+            // http://hg.openjdk.java.net/openjfx/8u40/rt/file/bc4910bf1984/modules/controls/src/main/java/com/sun/javafx/scene/control/skin/ComboBoxListViewSkin.java
+            // has no effect, though - probably because the showing property does not change on removal/re-addition
+//            registerChangeListener(combo.showingProperty(), e -> {
+//                if (combo.isShowing()) {
+//                    getPopupContent().setManaged(true);
+//                } else {
+//                    getPopupContent().setManaged(false);
+//                }
+//            });
+ 
         }
-        
     }
     
     /**
      * ComboSkin with access to its popup.
      * 
      */
-    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> 
+        implements ComboSkinDecorator {
 
         public XComboBoxListViewSkin(ComboBox<T> combo) {
             super(combo);
@@ -87,16 +96,16 @@ public class ReaddFocusedComboBug extends Application {
             getPopupControl();
         }
         
-        protected PopupControl getPopupControl() {
-            return invokeGetPopup();
-        }
-
-        /**
-         * @return
-         */
-        private PopupControl invokeGetPopup() {
-            return (PopupControl) FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, this, "getPopup");
-        }
+//        protected PopupControl getPopupControl() {
+//            return invokeGetPopup();
+//        }
+//
+//        /**
+//         * @return
+//         */
+//        private PopupControl invokeGetPopup() {
+//            return (PopupControl) FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, this, "getPopup");
+//        }
     }
     @Override
     public void start(Stage stage) {
@@ -124,11 +133,13 @@ public class ReaddFocusedComboBug extends Application {
 //                LOG.info("showing on popup - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
         };
         combo.skinProperty().addListener((src, ov, nv) -> {
-            if (!(nv instanceof XComboBoxListViewSkin)) return;
-            XComboBoxListViewSkin<?> skin = (XComboBoxListViewSkin<?>) nv;
+            if (!(nv instanceof ComboSkinDecorator)) return;
+            ComboSkinDecorator skin = (ComboSkinDecorator) nv;
             popup.set(skin.getPopupControl());
             combo.showingProperty().addListener(showingComboListener);
             popup.get().showingProperty().addListener(showingPopupListener);
+            combo.focusedProperty().addListener(e -> LOG.info("focused: " + combo.isFocused()));
+            scene.focusOwnerProperty().addListener(e -> LOG.info("focused: " + scene.getFocusOwner()));
         });
         scene.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             if (e.getCode() == KeyCode.F1) {

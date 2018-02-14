@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.skin.patch;
 
+import de.swingempire.fx.scene.control.skin.impl.SkinBaseDecorator;
+
 //import com.sun.javafx.scene.control.behavior.BehaviorBase;
 
 import javafx.scene.control.TableCell;

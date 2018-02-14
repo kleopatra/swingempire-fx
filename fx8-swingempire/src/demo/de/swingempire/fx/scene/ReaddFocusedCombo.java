@@ -4,14 +4,15 @@
  */
 package de.swingempire.fx.scene;
 
+import java.util.logging.Logger;
+
+import de.swingempire.fx.scene.ReaddFocusedComboBug.YComboBoxListViewSkin;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Skin;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import static de.swingempire.fx.scene.ReaddFocusedComboBug.YComboBoxListViewSkin;
 /**
  * https://stackoverflow.com/q/48538763/203657
  * re-added combo is focused but not clickable
@@ -36,6 +37,8 @@ public class ReaddFocusedCombo extends Application {
         choices.getItems().add("Test2");
         root.getChildren().add(choices);
 
+        choices.focusedProperty().addListener(e -> LOG.info("focused: " + choices.isFocused()));
+        // adding listener after skin is attached has no effect
         choices.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             // guess by sillyfly: combo gets confused if popup still open 
 //            choices.hide();
@@ -46,13 +49,19 @@ public class ReaddFocusedCombo extends Application {
             // doesn't work
             //  choices.requestFocus();
         });
-
-        stage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        scene.focusOwnerProperty().addListener(e -> LOG.info("focused: " + scene.getFocusOwner()));
         stage.show();
+
     }
     public static void main(String[] args) {
         launch(args);
     }
+    
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(ReaddFocusedCombo.class.getName());
     
 }
 

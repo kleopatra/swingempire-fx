@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.skin.patch;
 
 import java.util.List;
 
+import de.swingempire.fx.scene.control.skin.impl.SkinBaseDecorator;
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;

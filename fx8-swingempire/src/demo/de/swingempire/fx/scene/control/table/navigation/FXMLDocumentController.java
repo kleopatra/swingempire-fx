@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import de.swingempire.fx.util.SkinUtils;
+import de.swingempire.fx.scene.control.skin.SkinUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;

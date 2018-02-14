@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -28,13 +27,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
-import javafx.event.EventType;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 
 /**
- * Collection of static utility methods (mostly for debugging)
+ * Collection of static utility methods (mostly for debugging), should
+ * be version-independent and useable by version-dependent sources.
  * 
  * unused threading code copied from jfxtras
  * https://github.com/JFXtras/jfxtras/blob/8.0/jfxtras-test-support/src/main/java/jfxtras/test/TestUtil.java

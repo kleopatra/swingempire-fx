@@ -2,7 +2,7 @@
  * Created on 13.02.2018
  *
  */
-package de.swingempire.fx.util.impl;
+package de.swingempire.fx.scene.control.skin.impl;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.scene.control.skin.VirtualContainerBase;

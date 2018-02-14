@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.skin.impl;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.skin.impl.wtable.WTableViewSkin;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Parent;

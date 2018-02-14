@@ -2,7 +2,7 @@
  * Created on 16.11.2017
  *
  */
-package de.swingempire.fx.scene.control.skin.impl;
+package de.swingempire.fx.scene.control.skin.impl.wtable;
 
 /*
  * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
