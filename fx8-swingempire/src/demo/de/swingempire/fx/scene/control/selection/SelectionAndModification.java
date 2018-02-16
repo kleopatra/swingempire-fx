@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
@@ -39,6 +40,9 @@ import static de.swingempire.fx.util.DebugUtils.*;
 
 
 /**
+ * fx9: removed references to ListXView (doesn't compile for fx9)
+ * 
+ * -----------
  * Test driver for selection/focus issues on modifying the items. 
  * 
  * Unrelated PENDING
@@ -201,6 +205,7 @@ public class SelectionAndModification extends Application {
     
     protected Parent getContent() {
         
+        SelectionMode initialMode = SelectionMode.MULTIPLE;
         TableFacade<Locale> table = new TableFacade<>();
         table.setItems(createList());
         TableColumn<Locale, String> language = new TableColumn<>(
@@ -223,25 +228,48 @@ public class SelectionAndModification extends Application {
 //        listView.getProperties().put("selectFirstRowByDefault", false);
 
         listView.setItems(createList());
-        
+        listView.getSelectionModel().setSelectionMode(initialMode);
+
         ListFacade listSView = new ListFacade<>();
         listSView.setSelectionModel(new SimpleListSelectionModel<>(listSView));
         listSView.setItems(createList());
+        listSView.getSelectionModel().setSelectionMode(initialMode);
 
-        ListXFacade listXView = new ListXFacade();
-        listXView.setItems(createList());
+        // quick check for shift-down
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) ch -> {
+            while (ch.next()) {
+                if (ch.wasAdded()) {
+                    System.out.println("+" + ch.getAddedSubList());
+                }
+            }
+        });
+
+        listSView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        listSView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) ch -> {
+            while (ch.next()) {
+                if (ch.wasAdded()) {
+                    System.out.println("+" + ch.getAddedSubList());
+                }
+            }
+        });
+        // ------- end quick check for shift-down
         
-        ListXFacade listXAView = new ListXFacade();
-        listXAView.setSelectionModel(new SimpleASelectionModel<>(listXAView));
-        listXAView.setItems(createList());
+        // fx9: removed - custom skin doesn't compile
+//        ListXFacade listXView = new ListXFacade();
+//        listXView.setItems(createList());
+//        
+//        ListXFacade listXAView = new ListXFacade();
+//        listXAView.setSelectionModel(new SimpleASelectionModel<>(listXAView));
+//        listXAView.setItems(createList());
         
         Map<String, Consumer<Facade>> actionMap = createActions();
         Map<KeyCodeCombination, String> inputMap = createKeyMap();
         Map<String, KeyCodeCombination> inversInputMap = invertMap(inputMap);
         configureActions(table, actionMap, inputMap);
         configureActions(listView, actionMap, inputMap);
-        configureActions(listXView, actionMap, inputMap);
-        configureActions(listXAView, actionMap, inputMap);
+//        configureActions(listXView, actionMap, inputMap);
+//        configureActions(listXAView, actionMap, inputMap);
         configureActions(listSView, actionMap, inputMap);
         
         GridPane info = new GridPane ();
@@ -252,18 +280,19 @@ public class SelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        Pane content = new HBox(/*table, */ listView, listSView, listXView, listXAView, info);
-        Pane header = new HBox(/*new Label("table"), */ new Label("core list"), 
-                new Label("core list + simple"), new Label("listX"), new Label("listX + simpleA"));
+        Pane content = new HBox(/*table, */ listView, listSView, /* listXView, listXAView,*/ info);
+        Pane header = new HBox(/*new Label("table"), */ new Label("  core list "), 
+                new Label("  core list + simple  ") /*new Label("listX"), new Label("listX + simpleA")*/);
         CheckBox check = new CheckBox("MultipleMode");
+        check.setSelected(initialMode == SelectionMode.MULTIPLE);
         check.setOnAction(e -> {
             SelectionMode old = listView.getSelectionModel().getSelectionMode();
-            SelectionMode newMode = check.isSelected() ? SelectionMode.MULTIPLE : SelectionMode.MULTIPLE;
+            SelectionMode newMode = check.isSelected() ? initialMode : initialMode;
             listView.getSelectionModel().setSelectionMode(newMode);
             table.getSelectionModel().setSelectionMode(newMode);
-            listXView.getSelectionModel().setSelectionMode(newMode);
             listSView.getSelectionModel().setSelectionMode(newMode);
-            listXAView.getSelectionModel().setSelectionMode(newMode);
+//            listXView.getSelectionModel().setSelectionMode(newMode);
+//            listXAView.getSelectionModel().setSelectionMode(newMode);
         });
         Pane buttons = new HBox(check);
 //        Pane content = new HBox(table, listView, info);

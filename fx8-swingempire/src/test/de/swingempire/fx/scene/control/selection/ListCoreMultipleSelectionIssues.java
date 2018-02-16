@@ -8,19 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.util.StageLoader;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 
 /**
  * Testing MultipleSelection api in both modes.
@@ -33,7 +36,68 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
+    /**
+     * Trying to make test fail for 
+     * https://bugs.openjdk.java.net/browse/JDK-8197985
+     * 
+     * The broken notification is from selectRange in selectedIndicesList:
+     * it fires a change with the _value_ (that is the index in the underlying
+     * items) when it should fire a change with the index in itself.
+     */
+    @Test
+    public void testEventIndicesOnSelectRange() {
+        if (!multipleMode) return;
+        ObservableList<String> listitems = FXCollections.observableArrayList("zero", "one", "two");
+        final ListView<String> lv = new ListView<>();
+        lv.setItems(listitems);
+        
+        int selected = 1;
+        lv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        lv.getSelectionModel().select(selected);
+        lv.getSelectionModel().getSelectedIndices().addListener((ListChangeListener<Integer>) ch -> {
+            int size = ch.getList().size();
+            assertEquals("added another selection index", 2, size);
+            ch.next();
+            LOG.info("dooo  + getting here?"  + ch.getList() + ch.getFrom() );
+            assertTrue("added", ch.wasAdded());
+            assertTrue("getFrom must be valid < " + size + " but was " + ch.getFrom(), ch.getFrom() < size);
+        });
+        int focus = lv.getFocusModel().getFocusedIndex();
+        assertEquals("sanity - focus must be selected ", selected, focus);
+        // select the next element
+        lv.getSelectionModel().selectRange(selected, focus + 2);
+    }
     
+    /**
+     * Trying to make test fail for 
+     * https://bugs.openjdk.java.net/browse/JDK-8197985
+     * 
+     * The broken notification is from selectRange in selectedIndicesList:
+     * it fires a change with the _value_ (that is the index in the underlying
+     * items) when it should fire a change with the index in itself.
+     */
+    @Test
+    public void testEventItemsOnExtendSelection() {
+        if (!multipleMode) return;
+        ObservableList<String> listitems = FXCollections.observableArrayList("zero", "one", "two");
+        final ListView<String> lv = new ListView<>();
+        lv.setItems(listitems);
+        
+        int selected = 1;
+        lv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        lv.getSelectionModel().select(selected);
+        lv.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) ch -> {
+            while (ch.next()) {
+                if (ch.wasAdded()) {
+                    System.out.println("+" + ch.getAddedSubList());
+                }
+            }
+        });
+        int focus = lv.getFocusModel().getFocusedIndex();
+        assertEquals("focus must be selected ", selected, focus);
+        // select the next element
+        lv.getSelectionModel().selectRange(selected, focus + 2);
+    }
     
     @Test
     public void testSelectedIndicesFireOnAddItem() {

@@ -877,7 +877,53 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         assertEquals(indices.length, c.getAddedSize());
     }
     
+    @Test
+    public void testAEventMultipleExtendBySelectNext() {
+        if (!multipleMode) return;
+        initSkin();
+        int selected = 3;
+        getSelectionModel().select(selected);
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        getSelectionModel().selectNext();
+//        report.prettyPrint();
+        Change c = report.getLastChange();
+        assertTrue(wasSingleAdded(c));
+    }
+    
+    @Test
+    public void testAEventOnIndicesMultipleExtendBySelectRange() {
+        if (!multipleMode) return;
+        int selected = 1;
+        getSelectionModel().select(selected);
+        ObservableList indices = getSelectedIndices();
+        assertEquals("sanity: ", 1, indices.size());
+        ListChangeReport report = new ListChangeReport(getSelectedIndices());
+        getSelectionModel().selectRange(selected, selected + 2);
+//        report.prettyPrint();
+        Change c = report.getLastChange();
+        assertTrue(wasSingleAdded(c));
+        c = report.getLastChange();
+        c.next();
+        assertTrue(c.getAddedSubList().contains(selected+ 1));
+    }
+    
+    
+    @Test
+    public void testAEventOnItemsMultipleExtendBySelectRange() {
+        if (!multipleMode) return;
+        int selected = 1;
+        getSelectionModel().select(selected);
+        ListChangeReport report = new ListChangeReport(getSelectedItems());
+        getSelectionModel().selectRange(selected, selected + 2);
+        report.prettyPrint();
+        Change c = report.getLastChange();
+        assertTrue(wasSingleAdded(c));
+        c = report.getLastChange();
+        c.next();
+//        assertTrue(c.getAddedSubList().contains(selected+ 1));
+    }
 
+    
     //-------------------- items modification    
     
     @Test
