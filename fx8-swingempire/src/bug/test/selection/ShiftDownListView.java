@@ -35,6 +35,9 @@ import javafx.stage.Stage;
  * The error is in MultipleSelectionModelBase.SelectedIndices.set(int, int...): for 
  * size 1 it fires the _value_ instead of the index of the value!
  * 
+ * Seems okay for table, why? selectIndices is re-implemented from scratch (not using
+ * the SelectedIndicesList from the base impl) because it needs to support cell selection.
+ * 
  * @author Jeanette Winzenburg, Berlin
  * 
  * @see SelectionAndModification

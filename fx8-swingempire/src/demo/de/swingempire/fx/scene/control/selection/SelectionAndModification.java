@@ -217,6 +217,15 @@ public class SelectionAndModification extends Application {
         variant.setCellValueFactory(new PropertyValueFactory<>("displayVariant"));
         table.getColumns().addAll(language, country, variant);
         
+        table.getSelectionModel().setSelectionMode(initialMode);
+        table.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Locale>) ch -> {
+            // table seems to fire correct events
+            while (ch.next()) {
+                if (ch.wasAdded()) {
+                    System.out.println("+" + ch.getAddedSubList());
+                }
+            }
+        });
         ListFacade listView = new ListFacade<>();
         // quick check for auto-focus/select
 //        // disable selecting the first item on focus gain - this is
@@ -280,7 +289,7 @@ public class SelectionAndModification extends Application {
             info.add(new Label(actionKeys[i]), 0, i);
             info.add(new Label(inversInputMap.get(actionKeys[i]).getDisplayText()), 1, i);
         }
-        Pane content = new HBox(/*table, */ listView, listSView, /* listXView, listXAView,*/ info);
+        Pane content = new HBox(table,  listView, listSView, /* listXView, listXAView,*/ info);
         Pane header = new HBox(/*new Label("table"), */ new Label("  core list "), 
                 new Label("  core list + simple  ") /*new Label("listX"), new Label("listX + simpleA")*/);
         CheckBox check = new CheckBox("MultipleMode");
