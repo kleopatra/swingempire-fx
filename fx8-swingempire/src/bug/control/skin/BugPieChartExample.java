@@ -2,7 +2,7 @@
  * Created on 14.10.2014
  *
  */
-package de.swingempire.fx.chart;
+package control.skin;
 
 
 import java.util.logging.Logger;
@@ -21,6 +21,10 @@ import javafx.stage.Stage;
 
 /**
  * Bug: PieChart must cope with all change notifications from data.
+ * reported: https://bugs.openjdk.java.net/browse/JDK-8198823
+ * 
+ * bubbled up when trying to use a filteredList (to hide data entries)
+ * https://stackoverflow.com/a/49027208/203657
  * 
  * Here: fails on replaced 
  * if animated: throws IllegalArgumentException: duplicate children added (stacktrace A)
@@ -37,7 +41,7 @@ public class BugPieChartExample extends Application {
         PieChart pieChart = new PieChart(data);
         // pieChart can't handle data modification if animated:
         // error is "duplicate children added"
-                 pieChart.setAnimated(false);
+        pieChart.setAnimated(false);
         
         Button replaceData = new Button("replace");
         replaceData.setOnAction(e -> {

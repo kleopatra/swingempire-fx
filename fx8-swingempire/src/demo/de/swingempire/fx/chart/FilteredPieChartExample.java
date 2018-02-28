@@ -24,67 +24,37 @@ import javafx.stage.Stage;
 /**
  * Hide empty (or otherwise unwanted data) from bar chart
  * https://stackoverflow.com/a/49027208/203657
- * 
- * bug digging: seems to be missing handling of replaced in pieCharts
- * data listener
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
-public class CustomPieChartExample extends Application {
+public class FilteredPieChartExample extends Application {
 
     @Override
     public void start(Stage primaryStage) {
         
         FilteredList<Data> filtered = getChartData();
-        ListChangeReport report = new ListChangeReport(filtered);
+        //ListChangeReport report = new ListChangeReport(filtered);
         
-        PieChart pieChart = new PieChart() {
-
-            /**
-             * Quick check for https://stackoverflow.com/q/43082626/203657
-             * Hide legend for empty data - need to hide Text in chart as well.
-             * 
-             * The idea would be to bind the visible property of legend/text to
-             * a predicate. Need to explore where that should be updated.
-             */
-//            @Override
-//            protected ObservableList<Node> getChartChildren() {
-//                ObservableList<Node> children = super.getChartChildren();
-//                Node legend = getLegend();
-//                if (legend instanceof Parent)
-//                    LOG.info("legend: " + ((Parent) getLegend()).getChildrenUnmodifiable());
-//                LOG.info("children:" + children); 
-//                return children;
-//
-//            }
-            
-        };
-        // pieChart can't handle data modification if animated:
-        // error is "duplicate children added"
+        PieChart pieChart = new PieChart(filtered);
+        // bug in pieChart: can't handle data modification with animation on
         pieChart.setAnimated(false);
-//        pieChart.setData(filtered);
         
+        // use slider to set lower threshhold for value of data to show in pie
         Slider slider =  new Slider(-1., 100., -1.);
         slider.valueProperty().addListener((src, ov, nv) -> {
             // actually, cannot handle data modification at all ... need to clear out first ...
-            // it's a bug in dataChangeListener: doesn't handle replaced
-//            filtered.setPredicate(data -> false);
+            // bug in pieChart.dataChangeListener: doesn't handle replaced correctly
+            filtered.setPredicate(data -> false);
             filtered.setPredicate(data -> data.getPieValue() > nv.doubleValue());
-            report.prettyPrint();
+            //report.prettyPrint();
         });
-        primaryStage.setTitle("PieChart 2");
-        Pane root = new VBox(pieChart, slider); //, reset, modify);
-//        root.getChildren().add(pieChart);
-        // beware: don't use fixed sizes, let the layoutManager handle it!
-        // here the size isn't big enough to fit the legend, so it is left out
-//        primaryStage.setScene(new Scene(root, 300, 250));
+        primaryStage.setTitle("PieChart");
+        Pane root = new VBox(pieChart, slider); 
         Scene scene = new Scene(root);
-//        scene.getStylesheets().add(PieChartExample.class.getResource("chart2.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
-        
     }
 
     private FilteredList<Data> getChartData() {
+        // use ObservableList with extractor on pieValueProperty
         ObservableList<Data> answer = FXCollections.observableArrayList(
                 e -> new Observable[] {e.pieValueProperty()}
                 );
@@ -99,7 +69,7 @@ public class CustomPieChartExample extends Application {
                 new Data("Other", 31.37),
                 new Data("empty", 0)
                 );
-        return new FilteredList(answer);
+        return new FilteredList<>(answer);
     }
     
     /**
@@ -110,7 +80,7 @@ public class CustomPieChartExample extends Application {
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(CustomPieChartExample.class
+    private static final Logger LOG = Logger.getLogger(FilteredPieChartExample.class
             .getName());
 
 }
