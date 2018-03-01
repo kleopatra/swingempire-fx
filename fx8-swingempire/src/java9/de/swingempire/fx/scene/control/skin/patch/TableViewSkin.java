@@ -122,9 +122,8 @@ public class TableViewSkin<T>
      * @return true if scrolled, false otherwise.
      */
     private boolean handledOneOffScroll(int index, int direction) {
-
-        TableRow<?> cell = flowAlias.getVisibleCell(index);
-        if (cell != null) return false;
+        // nothing to do if cell is visible
+        if (flowAlias.getVisibleCell(index) != null) return false;
         // not visible, check for just off - JDK-8197536
         // check if just off viewport in direction
         TableRow<T> prev = flowAlias.getVisibleCell(index - direction);
@@ -135,7 +134,6 @@ public class TableViewSkin<T>
             flowAlias.scrollPixels(direction * delta);
             return true;
         }
-
         return false;
     }
     /**
