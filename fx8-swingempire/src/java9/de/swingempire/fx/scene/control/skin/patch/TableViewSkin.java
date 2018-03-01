@@ -63,6 +63,28 @@ public class TableViewSkin<T>
     }
 
     /**
+     * Handle scrolling if target index is just below/above viewport.
+     * 
+     * @param index the target index to scroll to
+     * @param direction flag to handle below (== -1) or above (== +1) the
+     *        viewport.
+     * @return true if scrolled, false otherwise.
+     */
+    private boolean hasScrolledTo(int index, int direction) {
+        // target cell is visible, nothing to do
+        if (flowAlias.getVisibleCell(index) != null)
+            return false;
+        // target cell not visible, check adjacent cell 
+        TableRow<T> adjacentCell = flowAlias.getVisibleCell(index + direction);
+        // adjacent cell not visible, nothing to do
+        if (adjacentCell == null) return false;
+        // adjacent cell visible, scroll to that visible cell, then scroll pixels for row height
+        flowAlias.scrollTo(adjacentCell);
+        flowAlias.scrollPixels(-direction * getCellLength(index));
+        return true;
+    }
+
+    /**
      * Hacking JDK-8197536: by-pass virtualFlow scrollTo if next row is
      * just below the viewport.
      */
@@ -71,7 +93,7 @@ public class TableViewSkin<T>
         if (sm == null) return;
         
         int index = sm.getFocusedIndex();
-        if (!handledOneOffScroll(index, 1)) 
+        if (!hasScrolledTo(index, -1)) 
             flowAlias.scrollTo(index);
     }
     
@@ -84,7 +106,7 @@ public class TableViewSkin<T>
         if (sm == null) return;
         
         int index = sm.getFocusedIndex();
-        if (!handledOneOffScroll(index, -1)) 
+        if (!hasScrolledTo(index, 1)) 
             flowAlias.scrollTo(index);
     }
     
@@ -97,7 +119,7 @@ public class TableViewSkin<T>
         if (sm == null) return;
         
         int index = sm.getSelectedIndex();
-        if (!handledOneOffScroll(index, 1)) 
+        if (!hasScrolledTo(index, -1)) 
             flowAlias.scrollTo(index);
     }
     
@@ -110,32 +132,10 @@ public class TableViewSkin<T>
         if (sm == null) return;
 
         int index = sm.getSelectedIndex();
-        if (!handledOneOffScroll(index, -1)) 
+        if (!hasScrolledTo(index, 1)) 
             flowAlias.scrollTo(index);
     }
 
-    /**
-     * Handle scrolling if target index is just below/above viewport.
-     * 
-     * @param index the target index to scroll to
-     * @param direction flag to handle below (== -1) or above (== +1) the viewport.
-     * @return true if scrolled, false otherwise.
-     */
-    private boolean handledOneOffScroll(int index, int direction) {
-        // nothing to do if cell is visible
-        if (flowAlias.getVisibleCell(index) != null) return false;
-        // not visible, check for just off - JDK-8197536
-        // check if just off viewport in direction
-        TableRow<T> prev = flowAlias.getVisibleCell(index - direction);
-        if (prev != null) {
-            // if so, scroll to that visible cell, then scroll pixels for row height 
-            flowAlias.scrollTo(prev);
-            double delta = getCellLength(index);
-            flowAlias.scrollPixels(direction * delta);
-            return true;
-        }
-        return false;
-    }
     /**
      * Returns the "length" (aka:rowHeight) of the row at index.
      * Note this is hacking into virtualFlow's realm, fixing JDK-8197536.
