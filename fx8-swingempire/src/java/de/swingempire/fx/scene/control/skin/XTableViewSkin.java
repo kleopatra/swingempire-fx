@@ -13,8 +13,10 @@ import javafx.scene.control.TableView;
 /**
  * fx-9/8 compatibility - Decision: wait for bug fix bubbling up into ea! 
  * --------
- * Trying to update the editing state after a layout pass - not working.
+ * <ul>
  * 
+ * <li> commented: Trying to update the editing state after a layout pass - not working.
+ * </ul>
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "unchecked" })
@@ -29,7 +31,7 @@ public class XTableViewSkin<T> extends TableViewSkin<T> {
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
         super.layoutChildren(x, y, w, h);
-        updateEditingCell();
+//        updateEditingCell();
     }
     
     /**
