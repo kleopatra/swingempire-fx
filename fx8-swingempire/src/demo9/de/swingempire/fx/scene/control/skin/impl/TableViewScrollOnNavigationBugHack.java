@@ -13,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -42,6 +43,7 @@ public class TableViewScrollOnNavigationBugHack extends Application {
                     }
             
         };
+        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
         countryCode.setCellValueFactory(new PropertyValueFactory<>("country"));
         TableColumn<Locale, String> language = new TableColumn<>("Language");
