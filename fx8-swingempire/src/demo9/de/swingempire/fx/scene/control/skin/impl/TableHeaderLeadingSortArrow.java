@@ -88,7 +88,7 @@ public class TableHeaderLeadingSortArrow extends Application {
             return sortIconDisplay == null ? DEFAULT_SORT_ICON_DISPLAY : sortIconDisplay.get();
         }
         
-        private ObjectProperty<ContentDisplay> sortIconProperty() {
+        private ObjectProperty<ContentDisplay> sortIconDisplayProperty() {
             if (sortIconDisplay == null) {
                 sortIconDisplay = new StyleableObjectProperty<>(DEFAULT_SORT_ICON_DISPLAY) {
 
@@ -125,7 +125,7 @@ public class TableHeaderLeadingSortArrow extends Application {
 
                     @Override
                     public StyleableProperty<ContentDisplay> getStyleableProperty(MyTableColumnHeader n) {
-                        return (StyleableProperty<ContentDisplay>) n.sortIconProperty();
+                        return (StyleableProperty<ContentDisplay>) n.sortIconDisplayProperty();
                     }
                 };
 

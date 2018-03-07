@@ -76,6 +76,8 @@ public class TableViewWithCheckBox extends Application {
             return cell;
         });
 
+        // working here: accepted is-a boolean property
+//        acceptedCol.setCellFactory(CheckBoxTableCell.forTableColumn(acceptedCol));
         ObservableList<Person> list = getPersonList();
         table.setItems(list); 
         table.getColumns().addAll(fullNameCol, acceptedCol);
