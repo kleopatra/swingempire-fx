@@ -1,0 +1,4 @@
+.column-header {
+    -fx-size: 30;
+    -fx-sort-icon-display: LEFT;
+}
