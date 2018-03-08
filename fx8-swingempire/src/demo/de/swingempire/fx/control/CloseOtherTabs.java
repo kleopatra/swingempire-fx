@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.control;
 
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
@@ -12,7 +13,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -26,6 +31,13 @@ import javafx.stage.Stage;
 /**
  * http://stackoverflow.com/q/33926424/203657
  * close all tabs except the selected 
+ * 
+ * ----------
+ * 
+ * Issue: align graphic to right of text in tab.
+ * https://bugs.openjdk.java.net/browse/JDK-8199322
+ * has a css selector, so can set via css 
+ * 
  */
 public class CloseOtherTabs extends Application
 {    
@@ -38,11 +50,27 @@ public class CloseOtherTabs extends Application
 
         final TabPane tabPane = new TabPane();
 
+        tabPane.skinProperty().addListener((src, ov, nv) -> {
+            // just for debugging the hierarchy
+            Parent headersRegion = (Parent) tabPane.lookup(".headers-region");
+            LOG.info("headers: " + headersRegion.getChildrenUnmodifiable());
+            Set<Node> tabHeaders = tabPane.lookupAll(".tab"); 
+//            LOG.info("tabs: " + tabHeaders);
+//            tabHeaders.stream().map(n -> (Parent)n)
+//                .forEach(parent -> LOG.info("children: " + parent.getChildrenUnmodifiable()));
+            
+            Set<Node> tabLabels = tabPane.lookupAll(".tab-label");
+//            tabLabels.stream().map(n -> (Label) n)
+//                .forEach(label -> label.setContentDisplay(ContentDisplay.RIGHT));
+            
+        });
         BorderPane borderPane = new BorderPane();
         for (int i = 0; i < 5; i++)
         {
             Tab tab = new Tab();
             tab.setText("Tab" + i);
+            // graphic
+            tab.setGraphic(new CheckBox());
             HBox hbox = new HBox();
             hbox.getChildren().add(new Label("Tab" + i));
             hbox.setAlignment(Pos.CENTER);
@@ -99,6 +127,7 @@ public class CloseOtherTabs extends Application
 
         borderPane.setCenter(tabPane);
         root.getChildren().add(borderPane);
+        scene.getStylesheets().add(getClass().getResource("tablabel.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
