@@ -153,7 +153,7 @@ public class TreeItemTest {
         TreeModificationReport report = new TreeModificationReport(treeItem);
         children.removeAll(children.get(2), children.get(5));
         assertEquals("got single removed", 1, report.getEventCount());
-        Change change = report.getLastChange();
+        Change change = report.getLastChangeX();
         if (change != null) {
             assertEquals(2, FXUtils.getChangeCount(change));
         }

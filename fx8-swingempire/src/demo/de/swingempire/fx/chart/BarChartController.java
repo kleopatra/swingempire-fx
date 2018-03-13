@@ -66,8 +66,15 @@ public class BarChartController  { //implements Initializable{
         xAxis.setLabel("Numer indeksu");
         yAxis.setLabel("Ilo punktw");
         //barChartHistogram.setBarGap(0);
-        XYChart.Series series1 = new XYChart.Series();
         int a = 10;
+        // just a quick check to see how bar-fill works with more than 1 series
+        // same color for all
+        XYChart.Series series2 = new XYChart.Series();
+        series2.getData().add(new XYChart.Data("Tom", 10));
+        series2.getData().add(new XYChart.Data("Andrew", 7));
+        series2.getData().add(new XYChart.Data("Patrick", 5));
+        
+        XYChart.Series series1 = new XYChart.Series();
         series1.getData().add(new XYChart.Data("Tom", 10));
         series1.getData().add(new XYChart.Data("Andrew", 7));
         series1.getData().add(new XYChart.Data("Patrick", 5));
@@ -77,7 +84,7 @@ public class BarChartController  { //implements Initializable{
 //            series1.getData().add(new XYChart.Data<>(Integer.toString(a), p.getValue()));
 //            a += 10;
 //        }
-        barChartHistogram.getData().addAll(series1);
+        barChartHistogram.getData().addAll(series1, series2);
         barChartHistogram.requestLayout();
         LOG.info("getting here: " + barChartHistogram);
 //        xAxis.setLabel("Numer indeksu");

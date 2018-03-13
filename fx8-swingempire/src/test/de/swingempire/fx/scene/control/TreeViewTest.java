@@ -4,6 +4,9 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -15,15 +18,19 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
 
 /**
@@ -50,10 +57,29 @@ public class TreeViewTest {
     public static TestRule classRule = new JavaFXThreadingRule();
 
     private TreeItem root;
-    private ObservableList rawItems;
+    private ObservableList<String> rawItems;
 
     private TreeView tree;
 
+//---- test tree notification events    
+    
+    /**
+     * No use to check the selection - notification from selectedIndices/items still utterly broken!
+     * see old JDK-8090563 (request to expose the change that was fired by children)
+     */
+    @Test
+    public void testRetainChildren() {
+        List retain = List.of(root.getChildren().get(2), root.getChildren().get(5));
+        ListChangeReport indicesReport = new ListChangeReport(root.getChildren());
+        TreeModificationReport report = new TreeModificationReport(root);
+        root.getChildren().retainAll(retain);
+        assertEquals(indicesReport.getLastChange(), report.getLastChange());
+        TreeModificationEvent event = report.getLastEvent();
+        LOG.info("" + event.getRemovedChildren());
+//        prettyPrint(report.getLastChange());
+        indicesReport.prettyPrint();
+    }
+//------------- end notification    
     /**
      * 32620 is about misbehaviour in CheckBoxTreeItem (recursive up/down 
      * updates didn't work properly with a custom selected provider - they
@@ -234,5 +260,7 @@ public class TreeViewTest {
         return child;
     }
 
-
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(TreeViewTest.class.getName());
 }

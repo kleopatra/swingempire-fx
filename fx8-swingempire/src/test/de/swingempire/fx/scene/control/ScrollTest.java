@@ -54,10 +54,12 @@ public class ScrollTest {
         int index = 100;
         table.scrollTo(index);
         VirtualFlow flow = getVirtualFlow(table);
-        IndexedCell cell = getCell(table, index);
-        LOG.info("" + cell );
         table.scrollTo(index - 10);
-        IndexedCell same = getCell(table, index);
+        table.requestLayout();
+        // can't be ... it's always the same?
+        IndexedCell cell = getCell(table, index);
+        LOG.info("" + cell + table.getHeight());
+        IndexedCell same = getCell(table, index - 10);
         assertSame(cell, same);
         LOG.info("" +cell );
     }

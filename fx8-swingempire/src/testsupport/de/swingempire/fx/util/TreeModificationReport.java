@@ -47,14 +47,36 @@ public class TreeModificationReport implements EventHandler<TreeModificationEven
         return hasEvents() ? events.get(0) : null;
     }
 
+    public Change getLastChange() {
+        return getLastChange(true);
+    }
+    
+    public Change getLastChange(boolean reset) {
+        Change change = getLastChangeX(reset);
+        if (change == null && !canHaveChangeX(getLastEvent())) {
+            // fall back to reflection
+            change = invokeGetChange(getLastEvent());
+        }
+        return change;
+    }
+    
+    /**
+     * @param lastEvent the event to access the change from, must not be null
+     * @return the change notification from the children list to its parent, might be
+     *    null if any of the event constructors without change was used
+     */
+    private Change invokeGetChange(TreeModificationEvent lastEvent) {
+        return (Change) FXUtils.invokeGetMethodValue(TreeModificationEvent.class, lastEvent, "getChange");
+    }
+
     /**
      * Returns and resets the change of the last event, or null
      * if not supported/available.
      *  
      * @return
      */
-    public Change getLastChange() {
-        return getLastChange(true);
+    public Change getLastChangeX() {
+        return getLastChangeX(true);
     }
     
     /**
@@ -64,8 +86,8 @@ public class TreeModificationReport implements EventHandler<TreeModificationEven
      * @param reset
      * @return
      */
-    public Change getLastChange(boolean reset) {
-        if (!canHaveChange(getLastEvent())) {
+    public Change getLastChangeX(boolean reset) {
+        if (!canHaveChangeX(getLastEvent())) {
             return null;
         }
         Change change = ((TreeModificationEventX) getLastEvent()).getChange();
@@ -82,7 +104,7 @@ public class TreeModificationReport implements EventHandler<TreeModificationEven
      * @param lastEvent
      * @return
      */
-    private boolean canHaveChange(TreeModificationEvent lastEvent) {
+    private boolean canHaveChangeX(TreeModificationEvent lastEvent) {
         return lastEvent instanceof TreeModificationEventX;
     }
     

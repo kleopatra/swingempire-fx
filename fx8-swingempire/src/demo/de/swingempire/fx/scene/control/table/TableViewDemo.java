@@ -16,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -230,7 +231,8 @@ public class TableViewDemo extends Application {
         table.getColumns().addAll(first);
         emailHeader = new TableColumn("Emails");
         table.getColumns().addAll(emailHeader);
-        TableColumn nestedPrimary = new TableColumn("Nested Primary");
+        TableColumn<Person, String> nestedPrimary = new TableColumn("Nested Primary");
+//        nestedPrimary.setCellValueFactory(c -> c.getValue().emailProperty());
         nestedPrimary.setCellValueFactory(new PropertyValueFactory<>("email"));
         TableColumn nestedSecondary = new TableColumn("Secondary");
         nestedSecondary.setCellValueFactory(new PropertyValueFactory<>("secondaryMail"));

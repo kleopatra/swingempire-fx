@@ -16,6 +16,7 @@ public class BarChartMain extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("barchart.fxml"));
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(BarChartMain.class.getResource("barfillcolor.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }
