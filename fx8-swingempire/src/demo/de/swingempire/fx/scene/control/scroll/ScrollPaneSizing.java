@@ -21,6 +21,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.skin.ScrollPaneSkin;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 /**
@@ -35,8 +36,11 @@ public class ScrollPaneSizing extends Application{
 
         public DebugScrollPaneSkin(ScrollPane scroll) {
             super(scroll);
+            unregisterChangeListeners(scroll.hbarPolicyProperty());
             registerChangeListener(scroll.hbarPolicyProperty(), p -> {
-                getHorizontalScrollBar().setVisible(false);
+                if (scroll.getHbarPolicy() == AS_NEEDED)
+                    getHorizontalScrollBar().setVisible(false);
+                scroll.requestLayout();
             });
         }
 
@@ -67,7 +71,9 @@ public class ScrollPaneSizing extends Application{
     private Parent createContent() {
         HBox inner = new HBox(new Text("somehing horizontal and again again ........")); 
         TitledPane titled = new TitledPane("my title", inner);
-        ScrollPane scroll = new ScrollPane(titled) {
+        VBox wrap = new VBox(titled);
+        HBox outer = new HBox(wrap);
+        ScrollPane scroll = new ScrollPane(outer) {
 
             @Override
             protected Skin<?> createDefaultSkin() {
