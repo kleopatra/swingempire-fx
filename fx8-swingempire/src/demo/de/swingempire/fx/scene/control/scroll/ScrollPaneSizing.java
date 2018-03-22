@@ -27,6 +27,10 @@ import javafx.stage.Stage;
 /**
  * horizontal scrollbar hides content
  * https://stackoverflow.com/q/49386416/203657
+ * <p>
+ * Okay for fx9 (except a slight flicker when changing the policy, probably due to forced hiding
+ * and re-showing). Not properly working in fx8: the sizing is not updated when changing
+ * the policy.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
