@@ -23,6 +23,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 /**
@@ -40,67 +41,83 @@ public class CombosWithCategories extends Application {
     }
     
     /**
-     * A model that manages a list of categories and has the notion
-     * of a current category with subCategories (it's a kind-of selectionModel)
+     * A model that manages a list of RelationProviders and has the notion
+     * of a current relationProvider with relations (it's a kind-of selectionModel).
+     * 
+     * <T> the type of elements in the list of relations 
      */
     public static class RelationModel<T> {
         
+        /**
+         * all relationProviders managed by this model
+         */
         private ListProperty<RelationProvider<T>> relationProviders;
+        /**
+         * The owner of the relations. Must be contained in the providers managed
+         * by this model.
+         */
+        private ObjectProperty<RelationProvider<T>> relationProvider;
+        private ListProperty<T> relations;
         
-        private ObjectProperty<RelationProvider<T>> currentRelationProvider;
-        private ListProperty<T> currentRelations;
+        public RelationModel() {
+            initProperties();
+        }
         
         /**
-         * The list of categories managed by the model.
+         * The RelationProviders managed by the model.
          */
-        public ListProperty<RelationProvider<T>> providersProperty() {
-            if (relationProviders == null) {
-                // TODO: need to update current and sub on change
-                relationProviders = new SimpleListProperty<>(this, "providers", observableArrayList());
-            }
+        public ListProperty<RelationProvider<T>> relationProvidersProperty() {
             return relationProviders;
         }
 
         /**
-         * The current category.
+         * The RelationProvider that manages the current relations.
          */
-        public ObjectProperty<RelationProvider<T>> currentProviderProperty() {
-            if (currentRelationProvider == null) {
-                currentRelationProvider = new SimpleObjectProperty<>(this, "currentProvider") {
-
-                    @Override
-                    protected void invalidated() {
-                        currentProviderInvalidated();
-                    }
-                    
-                };
-            }
-            return currentRelationProvider;
+        public ObjectProperty<RelationProvider<T>> relationProviderProperty() {
+            return relationProvider;
         }
         
-
-        public ListProperty<T> currentRelations() {
-            if (currentRelations == null) {
-                currentRelations = new SimpleListProperty<>(this, "currentRelations");
-                currentProviderInvalidated();
-            }
-            return currentRelations;
+        public RelationProvider<T> getRelationProvider() {
+            return relationProviderProperty().get();
         }
         
-        protected void currentProviderInvalidated() {
-            RelationProvider<T> value = getCurrentProvider();
-            currentRelations().set(value != null ? value.getRelations() : emptyObservableList());
+        public ListProperty<T> relations() {
+            return relations;
         }
         
-        public RelationProvider<T> getCurrentProvider() {
-            return currentProviderProperty().get();
+        /**
+         * Callback from invalidation of current relationProvider.
+         * Implemented to update relations.
+         */
+        protected void relationProviderInvalidated() {
+            RelationProvider<T> value = getRelationProvider();
+            relations().set(value != null ? value.getRelations() : emptyObservableList());
+        }
+        
+        /**
+         * Creates and wires all properties.
+         */
+        private void initProperties() {
+            relationProviders = new SimpleListProperty<>(this, "relationProviders", observableArrayList());
+            relationProvider = new SimpleObjectProperty<>(this, "relationProvider") {
+                
+                @Override
+                protected void invalidated() {
+                    // todo: don't accept providers that are not in the list
+                    relationProviderInvalidated();
+                }
+                
+            };
+            relations = new SimpleListProperty<>(this, "relations");
+            relationProviderInvalidated();
+            
         }
         
     }
     
     /**
-     * Implement the ui against a CategoryModel. In this example it's 
-     * configured to the show Continents which are enums.
+     * Implement the ui against a RelationModel. Here we create
+     * the same UI with a model backed by enums or a Map, respectively
      */
     private Parent createContent() {
         TabPane tabPane = new TabPane(
@@ -108,7 +125,7 @@ public class CombosWithCategories extends Application {
                 new Tab("Manual map", createRelationUI(createMapRelationModel()))
                 );
         
-        return tabPane;
+        return new BorderPane(tabPane);
     }
 
     /**
@@ -117,11 +134,11 @@ public class CombosWithCategories extends Application {
      */
     protected <T> Parent createRelationUI(RelationModel<T> model) {
         ComboBox<RelationProvider<T>> providers = new ComboBox<>();
-        providers.itemsProperty().bind(model.providersProperty());
-        providers.valueProperty().bindBidirectional(model.currentProviderProperty());
+        providers.itemsProperty().bind(model.relationProvidersProperty());
+        providers.valueProperty().bindBidirectional(model.relationProviderProperty());
         
         ComboBox<T> relations = new ComboBox<>();
-        relations.itemsProperty().bind(model.currentRelations());
+        relations.itemsProperty().bind(model.relations());
         relations.valueProperty().addListener((src, ov, nv) -> {
             LOG.info("relation changed: " + nv); 
         });
@@ -141,7 +158,7 @@ public class CombosWithCategories extends Application {
         data.put("EUROPE", observableArrayList("GERMANY", "FRANCE"));
         data.put("AMERICA", observableArrayList("MEXICO", "USA"));
         for (String key: data.keySet()) {
-            model.providersProperty().add(new RelationProvider<String>() {
+            model.relationProvidersProperty().add(new RelationProvider<String>() {
 
                 @Override
                 public ObservableList<String> getRelations() {
@@ -164,7 +181,7 @@ public class CombosWithCategories extends Application {
      */
     protected RelationModel<Object> createEnumRelationModel() {
         RelationModel<Object> model = new RelationModel<Object>();
-        model.providersProperty().setAll(Continent.values());
+        model.relationProvidersProperty().setAll(Continent.values());
         return model;
     }
 
@@ -194,8 +211,6 @@ public class CombosWithCategories extends Application {
         }
     }
     
-
-
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));
