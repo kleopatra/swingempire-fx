@@ -185,9 +185,6 @@ public class CombosWithCategories extends Application {
         return model;
     }
 
-    /**
-     * Example: Use a bunch of enums that implement Category
-     */
     public enum EuropeanCountry {
         FRANCE, GERMANY;
     }
