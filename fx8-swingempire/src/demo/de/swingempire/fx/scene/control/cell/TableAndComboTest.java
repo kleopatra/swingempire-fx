@@ -34,6 +34,10 @@ import javafx.util.Callback;
  * Problem with interaction of list and table with combo as cell
  * 
  * Unclear what she's trying to achieve
+ * 
+ * Question is deleted by owner, boiled down to mixing types (person in 
+ * combo, String in column) - not possible, at least not out off the 
+ * box
  */
 public class TableAndComboTest extends Application {
 
