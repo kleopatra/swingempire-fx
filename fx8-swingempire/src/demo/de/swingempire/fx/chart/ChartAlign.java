@@ -40,6 +40,7 @@ import javafx.stage.Stage;
  * 
  * https://stackoverflow.com/q/49139565/203657
  * 
+ * My answer: use custom layout
  * @author Jeanette Winzenburg, Berlin
  */
 public class ChartAlign extends Application {
