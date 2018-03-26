@@ -36,6 +36,25 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -52,25 +71,6 @@ import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeTableView.TreeTableViewFocusModel;
 import javafx.scene.control.TreeTableView.TreeTableViewSelectionModel;
 import javafx.scene.control.TreeView;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-
-import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import static org.junit.Assert.*;
 
 /**
  * copied from 

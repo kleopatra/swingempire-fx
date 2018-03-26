@@ -8,11 +8,11 @@ package de.swingempire.fx.scene.control.edit;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.cell.CellDecorator;
+import de.swingempire.fx.scene.control.edit.ListViewCustomCellExample.MyListCell;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;

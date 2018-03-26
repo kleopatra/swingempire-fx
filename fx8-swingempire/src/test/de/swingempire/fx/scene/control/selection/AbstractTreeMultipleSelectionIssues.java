@@ -7,13 +7,6 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Comparator;
 import java.util.logging.Logger;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,19 +14,23 @@ import org.junit.runners.Parameterized;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
-import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
+
 import de.swingempire.fx.property.PropertyIgnores.IgnoreNotYetImplemented;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.TreeModificationReport;
-import static org.junit.Assert.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 
 /**
  * Tree-selection related tests. 

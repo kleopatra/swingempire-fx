@@ -7,8 +7,8 @@ package de.swingempire.fx.scene.control.edit;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.cell.CellDecorator;
-import de.swingempire.fx.scene.control.cell.CellUtils;
 import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
+import de.swingempire.fx.scene.control.edit.ListAutoCell.TextFieldListAutoCell;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ListCell;

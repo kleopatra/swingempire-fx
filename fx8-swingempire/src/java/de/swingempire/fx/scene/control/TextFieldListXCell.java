@@ -4,8 +4,6 @@
  */
 package de.swingempire.fx.scene.control;
 
-import de.swingempire.fx.scene.control.cell.CellUtils;
-
 /*
  * Copyright (c) 2012, 2014, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.

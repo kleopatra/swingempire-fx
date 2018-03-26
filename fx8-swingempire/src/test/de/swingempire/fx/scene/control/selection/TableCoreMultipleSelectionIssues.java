@@ -4,16 +4,11 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import javafx.collections.ObservableList;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableView.TableViewSelectionModel;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.junit.Assert.*;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 
 /**
  * @author Jeanette Winzenburg, Berlin

@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.javafx.collections.SortHelper;
+
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
+import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -15,12 +20,6 @@ import javafx.collections.transformation.TransformationList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
-
-import com.sun.javafx.collections.SortHelper;
-
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
-import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
  * Helper for selectedItems in tree-based controls. 

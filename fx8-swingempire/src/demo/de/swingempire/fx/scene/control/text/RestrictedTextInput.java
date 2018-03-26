@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.text;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.geometry.Side;
 import javafx.scene.Parent;
@@ -18,7 +19,6 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextFormatter.Change;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * @author Jeanette Winzenburg, Berlin

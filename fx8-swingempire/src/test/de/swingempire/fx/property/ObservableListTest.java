@@ -4,12 +4,32 @@
  */
 package de.swingempire.fx.property;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static de.swingempire.fx.property.BugPropertyAdapters.*;
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.control.ImmutableObservableList;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.scene.control.cell.Person22463;
+import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.util.InvalidationReport;
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -25,27 +45,6 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.util.Callback;
-
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-
-import de.swingempire.fx.control.ImmutableObservableList;
-import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
-import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
-import de.swingempire.fx.scene.control.cell.Person22463;
-import de.swingempire.fx.util.ChangeReport;
-import de.swingempire.fx.util.FXUtils;
-import de.swingempire.fx.util.InvalidationReport;
-import de.swingempire.fx.util.ListChangeReport;
-import static de.swingempire.fx.property.BugPropertyAdapters.*;
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin

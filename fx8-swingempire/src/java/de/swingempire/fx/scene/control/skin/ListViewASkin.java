@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.skin;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.skin.resources.ControlResources;
 
 import de.swingempire.fx.property.BugPropertyAdapters;

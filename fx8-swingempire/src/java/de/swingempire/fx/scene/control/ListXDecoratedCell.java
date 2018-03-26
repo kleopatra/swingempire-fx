@@ -9,7 +9,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ListView.EditEvent;
 
 /**
  * Mimicking the valueFactory mechanism as used in TableCell.<p>

@@ -20,7 +20,6 @@ import de.swingempire.fx.util.AbstractEditReport;
 import de.swingempire.fx.util.EditableControl;
 import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.TableViewEditReport;
-import de.swingempire.fx.util.OldTableViewEditReport;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

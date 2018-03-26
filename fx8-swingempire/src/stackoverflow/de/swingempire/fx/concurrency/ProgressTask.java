@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.concurrency;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.scene.Parent;
@@ -12,12 +13,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
+ * 
  * Minimal example to bind to a Task's progress.
  * http://stackoverflow.com/q/32757069/203657
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_FAQ
  */
 public class ProgressTask extends Application {
 

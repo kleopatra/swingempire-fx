@@ -4,6 +4,9 @@
  */
 package de.swingempire.fx.scene.control.selection.corefix709;
 
+import java.util.Collections;
+import java.util.List;
+
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -31,9 +34,6 @@ package de.swingempire.fx.scene.control.selection.corefix709;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * No longer (as of 9-ea-108) needed, fix bubbled up.

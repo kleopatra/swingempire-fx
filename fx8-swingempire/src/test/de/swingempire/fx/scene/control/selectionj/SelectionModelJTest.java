@@ -4,10 +4,6 @@
  */
 package de.swingempire.fx.scene.control.selectionj;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Control;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -24,6 +20,9 @@ import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.DefaultSelectionModelJ;
 import de.swingempire.fx.scene.control.selection.SelectionModelJ;
 import de.swingempire.fx.util.StageLoader;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Control;
 
 /**
  * @author Jeanette Winzenburg, Berlin

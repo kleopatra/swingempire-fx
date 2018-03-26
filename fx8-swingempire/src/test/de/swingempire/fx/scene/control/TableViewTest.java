@@ -13,8 +13,6 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import javafx.collections.ListChangeListener;

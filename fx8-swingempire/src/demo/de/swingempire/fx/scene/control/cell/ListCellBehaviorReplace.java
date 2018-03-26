@@ -13,6 +13,7 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
 
+import de.swingempire.fx.scene.control.cell.ListCellBehaviorReplace.PlainCustomListCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;

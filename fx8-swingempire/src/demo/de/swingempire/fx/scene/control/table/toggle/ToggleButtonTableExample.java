@@ -6,6 +6,10 @@ package de.swingempire.fx.scene.control.table.toggle;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.cell.ChoiceBoxTableCellDynamic;
+import de.swingempire.fx.scene.control.table.toggle.ToggleButtonTableExample.ButtonCellX;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ListProperty;
@@ -26,10 +30,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.BugPropertyAdapters;
-import de.swingempire.fx.scene.control.cell.ChoiceBoxTableCellDynamic;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * @author Jeanette Winzenburg, Berlin

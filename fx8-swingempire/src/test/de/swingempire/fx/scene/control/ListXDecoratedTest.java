@@ -4,13 +4,13 @@
  */
 package de.swingempire.fx.scene.control;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.demobean.Person;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
-
-import static org.junit.Assert.*;
 /**
  * @author Jeanette Winzenburg, Berlin
  */

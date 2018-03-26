@@ -11,7 +11,6 @@ import de.swingempire.fx.scene.control.edit.TablePersonCoreAddAndEdit;
 import de.swingempire.fx.util.FXUtils;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.event.Event;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;

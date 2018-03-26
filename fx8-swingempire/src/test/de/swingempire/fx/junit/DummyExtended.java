@@ -4,11 +4,8 @@
  */
 package de.swingempire.fx.junit;
 
-import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
 
 /**
  * @author Jeanette Winzenburg, Berlin

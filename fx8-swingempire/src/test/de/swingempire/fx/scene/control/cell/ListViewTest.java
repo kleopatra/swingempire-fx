@@ -71,7 +71,6 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.ComboBoxListCell;
-import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.VBox;
 //import test.com.sun.javafx.scene.control.infrastructure.KeyEventFirer;
 //import test.com.sun.javafx.scene.control.infrastructure.KeyModifier;

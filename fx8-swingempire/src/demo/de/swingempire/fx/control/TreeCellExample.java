@@ -6,9 +6,9 @@ package de.swingempire.fx.control;
 
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import de.swingempire.fx.control.TreeCellExample.MyTreeCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

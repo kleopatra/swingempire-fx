@@ -4,8 +4,8 @@
  */
 package de.swingempire.fx.control.layout;
 
+import de.swingempire.fx.control.layout.ChatBubble.BubbleSpec;
 import javafx.application.Application;
-import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -14,7 +14,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import de.swingempire.fx.control.layout.ChatBubble.BubbleSpec;
 
 /**
  * @author Jeanette Winzenburg, Berlin

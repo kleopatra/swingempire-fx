@@ -6,26 +6,25 @@
     
     //import java.lang.System.Logger;
     import java.util.Locale;
-    import java.util.logging.Logger;
-    
-    import de.swingempire.fx.util.FXUtils;
-    import javafx.application.Application;
-    import javafx.beans.Observable;
-    import javafx.collections.FXCollections;
-    import javafx.event.EventTarget;
-    import javafx.scene.Node;
-    import javafx.scene.Parent;
-    import javafx.scene.Scene;
-    import javafx.scene.control.TableColumn;
-    import javafx.scene.control.TableColumnBase;
-    import javafx.scene.control.TableView;
-    import javafx.scene.control.TextField;
-    import javafx.scene.control.cell.PropertyValueFactory;
-    import javafx.scene.control.skin.TableColumnHeader;
-    import javafx.scene.control.skin.TableHeaderRow;
-    import javafx.scene.input.MouseEvent;
-    import javafx.scene.layout.BorderPane;
-    import javafx.stage.Stage;
+import java.util.logging.Logger;
+
+import de.swingempire.fx.util.FXUtils;
+import javafx.application.Application;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.event.EventTarget;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
     
     /**
      * dynamic add/remove input component in tableHeader

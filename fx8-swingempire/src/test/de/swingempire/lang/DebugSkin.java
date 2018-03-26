@@ -6,15 +6,12 @@ package de.swingempire.lang;
 
 import java.util.logging.Logger;
 
-import com.oracle.tools.packager.Log;
-
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.ButtonSkin;
-import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 

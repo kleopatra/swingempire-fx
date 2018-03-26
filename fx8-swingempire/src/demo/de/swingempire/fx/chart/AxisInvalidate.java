@@ -7,7 +7,6 @@ package de.swingempire.fx.chart;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.Parent;

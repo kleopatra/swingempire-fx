@@ -31,6 +31,8 @@ package de.swingempire.fx.scene.control.selection.corefix709;
 
 import java.util.List;
 
+import com.sun.javafx.scene.control.skin.Utils;
+
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -41,8 +43,6 @@ import javafx.scene.control.Control;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumnBase;
-
-import com.sun.javafx.scene.control.skin.Utils;
 
 class ControlUtils {
     private ControlUtils() { }

@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.table.invcodebug;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import javafx.application.Application;

@@ -4,8 +4,7 @@
  */
 package de.swingempire.fx.property;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.sun.javafx.property.PropertyReference;
 
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -16,8 +15,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
-
-import com.sun.javafx.property.PropertyReference;
 
 /**
  * @author Jeanette Winzenburg, Berlin

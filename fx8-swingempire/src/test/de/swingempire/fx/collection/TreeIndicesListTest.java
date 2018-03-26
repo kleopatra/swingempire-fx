@@ -8,13 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -27,16 +20,21 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreTreeGetRow;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
-
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 
 /**
  * @author Jeanette Winzenburg, Berlin

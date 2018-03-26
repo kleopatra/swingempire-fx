@@ -2,6 +2,7 @@ package de.swingempire.fx.chart;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -9,7 +10,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
@@ -19,7 +19,6 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ToolTipOnChartSeries extends Application {

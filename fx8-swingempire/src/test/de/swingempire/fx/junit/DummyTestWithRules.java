@@ -6,8 +6,6 @@ package de.swingempire.fx.junit;
 
 import java.util.logging.Logger;
 
-import javafx.application.Platform;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -16,9 +14,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import de.swingempire.fx.junit.FXThreadingRule;
-import de.swingempire.fx.junit.JavaFXThreadingRule;
 import static junit.framework.TestCase.*;
+
+import javafx.application.Platform;
 
 /**
  * Example of enforcing fx-app thread:

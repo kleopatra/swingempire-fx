@@ -6,18 +6,17 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableView.TableViewSelectionModel;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 
 /**
  * Testing single selection api in TableViewSelectionModel, for both selection modes.

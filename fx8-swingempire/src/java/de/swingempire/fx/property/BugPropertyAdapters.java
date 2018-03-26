@@ -20,12 +20,8 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.ListPropertyBase;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.LongPropertyBase;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.collections.ObservableList;
-
-//import com.sun.istack.internal.NotNull;
-import com.sun.javafx.binding.BidirectionalBinding;
 
 /**
  * Typed wrappers for ObjectProperty<TYPE>. Temporary workaround for 

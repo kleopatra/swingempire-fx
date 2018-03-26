@@ -8,6 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.util.FXUtils;
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
@@ -18,14 +26,6 @@ import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewSelectionModel;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import de.swingempire.fx.util.FXUtils;
-import de.swingempire.fx.util.ListChangeReport;
-import static org.junit.Assert.*;
 
 /**
  * Testing single selection api in TableViewSelectionModel, for both selection modes.

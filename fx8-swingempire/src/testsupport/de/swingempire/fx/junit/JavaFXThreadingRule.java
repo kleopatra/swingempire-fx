@@ -6,7 +6,7 @@ package de.swingempire.fx.junit;
 
 
 import java.util.concurrent.CountDownLatch;
-import javafx.application.Platform;
+
 //import javafx.embed.swing.JFXPanel;
 //import javax.swing.SwingUtilities;
 import org.junit.rules.TestRule;
@@ -14,6 +14,8 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import com.sun.javafx.application.PlatformImpl;
+
+import javafx.application.Platform;
 
 /**
 * A JUnit {@link Rule} for running tests on the JavaFX thread and performing

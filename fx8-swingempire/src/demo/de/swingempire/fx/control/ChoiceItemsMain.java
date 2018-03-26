@@ -10,8 +10,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import com.sun.glass.ui.View;
-
 public class ChoiceItemsMain extends Application {
     private Parent rootPane;
     @Override

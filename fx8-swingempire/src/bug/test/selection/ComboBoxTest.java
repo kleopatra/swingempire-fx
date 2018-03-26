@@ -9,7 +9,6 @@ import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.stage.Stage;
-import javafx.collections.ObservableList;
 
 /**
  * IOOB when re-selecting old index

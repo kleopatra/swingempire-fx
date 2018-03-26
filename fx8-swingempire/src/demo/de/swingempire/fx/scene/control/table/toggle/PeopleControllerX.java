@@ -4,6 +4,10 @@
  */
 package de.swingempire.fx.scene.control.table.toggle;
 
+import com.sun.prism.impl.Disposer;
+
+import de.swingempire.fx.scene.control.table.toggle.ToggleButtonTableExample.ButtonCellX;
+import de.swingempire.fx.scene.control.table.toggle.ToggleButtonTableExample.DataSelectionModel;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -14,11 +18,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
-
-import com.sun.prism.impl.Disposer;
-
-import de.swingempire.fx.scene.control.table.toggle.ToggleButtonTableExample.ButtonCellX;
-import de.swingempire.fx.scene.control.table.toggle.ToggleButtonTableExample.DataSelectionModel;
 
 /**
  * Have a toggleButton as cell. 

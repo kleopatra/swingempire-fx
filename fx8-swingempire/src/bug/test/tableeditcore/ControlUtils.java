@@ -7,7 +7,6 @@ package test.tableeditcore;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /*
  * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -48,7 +47,6 @@ import javafx.scene.control.Control;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumnBase;
-import javafx.scene.control.TablePositionBase;
 
 /**
  * Copy of bugfix version

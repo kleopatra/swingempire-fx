@@ -7,15 +7,12 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
-
-
 import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;

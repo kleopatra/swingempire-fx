@@ -4,13 +4,13 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.SingleSelectionModel;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * PENDING: what is this? looks like a left-over 

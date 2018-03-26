@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control.cell.rowissues;
 
 import com.sun.javafx.runtime.VersionInfo;
+
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;

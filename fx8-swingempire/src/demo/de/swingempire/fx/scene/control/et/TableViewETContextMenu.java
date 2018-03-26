@@ -6,6 +6,9 @@ package de.swingempire.fx.scene.control.et;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.behavior.TableCellBehavior;
+
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.Property;
@@ -23,15 +26,11 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableCellSkinBase;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.sun.javafx.scene.control.behavior.TableCellBehavior;
-import com.sun.javafx.scene.control.skin.TableCellSkinBase;
-
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * per-cell contextMenu must be triggered by keyboard 

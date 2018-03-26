@@ -10,8 +10,6 @@ import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
-import de.swingempire.fx.collection.IndexMappedList;
-import de.swingempire.fx.collection.IndicesList;
 
 /**
  * Concrete SelectionModel using indicesList/indexedItems for ListView.

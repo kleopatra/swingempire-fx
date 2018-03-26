@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Parent;

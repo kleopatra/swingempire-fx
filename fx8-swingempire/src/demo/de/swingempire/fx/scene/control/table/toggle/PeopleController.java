@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.table.toggle;
 
+import com.sun.prism.impl.Disposer;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -13,8 +15,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.util.Callback;
-
-import com.sun.prism.impl.Disposer;
 
 /**
  * Have a toggleButton as cell. 

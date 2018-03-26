@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
-import javafx.scene.chart.StackedBarChart;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -13,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;

@@ -11,6 +11,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.control.TableViewSample.PlainTableCell;
+import de.swingempire.fx.scene.control.selection.TableSkinTest.SpanTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;

@@ -5,14 +5,13 @@
 package de.swingempire.fx.property;
 
 
+import com.sun.javafx.property.PropertyReference;
+
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.util.Callback;
 //import sun.util.logging.PlatformLogger;
 //import sun.util.logging.PlatformLogger.Level;
-
-import com.sun.javafx.property.PropertyReference;
-import com.sun.javafx.scene.control.Logging;
 
 
 /**

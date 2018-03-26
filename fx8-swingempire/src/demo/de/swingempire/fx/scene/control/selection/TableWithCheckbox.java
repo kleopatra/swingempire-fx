@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Arrays;
 import java.util.List;
 
+import de.swingempire.fx.scene.control.selection.TableWithCheckbox.Player;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.Observable;

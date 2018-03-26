@@ -11,6 +11,7 @@ import static javafx.scene.control.TreeView.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.TreeView.EditEvent;
 /**
  * @author Jeanette Winzenburg, Berlin
  */

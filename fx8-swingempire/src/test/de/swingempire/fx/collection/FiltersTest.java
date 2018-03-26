@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,9 +18,12 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import de.swingempire.fx.collection.Filters.EqualsPredicate;
-
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.collection.Filters.EqualsPredicate;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 
 /**
  * @author Jeanette Winzenburg, Berlin

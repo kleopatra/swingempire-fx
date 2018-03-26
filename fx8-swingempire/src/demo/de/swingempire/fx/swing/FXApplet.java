@@ -4,18 +4,17 @@
  */
 package de.swingempire.fx.swing;
 
+import javax.swing.JApplet;
+import javax.swing.SwingUtilities;
+
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Popup;
-
-import javax.swing.JApplet;
-import javax.swing.SwingUtilities;
 
 /**
  * Focus problem with popup in swing/fx intermix

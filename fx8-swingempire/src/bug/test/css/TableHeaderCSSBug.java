@@ -4,11 +4,10 @@
  */
 package test.css;
 
-import javafx.application.Application; 
-import javafx.scene.Scene; 
-import javafx.scene.control.TableColumn; 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.skin.TableColumnHeader;
 import javafx.stage.Stage; 
 /**
 https://bugs.openjdk.java.net/browse/JDK-8188164

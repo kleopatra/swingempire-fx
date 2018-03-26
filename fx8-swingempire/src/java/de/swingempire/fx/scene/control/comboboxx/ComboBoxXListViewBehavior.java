@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.javafx.scene.control.behavior.ComboBoxBaseBehavior;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
 
 import static javafx.scene.input.KeyCode.*;
 import static javafx.scene.input.KeyEvent.*;

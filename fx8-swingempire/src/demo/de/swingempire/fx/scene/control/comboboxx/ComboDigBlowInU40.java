@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.comboboxx;
 
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Parent;
@@ -15,7 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.DebugUtils;
 
 
 /**

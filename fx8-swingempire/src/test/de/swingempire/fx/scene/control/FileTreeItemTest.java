@@ -8,8 +8,6 @@ import java.io.File;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import javafx.scene.control.TreeItem;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,9 +16,10 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import de.swingempire.fx.scene.control.tree.FileTreeXExample.FileTreeItemX;
-
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.scene.control.tree.FileTreeXExample.FileTreeItemX;
+import javafx.scene.control.TreeItem;
 
 /**
  * @author Jeanette Winzenburg, Berlin

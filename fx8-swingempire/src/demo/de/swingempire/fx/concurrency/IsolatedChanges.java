@@ -4,8 +4,6 @@
  */
 package de.swingempire.fx.concurrency;
 
-import com.sun.javafx.tk.FontLoader;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

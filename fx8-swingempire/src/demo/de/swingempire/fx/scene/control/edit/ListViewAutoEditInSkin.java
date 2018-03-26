@@ -4,23 +4,19 @@
  */
 package de.swingempire.fx.scene.control.edit;
 import de.swingempire.fx.scene.control.edit.ListAutoCell.TextFieldListAutoCell;
+import de.swingempire.fx.scene.control.edit.ListViewAutoEditInSkin.MyListViewSkin;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToolBar;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 ;/**
  * Trying to add item/start edit on new item in commitHandler:

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.TableAndComboMixedTypes.TemplateColumn;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -28,6 +29,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
+ * SO_ABANDONED
  * https://stackoverflow.com/q/49431347/203657
  * mixing types: templates in combo vs. String in column
  * 
@@ -35,6 +37,9 @@ import javafx.stage.Stage;
  */
 public class TableAndComboMixedTypes extends Application {
 
+    /**
+     * @return
+     */
     private Parent createContent() {
         initialize();
         

@@ -7,7 +7,6 @@ package de.swingempire.fx.scene;
 import com.sun.javafx.scene.NodeHelper;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.Scene;

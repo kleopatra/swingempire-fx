@@ -8,10 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.swingempire.fx.util.VirtualFlowTestUtils.*
-;
-
-import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
+import control.edit.TableViewEditNotWritable.Dummy;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;

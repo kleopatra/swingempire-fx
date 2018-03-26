@@ -6,6 +6,9 @@ package de.swingempire.fx.control;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.control.TableViewSample.BoundEditingCell;
+import de.swingempire.fx.control.TableViewSample.BoundTableCell;
+
 //import com.sun.javafx.css.Stylesheet;
 
 import de.swingempire.fx.demobean.Person;

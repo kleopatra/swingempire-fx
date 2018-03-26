@@ -4,15 +4,15 @@
  */
 package de.swingempire.fx.scene.control.pagination;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.control.Pagination;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.control.Pagination;
 
 /**
  * @author Jeanette Winzenburg, Berlin

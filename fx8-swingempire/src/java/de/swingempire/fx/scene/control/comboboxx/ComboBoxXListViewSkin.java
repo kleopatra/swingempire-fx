@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 import com.sun.javafx.scene.control.Properties;
 import com.sun.javafx.scene.control.behavior.ComboBoxBaseBehavior;
 
+import static javafx.scene.control.TextFormatter.*;
+
 import de.swingempire.fx.property.PathAdapter;
 import de.swingempire.fx.util.FXUtils;
 import javafx.beans.InvalidationListener;
@@ -45,7 +47,6 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.Skinnable;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.ComboBoxPopupControl;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.control.skin.VirtualContainerBase;
@@ -54,8 +55,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-
-import static javafx.scene.control.TextFormatter.*;
 
 //import javafx.scene.accessibility.Attribute;
 

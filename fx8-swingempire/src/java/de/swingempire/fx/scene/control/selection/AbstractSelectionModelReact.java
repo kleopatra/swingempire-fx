@@ -6,11 +6,9 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.lang.reflect.Field;
 
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.SelectionModel;
-
-import org.reactfx.Guard;
-import org.reactfx.inhibeans.property.ReadOnlyIntegerWrapper;
-import org.reactfx.inhibeans.property.ReadOnlyObjectWrapper;
 
 
 /**

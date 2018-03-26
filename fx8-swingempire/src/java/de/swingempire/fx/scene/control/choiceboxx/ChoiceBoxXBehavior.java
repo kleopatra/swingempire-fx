@@ -20,7 +20,6 @@ import com.sun.javafx.scene.control.skin.Utils;
 
 import static javafx.scene.input.KeyCode.*;
 
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;

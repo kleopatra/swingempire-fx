@@ -14,6 +14,8 @@ import javafx.scene.control.Cell;
 import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Labeled;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TreeCell;
 
 /**
  * Interface for decorating cells: contains reflective access to super's hidden api.

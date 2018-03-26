@@ -4,9 +4,6 @@
  */
 package de.swingempire.fx.collection;
 
-import javafx.collections.ModifiableObservableListBase;
-import javafx.collections.ObservableListBase;
-
 import com.sun.javafx.collections.ChangeHelper;
 import com.sun.javafx.collections.ElementObservableListDecorator;
 import com.sun.javafx.collections.ImmutableObservableList;
@@ -19,6 +16,9 @@ import com.sun.javafx.collections.SortableList;
 import com.sun.javafx.collections.TrackableObservableList;
 import com.sun.javafx.collections.VetoableListDecorator;
 import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
+
+import javafx.collections.ModifiableObservableListBase;
+import javafx.collections.ObservableListBase;
 
 
 /**

@@ -4,16 +4,19 @@
  */
 package de.swingempire.fx.junit;
 
-import com.sun.javafx.application.PlatformImpl;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
+
 import javax.swing.SwingUtilities;
 
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+
+import com.sun.javafx.application.PlatformImpl;
+
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
 
 /**
 * A test runner for JUnit that ensures that all tests are run on the 

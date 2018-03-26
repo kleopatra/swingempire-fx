@@ -4,8 +4,6 @@
  */
 package de.swingempire.fx.scene.control;
 
-import javafx.scene.control.TreeItem;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,14 +11,15 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static de.swingempire.fx.scene.control.tree.TreeItemX.*;
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.scene.control.TreeIgnores.IgnoreLog;
 import de.swingempire.fx.scene.control.tree.TreeItemIterator;
 import de.swingempire.fx.scene.control.tree.TreeItemStreamSupport;
 import de.swingempire.fx.scene.control.tree.TreeItemX;
 import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
-
-import static de.swingempire.fx.scene.control.tree.TreeItemX.*;
-import static org.junit.Assert.*;
+import javafx.scene.control.TreeItem;
 
 /**
  * @author Jeanette Winzenburg, Berlin

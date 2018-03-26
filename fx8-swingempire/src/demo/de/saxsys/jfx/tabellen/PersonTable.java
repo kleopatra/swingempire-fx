@@ -18,8 +18,6 @@ import de.saxsys.jfx.tabellen.model.Person;
 import de.saxsys.jfx.tabellen.model.Town;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableColumn;

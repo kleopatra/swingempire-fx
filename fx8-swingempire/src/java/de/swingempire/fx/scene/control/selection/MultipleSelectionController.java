@@ -4,9 +4,9 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
-import javafx.collections.ObservableList;
 import de.swingempire.fx.collection.IndexMappedList;
 import de.swingempire.fx.collection.IndicesList;
+import javafx.collections.ObservableList;
 
 /**
  * Implementation of IndexedItemsController that handles a list of items.

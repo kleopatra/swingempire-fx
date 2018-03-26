@@ -12,11 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
-import de.swingempire.lang.StreamsAndLambdas.Bar;
-import de.swingempire.lang.StreamsAndLambdas.Foo;
-
 /**
  * @author Jeanette Winzenburg, Berlin
  */

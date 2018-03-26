@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control.choiceboxx;
 
 import com.sun.javafx.runtime.VersionInfo;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

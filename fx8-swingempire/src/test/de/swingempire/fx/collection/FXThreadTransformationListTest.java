@@ -15,8 +15,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.util.ListChangeReport;
 import javafx.application.Platform;

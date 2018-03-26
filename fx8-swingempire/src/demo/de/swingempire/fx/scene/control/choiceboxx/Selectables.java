@@ -4,20 +4,17 @@
  */
 package de.swingempire.fx.scene.control.choiceboxx;
 
+import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.SimpleChoiceSelectionModel;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
-import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues;
-import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.SimpleChoiceSelectionModel;
 
 /**
  * @author Jeanette Winzenburg, Berlin

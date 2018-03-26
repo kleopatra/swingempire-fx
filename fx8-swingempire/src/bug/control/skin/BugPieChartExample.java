@@ -7,7 +7,6 @@ package control.skin;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.util.ListChangeReport;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

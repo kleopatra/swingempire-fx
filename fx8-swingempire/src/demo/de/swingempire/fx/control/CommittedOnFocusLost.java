@@ -6,7 +6,6 @@ package de.swingempire.fx.control;
 
 import static javafx.scene.control.TextFormatter.*;
 
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -16,9 +15,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 

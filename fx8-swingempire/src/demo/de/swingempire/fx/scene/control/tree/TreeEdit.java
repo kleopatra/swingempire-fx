@@ -6,11 +6,8 @@ package de.swingempire.fx.scene.control.tree;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.tree.TreeEdit.EditableTreeCell;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;

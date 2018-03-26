@@ -4,9 +4,6 @@
  */
 package de.swingempire.fx.scene.control.scroll;
 
-import java.util.Arrays;
-
-import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Group;

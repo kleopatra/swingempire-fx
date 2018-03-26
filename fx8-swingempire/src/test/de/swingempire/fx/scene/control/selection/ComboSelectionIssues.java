@@ -18,7 +18,6 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelec
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;

@@ -7,26 +7,25 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.SingleSelectionModel;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceSetItem.MySelectionModel;
 import de.swingempire.fx.scene.control.choiceboxx.SeparatorMarker;
 import de.swingempire.fx.scene.control.comboboxx.SingleMultipleSelectionModel;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
-
-import static org.junit.Assert.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.SingleSelectionModel;
 
 /**
  * Here we try to test SingleMultipleSelectionModel basics, using a choiceboxX.

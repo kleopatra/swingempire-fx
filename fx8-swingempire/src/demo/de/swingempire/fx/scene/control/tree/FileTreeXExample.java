@@ -5,8 +5,6 @@
 package de.swingempire.fx.scene.control.tree;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;

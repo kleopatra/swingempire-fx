@@ -6,6 +6,7 @@ package de.swingempire.fx.control;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -14,13 +15,11 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import de.swingempire.fx.demobean.Person;
 
 /**
  * @author Jeanette Winzenburg, Berlin

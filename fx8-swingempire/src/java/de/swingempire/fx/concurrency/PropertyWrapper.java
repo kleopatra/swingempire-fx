@@ -6,13 +6,13 @@ package de.swingempire.fx.concurrency;
 
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
+
 import javafx.application.Platform;
 import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-
-import javax.swing.SwingUtilities;
 
 /**
  * Wrapper that switches to FX-AT/EDT as appropriate. The assumption is

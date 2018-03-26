@@ -8,11 +8,11 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.TableFormattedCell.MyCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ContentDisplay;

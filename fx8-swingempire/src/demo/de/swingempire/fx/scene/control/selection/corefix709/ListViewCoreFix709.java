@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import com.sun.javafx.scene.control.behavior.ListCellBehavior;
+
 import javafx.beans.DefaultProperty;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -60,6 +62,8 @@ import javafx.css.Styleable;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.EnumConverter;
+import javafx.css.converter.SizeConverter;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -79,14 +83,10 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.Pair;
-
-import com.sun.javafx.css.converters.EnumConverter;
-import com.sun.javafx.css.converters.SizeConverter;
-import com.sun.javafx.scene.control.behavior.ListCellBehavior;
-import com.sun.javafx.scene.control.skin.ListViewSkin;
 
 /**
  * unusable, just for extracting stuff!

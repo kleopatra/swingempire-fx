@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.selection.treebugs;
 import java.util.Collection;
 import java.util.Objects;
 
-import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyStringWrapper;

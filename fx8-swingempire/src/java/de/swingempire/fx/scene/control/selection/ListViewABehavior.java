@@ -14,6 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.PlatformUtil;
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+import com.sun.javafx.scene.control.behavior.ListCellBehavior;
+import com.sun.javafx.scene.control.behavior.ListViewBehavior;
+import com.sun.javafx.scene.control.behavior.OrientedKeyBinding;
+import com.sun.javafx.scene.control.behavior.TwoLevelFocusListBehavior;
+import com.sun.javafx.scene.control.skin.Utils;
+
+import static javafx.scene.input.KeyCode.*;
+
 import javafx.event.EventType;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
@@ -25,17 +35,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
-
-import com.sun.javafx.PlatformUtil;
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
-import com.sun.javafx.scene.control.behavior.ListCellBehavior;
-import com.sun.javafx.scene.control.behavior.ListViewBehavior;
-import com.sun.javafx.scene.control.behavior.OrientedKeyBinding;
-import com.sun.javafx.scene.control.behavior.TwoLevelFocusListBehavior;
-import com.sun.javafx.scene.control.skin.Utils;
-
-import static javafx.scene.input.KeyCode.*;
 
 /**
  * 

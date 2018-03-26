@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,7 +23,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * Combo/Choice must be focused after starting edit, reported

@@ -5,9 +5,7 @@
 package de.saxsys.jfx.tabellen.model;
 
 import java.time.LocalDate;
-import java.util.Random;
 
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;

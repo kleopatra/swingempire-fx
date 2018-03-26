@@ -7,9 +7,8 @@ package de.swingempire.fx.util;
 import static javafx.scene.control.TableColumn.*;
 
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableColumn.CellEditEvent;
-import javafx.scene.control.TableView;
+import javafx.scene.control.TablePosition;
 
 /**
  * @author Jeanette Winzenburg, Berlin

@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Locale;
 import java.util.function.Predicate;
 
+import de.swingempire.fx.collection.FilteredListX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,9 +21,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import de.swingempire.fx.collection.FilteredListX;
-import de.swingempire.fx.scene.control.ControlUtils;
-import de.swingempire.fx.scene.control.ControlUtils.ObservableFactory;
 
 /**
  * Filtering looses selection state

@@ -15,15 +15,13 @@ package de.swingempire.fx.scene.control.pagination;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.javafx.scene.control.behavior.BehaviorBase;
+
 import javafx.geometry.NodeOrientation;
 import javafx.scene.control.Pagination;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
-import com.sun.javafx.scene.control.skin.PaginationSkin;
 
 /**
  * Not needed in jdk9 - ignore.

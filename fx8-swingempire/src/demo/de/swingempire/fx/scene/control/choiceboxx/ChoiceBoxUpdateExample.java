@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.choiceboxx;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;
@@ -18,7 +17,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;

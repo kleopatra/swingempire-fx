@@ -9,7 +9,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import de.swingempire.fx.scene.control.selection.SelectionAndModification;
-import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -18,8 +17,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 

@@ -6,6 +6,7 @@ package control.skin;
 
 import java.util.logging.Logger;
 
+import control.skin.EmptyPlaceholdersInSkin.FakeItemCount;
 import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;

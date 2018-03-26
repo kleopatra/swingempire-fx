@@ -11,14 +11,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
-import javafx.util.Callback;
-
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,13 +21,19 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.collections.ObservableListWrapper;
 
-import de.swingempire.fx.collection.FilteredListX;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.PropertyIgnores;
-import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
-import de.swingempire.fx.util.ListChangeReport;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.util.ListChangeReport;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.util.Callback;
 
 /**
  * Tests around TansformationLists - trying to understand.

@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.comboboxx.ComboBoxUpdateOnShowingRT_20945.ComboXFacade;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.FXCollections;
@@ -22,7 +23,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
 
 /**
  * Alert ComboBoxX: as of 8u40b12, first item is updated in onShowing if !isEditable.

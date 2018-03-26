@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.TableViewCheckBoxCell.DTableRow;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;

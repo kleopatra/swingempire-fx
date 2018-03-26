@@ -6,6 +6,10 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.ComboBoxTableCellEdit2.FieldToStringConvertor;
+import de.swingempire.fx.scene.control.cell.ComboBoxTableCellEdit2.GoldplusField;
+import de.swingempire.fx.scene.control.cell.ComboBoxTableCellEdit2.MappingItem;
+import de.swingempire.fx.scene.control.cell.ComboBoxTableCellEdit2.MyComboTableCell;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;

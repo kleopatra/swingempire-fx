@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -19,7 +20,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * WeekOfDay from DatePicker.

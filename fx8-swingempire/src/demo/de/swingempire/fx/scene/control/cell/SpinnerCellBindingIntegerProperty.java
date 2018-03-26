@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.property.BidirectionalBinding;
 import javafx.application.Application;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.IntegerProperty;
@@ -13,7 +14,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -21,11 +21,9 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.property.BidirectionalBinding;
 
 /**
  * bidi-binding of expression - doesn't work, not supported?

@@ -4,6 +4,9 @@
  */
 package de.swingempire.fx.scene.control.selection.treebugs;
 
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.Scene;
@@ -12,9 +15,6 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * original issue: the item in the selectedItems wasn't updated

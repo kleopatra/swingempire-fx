@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.table.toggle;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -17,7 +18,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * ToggleButton keeps its state (and still related to group) even if hidden

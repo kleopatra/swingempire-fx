@@ -10,6 +10,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTableCellSelection;
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -18,20 +31,6 @@ import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.TableViewFocusModel;
 import javafx.scene.control.TableView.TableViewSelectionModel;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-
-import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTableCellSelection;
-import de.swingempire.fx.util.ListChangeReport;
-
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
 
 /**
  * Contains TableView specifics, particularly cell selection.

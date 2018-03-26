@@ -6,13 +6,8 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.selection.MultipleSelectionModelBase.ShiftParams;
-import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.util.Callback;

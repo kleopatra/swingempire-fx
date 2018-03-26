@@ -9,13 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Control;
-import javafx.scene.control.FocusModel;
-import javafx.scene.control.SelectionModel;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -27,14 +20,20 @@ import org.junit.runners.JUnit4;
 import com.codeaffine.test.ConditionalIgnoreRule;
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreAnchor;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreCorrelated;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreDocErrors;
 import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.StageLoader;
-
-import static org.junit.Assert.*;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Control;
+import javafx.scene.control.FocusModel;
+import javafx.scene.control.SelectionModel;
 
 /**
  * Testing SelectionModel api.

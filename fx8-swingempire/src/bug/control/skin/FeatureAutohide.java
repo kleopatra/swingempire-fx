@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;

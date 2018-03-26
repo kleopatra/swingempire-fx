@@ -8,11 +8,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static de.swingempire.fx.util.FunctionalConverter.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.demobean.Person;
 import javafx.util.StringConverter;
-import static de.swingempire.fx.util.FunctionalConverter.*;
 /**
  * @author Jeanette Winzenburg, Berlin
  */

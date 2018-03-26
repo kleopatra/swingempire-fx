@@ -11,6 +11,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import static javafx.scene.input.KeyCombination.*;
+
+import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -25,7 +30,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
-import static javafx.scene.input.KeyCombination.*;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -33,9 +37,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.selection.SimpleTreeSelectionModel;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.util.DebugUtils;
 
 /**
  * @author Jeanette Winzenburg, Berlin

@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import de.swingempire.fx.scene.control.cell.CheckBoxCellBinding.FixedCheckBoxTableCell;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;

@@ -7,9 +7,7 @@ package de.swingempire.fx.control;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.ListXDecoratedCell;
 import de.swingempire.fx.scene.control.ListXView;
-import de.swingempire.fx.scene.control.TextFieldListXCell;
 import de.swingempire.fx.scene.control.TextFieldListXDecoratedCell;
 import javafx.application.Application;
 import javafx.event.ActionEvent;

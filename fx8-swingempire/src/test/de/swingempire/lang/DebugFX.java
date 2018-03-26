@@ -5,7 +5,6 @@
 package de.swingempire.lang;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import javafx.application.Application;

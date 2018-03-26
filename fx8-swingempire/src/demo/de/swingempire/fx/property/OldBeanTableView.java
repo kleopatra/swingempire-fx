@@ -9,12 +9,10 @@ import java.beans.PropertyChangeSupport;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import de.swingempire.fx.property.OldBeanTableView.OldBean;
 import javafx.application.Application;
-import javafx.beans.property.adapter.JavaBeanIntegerProperty;
-import javafx.beans.property.adapter.JavaBeanIntegerPropertyBuilder;
 import javafx.beans.property.adapter.JavaBeanObjectProperty;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
-import javafx.beans.value.ObservableIntegerValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,7 +20,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 

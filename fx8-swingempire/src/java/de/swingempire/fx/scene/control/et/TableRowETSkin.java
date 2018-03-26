@@ -14,7 +14,6 @@ import javafx.event.EventDispatchChain;
 import javafx.event.EventTarget;
 import javafx.scene.control.Cell;
 import javafx.scene.control.IndexedCell;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TablePosition;

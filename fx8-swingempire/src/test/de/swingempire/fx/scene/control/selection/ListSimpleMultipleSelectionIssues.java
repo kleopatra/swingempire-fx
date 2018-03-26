@@ -6,15 +6,15 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
-import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
+
+import javafx.collections.ObservableList;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 
 /**
  * Testing MultipleSelection api for both modes.

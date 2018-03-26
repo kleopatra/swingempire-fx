@@ -13,8 +13,8 @@ import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.util.EditableControl;
-import de.swingempire.fx.util.StageLoader;
 import de.swingempire.fx.util.OldTreeViewEditReport;
+import de.swingempire.fx.util.StageLoader;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;

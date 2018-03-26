@@ -4,15 +4,13 @@
  */
 package de.swingempire.fx.control;
 
+import de.swingempire.fx.control.TooltipOnSlider.MySliderSkin;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.control.TooltipOnSlider.MySliderSkin;
-import de.swingempire.fx.scene.control.slider.XSliderSkin;
 
 /**
  * Slider: slider value differs from selected real value

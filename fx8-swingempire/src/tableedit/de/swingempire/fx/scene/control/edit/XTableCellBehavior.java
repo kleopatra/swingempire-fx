@@ -10,7 +10,6 @@ import de.swingempire.fx.scene.control.edit.impl.TableCellBehavior;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 
 /**
  * Trying to intercept the selection process to not cancel an edit.

@@ -9,8 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import de.swingempire.fx.util.ChangeReport;
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.util.ChangeReport;
 
 /**
  * @author Jeanette Winzenburg, Berlin

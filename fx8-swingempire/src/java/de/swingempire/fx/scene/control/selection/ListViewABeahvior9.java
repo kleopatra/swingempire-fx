@@ -26,7 +26,6 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;

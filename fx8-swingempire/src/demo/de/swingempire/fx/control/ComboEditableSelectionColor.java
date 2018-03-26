@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.control;
 
+import de.swingempire.fx.scene.control.comboboxx.CellUpdateItemAndSelected;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,10 +16,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.comboboxx.CellUpdateItemAndSelected;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * SO ??

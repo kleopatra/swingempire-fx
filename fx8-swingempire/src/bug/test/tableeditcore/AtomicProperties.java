@@ -4,6 +4,9 @@
  */
 package test.tableeditcore;
 
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
+
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -32,9 +35,6 @@ package test.tableeditcore;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
 
 /**
  * c&p from webrev http://cr.openjdk.java.net/~jgiles/8177375.1/

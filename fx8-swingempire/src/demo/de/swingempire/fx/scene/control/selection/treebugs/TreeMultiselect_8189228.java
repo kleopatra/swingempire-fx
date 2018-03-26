@@ -7,7 +7,11 @@ package de.swingempire.fx.scene.control.selection.treebugs;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 

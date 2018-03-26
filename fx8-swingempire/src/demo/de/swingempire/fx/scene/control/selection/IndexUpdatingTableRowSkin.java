@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import de.swingempire.fx.scene.control.skin.patch.TableRowSkin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
 
 /**
  * Issue: selection not working on filtered/scrolled list

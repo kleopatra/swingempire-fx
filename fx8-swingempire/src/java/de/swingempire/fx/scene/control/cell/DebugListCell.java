@@ -9,7 +9,6 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ListView.EditEvent;
 
 /**
  * Custom ListCell which overrides start/commit/cancelEdit and

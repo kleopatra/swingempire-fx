@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.DebugUtils;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.DebugUtils;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-37622

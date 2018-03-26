@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.tree;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -14,7 +15,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
 
 /**
  * Impossible to reliably start editing after

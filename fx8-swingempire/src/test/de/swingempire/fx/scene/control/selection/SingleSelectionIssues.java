@@ -7,17 +7,15 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.Arrays;
 import java.util.Collection;
 
-import javafx.scene.control.Control;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
 
-import de.swingempire.fx.util.StageLoader;
+import javafx.scene.control.Control;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 
 /**
  * Super class for testing SelectionModel api of MultipleSelectionModel 

@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.DebugUtils.Facade;
+import de.swingempire.fx.util.DebugUtils.ListFacade;
+import de.swingempire.fx.util.DebugUtils.TableFacade;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -31,12 +34,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.DebugUtils.Facade;
-import de.swingempire.fx.util.DebugUtils.ListFacade;
-import de.swingempire.fx.util.DebugUtils.ListXFacade;
-import de.swingempire.fx.util.DebugUtils.TableFacade;
-
-import static de.swingempire.fx.util.DebugUtils.*;
 
 
 /**

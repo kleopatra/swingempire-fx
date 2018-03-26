@@ -6,25 +6,23 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.SelectionModel;
-import javafx.scene.control.SingleSelectionModel;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 
+import static org.junit.Assert.*;
+
 import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxRT38724;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreSetSelectionModel;
 import de.swingempire.fx.util.StageLoader;
-
-import static org.junit.Assert.*;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.SingleSelectionModel;
 
 /**
  * @author Jeanette Winzenburg, Berlin

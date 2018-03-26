@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.filechooser.FileSystemView;
+
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -17,8 +19,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
-import javax.swing.filechooser.FileSystemView;
 /**
  * https://javafx-jira.kenai.com/browse/RT-40313
 1) Expand 'File Explorer' using the arrow next to the text. (single click)

@@ -4,7 +4,10 @@
  */
 package de.swingempire.fx.scene.control.skin.impl.wtable;
 
-import static de.swingempire.fx.util.FXUtils.*;
+import java.lang.ref.WeakReference;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
 
 /*
  * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -13,38 +16,34 @@ import static de.swingempire.fx.util.FXUtils.*;
   */
 
 import com.sun.javafx.scene.control.Properties;
+import com.sun.javafx.scene.control.skin.resources.ControlResources;
+
+import static de.swingempire.fx.util.FXUtils.*;
+
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.WeakInvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.geometry.Insets;
+import javafx.collections.WeakListChangeListener;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.control.skin.TableViewSkinBase;
+import javafx.scene.control.skin.TreeTableViewSkin;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
-
-import javafx.collections.WeakListChangeListener;
-import com.sun.javafx.scene.control.skin.resources.ControlResources;
-
-import java.lang.ref.WeakReference;
-import java.util.List;
-import javafx.beans.WeakInvalidationListener;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 /**
  * Basically a plain copy of 9.0.1 to allow injection of custom flow. 

@@ -6,8 +6,6 @@ package de.swingempire.fx.scene.control.table;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.ControlAcceleratorSupport;
-
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Parent;

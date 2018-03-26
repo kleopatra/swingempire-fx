@@ -8,6 +8,7 @@ package de.swingempire.fx.scene.control.edit;
 import de.swingempire.fx.scene.control.ControlUtils;
 import de.swingempire.fx.scene.control.cell.CellDecorator;
 import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
+import de.swingempire.fx.scene.control.edit.TreeViewEditCommitInterfereHack.XTextFieldTreeCell;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

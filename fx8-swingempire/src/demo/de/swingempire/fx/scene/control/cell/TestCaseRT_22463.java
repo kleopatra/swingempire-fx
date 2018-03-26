@@ -1,5 +1,4 @@
 package de.swingempire.fx.scene.control.cell;
-import de.swingempire.fx.scene.control.cell.TableRowSkinX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

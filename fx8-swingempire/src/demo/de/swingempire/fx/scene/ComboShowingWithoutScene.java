@@ -6,8 +6,10 @@ package de.swingempire.fx.scene;
 
 import java.util.Arrays;
 import java.util.List;
-import javafx.application.Application;
+
 import static javafx.application.Application.launch;
+
+import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;

@@ -43,6 +43,8 @@ import javafx.css.PseudoClass;
 import javafx.css.StyleableProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 //import javafx.scene.control.CheckBox;
 //import javafx.scene.control.ChoiceBox;
 //import javafx.scene.control.Control;

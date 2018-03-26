@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.sun.javafx.scene.control.behavior.ListCellBehavior;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.WeakInvalidationListener;
@@ -19,8 +21,6 @@ import javafx.collections.WeakListChangeListener;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.control.ListView;
 import javafx.util.Pair;
-
-import com.sun.javafx.scene.control.behavior.ListCellBehavior;
 
 // package for testing
 public class ListViewBitSelectionModelCorefix709<T> extends MultipleSelectionModelBase<T> {

@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control;
 
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -22,7 +21,6 @@ import static org.junit.Assert.*;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.skin.ComboBoxListViewSkin;

@@ -28,6 +28,11 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleEntry;
+
+//BEGINREMOVE
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,45 +41,25 @@ import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.OptionalInt;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.IntConsumer;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-//BEGINREMOVE
-
-import java.util.ArrayDeque;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
-import java.util.stream.Collector;
-
-import static java.util.Map.Entry;
-import static java.util.AbstractMap.SimpleEntry;
-
-import static java.util.Comparator.comparingInt;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.reverseOrder;
-
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.Comparator.*;
+import static java.util.stream.Collectors.*;
+import static org.junit.Assert.*;
 
 //ENDREMOVE
 

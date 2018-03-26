@@ -6,6 +6,8 @@ package de.swingempire.fx.control;
 
 import java.util.logging.Logger;
 
+import static javafx.beans.binding.StringExpression.*;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -18,8 +20,6 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-
-import static javafx.beans.binding.StringExpression.*;
 /**
  * Commit on focusLost. Not supported in core, needs manual listening
  * to focusedProperty and the custom code to transfer the text into

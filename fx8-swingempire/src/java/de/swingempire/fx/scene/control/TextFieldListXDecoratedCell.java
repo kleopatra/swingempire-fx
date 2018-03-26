@@ -4,7 +4,6 @@
  */
 package de.swingempire.fx.scene.control;
 
-import de.swingempire.fx.scene.control.cell.CellUtils;
 import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
 
 /*

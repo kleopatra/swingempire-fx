@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.control;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -17,7 +18,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
 
 /**
  * Auto-update sort order on changes to a contained item

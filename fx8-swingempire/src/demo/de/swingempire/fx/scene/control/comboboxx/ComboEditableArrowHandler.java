@@ -6,8 +6,6 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
-
 import static javafx.scene.control.TextFormatter.*;
 
 import javafx.application.Application;

@@ -6,8 +6,10 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.cell.ChoiceBoxTableCellDynamic.DynamicChoiceBoxTableCell;
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
@@ -22,8 +24,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * Configure choice items based on row item.

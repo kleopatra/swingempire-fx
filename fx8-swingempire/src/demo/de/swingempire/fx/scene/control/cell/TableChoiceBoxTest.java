@@ -20,7 +20,6 @@ import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.cell.TableChoiceBoxTest.Feature;
 
 /**
  * Example by James_D

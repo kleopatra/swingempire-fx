@@ -4,9 +4,6 @@
  */
 package de.swingempire.fx.scene.control.pagination;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -17,9 +14,11 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import de.swingempire.fx.junit.JavaFXThreadingRule;
-
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 /**
  * Tests around enhanced pagination skin. Here we test a stand-alone NavigationModel implementation.

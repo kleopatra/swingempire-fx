@@ -6,14 +6,14 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
+import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 import javafx.collections.ListChangeListener.Change;
 import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.scene.control.tree.TreeItemX.ExpandedDescendants;
-import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
  * This class helps a (Abstract)MultipleSelectionModel to keep its single selection state 

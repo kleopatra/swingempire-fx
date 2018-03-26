@@ -10,6 +10,23 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.sun.javafx.collections.SortHelper;
+
+import static de.swingempire.fx.util.FXUtils.*;
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils.ChangeType;
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.beans.Observable;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -21,24 +38,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
-import com.sun.javafx.collections.SortHelper;
-
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.util.ChangeReport;
-import de.swingempire.fx.util.FXUtils.ChangeType;
-import de.swingempire.fx.util.ListChangeReport;
-
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
 
 /**
  * @author Jeanette Winzenburg, Berlin

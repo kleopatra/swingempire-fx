@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ListChangeListener.Change;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,11 +19,10 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
-import static de.swingempire.fx.util.FXUtils.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
-import static org.junit.Assert.*;
 import de.swingempire.fx.util.ListChangeReport;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 
 /**
  * Separate test to play with performance improvement in IndicesBase.

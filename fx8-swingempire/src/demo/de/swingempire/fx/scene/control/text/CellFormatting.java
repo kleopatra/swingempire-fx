@@ -10,6 +10,7 @@ import java.text.ParsePosition;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.text.CellFormatting.ValidatingTextFieldTableCell;
 import javafx.application.Application;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;

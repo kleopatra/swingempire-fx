@@ -6,6 +6,10 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
+import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.ChoiceCoreControl;
+import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXControl;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,10 +24,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.scene.control.selection.AbstractChoiceInterfaceSelectionIssues.ChoiceControl;
-import de.swingempire.fx.scene.control.selection.ChoiceSelectionIssues.ChoiceCoreControl;
-import de.swingempire.fx.scene.control.selection.ChoiceXSelectionIssues.ChoiceXControl;
 
 /**
  * Type-safe separator.

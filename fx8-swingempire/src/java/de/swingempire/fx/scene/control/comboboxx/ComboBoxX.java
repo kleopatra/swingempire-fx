@@ -37,7 +37,6 @@ import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
-import javafx.scene.control.skin.ComboBoxListViewSkin;
 //import javafx.scene.accessibility.Attribute;
 //import javafx.scene.accessibility.Role;
 import javafx.util.Callback;

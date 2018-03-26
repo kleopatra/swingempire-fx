@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.scene.control.selection.DisableSelectionOnInvalidEntry.VetoableSelection;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

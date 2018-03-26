@@ -13,6 +13,7 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.property.PathAdapter;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -35,7 +36,6 @@ import javafx.scene.control.Skin;
 //import javafx.scene.accessibility.Attribute;
 //import javafx.scene.accessibility.Role;
 import javafx.util.StringConverter;
-import de.swingempire.fx.property.PathAdapter;
 
 /**
  * C&P'ed core to experiment with cleanup ideas.

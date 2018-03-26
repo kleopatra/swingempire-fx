@@ -6,8 +6,6 @@ package de.swingempire.fx.control;
 
 import java.util.Optional;
 
-import com.sun.javafx.stage.StageHelper;
-
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -22,7 +20,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 /**
  * @author Jeanette Winzenburg, Berlin

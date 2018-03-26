@@ -7,6 +7,8 @@ package de.swingempire.fx.scene.control;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.javafx.runtime.VersionInfo;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,8 +19,6 @@ import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-
-import com.sun.javafx.runtime.VersionInfo;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-32620

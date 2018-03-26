@@ -14,8 +14,6 @@ import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
 
-import de.swingempire.fx.util.FXUtils;
-import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;

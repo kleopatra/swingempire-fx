@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -14,7 +15,6 @@ import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -24,7 +24,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 
 /**
  * Here we have a list that's equal to the new list because its items are equals.

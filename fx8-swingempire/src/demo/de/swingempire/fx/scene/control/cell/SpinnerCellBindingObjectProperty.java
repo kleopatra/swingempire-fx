@@ -7,11 +7,10 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.property.BidirectionalBinding;
+import de.swingempire.fx.scene.control.cell.SpinnerCellBindingObjectProperty.MyBeanObjectProperty;
 import javafx.application.Application;
 import javafx.beans.binding.StringBinding;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;

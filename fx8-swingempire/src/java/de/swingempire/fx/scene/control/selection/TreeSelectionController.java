@@ -4,11 +4,11 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import de.swingempire.fx.collection.TreeIndexMappedList;
+import de.swingempire.fx.collection.TreeIndicesList;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import de.swingempire.fx.collection.TreeIndexMappedList;
-import de.swingempire.fx.collection.TreeIndicesList;
 
 
 /**

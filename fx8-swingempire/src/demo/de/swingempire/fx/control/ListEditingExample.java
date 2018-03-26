@@ -6,6 +6,7 @@ package de.swingempire.fx.control;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,9 +19,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.property.PropertyFactory;
-import de.swingempire.fx.scene.control.ListXView;
 
 /**
  * Two-parameter ListView

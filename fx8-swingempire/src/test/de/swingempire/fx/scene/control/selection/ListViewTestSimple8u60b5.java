@@ -33,6 +33,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.sun.javafx.tk.Toolkit;
+
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.util.StageLoader;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -50,23 +66,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Callback;
-
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-import com.sun.javafx.tk.Toolkit;
-
-import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.scene.control.selection.SimpleListSelectionModel;
-import de.swingempire.fx.util.StageLoader;
-import static org.junit.Assert.*;
 
 /**
  * ListViewTest copied from:

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.CheckBoxTreeTableRow;
+import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
 import javafx.application.Application;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -23,8 +25,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.cell.CheckBoxTreeTableRow;
-import de.swingempire.fx.scene.control.cell.DefaultTreeTableCell;
 
 /**
  * CheckBoxTreeItem/CheckBoxTreeCell not for TreeTableView?

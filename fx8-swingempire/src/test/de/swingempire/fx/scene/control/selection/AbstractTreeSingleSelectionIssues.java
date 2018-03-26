@@ -8,6 +8,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,18 +26,6 @@ import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeDeferredIssue;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeUncontained;
-import static org.junit.Assert.*;
 
 /**
  * Base class for testing single selection behaviour in treeView.

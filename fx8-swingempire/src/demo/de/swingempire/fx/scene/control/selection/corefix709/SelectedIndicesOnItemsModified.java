@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.selection.corefix709;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.swingempire.fx.scene.control.selection.SimpleListSelectionModel;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;

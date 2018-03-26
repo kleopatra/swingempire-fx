@@ -4,15 +4,13 @@
  */
 package de.swingempire.fx.scene.control.skin.patch9;
 
-import javafx.scene.control.Control;
-import javafx.scene.control.IndexedCell;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.skin.VirtualContainerBase;
-import javafx.scene.control.skin.VirtualFlow;
-
 import static de.swingempire.fx.util.FXUtils.*;
 
 import de.swingempire.fx.util.FXUtils;
+import javafx.scene.control.Control;
+import javafx.scene.control.IndexedCell;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.skin.VirtualFlow;
 
 /**
  * 

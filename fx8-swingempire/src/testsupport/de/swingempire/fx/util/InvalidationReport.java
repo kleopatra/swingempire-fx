@@ -9,7 +9,6 @@ import java.util.List;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.value.ObservableValue;
 
 /**
  * @author Jeanette Winzenburg, Berlin

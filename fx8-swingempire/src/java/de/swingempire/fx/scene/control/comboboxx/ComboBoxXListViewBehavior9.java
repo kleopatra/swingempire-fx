@@ -9,7 +9,6 @@ import com.sun.javafx.scene.control.inputmap.InputMap;
 
 import static javafx.scene.input.KeyCode.*;
 
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.SelectionModel;
 

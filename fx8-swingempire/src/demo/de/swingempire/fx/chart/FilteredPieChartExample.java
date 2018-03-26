@@ -7,7 +7,6 @@ package de.swingempire.fx.chart;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.util.ListChangeReport;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;

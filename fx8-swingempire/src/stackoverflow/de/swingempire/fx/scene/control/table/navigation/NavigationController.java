@@ -25,11 +25,15 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 /**
+ * 
  * problem: (unusual - textField is data, used as node in cell), tabbing moves to
  * next cell (== textField as data) until it reaches the end of the table, then
  * moves to stand-alone textfield.
  * 
  * https://stackoverflow.com/q/48724049/203657
+ * 
+ * 
+ * SO_ABANDONED
  */
 public class NavigationController implements Initializable {
 

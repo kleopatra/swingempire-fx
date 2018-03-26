@@ -6,6 +6,7 @@ package de.swingempire.fx.property.albumdemo;
 
 import java.util.function.Consumer;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -22,7 +23,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
 
 /**
  * Bind disable property of commit/cancel button to actual change. 

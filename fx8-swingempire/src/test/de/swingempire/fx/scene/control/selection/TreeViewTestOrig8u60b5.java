@@ -35,6 +35,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
+import com.sun.javafx.tk.Toolkit;
+
+import static org.junit.Assert.*;
+
+import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
+import de.swingempire.fx.util.StageLoader;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -58,26 +76,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import com.codeaffine.test.ConditionalIgnoreRule;
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-import com.codeaffine.test.ConditionalIgnoreRule.IgnoreCondition;
-import com.sun.javafx.tk.Toolkit;
-
-import static org.junit.Assert.*;
-
-import de.swingempire.fx.junit.JavaFXThreadingRule;
-import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreTreeFocus;
-import de.swingempire.fx.util.StageLoader;
-import static org.junit.Assert.*;
 /**
  * TreeViewTest copied from
  * http://hg.openjdk.java.net/openjfx/8u-dev/rt/file/5fc0ddb42776/modules/controls/src/test/java/javafx/scene/control/TreeViewTest.java

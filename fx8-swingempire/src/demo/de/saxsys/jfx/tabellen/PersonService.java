@@ -7,11 +7,10 @@ package de.saxsys.jfx.tabellen;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import de.saxsys.jfx.tabellen.model.Person;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
-
-import de.saxsys.jfx.tabellen.model.Person;
 
 public class PersonService {
 

@@ -6,6 +6,7 @@ package de.swingempire.fx.scene;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.ReaddFocusedComboBug.YComboBoxListViewSkin;
 import de.swingempire.fx.scene.control.skin.ComboSkinDecorator;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;

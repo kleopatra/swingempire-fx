@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.SliderBehavior;
 
-import de.swingempire.fx.scene.control.slider.XSliderSkin;
 import javafx.application.Application;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;

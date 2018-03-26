@@ -12,6 +12,7 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,7 +31,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import de.swingempire.fx.control.TableViewSample.PlainTableCell;
 
 /**
  * Reported: support update of items that are equal

@@ -15,7 +15,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-17697

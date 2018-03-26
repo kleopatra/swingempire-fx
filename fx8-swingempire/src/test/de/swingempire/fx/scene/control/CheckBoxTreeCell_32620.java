@@ -7,6 +7,8 @@ package de.swingempire.fx.scene.control;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.javafx.runtime.VersionInfo;
+
 import javafx.application.Application;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -18,8 +20,6 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-
-import com.sun.javafx.runtime.VersionInfo;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-32620

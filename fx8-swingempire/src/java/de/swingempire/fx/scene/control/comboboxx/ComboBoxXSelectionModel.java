@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 import java.util.Objects;
 
 import de.swingempire.fx.property.BugPropertyAdapters;
+import de.swingempire.fx.scene.control.selection.ComboXSelectionIssues;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;

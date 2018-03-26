@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionModel;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -18,7 +19,6 @@ import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.scene.control.choiceboxx.ChoiceBoxX.ChoiceBoxSelectionModel;
 
 /**
  * ----- Issue: Behaviour of items.setItem(selectedIndex, newItem)

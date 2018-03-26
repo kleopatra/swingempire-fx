@@ -6,6 +6,7 @@ package de.swingempire.fx.control;
 
 import com.sun.javafx.css.StyleManager;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Parent;
@@ -16,7 +17,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import de.swingempire.fx.util.FXUtils;
 
 /**
  * Use custom stylesheet to

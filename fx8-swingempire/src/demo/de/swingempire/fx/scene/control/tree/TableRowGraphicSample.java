@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 import com.sun.javafx.runtime.VersionInfo;
 
+import de.swingempire.fx.scene.control.tree.TableRowGraphicSample.DefaultTableCell;
+import de.swingempire.fx.scene.control.tree.TableRowGraphicSample.TableRowGraphic;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;

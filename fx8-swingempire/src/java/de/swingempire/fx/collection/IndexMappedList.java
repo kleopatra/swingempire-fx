@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.collections.SortHelper;
+
 import javafx.beans.property.ListPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.transformation.TransformationList;
-
-import com.sun.javafx.collections.SortHelper;
 
 /**
  * Helper for selectedItems. Source contains the selectedIndices, backingList

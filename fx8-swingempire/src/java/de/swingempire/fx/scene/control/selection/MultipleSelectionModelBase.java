@@ -15,18 +15,18 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.javafx.collections.MappingChange;
+import com.sun.javafx.collections.NonIterableChange;
+import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
+
+import static javafx.scene.control.SelectionMode.*;
+
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 import javafx.util.Callback;
-
-import com.sun.javafx.collections.MappingChange;
-import com.sun.javafx.collections.NonIterableChange;
-import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
-
-import static javafx.scene.control.SelectionMode.*;
 
 
 /**

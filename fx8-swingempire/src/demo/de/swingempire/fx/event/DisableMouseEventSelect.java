@@ -6,6 +6,7 @@ package de.swingempire.fx.event;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.event.DisableMouseEventSelect.MyTableCell;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;

@@ -8,7 +8,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
-import javafx.scene.control.TreeItem;
 
 /**
  * This class helps a (Abstract)MultipleSelectionModel to keep its single selection state 

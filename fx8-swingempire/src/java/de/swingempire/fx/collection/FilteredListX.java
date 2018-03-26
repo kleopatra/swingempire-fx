@@ -18,18 +18,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Predicate;
 
+import com.sun.javafx.collections.NonIterableChange.GenericAddRemoveChange;
+import com.sun.javafx.collections.SortHelper;
+
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
-
-import com.sun.javafx.collections.NonIterableChange.GenericAddRemoveChange;
-import com.sun.javafx.collections.SortHelper;
-
-import de.swingempire.fx.scene.control.selection.TableViewFilterSelectionRT_39289;
 
 /**
  * C&P core with modifications to fix (not completely tested!):

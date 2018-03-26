@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import de.swingempire.fx.scene.control.tree.TreeItemX;
+import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,9 +20,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeItem.TreeModificationEvent;
 import javafx.scene.control.TreeView;
-import de.swingempire.fx.property.PathAdapter;
-import de.swingempire.fx.scene.control.tree.TreeItemX;
-import de.swingempire.fx.scene.control.tree.TreeModificationEventX;
 
 /**
  * Trying a tree-backed indicesList. The indices peek into the visible

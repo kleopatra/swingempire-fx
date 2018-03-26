@@ -6,7 +6,9 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Random;
 
+import com.sun.javafx.tk.Toolkit;
 
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,10 +19,6 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-
-import com.sun.javafx.tk.Toolkit;
-import de.swingempire.fx.util.ListChangeReport;
 
 /**
  * Performance issue when many indices are selected.

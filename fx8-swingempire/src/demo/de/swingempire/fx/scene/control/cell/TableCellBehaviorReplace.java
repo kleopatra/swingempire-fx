@@ -13,6 +13,7 @@ import com.sun.javafx.scene.control.behavior.BehaviorBase;
 import com.sun.javafx.scene.control.behavior.TableCellBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
 
+import de.swingempire.fx.scene.control.cell.TableCellBehaviorReplace.PlainCustomTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;

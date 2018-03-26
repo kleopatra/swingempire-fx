@@ -7,7 +7,6 @@ package de.swingempire.fx.scene.control.selection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import de.swingempire.fx.scene.control.selection.DisableComboSelection.DisableObject;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;

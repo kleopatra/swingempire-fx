@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.selection;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
@@ -11,7 +12,6 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.stage.Stage;
-import de.swingempire.fx.demobean.Person;
 
 /**
  * https://javafx-jira.kenai.com/browse/RT-38888

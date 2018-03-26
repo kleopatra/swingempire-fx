@@ -5,15 +5,15 @@
 package de.swingempire.fx.scene.control.skin.patch;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.inputmap.InputMap;
-import com.sun.javafx.scene.control.inputmap.KeyBinding;
 import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.InputMap.MouseMapping;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import static javafx.scene.input.KeyCombination.ModifierValue.*;
 

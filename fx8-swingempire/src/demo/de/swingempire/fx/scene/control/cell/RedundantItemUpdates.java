@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 

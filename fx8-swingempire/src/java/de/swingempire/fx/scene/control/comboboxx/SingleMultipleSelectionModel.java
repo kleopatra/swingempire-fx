@@ -7,6 +7,7 @@ package de.swingempire.fx.scene.control.comboboxx;
 
 import java.util.Objects;
 
+import de.swingempire.fx.property.PathAdapter;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -14,7 +15,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SingleSelectionModel;
-import de.swingempire.fx.property.PathAdapter;
 
 /**
  * A mulitpleSelectionModel which only supports singleSelectionMode.

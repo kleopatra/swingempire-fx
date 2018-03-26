@@ -4,6 +4,8 @@
  */
 package de.swingempire.fx.scene.control.cell;
 
+import de.swingempire.fx.scene.control.cell.TableWithEngines.PartListCell;
+import de.swingempire.fx.scene.control.cell.TableWithEngines.PartsTableCell;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;

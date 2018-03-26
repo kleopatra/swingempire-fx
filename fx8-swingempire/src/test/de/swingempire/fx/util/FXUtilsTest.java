@@ -6,10 +6,6 @@ package de.swingempire.fx.util;
 
 import java.util.List;
 
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,10 +14,13 @@ import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
 
-import de.swingempire.fx.demobean.Person;
-
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
+
+import de.swingempire.fx.demobean.Person;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  * @author Jeanette Winzenburg, Berlin

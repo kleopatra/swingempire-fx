@@ -7,11 +7,11 @@ package de.swingempire.fx.scene.control.cell;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.cell.TableViewWithAccountingStyleCell.PriceTableCell;
 import javafx.application.Application;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;

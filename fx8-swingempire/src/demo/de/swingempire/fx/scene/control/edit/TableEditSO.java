@@ -5,26 +5,28 @@
     package de.swingempire.fx.scene.control.edit;
     
     import java.util.function.Function;
-    
-    import javafx.application.Application;
-    import javafx.beans.property.SimpleStringProperty;
-    import javafx.beans.property.StringProperty;
-    import javafx.collections.FXCollections;
-    import javafx.event.ActionEvent;
-    import javafx.scene.Parent;
-    import javafx.scene.Scene;
-    import javafx.scene.control.Button;
-    import javafx.scene.control.ContentDisplay;
-    import javafx.scene.control.TableCell;
-    import javafx.scene.control.TableColumn;
-    import javafx.scene.control.TablePosition;
-    import javafx.scene.control.TableView;
-    import javafx.scene.control.TextField;
-    import javafx.scene.input.KeyCode;
-    import javafx.scene.input.KeyEvent;
-    import javafx.scene.layout.BorderPane;
-    import javafx.scene.layout.VBox;
-    import javafx.stage.Stage;
+
+import de.swingempire.fx.scene.control.edit.TableEditSO.Building;
+import de.swingempire.fx.scene.control.edit.TableEditSO.EditingStringCell;
+import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
     
     /**
      * https://stackoverflow.com/q/46396423/203657

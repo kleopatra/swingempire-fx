@@ -6,7 +6,6 @@ package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
-import javafx.scene.control.Cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.TextFieldListCell;

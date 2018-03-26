@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control.choiceboxx;
 
 import java.util.ArrayList;
 
+import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -21,7 +22,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import de.swingempire.fx.demobean.Person;
 /**
  * Issue: item not updated in popup if bound items are listProperty
  * https://javafx-jira.kenai.com/browse/RT-29709
