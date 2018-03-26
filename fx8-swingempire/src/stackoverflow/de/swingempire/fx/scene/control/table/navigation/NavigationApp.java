@@ -12,7 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class JavaFXApplication1 extends Application {
+public class NavigationApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -28,6 +28,6 @@ public class JavaFXApplication1 extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(JavaFXApplication1.class.getName());
+            .getLogger(NavigationApp.class.getName());
   }
 

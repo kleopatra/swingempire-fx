@@ -31,7 +31,7 @@ import javafx.scene.input.KeyEvent;
  * 
  * https://stackoverflow.com/q/48724049/203657
  */
-public class FXMLDocumentController implements Initializable {
+public class NavigationController implements Initializable {
 
     @FXML
     TableView table;
@@ -198,6 +198,6 @@ public class FXMLDocumentController implements Initializable {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(FXMLDocumentController.class.getName());
+            .getLogger(NavigationController.class.getName());
 }
 
