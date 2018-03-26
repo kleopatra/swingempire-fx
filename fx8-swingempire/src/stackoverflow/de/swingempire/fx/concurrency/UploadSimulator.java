@@ -33,6 +33,8 @@ import javafx.stage.Stage;
  *   BUT: use executor, don't try to manage the threads manually
  * 
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_ABANDONED
  */
 public class UploadSimulator extends Application {
 

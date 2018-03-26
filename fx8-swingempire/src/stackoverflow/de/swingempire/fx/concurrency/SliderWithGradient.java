@@ -28,6 +28,8 @@ import javafx.stage.Stage;
  * - max was < random number
  * 
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_ABANDONED
  */
 public class SliderWithGradient extends Application {
     private static double START = 200;
