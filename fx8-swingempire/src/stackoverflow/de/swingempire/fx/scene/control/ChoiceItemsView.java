@@ -2,7 +2,7 @@
  * Created on 31.08.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.ChoiceBox;
 
 /**
  * http://stackoverflow.com/q/25583707/203657
@@ -20,18 +21,22 @@ import javafx.scene.control.ComboBox;
  * Might be user error: from choicebox api doc "ChoiceBox is used for 
  * presenting the user with a relatively small set of
  * predefined choices"
+ * 
+ * SO_FAQ
  */
-public class ChoiceComboItemsView {
+public class ChoiceItemsView {
     @FXML
-    private ComboBox<String> firstCB;
+    private ChoiceBox<String> firstCB;
     @FXML
-    private ComboBox<String> secondCB;
+    private ChoiceBox<String> secondCB;
     public void init() {
+        JFXPanel p;
       Set<String> keySet = Charset.availableCharsets().keySet();
       List<String> list = new ArrayList<>(keySet);
+      // smaller subset is just fine
 //      list = list.subList(0, 10);
-      firstCB.getItems().addAll(list); //list.subList(0, 10));
-      secondCB.getItems().addAll(list); //list.subList(10, 20));
+      firstCB.getItems().addAll(list);
+      secondCB.getItems().addAll(list);
       LOG.info("item count: " + secondCB.getItems().size());
       firstCB.getSelectionModel().selectedItemProperty()
           .addListener((observable, oldVal, newVal) -> {
@@ -55,7 +60,7 @@ public class ChoiceComboItemsView {
     }
     
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(ChoiceComboItemsView.class
+    private static final Logger LOG = Logger.getLogger(ChoiceItemsView.class
             .getName());
   }
 

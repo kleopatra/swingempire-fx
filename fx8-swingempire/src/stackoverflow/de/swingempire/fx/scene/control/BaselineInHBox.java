@@ -2,7 +2,7 @@
  * Created on 12.12.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control;
 
 import java.util.logging.Logger;
 
@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 /**
  * Alignment problems: http://stackoverflow.com/q/27435805/203657
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_ABANDONED
  */
 public class BaselineInHBox extends Application {
 

@@ -2,7 +2,7 @@
  * Created on 20.08.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -29,6 +29,8 @@ import javafx.stage.StageStyle;
  * can't reproduce in jdk8u60b18 (which is older than the 
  * release 51)
  * can't reproduce in release 8u60 (it's b23?)
+ * 
+ * SO_ABANDONED
  */
 public class ComboInSecondary extends Application {
 

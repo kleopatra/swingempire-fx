@@ -2,7 +2,7 @@
  * Created on 31.08.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class ChoiceComboItemsMain extends Application {
+public class ChoiceItemsMain extends Application {
     private Parent rootPane;
     @Override
     public void start(Stage arg0) throws Exception {
@@ -20,9 +20,9 @@ public class ChoiceComboItemsMain extends Application {
     }
     @Override
     public void init() throws Exception {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("choicecomboitems.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("choiceitems.fxml"));
       rootPane = loader.load();
-      loader.<ChoiceComboItemsView>getController().init();
+      loader.<ChoiceItemsView>getController().init();
     }
     public static void main(String[] args) {
       launch(args);
