@@ -2,7 +2,7 @@
  * Created on 23.01.2018
  *
  */
-package de.swingempire.fx.scene.control.table.invcodebug;
+package de.swingempire.fx.fxml;
 
 import java.net.URL;
 import java.util.ResourceBundle;

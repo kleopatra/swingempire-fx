@@ -15,9 +15,9 @@ import javafx.stage.Stage;
 
 /**
  * http://stackoverflow.com/q/36614281/203657
- * cab't set font of tooltip
+ * can't set font of tooltip
  * 
- * worksforme
+ * worksforme SO_ABANDONED
  */
 public class ToolTipTester extends Application {
 

@@ -9,6 +9,7 @@ import com.sun.javafx.scene.traversal.Direction;
 import com.sun.javafx.scene.traversal.ParentTraversalEngine;
 import com.sun.javafx.scene.traversal.TraversalContext;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -97,8 +98,9 @@ public class FocusTraversal extends Application {
         // old
 //        vb.setImpl_traversalEngine(engine);
         // not visible
-        vb.setTraversalEngine(engine);
-
+//        vb.setTraversalEngine(engine);
+        // reflective access
+        invokeSetTraversalEnging(vb, engine);
         VBox sibling = new VBox(new TextField("we are family!")); 
         vb.getChildren().addAll(button1, button2, button3);
         
@@ -106,6 +108,9 @@ public class FocusTraversal extends Application {
         return vb;
     }
 
+    private void invokeSetTraversalEnging(Node target, ParentTraversalEngine engine) {
+        FXUtils.invokeGetMethodValue(Parent.class, target, "setTraversalEngine", ParentTraversalEngine.class, engine);
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setScene(new Scene(getContent()));

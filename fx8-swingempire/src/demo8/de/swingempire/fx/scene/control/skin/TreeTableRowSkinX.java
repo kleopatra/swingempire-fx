@@ -1,4 +1,4 @@
-package de.swingempire.fx.scene.control.tree;
+package de.swingempire.fx.scene.control.skin;
 
 
 import java.util.ArrayList;

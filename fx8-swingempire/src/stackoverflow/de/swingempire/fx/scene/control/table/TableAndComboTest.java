@@ -87,10 +87,14 @@ public class TableAndComboTest extends Application {
       employeeTableView.setEditable(true);
 //      final ComboBox combo = new ComboBox(listObl);
 
-      TableColumn<Person, String> firstNameCol = new TableColumn<>("Names");
-      firstNameCol.setPrefWidth(employeeTableView.getPrefWidth());
+      // no typing hides the error at compile time, shows at runtime as unexpected behaviour
+      TableColumn firstNameCol = new TableColumn("Names");
       firstNameCol.setCellFactory(ComboBoxTableCell.forTableColumn(leaders));
+      // proper type parameters expose the error at compile time
+//      TableColumn<Person, String> firstNameCol = new TableColumn<>("Names");
+//      firstNameCol.setCellFactory(ComboBoxTableCell.forTableColumn(leaders));
       //firstNameCol.setCellFactory(new TableComboBoxObjCellFactory(leaders,false, false, leaders));
+      firstNameCol.setPrefWidth(employeeTableView.getPrefWidth());
       firstNameCol.setEditable(true);
      firstNameCol.setCellValueFactory(new PropertyValueFactory<Person,String>("firstName"));
 
