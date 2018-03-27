@@ -66,40 +66,45 @@ public class TextAreaReadOnly extends Application {
         public MyTextAreaSkin(TextArea textInput) {
             super(textInput);
             
-            replaceCaretVisible();
-            ObservableBooleanValue caretVisible = superCaretVisibleProperty();
-            Path caretPath = superPath();
-            caretPath.opacityProperty().bind(new DoubleBinding() {
+            // change condition 
+            ObservableBooleanValue caretVisible = new BooleanBinding() {
+                { 
+                    bind(textInput.focusedProperty(), textInput.anchorProperty(), 
+                        textInput.caretPositionProperty(), textInput.disabledProperty(), 
+                        superDisplayCaretProperty() , superBlinkProperty() );
+                }
+                @Override 
+                protected boolean computeValue() {
+                    // RT-10682: On Windows, we show the caret during selection, but on others we hide it
+                    return !superBlinkProperty().get() &&  superDisplayCaretProperty().get() 
+                            && textInput.isFocused() 
+                            && (isWindows() || (textInput.getCaretPosition() == textInput.getAnchor())) 
+                            // PENDING JW change logic to show caret on win only for read-only ?
+                            && !textInput.isDisabled() //  && textInput.isEditable() // super commented
+                            ; 
+                }
+            };
+            // inject into super .. ohhh ...
+            replaceSuperCaretVisible(caretVisible);
+            // bind (caret) path opacity to caret visible 
+            superPath().opacityProperty().bind(new DoubleBinding() {
                 { bind(caretVisible); }
-                @Override protected double computeValue() {
+                @Override 
+                protected double computeValue() {
                     return caretVisible.get() ? 1.0 : 0.0;
                 }
             });
 
         }
 
-        private void replaceCaretVisible() {
-            TextArea textInput = getSkinnable();
-            BooleanProperty displayCaret = superDisplayCaretProperty();
-            ObservableBooleanValue caretVisible = new BooleanBinding() {
-                { bind(textInput.focusedProperty(), textInput.anchorProperty(), textInput.caretPositionProperty(),
-                        textInput.disabledProperty(), displayCaret , superBlinkProperty() );}
-                @Override protected boolean computeValue() {
-                    // RT-10682: On Windows, we show the caret during selection, but on others we hide it
-                    return !superBlinkProperty().get() &&  displayCaret.get() && textInput.isFocused() &&
-                            (isWindows() || (textInput.getCaretPosition() == textInput.getAnchor())) &&
-                            !textInput.isDisabled(); 
-                }
-            };
-            
+        
+
+ //----------------- reflection acrobatics
+        
+        private void replaceSuperCaretVisible(ObservableBooleanValue caretVisible) {
             FXUtils.invokeSetFieldValue(TextInputControlSkin.class, this, "caretVisible", caretVisible);
         }
-        
-        
-        private ObservableBooleanValue superCaretVisibleProperty() {
-            return (ObservableBooleanValue) FXUtils.invokeGetMethodValue(TextInputControlSkin.class, this, "caretVisibleProperty");
-           
-        }
+
         private BooleanProperty superDisplayCaretProperty() {
             return (BooleanProperty) FXUtils.invokeGetMethodValue(
                     TextInputControlSkin.class, this, "displayCaretProperty");
