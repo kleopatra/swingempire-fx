@@ -25,6 +25,9 @@ import javafx.stage.Stage;
  * Here: try a custom skin that starts edit if requested in layout children.
  * doesn't work - can't find the exact path that leads to cancelEdit via
  * updateFocus ...
+ * <hr>
+ * for a working example
+ * @see ListViewCommitHandler 
  */
 public class ListViewAutoEditInSkin extends Application {
 

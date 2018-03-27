@@ -16,6 +16,9 @@ import javafx.stage.Stage;
  * https://stackoverflow.com/q/46047134/203657
  * 
  * Trying to listen to editingIndex - doesn work
+ * 
+ * for a working example
+ * @see ListViewCommitHandler 
  */
 public class ListViewAutoEditInHandler2 extends Application {
 

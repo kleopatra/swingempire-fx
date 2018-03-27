@@ -20,6 +20,8 @@ import javafx.stage.Stage;
  * styleableProperty not taken - not enough info, leave for now
  * 
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_ABANDONED
  */
 public class FxCanvasExample1 extends Application {
     public static void main(String[] args) {

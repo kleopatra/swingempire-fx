@@ -6,10 +6,11 @@ package de.swingempire.fx.scene.control.edit;
 
 import java.util.logging.Logger;
 
+
 import de.swingempire.fx.scene.control.cell.CellDecorator;
 import de.swingempire.fx.scene.control.cell.TextFieldCellDecorator;
-import de.swingempire.fx.scene.control.edit.ListAutoCell.TextFieldListAutoCell;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -19,9 +20,14 @@ import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 
 /**
+ * ListCell that allows auto-insert new item and auto-start edit on the new item.
+ * This is used only in ListViewAutoEditInSkin, not working. 
+ * 
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * @see ListViewAutoEditInSkin
  */
-public class ListAutoCell<T> extends ListCell<T> implements CellDecorator<T> {
+public class ListAutoCell<T> extends ListCell<T> implements CellDecorator<ListView<T>, T> {
     
     
     
@@ -46,8 +52,13 @@ public class ListAutoCell<T> extends ListCell<T> implements CellDecorator<T> {
         super.startEdit();
     }
 
+    @Override
+    public ReadOnlyObjectProperty<ListView<T>> controlProperty() {
+        return listViewProperty();
+    }
 
-    public static class TextFieldListAutoCell<T> extends ListAutoCell<T>  implements TextFieldCellDecorator<T> {
+
+    public static class TextFieldListAutoCell<T> extends ListAutoCell<T>  implements TextFieldCellDecorator<ListView<T>, T> {
         
         
         public static Callback<ListView<String>, ListCell<String>> forListView() {

@@ -18,7 +18,11 @@ import javafx.util.Duration;
  * Trying to add item/start edit on new item in commitHandler:
  * https://stackoverflow.com/q/46047134/203657
  * 
- * one last try: use timer to start editing some time later ..
+ * one last try: use timer to start editing some time later .. working but fishy
+ * (basically unspecified, and as such unreliable)
+ * 
+ * for a working example
+ * @see ListViewCommitHandler 
  */
 public class ListViewAutoEditInHandler extends Application {
 

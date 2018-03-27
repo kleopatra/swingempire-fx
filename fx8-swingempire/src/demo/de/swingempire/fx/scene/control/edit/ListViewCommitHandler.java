@@ -20,18 +20,28 @@ import javafx.stage.Stage;
  * https://stackoverflow.com/q/46047134/203657
  * 
  * Here:
- * - use DebugTextFieldListCell
- * - add item in commitHandler
- * - start edit in itemsListener (that was installed after skin's itemsListener)
- * - force layout before
+ * <ul>
+ * <li> use DebugTextFieldListCell
+ * <li> set custom commitHandler (to prevent super from modify the item?), if 
+ *   addHandler flag is false
+ * <li> add item in commitHandler
+ * <li> start edit in itemsListener (that was installed after skin's itemsListener)
+ * <li> force layout before
+ * <li> the exact sequence is: layout, scrollTo(index), edit(index)
+ * </ul>
  * 
+ * Working as-is.
+ * <p>
+ * Was (not certain when the following applied)
  * Working as long as no new cell was created, that is no scrolling to new value needed.
  * If so, the value in the newly editing cell is the last edited.
  * 
+ * <p>
  * Playing with set vs addCommitHandler
  * <li> with former: next cell edited, value incorrect after scrolling for new/re-used cell
  * <li> with latter: editing is terminated, next not edited, value correct
  * 
+ * <p>
  * Looks like the order of actions in cell.commitEdit is important, setting the commitHandler
  * (which then is responsible for updating the data) seems to work always (as of Jan '18, fx 9.01)
  * if commitEdit sequence is 
@@ -97,7 +107,8 @@ public class ListViewCommitHandler extends Application {
              System.out.println("editCommit: " + t.getIndex() +
              " /" + t.getNewValue());
             list.getItems().add("newItem" + index);
-            list.getSelectionModel().select(index);
+            // select does just that, select
+//            list.getSelectionModel().select(index);
 //            list.getFocusModel().focus(index);
 //            list.scrollTo(index);
             //does not start edit and leads to cancel with weird index

@@ -2,7 +2,7 @@
  * Created on 23.01.2018
  *
  */
-package de.swingempire.fx.scene.control.cell;
+package de.swingempire.fx.scene.control.table;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -37,6 +37,8 @@ import javafx.util.Callback;
  * Question is deleted by owner, boiled down to mixing types (person in 
  * combo, String in column) - not possible, at least not out off the 
  * box
+ * 
+ * SO_ABANDONED
  */
 public class TableAndComboTest extends Application {
 

@@ -2,7 +2,7 @@
  * Created on 10.09.2015
  *
  */
-package de.swingempire.fx.scene;
+package de.swingempire.fx.graphic;
 
 import javafx.application.Application;
 import javafx.application.Platform;
