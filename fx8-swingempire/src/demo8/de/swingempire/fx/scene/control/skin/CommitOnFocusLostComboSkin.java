@@ -2,7 +2,7 @@
  * Created on 23.09.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.skin;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.skin.ComboBoxListViewSkin;

@@ -46,7 +46,7 @@ public class ComboWithConverter extends Application
         };
         comboBox.setConverter(converter);
         BorderPane bp = new BorderPane(comboBox);
-        bp.setPrefSize(800, 800);
+        bp.setPrefSize(200, 200);
         Scene scene = new Scene(bp);
         stage.setScene(scene);
         stage.show();

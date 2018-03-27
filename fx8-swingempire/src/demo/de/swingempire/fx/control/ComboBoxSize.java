@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 /**
  * combo sizing not fully configurable
  * http://stackoverflow.com/q/24852429/203657
+ * 
+ * wants to remove the gap at end .. 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ComboBoxSize extends Application {
