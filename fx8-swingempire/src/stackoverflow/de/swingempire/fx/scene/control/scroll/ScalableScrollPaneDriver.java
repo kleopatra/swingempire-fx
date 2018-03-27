@@ -26,6 +26,8 @@ import javafx.stage.Stage;
  * can't see anything in original, listening to bounds somehow hides 
  * (moves outside?) the circles.
  * 
+ * SO_ABANDONED
+ * 
  * q deleted by owner ... descr of requirement in comment:
  * 
  * I'm trying to create a ScrollPane which scales it's content, 

@@ -33,6 +33,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * PENDING JW This is pre-9... wont compile ... keep nevertheless
+ * 
+ * --------
  * per-cell contextMenu must be triggered by keyboard 
  * (f.i. shift-f10 on win) 
  * reported: https://javafx-jira.kenai.com/browse/RT-40071
@@ -134,6 +137,7 @@ public class TableViewETContextMenu extends Application {
         }
         
     }
+    
     private static class MySpecialCellBehavior extends TableCellBehavior {
 
         public MySpecialCellBehavior(TableCell control) {

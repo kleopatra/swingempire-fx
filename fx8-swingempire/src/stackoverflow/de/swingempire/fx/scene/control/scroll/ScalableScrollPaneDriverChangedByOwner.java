@@ -20,6 +20,7 @@ import javafx.stage.Stage;
  * Detect when node leaves visible part of scrollPane
  * https://stackoverflow.com/q/47622660/203657
  * 
+ * SO_ABANDONED
  * 
  * q deleted by owner ... 
  * 
