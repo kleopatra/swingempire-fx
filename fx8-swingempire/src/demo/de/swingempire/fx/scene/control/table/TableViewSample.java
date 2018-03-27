@@ -2,12 +2,9 @@
  * Created on 14.07.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import java.util.logging.Logger;
-
-import de.swingempire.fx.control.TableViewSample.BoundEditingCell;
-import de.swingempire.fx.control.TableViewSample.BoundTableCell;
 
 //import com.sun.javafx.css.Stylesheet;
 
@@ -15,6 +12,8 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
+import de.swingempire.fx.scene.control.table.TableViewSample.BoundEditingCell;
+import de.swingempire.fx.scene.control.table.TableViewSample.BoundTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;

@@ -170,7 +170,8 @@ public class ValidateBeforeFocusLost extends Application {
                 // old 
 //                field.impl_traverse(Direction.NEXT);
                 // not visible 
-                field.traverse(Direction.NEXT);
+                // field.traverse(Direction.NEXT);
+                invokeTravers(field, Direction.NEXT);
             }
         };
         if (field instanceof TextField) {
@@ -178,6 +179,10 @@ public class ValidateBeforeFocusLost extends Application {
         } else if (field instanceof ComboBoxBase) {
             ((ComboBoxBase) field).setOnAction(handler);
         }
+    }
+    
+    private void invokeTravers(Node node, Direction direction) {
+        FXUtils.invokeGetMethodValue(Node.class, node, "traverse", Direction.class, direction);
     }
 
     @Override

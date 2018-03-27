@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.control;
 
+import de.swingempire.fx.scene.control.table.TableViewWithVisibleRowCount;
 import javafx.application.Application;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;

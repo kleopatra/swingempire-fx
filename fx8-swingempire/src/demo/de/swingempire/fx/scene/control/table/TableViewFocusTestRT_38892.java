@@ -2,7 +2,7 @@
  * Created on 14.10.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;

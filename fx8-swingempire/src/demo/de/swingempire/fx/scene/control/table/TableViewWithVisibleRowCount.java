@@ -2,7 +2,7 @@
  * Created on 14.10.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -2,7 +2,7 @@
  * Created on 22.01.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.tree;
 
 import javafx.application.Application;
 import javafx.scene.Parent;

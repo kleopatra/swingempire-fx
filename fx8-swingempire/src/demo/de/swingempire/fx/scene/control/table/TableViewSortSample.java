@@ -2,7 +2,7 @@
  * Created on 04.05.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import de.swingempire.fx.demobean.Person;
 import javafx.application.Application;

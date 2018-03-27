@@ -2,7 +2,7 @@
  * Created on 14.04.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import java.util.Collections;
 import java.util.Random;

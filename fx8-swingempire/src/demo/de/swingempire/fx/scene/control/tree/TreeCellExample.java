@@ -2,13 +2,13 @@
  * Created on 12.12.2014
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.tree;
 
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import de.swingempire.fx.control.TreeCellExample.MyTreeCell;
+import de.swingempire.fx.scene.control.tree.TreeCellExample.MyTreeCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -2,7 +2,7 @@
  * Created on 09.08.2017
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.scene.control.table;
 
 import java.util.Locale;
 import java.util.function.Predicate;
