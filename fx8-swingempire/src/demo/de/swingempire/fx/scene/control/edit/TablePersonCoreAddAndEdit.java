@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import control.edit.TableViewEditNotWritable.Dummy;
+//import control.edit.TableViewEditNotWritable.Dummy;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,7 +26,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
-import javafx.stage.Stage;/**
+import javafx.stage.Stage;
+
+import static de.swingempire.fx.util.VirtualFlowTestUtils.*;
+/**
  * 
  * http://stackoverflow.com/q/35279377/203657
  * add and edit can confuse the tableView

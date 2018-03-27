@@ -21,6 +21,8 @@ import javafx.stage.Stage;
 
 /**
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * SO_FAQ
  */
 public class TableEditWithoutProperties extends Application {
     
