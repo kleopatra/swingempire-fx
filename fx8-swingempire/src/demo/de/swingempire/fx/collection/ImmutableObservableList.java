@@ -2,7 +2,7 @@
  * Created on 14.04.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.collection;
 
 import java.util.List;
 

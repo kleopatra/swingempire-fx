@@ -41,18 +41,7 @@ public class ListEditingExample extends Application{
     public ListEditingExample() {
         // BUG: scrollbar missing default context menu
 //        manager.addAlbums(10000);
-        
-        listView = new ListView<>();
-        listView.setEditable(true);
-        listView.setCellFactory(TextFieldListCell.forListView());
-//        listView.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-//        listView.setCellValueFactory(new PropertyFactory<>("lastName"));
-//        listView.setCellValueFactory(p -> p.lastNameProperty());
-        listView.setItems(Person.persons());
-//        listView.setItems(FXCollections.observableList(Person.persons(), p -> new Observable[] { p.lastNameProperty()}));
 
-        comboBox = new ComboBox<>(listView.getItems());
-        
         StringConverter<Person> converter = new StringConverter<Person>() {
 
             @Override
@@ -66,6 +55,18 @@ public class ListEditingExample extends Application{
             }
             
         };
+
+        listView = new ListView<>();
+        listView.setEditable(true);
+        listView.setCellFactory(TextFieldListCell.forListView(converter));
+//        listView.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+//        listView.setCellValueFactory(new PropertyFactory<>("lastName"));
+//        listView.setCellValueFactory(p -> p.lastNameProperty());
+        listView.setItems(Person.persons());
+//        listView.setItems(FXCollections.observableList(Person.persons(), p -> new Observable[] { p.lastNameProperty()}));
+
+        comboBox = new ComboBox<>(listView.getItems());
+        
         comboBox.setConverter(converter);
 
         logComboValue = e -> {

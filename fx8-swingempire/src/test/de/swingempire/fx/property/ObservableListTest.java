@@ -22,7 +22,7 @@ import static de.swingempire.fx.property.BugPropertyAdapters.*;
 import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
-import de.swingempire.fx.control.ImmutableObservableList;
+import de.swingempire.fx.collection.ImmutableObservableList;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreEqualsNotFire;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.scene.control.cell.Person22463;

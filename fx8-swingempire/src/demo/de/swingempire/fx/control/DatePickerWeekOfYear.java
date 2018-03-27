@@ -27,7 +27,7 @@ import javafx.stage.Stage;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class DatePickerExample extends Application {
+public class DatePickerWeekOfYear extends Application {
 
     /**
      * @return
@@ -92,6 +92,6 @@ public class DatePickerExample extends Application {
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(DatePickerExample.class
+    private static final Logger LOG = Logger.getLogger(DatePickerWeekOfYear.class
             .getName());
 }
