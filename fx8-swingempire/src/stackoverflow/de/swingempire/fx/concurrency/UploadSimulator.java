@@ -154,7 +154,7 @@ public class UploadSimulator extends Application {
         @Override
         protected Void call() throws Exception {
             while (currentProgress < 1) {
-                Thread.sleep(1000);
+                Thread.sleep(100);
                 setProgress(currentProgress + 0.1);
             }
             setStatus("Done");
