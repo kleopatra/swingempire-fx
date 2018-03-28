@@ -126,6 +126,7 @@ public class WorkerExamples extends Application {
         table.getColumns().addAll(xCol, yCol);
         
         table.itemsProperty().bind(task.valueProperty());
+        
         task.stateProperty().addListener((src, ov, nv) -> {
             // can't access get on cancelled
             if (Worker.State.SUCCEEDED == nv ) {// || Worker.State.CANCELLED == nv) {
@@ -181,10 +182,11 @@ public class WorkerExamples extends Application {
     private Task<ObservableList<Rectangle>> createObservableListTask() {
         Task<ObservableList<Rectangle>> task = new Task<ObservableList<Rectangle>>() {
             @Override protected ObservableList<Rectangle> call() throws Exception {
-                updateMessage("Creating Rectangles");
+                updateMessage("Creating Rectangles ...");
                 ObservableList<Rectangle> results = FXCollections.observableArrayList();
                 for (int i=0; i<100; i++) {
                     if (isCancelled()) {
+                        // when do we get here?
                         updateValue(results);
                         updateMessage("Cancelled");
 //                        return results;
