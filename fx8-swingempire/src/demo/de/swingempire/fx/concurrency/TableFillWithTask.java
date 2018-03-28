@@ -66,6 +66,9 @@ public class TableFillWithTask extends Application {
             }
         });
         
+        task.setOnSucceeded(e -> table.itemsProperty().unbind());
+        task.setOnFailed(e -> table.itemsProperty().unbind());
+        
         Label messageLabel = new Label("Message: ");
         Label message = new Label();
         message.textProperty().bind(task.messageProperty());
@@ -85,9 +88,12 @@ public class TableFillWithTask extends Application {
         Button cancel = new Button("Cancel");
         cancel.setOnAction(e -> task.cancel());
         
+        Button debug = new Button("items bound?");
+        debug.setOnAction(e -> LOG.info("bound? " + table.itemsProperty().isBound()));
+        
         int row = 0;
         GridPane grid = new GridPane();
-        grid.add(table, 0, row++, 2, 1);
+        grid.add(table, 0, row++, 20, 1);
         grid.add(messageLabel, 0, row);
         grid.add(message, 1, row++);
         grid.add(progressLabel, 0, row);
@@ -95,6 +101,7 @@ public class TableFillWithTask extends Application {
         grid.add(progress, 0, row++, 2, 1);
         grid.add(start, 0, row);
         grid.add(cancel, 1, row++);
+        grid.add(debug, 0, row++);
         return grid;
    }
 
