@@ -22,7 +22,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -50,6 +49,7 @@ public class TableFillWithTask extends Application {
         // working ... but when to unbind?
         table.itemsProperty().bind(task.valueProperty());
         
+        
         // could manually register a listener ... but then I don't need the binding 
         //        task.valueProperty().addListener((src, ov, nv) -> {
         //            if (nv != null) {
@@ -59,15 +59,13 @@ public class TableFillWithTask extends Application {
         task.stateProperty().addListener((src, ov, nv) -> {
             if (Worker.State.SUCCEEDED == nv ) {
                 LOG.info("succeeded" + task.getValue());
+                 table.itemsProperty().unbind();
             } else if (Worker.State.CANCELLED == nv) {
                 LOG.info("receiving cancelled " + task.getValue());
                 // can't unbind here, value not yet updated
                 // table.itemsProperty().unbind();
-            }
+            } 
         });
-        
-        task.setOnSucceeded(e -> table.itemsProperty().unbind());
-        task.setOnFailed(e -> table.itemsProperty().unbind());
         
         Label messageLabel = new Label("Message: ");
         Label message = new Label();
@@ -87,6 +85,7 @@ public class TableFillWithTask extends Application {
         });
         Button cancel = new Button("Cancel");
         cancel.setOnAction(e -> task.cancel());
+        cancel.disableProperty().bind(task.runningProperty().not());
         
         Button debug = new Button("items bound?");
         debug.setOnAction(e -> LOG.info("bound? " + table.itemsProperty().isBound()));
@@ -127,7 +126,6 @@ public class TableFillWithTask extends Application {
                         Thread.sleep(100);
                     } catch (InterruptedException interrupted) {
                         if (isCancelled()) {
-                            // calling task.cancel leads to here
                             message = "interrupted";
                             break;
                         }
@@ -137,6 +135,7 @@ public class TableFillWithTask extends Application {
                 updateMessage(message);
                 return results;
             }
+           
         };
         return task;
     }
