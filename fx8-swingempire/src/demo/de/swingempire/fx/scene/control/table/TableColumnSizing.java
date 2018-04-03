@@ -13,6 +13,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
@@ -37,6 +38,10 @@ public class TableColumnSizing extends Application {
     public void start(Stage primaryStage) {
         //Create table
         table = new TableView();
+//        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+//        TreeTableView tt = new TreeTableView();
+//        tt.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         //Create table items
         final ObservableList<DataContainer> data = FXCollections.observableArrayList(
