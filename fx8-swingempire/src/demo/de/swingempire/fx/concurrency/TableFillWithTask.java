@@ -51,12 +51,14 @@ public class TableFillWithTask extends Application {
         table.itemsProperty().bind(task.valueProperty());
         
         
-        // could manually register a listener ... but then I don't need the binding 
-        //        task.valueProperty().addListener((src, ov, nv) -> {
-        //            if (nv != null) {
-        //                table.itemsProperty().unbind();
-        //            }
-        //        });
+        // could manually register a listener ... but then I wouldn't need the binding 
+        // also requires knowledge about the update mechanics (once only) in custom task
+                task.valueProperty().addListener((src, ov, nv) -> {
+                    LOG.info("getting value:" + nv);
+                    if (nv != null) {
+                     //   table.itemsProperty().unbind();
+                    }
+                });
         task.stateProperty().addListener((src, ov, nv) -> {
             if (Worker.State.SUCCEEDED == nv ) {
                 LOG.info("succeeded" + task.getValue());
@@ -64,7 +66,7 @@ public class TableFillWithTask extends Application {
             } else if (Worker.State.CANCELLED == nv) {
                 LOG.info("receiving cancelled " + task.getValue());
                 // can't unbind here, value not yet updated
-                // table.itemsProperty().unbind();
+//                 table.itemsProperty().unbind();
             } 
         });
         
@@ -90,6 +92,8 @@ public class TableFillWithTask extends Application {
         
         Button debug = new Button("items bound?");
         debug.setOnAction(e -> LOG.info("bound? " + table.itemsProperty().isBound()));
+        Button gc = new Button("gc");
+        gc.setOnAction(e -> System.gc());
         
         int row = 0;
         GridPane grid = new GridPane();
@@ -101,6 +105,7 @@ public class TableFillWithTask extends Application {
         grid.add(progress, 0, row++, 2, 1);
         grid.add(start, 0, row);
         grid.add(cancel, 1, row++);
+        grid.add(gc, 1, row);
         grid.add(debug, 0, row++);
         return grid;
    }
