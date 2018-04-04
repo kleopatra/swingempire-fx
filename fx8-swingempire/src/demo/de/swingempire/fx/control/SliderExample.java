@@ -16,6 +16,8 @@ import javafx.stage.Stage;
  * 
  * http://stackoverflow.com/q/35129670/203657
  * 
+ * seems to be working in fx9
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class SliderExample extends Application {
@@ -24,7 +26,7 @@ public class SliderExample extends Application {
     @Override
     public void start(Stage primaryStage) {
         Slider slider = new Slider(0.25, 2.0, 1.0);
-        slider.setSkin(new XSliderSkin(slider));
+//        slider.setSkin(new XSliderSkin(slider));
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.setMajorTickUnit(0.25);
@@ -45,7 +47,7 @@ public class SliderExample extends Application {
                 System.err.println("committed value: " + slider.getValue());
             }
          });
-        Scene scene = new Scene(slider, 800, 600);
+        Scene scene = new Scene(slider, 300, 200);
         primaryStage.setScene(scene);
         primaryStage.show();
    }

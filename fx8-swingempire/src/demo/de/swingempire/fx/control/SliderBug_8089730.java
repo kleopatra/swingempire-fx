@@ -5,6 +5,7 @@
 package de.swingempire.fx.control;
 
 import de.swingempire.fx.control.TooltipOnSlider.MySliderSkin;
+import de.swingempire.fx.scene.control.slider.XSliderSkin;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -26,8 +27,8 @@ public class SliderBug_8089730 extends Application {
     public void start(Stage stage) throws Exception {
 
         Slider s = new Slider();
-        s.setSkin(new MySliderSkin(s)); 
-//        s.setSkin(new XSliderSkin(s));
+//        s.setSkin(new MySliderSkin(s)); 
+        s.setSkin(new XSliderSkin(s));
         s.setMinWidth(500.0);
         s.setPrefWidth(500.0);
         s.setMax(200.0);
