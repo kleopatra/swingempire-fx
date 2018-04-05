@@ -31,6 +31,14 @@ import javafx.stage.Stage;
  * - want to build items (for table, f.i.) in background
  * - want to get results, either complete or until cancelled
  * 
+ * Implementation details in Task:
+ * - delegate to TaskCallable
+ * - call implemented to get result from task 
+ * - in all states (?) except cancelled: first updates value with result, then updates state
+ * - if cancelled: do nothing except returning null (no update of value! nor state!) -
+ *   state update handled where?
+ * - no way to work around (tried custom task impl as c&p with handling different)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableFillWithTask extends Application {
@@ -61,6 +69,9 @@ public class TableFillWithTask extends Application {
                 });
         task.stateProperty().addListener((src, ov, nv) -> {
             if (Worker.State.SUCCEEDED == nv ) {
+                // this is fine because implementation in TaskCallable first 
+                // updates the value (with the result it got from T call())
+                // then updates state
                 LOG.info("succeeded" + task.getValue());
                  table.itemsProperty().unbind();
             } else if (Worker.State.CANCELLED == nv) {
@@ -137,8 +148,10 @@ public class TableFillWithTask extends Application {
                         }
                     }
                 }
+                // want to update value always - super only does if succeeded
                 updateValue(results);
                 updateMessage(message);
+                LOG.info("leaving call" );
                 return results;
             }
            
@@ -146,6 +159,9 @@ public class TableFillWithTask extends Application {
         return task;
     }
 
+    public static abstract class FTask<T> extends Task<T> {
+        
+    }
     private Parent createContent() {
         Parent pane = createObservableListPane();
         BorderPane content = new BorderPane(pane);
