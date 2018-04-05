@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -20,9 +21,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -42,12 +41,17 @@ import javafx.stage.Stage;
  * this is used in SO question
  * https://stackoverflow.com/q/49670785/203657
  * 
+ * suggestions:
+ * - have a look at project jdeferred: https://github.com/jdeferred/jdeferred
+ * - custom task impl with additional logic (answer by fabian)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
     public class TaskValueBinding extends Application {
     
         private Parent createListPane() {
-            Task<ObservableList<Rectangle>> task = createListTask();
+//            Task<ObservableList<Rectangle>> task = createListTask();
+            PartialResultTask<ObservableList<Rectangle>> task = createPartialResultTask();
             Thread thread = new Thread(task);
             thread.setDaemon(true);
             
@@ -61,13 +65,18 @@ import javafx.stage.Stage;
             // working ... but when to unbind?
             table.itemsProperty().bind(task.valueProperty());
             
+            task.setOnDone(() -> {
+                table.itemsProperty().unbind();
+                LOG.info("unbound!");
+                
+            });
             task.stateProperty().addListener((src, ov, nv) -> {
                 if (Worker.State.SUCCEEDED == nv ) {
                     // this is fine because implementation in TaskCallable first 
                     // updates the value (with the result it got from T call())
                     // then updates state
                     LOG.info("succeeded" + task.getValue());
-                     table.itemsProperty().unbind();
+//                     table.itemsProperty().unbind();
                 } else if (Worker.State.CANCELLED == nv) {
                     LOG.info("receiving cancelled " + task.getValue());
                     // can't unbind here, value not yet updated
@@ -105,6 +114,7 @@ import javafx.stage.Stage;
             grid.add(progress, 0, row++, 2, 1);
             grid.add(start, 0, row);
             grid.add(cancel, 1, row++);
+            
             return grid;
        }
     
@@ -147,6 +157,67 @@ import javafx.stage.Stage;
             return task;
         }
     
+        public PartialResultTask<ObservableList<Rectangle>> createPartialResultTask() {
+            PartialResultTask<ObservableList<Rectangle>> task = new PartialResultTask<ObservableList<Rectangle>>() {
+
+                @Override
+                protected ObservableList<Rectangle> calculateResult() throws Exception {updateMessage("Creating Rectangles ...");
+                    ObservableList<Rectangle> results = FXCollections.observableArrayList();
+                    int count = 10;
+                    for (int i = 0; !isCancelled() && i <= count; i++) {
+                        Rectangle r = new Rectangle(10, 10);
+                        r.setX(10 * i);
+                        results.add(r);
+                        updateProgress(i, count);
+                        // Now block the thread for a short time, but be sure
+                        // to check the interrupted exception for cancellation!
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException interrupted) {
+                        }
+                    }
+                    updateMessage(isCancelled() ? "canceled" : "finished");
+                    return results;
+                }
+
+            };
+            return task;
+        }
+        public abstract class PartialResultTask<T> extends Task<T> {
+
+            // handler triggered after last change of value
+            private Runnable onDone;
+
+            public Runnable getOnDone() {
+                return onDone;
+            }
+
+            public void setOnDone(Runnable onDone) {
+                this.onDone = onDone;
+            }
+
+            protected abstract T calculateResult() throws Exception;
+
+            private void onDone() {
+                if (onDone != null) {
+                    Platform.runLater(onDone);
+                }
+            }
+
+            @Override
+            protected final T call() throws Exception {
+                try {
+                    T result = calculateResult();
+                    updateValue(result); // update value to the final value
+                    onDone();
+                    return result;
+                } catch (Exception ex) {
+                    onDone();
+                    throw ex;
+                }
+            }
+
+        }
         
         @Override
         public void start(Stage stage) throws Exception {
