@@ -183,6 +183,12 @@ import javafx.stage.Stage;
             };
             return task;
         }
+        
+        /**
+         * Task with additional logic pass partial results.
+         * 
+         * @author fabian https://stackoverflow.com/a/49672331/203657
+         */
         public abstract class PartialResultTask<T> extends Task<T> {
 
             // handler triggered after last change of value

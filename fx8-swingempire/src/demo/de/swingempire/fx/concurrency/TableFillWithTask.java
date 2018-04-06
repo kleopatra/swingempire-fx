@@ -154,6 +154,14 @@ public class TableFillWithTask extends Application {
                 LOG.info("leaving call" );
                 return results;
             }
+
+            @Override
+            protected void cancelled() {
+                LOG.info("cancelled call " + getValue());
+                
+            }
+            
+            
            
         };
         return task;
