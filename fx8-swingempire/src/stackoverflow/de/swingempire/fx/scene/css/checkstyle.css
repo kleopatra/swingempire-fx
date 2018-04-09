@@ -1,0 +1,5 @@
+.check-box:selected >  .box {
+   -fx-background-color:blue;
+}
+
+

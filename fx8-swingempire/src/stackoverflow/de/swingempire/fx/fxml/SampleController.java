@@ -6,6 +6,7 @@ package de.swingempire.fx.fxml;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -27,22 +28,24 @@ public class SampleController
         @FXML
         private TextArea outputText;
         
-        // location and resources will be automatically injected by the FXML loader     
+        // location and resources will be automatically injected by the FXML loader 
         @FXML
         private URL location;
-        
+        //... resourceBundle only if given while loading ...
         @FXML
         private ResourceBundle resources;
         
         // Add a public no-args constructor
-        public SampleController() 
-        {
-        }
+        // not needed
+//        public SampleController() 
+//        {
+//        }
         
-        @FXML
-        private void initialize() 
-        {
-        }
+        // not needed if nothing except fxml stuff to initialize
+//        @FXML
+//        private void initialize() 
+//        {
+//        }
         
         @FXML
         private void handleClearAll() {
@@ -52,5 +55,10 @@ public class SampleController
         private void printOutput() 
         {
                 outputText.setText(inputText.getText());
+                LOG.info("location/resource: " + location + "/" + resources);
         }
+        
+        @SuppressWarnings("unused")
+        private static final Logger LOG = Logger
+                .getLogger(SampleController.class.getName());
 }

@@ -6,9 +6,14 @@
 
 <?import javafx.scene.input.KeyCodeCombination?>
 
+   
+         <!-- xmlns="http://javafx.com/javafx/2.2" -->
+         <!-- cannot comment attributes! so moved up for checking if needed 
+         specification of fx version seems too be not needed, schema (?) for fx is needed
+         --> 
 <VBox fx:id="vbox" layoutX="10.0" layoutY="10.0" prefHeight="250.0" prefWidth="300.0" spacing="10" 
-         xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" 
-         fx:controller="de.swingempire.fx.scene.control.table.invcodebug.SampleController">
+         xmlns:fx="http://javafx.com/fxml/1" 
+         fx:controller="de.swingempire.fx.fxml.SampleController"> 
   <style>
 	-fx-padding: 10;
 	-fx-border-style: solid inside;
@@ -33,7 +38,7 @@
                  <accelerator>
                     <KeyCodeCombination alt="UP" code="E" control="DOWN" meta="UP" shift="DOWN" shortcut="UP" />
                  </accelerator>
- </!-->       
+ -->       
                  </MenuItem>
         </items>
       </Menu>
@@ -44,7 +49,7 @@
       </Menu>
     </menus>
   </MenuBar>
-    <Label fx:id="inputLbl" alignment="CENTER_LEFT" cache="true" cacheHint="SCALE" prefHeight="30.0" prefWidth="200.0" text="Please insert Your Input here:" textAlignment="LEFT" />
+    <Label fx:id="inputLbl" alignment="CENTER_LEFT" cache="true" cacheHint="SCALE" prefHeight="30.0" prefWidth="200.0" text="%myLabel" textAlignment="LEFT" />
     <TextField fx:id="inputText" prefWidth="100.0" />
     <Button fx:id="okBtn" alignment="CENTER_RIGHT" contentDisplay="CENTER" 
     	mnemonicParsing="false" onAction="#printOutput" text="OK" textAlignment="CENTER" />

@@ -5,6 +5,7 @@
 package de.swingempire.fx.fxml;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -31,7 +32,8 @@ public class SampleFxml extends Application
                 // Create the Pane and all Details
 //                VBox root = (VBox) loader.load(fxmlStream);
 
-                VBox root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+                VBox root = FXMLLoader.load(getClass().getResource("sample.fxml")
+                        , ResourceBundle.getBundle("de.swingempire.fx.fxml.sample"));
                 // Create the Scene
                 Scene scene = new Scene(root);
                 // Set the Scene to the Stage
