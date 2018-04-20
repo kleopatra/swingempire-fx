@@ -6,7 +6,6 @@ package de.swingempire.fx.chart;
 
 
 import javafx.application.Application;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
