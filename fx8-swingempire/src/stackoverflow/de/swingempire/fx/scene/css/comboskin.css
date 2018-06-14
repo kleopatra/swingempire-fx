@@ -1,0 +1,5 @@
+.combo-box {
+   -fx-skin: "de.swingempire.fx.scene.css.CustomComboSkin";
+}
+
+
