@@ -11,9 +11,10 @@ import java.util.logging.Logger;
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
+import de.swingempire.fx.scene.control.cell.TextField2TableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
-import de.swingempire.fx.scene.control.table.TableViewSample.BoundEditingCell;
-import de.swingempire.fx.scene.control.table.TableViewSample.BoundTableCell;
+import de.swingempire.fx.scene.control.table.TableViewEditSample.BoundEditingCell;
+import de.swingempire.fx.scene.control.table.TableViewEditSample.BoundTableCell;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -58,7 +59,9 @@ import javafx.util.Callback;
 import javafx.util.converter.DefaultStringConverter;
 
 /**
- * Example from tutorial. 
+ * Example from tutorial. This mutated to a demo for quick-testing
+ * several approaches of commit-on-focuslost: just add a tab
+ * with another cell factory.
  * 
  * Changes:
  * - removed hard-coded stage sizing
@@ -67,7 +70,7 @@ import javafx.util.converter.DefaultStringConverter;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class TableViewSample extends Application {
+public class TableViewEditSample extends Application {
     String dummy = "just testing branch";
     private final ObservableList<Person> data =
             FXCollections.observableArrayList(
@@ -155,6 +158,9 @@ public class TableViewSample extends Application {
         Callback boundEditingCellFactory = p -> new BoundEditingCell();
         addTab(tabPane, "Bounding Editing", boundEditingCellFactory);
 
+        Callback controlsfx = TextField2TableCell.forTableColumn();
+        addTab(tabPane, "ControlsFX TextField2TC", controlsfx);
+        
         addTab(tabPane, "Wrapping Listener", wrapWithListener());
         
         // binding approach (not editable) vs. plain subclassing
@@ -618,6 +624,6 @@ public class TableViewSample extends Application {
 
 
     @SuppressWarnings("unused")
-    static final Logger LOG = Logger.getLogger(TableViewSample.class
+    static final Logger LOG = Logger.getLogger(TableViewEditSample.class
             .getName());
 }

@@ -7,7 +7,7 @@ package de.swingempire.fx.scene.control.cell;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.swingempire.fx.scene.control.table.TableViewSample.PlainTableCell;
+import de.swingempire.fx.scene.control.table.TableViewEditSample.PlainTableCell;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;

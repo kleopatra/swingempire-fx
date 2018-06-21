@@ -6,7 +6,7 @@ package de.swingempire.fx.scene.control.cell;
 
 import java.util.logging.Logger;
 
-import de.swingempire.fx.property.BidirectionalBinding;
+import de.swingempire.fx.property.BidirectionalBindingX;
 import de.swingempire.fx.scene.control.cell.SpinnerCellBindingObjectProperty.MyBeanObjectProperty;
 import javafx.application.Application;
 import javafx.beans.binding.StringBinding;
@@ -150,7 +150,7 @@ public class SpinnerCellBindingObjectProperty extends Application {
 //            };
             this.valA = new SimpleObjectProperty<Integer>(this, "valA", valA);
             this.valB = new SimpleObjectProperty<Integer>(this, "valB", valB);
-            BidirectionalBinding.<Integer, Integer>bindBidirectional(
+            BidirectionalBindingX.<Integer, Integer>bindBidirectional(
                     this.valA, this.valB, this::updateB, this::updateA);
         }
 

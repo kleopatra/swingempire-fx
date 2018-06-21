@@ -10,7 +10,10 @@
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="src" path="src/testsupport"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/10-64-ea">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/190-64">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
 		<accessrules>
 			<accessrule kind="accessible" pattern="javafx/**"/>
 			<accessrule kind="accessible" pattern="com/sun/**"/>

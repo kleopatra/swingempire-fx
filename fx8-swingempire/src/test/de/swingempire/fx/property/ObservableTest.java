@@ -103,7 +103,7 @@ public class ObservableTest {
         ChangeListener<Number> update1 = (source, old, value) -> {
             p1.set(value.intValue() / 2);
         };
-        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        BidirectionalBindingX.<Number, Number>bindBidirectional(p1, p2, update2, update1);
         
         SpinnerValueFactory<Integer> spinner = new IntegerSpinnerValueFactory(0, 50);
         ObjectProperty<Integer> number = spinner.valueProperty();
@@ -132,7 +132,7 @@ public class ObservableTest {
         ChangeListener<Number> update1 = (source, old, value) -> {
             p1.set(value.intValue() / 2);
         };
-        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        BidirectionalBindingX.<Number, Number>bindBidirectional(p1, p2, update2, update1);
         
         ObjectProperty<Integer> number = new SimpleObjectProperty<>(0);
         number.bindBidirectional(p1.asObject());
@@ -160,7 +160,7 @@ public class ObservableTest {
         ChangeListener<Number> update1 = (source, old, value) -> {
             p1.set(value.intValue() / 2);
         };
-        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        BidirectionalBindingX.<Number, Number>bindBidirectional(p1, p2, update2, update1);
         
         ObjectProperty<Number> number = new SimpleObjectProperty<>(0);
         number.bindBidirectional(p1);
@@ -188,7 +188,7 @@ public class ObservableTest {
         ChangeListener<Number> update1 = (source, old, value) -> {
             p1.set(value.intValue() / 2);
         };
-        BidirectionalBinding.<Number, Number>bindBidirectional(p1, p2, update2, update1);
+        BidirectionalBindingX.<Number, Number>bindBidirectional(p1, p2, update2, update1);
         int five = 6;
         // set value on p1
         p1.set(five);

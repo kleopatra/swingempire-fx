@@ -11,7 +11,7 @@ import javafx.beans.value.ObservableValue;
  * from:
  * http://wittcarl.deneb.uberspace.de/wordpress/customized-bidirectional-bindings-in-javafx/
  */
-public class BidirectionalBinding {
+public class BidirectionalBindingX {
 
     /** Executes updateB when propertyA is changed. Executes updateA when propertyB is changed.
      * Makes sure that no update loops are caused by mutual updates.

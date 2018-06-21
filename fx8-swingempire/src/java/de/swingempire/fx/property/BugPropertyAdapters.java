@@ -6,6 +6,8 @@ package de.swingempire.fx.property;
 
 import java.util.Objects;
 
+import com.sun.javafx.binding.BidirectionalBinding;
+
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
