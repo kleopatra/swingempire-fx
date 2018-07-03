@@ -82,6 +82,18 @@ public class ReaddFocusedComboBug extends Application {
 //            });
  
         }
+
+        /**
+         * Bugfix: super show assumes scene != null and throws NPE when opening.
+         * Late detection (and fix) in
+         * https://bugs.openjdk.java.net/browse/JDK-8196827
+         */
+        @Override
+        public void show() {
+            if (getSkinnable() == null || getSkinnable().getScene() == null) return;
+            super.show();
+        }
+        
     }
     
     /**
@@ -96,17 +108,8 @@ public class ReaddFocusedComboBug extends Application {
             // enforce creation of the popup
             getPopupControl();
         }
+
         
-//        protected PopupControl getPopupControl() {
-//            return invokeGetPopup();
-//        }
-//
-//        /**
-//         * @return
-//         */
-//        private PopupControl invokeGetPopup() {
-//            return (PopupControl) FXUtils.invokeGetMethodValue(ComboBoxPopupControl.class, this, "getPopup");
-//        }
     }
     @Override
     public void start(Stage stage) {
@@ -134,13 +137,13 @@ public class ReaddFocusedComboBug extends Application {
 //                LOG.info("showing on popup - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
         };
         combo.skinProperty().addListener((src, ov, nv) -> {
-            if (!(nv instanceof ComboSkinDecorator)) return;
-            ComboSkinDecorator skin = (ComboSkinDecorator) nv;
-            popup.set(skin.getPopupControl());
-            combo.showingProperty().addListener(showingComboListener);
-            popup.get().showingProperty().addListener(showingPopupListener);
-            combo.focusedProperty().addListener(e -> LOG.info("focused: " + combo.isFocused()));
-            scene.focusOwnerProperty().addListener(e -> LOG.info("focused: " + scene.getFocusOwner()));
+//            if (!(nv instanceof ComboSkinDecorator)) return;
+//            ComboSkinDecorator skin = (ComboSkinDecorator) nv;
+//            popup.set(skin.getPopupControl());
+//            combo.showingProperty().addListener(showingComboListener);
+//            popup.get().showingProperty().addListener(showingPopupListener);
+//            combo.focusedProperty().addListener(e -> LOG.info("focused: " + combo.isFocused()));
+//            scene.focusOwnerProperty().addListener(e -> LOG.info("focused: " + scene.getFocusOwner()));
         });
         scene.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             if (e.getCode() == KeyCode.F1) {

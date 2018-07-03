@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.scene.control.XTableView;
+import de.swingempire.fx.scene.control.cell.DebugTextFieldTableCell;
 import de.swingempire.fx.scene.control.cell.FocusableTableCell;
 import de.swingempire.fx.scene.control.cell.TextField2TableCell;
 import de.swingempire.fx.scene.control.cell.XTextFieldTableCell;
@@ -160,6 +161,10 @@ public class TableViewEditSample extends Application {
 
         Callback controlsfx = TextField2TableCell.forTableColumn();
         addTab(tabPane, "ControlsFX TextField2TC", controlsfx);
+        
+        // has no support for commit-on-focuslost! PENDING JW
+        Callback debugTextCell = DebugTextFieldTableCell.forTableColumn();
+        addTab(tabPane, "DebugTextFieldTableCell", debugTextCell);
         
         addTab(tabPane, "Wrapping Listener", wrapWithListener());
         

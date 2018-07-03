@@ -36,13 +36,14 @@ public class ReaddFocusedCombo extends Application {
         choices.getItems().add("Test1");
         choices.getItems().add("Test2");
         root.getChildren().add(choices);
-
+//        choices.show();
         choices.focusedProperty().addListener(e -> LOG.info("focused: " + choices.isFocused()));
         // adding listener after skin is attached has no effect
         choices.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             // guess by sillyfly: combo gets confused if popup still open 
 //            choices.hide();
             root.getChildren().clear();
+            choices.show();
             root.getChildren().add(choices);
             // suggested in answer: working but then the choice isn't focused
             //root.requestFocus();
