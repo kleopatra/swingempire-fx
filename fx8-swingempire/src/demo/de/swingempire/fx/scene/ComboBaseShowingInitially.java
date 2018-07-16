@@ -34,8 +34,9 @@ public class ComboBaseShowingInitially extends Application {
 
     private Parent createContent() {
 //        ComboBoxBase<?> comboBase = new DatePicker();
-//        ComboBoxBase<?> comboBase = new ComboBox<>();
-        ComboBoxBase<?> comboBase = new ColorPicker();
+       // combo is fine because showing is sync'ed in skin constructor 
+        ComboBoxBase<?> comboBase = new ComboBox<>();
+//        ComboBoxBase<?> comboBase = new ColorPicker();
         comboBase.show();
         return new BorderPane(comboBase);
     }

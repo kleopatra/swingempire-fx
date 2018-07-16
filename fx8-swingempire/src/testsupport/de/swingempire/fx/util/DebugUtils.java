@@ -15,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -27,6 +28,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.Skin;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.ComboBoxBaseSkin;
@@ -297,6 +299,24 @@ public class DebugUtils {
             ((Pane) root).getChildren().add(r);
         } else if (root instanceof Group) {
             ((Group) root).getChildren().add(r);
+        }
+    }
+    
+    public static void addRectangle(Parent root, Rectangle2D inParent, Color strokePaint) {
+        Rectangle r = new Rectangle(inParent.getMinX(), inParent.getMinY(),
+                inParent.getWidth(), inParent.getHeight());
+        r.setStroke(strokePaint);
+        r.setFill(Color.TRANSPARENT);
+        r.setMouseTransparent(true);
+        if (root instanceof Pane) {
+            ((Pane) root).getChildren().add(r);
+        } else if (root instanceof Group) {
+            ((Group) root).getChildren().add(r);
+        } else if (root instanceof Control) {
+            Skin skin = ((Control) root).getSkin();
+            if (skin instanceof SkinBase) {
+                ((SkinBase<Control>) skin).getChildren().add(r);
+            }
         }
     }
 
