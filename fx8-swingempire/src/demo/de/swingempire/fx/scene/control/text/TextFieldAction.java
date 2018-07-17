@@ -59,11 +59,11 @@ public class TextFieldAction extends Application {
         TextField textField = new TextField();
 //        textField.setSkin(new TextFieldSkin(textField));
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
-        
-        textField.skinProperty().addListener((src, ov, nv) -> {
-            replaceEnter(textField);
-            
-        });
+        // fixed!
+//        textField.skinProperty().addListener((src, ov, nv) -> {
+//            replaceEnter(textField);
+//            
+//        });
         textField.setTextFormatter(formatter);
         textField.setOnAction(e -> {
             System.out.println("textfield action: " + 
@@ -91,6 +91,7 @@ public class TextFieldAction extends Application {
     /** 
      * Hack-around: text not committed on receiving action
      * https://bugs.openjdk.java.net/browse/JDK-8152557
+     * fixed as of somewhere in 9
      * 
      * A - reflectively replace the field's keyBinding to ENTER, must
      * be called after the skin is installed.
