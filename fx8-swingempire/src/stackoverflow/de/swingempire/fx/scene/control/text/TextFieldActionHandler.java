@@ -26,36 +26,85 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * https://bugs.openjdk.java.net/browse/JDK-8207774
+ * TextField: behaviour must not forward ENTER if consumed by actionHandler
+ * 
+ * Changed to log the notification of handlers/filters in the chain:
+ * - for actors like F5: 
+ *   filter.parent -> filter-field -> handler-field -> onKeyPressed-field -> handler-parent -> acc
+ * - for ENTER:
+ *   filter.parent -> filter-field -> handler-field -> action -> filter-parent -> handler-parent
+ *   -> acc -> onKeyPressed-field  
+ *   
+ * normal keys are dispatched as expected, sequence for enter is broken ..
+ *   
  * @author Jeanette Winzenburg, Berlin
  */
 public class TextFieldActionHandler extends Application {
 
     private TextField textField;
 
+    private KeyCode actor = KeyCode.ENTER;
+//    private KeyCode actor = KeyCode.F5;
     private Parent createContent() {
-        textField = new TextField("added handler: ");
+        textField = new TextField("just some text");
         textField.skinProperty().addListener((src, ov, nv) -> {
-            replaceEnter(textField);
+//            replaceEnter(textField);
             
         });
+        // only this here is in the bug report, with consume
         textField.addEventHandler(ActionEvent.ACTION, e -> {
-            System.out.println("in added: " + e);
-            e.consume();
+            System.out.println("action added: " + e);
+//            e.consume();
+        });
+        
+        //everything else is digging around
+        textField.setOnKeyPressed(event -> {
+            logEvent("-> onKeyPressed on field ",  event);
+        });
+        textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            logEvent("-> filter on field ", event);
+        });
+        
+        textField.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            logEvent("-> handler on field ", event);
         });
         
         VBox pane = new VBox(10, textField);
         
         pane.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
-            System.out.println("in parent: " + e);
+            logEvent("-> handler on parent: ", e);
         });
         
+        pane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            logEvent("-> filter on parent: ", e);
+        });
+
+        //everything else is digging around
+        pane.setOnKeyPressed(event -> {
+            logEvent("-> onKeyPressed on parent ",  event);
+        });
+
         return pane;
     }
 
+    private void logEvent(String message, KeyEvent event) {
+        logEvent(message, event, false);
+    }
+    
+    private void logEvent(String message, KeyEvent event, boolean consume) {
+        if (event.getCode() == actor) {
+            System.out.println(message + " source: " + event.getSource().getClass().getSimpleName() 
+                    + " target: " + event.getTarget().getClass().getSimpleName());
+            if (consume)
+                event.consume();    
+        }
+        
+    }
     @Override
     public void start(Stage stage) throws Exception {
         Scene scene = new Scene(createContent());
-        scene.getAccelerators().put(KeyCombination.keyCombination("ENTER"),
+        scene.getAccelerators().put(KeyCombination.keyCombination(actor.getName()),
                 () -> System.out.println("in accelerator"));
         stage.setScene(scene);
         stage.setTitle(FXUtils.version());
@@ -121,7 +170,6 @@ public class TextFieldActionHandler extends Application {
         if (onAction == null && !actionEvent.isConsumed()) {
             forwardToParent(event);
         }
-        LOG.info("event: " + event);
     }
 
     protected void forwardToParent(KeyEvent event) {
