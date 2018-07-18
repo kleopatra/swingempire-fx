@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -22,6 +23,11 @@ import javafx.stage.Stage;
  * 
  * https://stackoverflow.com/q/51388408/203657
  * Default button always triggered, even when consuming the enter.
+ * 
+ * What to expect? 
+ * - node.setEventHandler(xxEvent) is doc'ed to be called as last handler in the chain
+ * - all setOnXX delegate to that
+ * - where in the dispatch chain do accelerators are triggered
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -59,13 +65,13 @@ public class TextInputWithDefaultButton extends Application {
 //            }
 //            
 //        });
-        textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.ENTER) {
-                System.out.println("-> Enter in add");
-                event.consume();
-            }
-            
-        });
+//        textField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+//            if (event.getCode() == KeyCode.ENTER) {
+//                System.out.println("-> Enter in add");
+//                event.consume();
+//            }
+//            
+//        });
         Spinner spinner = new Spinner();
         spinner.setEditable(true);
         spinner.getEditor().setOnKeyPressed(event -> {
@@ -105,7 +111,11 @@ public class TextInputWithDefaultButton extends Application {
 
         root.getChildren().addAll(textField, spinner, label, buttonBar);
 
-        primaryStage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+        scene.getAccelerators().put(KeyCombination.keyCombination("ENTER"), () -> {
+            System.out.println("-> accelerator");
+        });
+        primaryStage.setScene(scene);
         primaryStage.setTitle("Consume Event");
         primaryStage.show();
     }

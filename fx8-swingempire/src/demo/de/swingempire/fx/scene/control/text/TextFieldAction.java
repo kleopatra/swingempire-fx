@@ -29,6 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -60,10 +61,10 @@ public class TextFieldAction extends Application {
 //        textField.setSkin(new TextFieldSkin(textField));
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
         // fixed!
-//        textField.skinProperty().addListener((src, ov, nv) -> {
-//            replaceEnter(textField);
-//            
-//        });
+        textField.skinProperty().addListener((src, ov, nv) -> {
+            replaceEnter(textField);
+            
+        });
         textField.setTextFormatter(formatter);
         textField.setOnAction(e -> {
             System.out.println("textfield action: " + 
@@ -119,6 +120,9 @@ public class TextFieldAction extends Application {
         inputMap.getMappings().add(keyMapping);
     }
     
+    protected void fire(KeyEvent event) {
+        
+    }
     protected void fire(TextField textField) {
         EventHandler<ActionEvent> onAction = textField.getOnAction();
         ActionEvent actionEvent = new ActionEvent(textField, null);
