@@ -87,7 +87,6 @@ public class SliderExample extends Application {
             super(min, max, value);
         }
         
-        // tbd: make readonly
         public DoubleProperty adjustedValueProperty() {
             if (adjustedValue == null) {
                 adjustedValue = new SimpleDoubleProperty(this, "adjustedValue", 0);
@@ -109,9 +108,9 @@ public class SliderExample extends Application {
             setAdjustedValue(getValue());
         }
         
-        
-        
     }
+    
+    
     @Override
     public void start(Stage primaryStage) {
 //        Slider slider = new Slider(0.25, 2.0, 1.0) {
