@@ -1,0 +1,2 @@
+--add-opens javafx.controls/javafx.scene.control.skin=ALL-UNNAMED 
+--add-opens javafx.controls/com.sun.javafx.scene.control.inputmap=ALL-UNNAMED
