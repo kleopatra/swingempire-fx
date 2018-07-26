@@ -20,6 +20,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -37,6 +38,10 @@ public class CommitComboInDialog extends Application {
 
         VBox dialogContent = new VBox(10, box);
         Dialog<String> dialog = new Dialog<>();
+        // trying to remove all decorations except the close button
+        // https://stackoverflow.com/q/51527036/203657
+        // looks different than the normal close button ...
+        dialog.initStyle(StageStyle.UTILITY);
         dialog.getDialogPane().setContent(dialogContent);
         // Set the button types.
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
