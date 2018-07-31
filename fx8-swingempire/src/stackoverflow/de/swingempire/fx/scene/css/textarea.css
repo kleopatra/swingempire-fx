@@ -1,0 +1,8 @@
+.text-area:focused {
+ -fx-background-color:  white;
+ -fx-border-color: rgba(229,0,0,0.3);
+}
+
+	.text-area:focused .content {
+	 	-fx-background-color:  white;
+	}
