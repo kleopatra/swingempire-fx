@@ -26,6 +26,9 @@ import javafx.util.Callback;
  * DnD event handler on cell not activated - worksforme
  * https://stackoverflow.com/q/51558538/203657
  * 
+ * Particular problem reveiled in comments: no event on dropped - no
+ * wonder because the drop wasn't allowed
+ * 
  * weird visual effect: item shown further down the tree? okay in fx8
  * useage error: missing else block in updateItem - must revert content
  */
@@ -102,12 +105,14 @@ public final class DnDOnTree extends Application {
                 cell.setOnDragOver(new EventHandler<DragEvent>() {
                     public void handle(DragEvent event) {
                         /* data is dragged over the target */
-                        System.out.println("onDragOver: " + event.getGestureSource() + " " + event.getDragboard().hasString());
+//                        System.out.println("onDragOver: " + event.getGestureSource() + " " + event.getDragboard().hasString());
 
                         /*
                          * accept it only if it is not dragged from the same node and if it has a string data
                          */
-                        if (event.getGestureSource() != cell && event.getDragboard().getContent(objectDataFormat) != null) {
+                        if (event.getGestureSource() != cell && 
+//                                event.getDragboard().hasString()) {
+                                event.getDragboard().getContent(objectDataFormat) != null) {
                             /* allow for both copying and moving, whatever user chooses */
                             event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                         }
