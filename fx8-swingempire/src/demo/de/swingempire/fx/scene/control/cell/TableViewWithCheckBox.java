@@ -36,7 +36,13 @@ public class TableViewWithCheckBox extends Application {
     public void start(Stage stage) {
         TableView<Person> table = new TableView<>();
 
-        // Editable
+        // Editable - really needed, 
+        // though slightly astonishing because
+        // the checkBoxCell by-passes the edit mechanism
+        // makes sense, though, changing data on a read-only table would be
+        // astonshing as well
+        //https://stackoverflow.com/q/51599065/203657
+
         table.setEditable(true);
         TableColumn<Person, String> fullNameCol = new TableColumn<>("Name");
         TableColumn<Person, Boolean> acceptedCol = new TableColumn<>("Accepted");
