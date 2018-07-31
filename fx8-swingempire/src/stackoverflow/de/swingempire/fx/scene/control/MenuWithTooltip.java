@@ -6,6 +6,7 @@ package de.swingempire.fx.scene.control;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -61,8 +62,20 @@ public class MenuWithTooltip extends Application {
         });
         submenu.getItems().add(new MenuItem("Some other Item"));
         menuButton.getItems().add(submenu);
+//        menuButton.addEventHandler(MenuButton.ON_SHOWING, e -> {
+//            LOG.info("handler: parentMenu/popup " + submenu.getParentMenu() + " / " + submenu.getParentPopup());
+//            
+//        });
+//
 
+        // quick-check sizing: is respected, but resizing cursors and button still available
+//        primaryStage.setMaxHeight(400);
+//        primaryStage.setMinHeight(400);
+//        primaryStage.setMaxWidth(400);
+//        primaryStage.setMinWidth(400);
+//
         primaryStage.setScene(new Scene(menuButton));
+        primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
 
     }
