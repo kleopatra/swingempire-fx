@@ -29,13 +29,15 @@ import javafx.stage.Window;
 
 import static javafx.scene.input.KeyCombination.*;
 /**
+ * Here variation: toggle visible instead of add/remove
+ * 
  * Bug check: ComboBase with showing property set to true after removing from scene.
  * Partly reported as https://bugs.openjdk.java.net/browse/JDK-8197846 for comboBox.
  * 
  * Keys to manipulate the control 
  * F1: control.show
- * F2: parent.remove(control)
- * F3: parent.add(control)
+ * F2: control.setVisible(false)
+ * F3: control.setVisible(true)
  *  
  * Steps to check state when popup is hidden on remove:
  * - run
@@ -62,7 +64,6 @@ import static javafx.scene.input.KeyCombination.*;
  *      editable doesn't matter
  * ComboBox: popup opened (in this context, needs to be unfocused to show misbehaviour, why?)
  *      a couple of days later: popup not opened why the change in behaviour?
- *      erratic: a couple of hours later it's fine again ...
  *      editable doesn't matter
  * ColorPicker: popup not opened, bug
  *      editable doesn't matter
@@ -74,7 +75,7 @@ import static javafx.scene.input.KeyCombination.*;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class ComboBaseShowingAfterHiding extends Application {
+public class ComboBaseToggleVisible extends Application {
 
     private ComboBoxBase<?> comboBase;
     private Pane createContent() {
@@ -95,9 +96,6 @@ public class ComboBaseShowingAfterHiding extends Application {
 //            
 //        };
         comboBase = new ComboBox<>() {
-//            {
-//                getItems().addAll(1, 2);
-//            }
             @Override
             protected Skin<?> createDefaultSkin() {
                 return new ComboBoxListViewSkin<>(this) {
@@ -112,7 +110,6 @@ public class ComboBaseShowingAfterHiding extends Application {
             }
             
         };
-        
 //        comboBase = new ColorPicker() {
 //            @Override
 //            protected Skin<?> createDefaultSkin() {
@@ -135,9 +132,9 @@ public class ComboBaseShowingAfterHiding extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         Pane root = createContent();
-        Scene scene = new Scene(root, 100, 100);
+        Scene scene = new Scene(root, 300, 100);
         stage.setScene(scene);
-        stage.setTitle(FXUtils.version());
+        stage.setTitle(FXUtils.version() + " visible ");
         SimpleObjectProperty<Window> popup = new SimpleObjectProperty<>();
         
         // accelerators not always triggered?
@@ -149,14 +146,14 @@ public class ComboBaseShowingAfterHiding extends Application {
                 comboBase.show();
             }
             if (e.getCode() == KeyCode.F2) {
-                root.getChildren().remove(comboBase);
+                comboBase.setVisible(false);
                 if (popup.get() != null) {
                     LOG.info("removed - combo/popup showing? " + comboBase.isShowing() + " / " +  popup.get().isShowing());
                 }
                 
             }
             if (e.getCode() == KeyCode.F3) {
-                root.getChildren().add(comboBase);
+                comboBase.setVisible(true);
                 if (popup.get() != null) {
                     LOG.info("added - combo/popup showing? " + comboBase.isShowing() + " / " +  popup.get().isShowing());
                 }
@@ -178,6 +175,6 @@ public class ComboBaseShowingAfterHiding extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ComboBaseShowingAfterHiding.class.getName());
+            .getLogger(ComboBaseToggleVisible.class.getName());
 
 }
