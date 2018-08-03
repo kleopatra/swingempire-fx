@@ -25,7 +25,7 @@ import javafx.stage.Window;
  * https://stackoverflow.com/q/48538763/203657
  * re-added combo is focused but not clickable
  * 
- * toggle visible
+ * toggle visible, no problem
  * 
  * Here: extract for bug report - remove/add via button
  * can't use button (will close the popup) - use key events
@@ -91,7 +91,6 @@ public class ToggleVisibleFocusedComboBug extends Application {
                 combo.show();
             }
             if (e.getCode() == KeyCode.F2) {
-//                root.getChildren().remove(combo);
                 combo.setVisible(false);
                 if (popup.get() != null) {
                     LOG.info("removed - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());
@@ -99,7 +98,6 @@ public class ToggleVisibleFocusedComboBug extends Application {
                 
             }
             if (e.getCode() == KeyCode.F3) {
-//                root.getChildren().add(combo);
                 combo.setVisible(true);
                 if (popup.get() != null) {
                     LOG.info("added - combo/popup showing? " + combo.isShowing() + " / " +  popup.get().isShowing());

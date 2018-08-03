@@ -35,6 +35,9 @@ import javafx.stage.Window;
  * This is analogous to the fix of JDK-8095306, which handles the sync
  * in the skin's constructor.
  * 
+ * Note: seeing some erratic behaviour - when doing this with accelerator keys and the
+ * combo is focused, the bug is not always on.
+ * 
  * Reported as (with the original example):
  * https://bugs.openjdk.java.net/browse/JDK-8197846
  * 

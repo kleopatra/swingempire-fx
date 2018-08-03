@@ -16,9 +16,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 /**
  * https://stackoverflow.com/q/48538763/203657
- * re-added combo is focused but not clickable
+ * toggle visible-  combo is focused but not clickable
+ * 
+ * variation here: toggle visible - no problem
  */
-public class ReaddFocusedCombo extends Application {
+public class ToggleVisibleFocusedCombo extends Application {
 
     // toggle to add/remove either on action or on selection
     private final static boolean ON_ACTION = false;
@@ -51,12 +53,12 @@ public class ReaddFocusedCombo extends Application {
         // adding listener after skin is attached has no effect
         if (ON_ACTION) {
             choices.setOnAction(e -> {
-                root.getChildren().clear();
-                LOG.info("action: " + choices.getScene());
+                choices.setVisible(false);;
+                LOG.info("action: " + choices.isVisible());
                 if (SHOW_IN_BETWEEN) {
                     choices.show();
                 }
-                root.getChildren().add(choices);
+                choices.setVisible(true);;
             });
 
         } else {
@@ -64,12 +66,12 @@ public class ReaddFocusedCombo extends Application {
                 // guess by sillyfly: combo gets confused if popup still
                 // open
 //                choices.hide();
-                root.getChildren().clear();
-                LOG.info("selection: " + choices.getScene());
+                choices.setVisible(false);
+                LOG.info("selection: " + choices.isVisible());
                 if (SHOW_IN_BETWEEN) {
                     choices.show();
                 }
-                root.getChildren().add(choices);
+                choices.setVisible(true);
                 // suggested in answer: working but then the choice
                 // isn't focused
                 // root.requestFocus();
@@ -95,7 +97,7 @@ public class ReaddFocusedCombo extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(ReaddFocusedCombo.class.getName());
+            .getLogger(ToggleVisibleFocusedCombo.class.getName());
     
 }
 
