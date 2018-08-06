@@ -252,6 +252,12 @@ public final class DnDOnTree extends Application {
             }
         }
 
+        @Override
+        public String toString() {
+            return "PI: " +  getScene() + " " + getMove() +" " + getPath();
+        }
+
+        
     }
 
 
