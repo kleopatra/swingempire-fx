@@ -35,7 +35,7 @@ import javafx.stage.Stage;
  * over completely - Legend is-a TilePane which is a internal class 
  */
 //@SuppressWarnings({ "unchecked", "rawtypes" })
-public class LineChartSample extends Application {
+public class LineChartWithCustomLegend extends Application {
     
     public static class MyLineChart<X, Y> extends LineChart<X, Y> {
 
@@ -146,7 +146,7 @@ public class LineChartSample extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(LineChartSample.class.getName());
+            .getLogger(LineChartWithCustomLegend.class.getName());
 }
 
 
