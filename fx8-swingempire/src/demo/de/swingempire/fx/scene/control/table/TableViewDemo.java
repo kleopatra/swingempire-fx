@@ -10,6 +10,7 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -223,6 +224,8 @@ public class TableViewDemo extends Application {
         // can't sort a filtered list?
 //        FilteredList<Person> filtered = new FilteredList(Person.persons());
         TableView table = new TableView(Person.persons());
+        // quick check if nodeOrientation is working - yeah
+//        table.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         TableColumn first = new TableColumn("First Name");
         first.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         first.setCellFactory(e -> new PlainTableCell());
