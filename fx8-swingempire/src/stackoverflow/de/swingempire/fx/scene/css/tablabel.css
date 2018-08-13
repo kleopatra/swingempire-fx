@@ -1,0 +1,14 @@
+.tab-label {
+    -fx-content-display: LEFT;
+    -fx-pref-width: 100;
+    -fx-alignment: CENTER-LEFT;
+    -fx-background-color: green;
+}
+
+.tab-container {
+    -fx-background-color: yellow;
+}
+
+.label {
+    -fx-background-color: RED;
+}
