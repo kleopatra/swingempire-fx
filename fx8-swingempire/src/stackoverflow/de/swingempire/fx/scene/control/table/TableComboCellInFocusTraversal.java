@@ -78,7 +78,6 @@ public class TableComboCellInFocusTraversal extends Application {
         // users have to click once into the table to trigger the column to be !=null
         // we hack around by forcing the initial cell focus if the item is != null
         TablePosition<?,?> first = table.getFocusModel().getFocusedCell();
-        LOG.info("focused: " + first);
         if (first != null && first.getTableColumn() == null) {
             table.getFocusModel().focus(first.getRow(), table.getColumns().get(0));
         };
