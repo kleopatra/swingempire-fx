@@ -52,6 +52,9 @@ import javafx.stage.Stage;
  */
 public class DatePickerConfig extends Application {
 
+    /**
+     * Custom picker content which allows to tweak the formatter for weekDay cells.
+     */
     public static class XDatePickerContent extends DatePickerContent {
        
         private DateTimeFormatter weekDayNameFormatter;
@@ -80,18 +83,6 @@ public class DatePickerConfig extends Application {
             }
         }
 
-        
-        @Override
-        protected Locale getLocale() {
-            if (datePicker != null) {
-                Object locale = datePicker.getProperties().get("CONTROL_LOCALE");
-                if (locale instanceof Locale) {
-                    return (Locale) locale;
-                }
-            }
-            return super.getLocale();
-        }
-
         /**
          * Lazily creates and returns the formatter for week days.
          * Note: this is called from the constructor which implies that
@@ -107,7 +98,6 @@ public class DatePickerConfig extends Application {
 
         /**
          * Factory method for weekDayNameFormatter, here: narrow standalone day name
-         * @return
          */
         protected DateTimeFormatter createWeekDayNameFormatter() {
             return DateTimeFormatter.ofPattern("ccccc");
@@ -128,12 +118,18 @@ public class DatePickerConfig extends Application {
         }
     }
     
+    /**
+     * Custom picker skin that reflectively injects the custom content.
+     */
     public static class XDatePickerSkin extends DatePickerSkin {
 
         public XDatePickerSkin(DatePicker control) {
             super(control);
         }
 
+        /**
+         * Overridden to reflectively inject the custom picker content.
+         */
         @Override
         public Node getPopupContent() {
             DatePickerContent content = (XDatePickerContent) getDatePickerContent();
@@ -156,6 +152,7 @@ public class DatePickerConfig extends Application {
     }
     
     private Parent createContent() {
+        Locale.setDefault(Locale.CHINA);
         LocalDate now = LocalDate.now();
         DatePicker picker = new DatePicker(now) {
 
@@ -165,8 +162,7 @@ public class DatePickerConfig extends Application {
             }
             
         };
-        picker.getProperties().put("CONTROL_LOCALE", Locale.CHINA);
-        
+        // just to see some options
         List<String> patterns = List.of("c", "ccc", "cccc", "ccccc", "e", "ee", "eee", "eeee", "eeeee");
         HBox box = new HBox(10);
         patterns.forEach(p -> {

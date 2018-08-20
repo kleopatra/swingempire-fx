@@ -48,6 +48,10 @@ import javafx.util.converter.LocalDateStringConverter;
  */
 public class DatePickerLocale extends Application {
 
+    /**
+     * Custom DatePickerContent that uses a per-picker Locale if 
+     * available.
+     */
     public static class XDatePickerContent extends DatePickerContent {
        
         public XDatePickerContent(DatePicker datePicker) {
@@ -67,11 +71,13 @@ public class DatePickerLocale extends Application {
 
     }
     
+    /**
+     * Custom DatePickerSkin that injects a custom content.
+     */
     public static class XDatePickerSkin extends DatePickerSkin {
 
         public XDatePickerSkin(DatePicker control) {
             super(control);
-            LOG.info("converter: " + getConverter());
         }
 
         @Override
