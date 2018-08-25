@@ -13,6 +13,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 
@@ -45,6 +48,65 @@ public class FXUtils {
 
     public final static String ANCHOR_KEY = "anchor";
 
+// ------------------ logging
+    
+    /**
+     * Returns the fx inputLogger configured to the given level with
+     * default consoleHandler.
+     * 
+     * accessing and configuring internal logging
+     * from: https://stackoverflow.com/q/20815048/203657
+     *
+     * @return
+     */
+    public static Logger getInputLogger(Level level) {
+        return getLogger("javafx.scene.input", level);
+    }
+    
+    
+    /**
+     * Returns the fx focusLogger configured to the given level with
+     * default consoleHandler.
+     * @return
+     */
+    public static Logger getFocusLogger(Level level) {
+        return getLogger("javafx.scene.focus", level);
+    }
+
+
+    /**
+     * @param name
+     * @param level
+     * @return
+     */
+    public static Logger getLogger(String name, Level level) {
+        return getLogger(name, level, null);
+    }
+
+
+    /**
+     * @param name
+     * @param level
+     * @param formatter
+     * @return
+     */
+    public static Logger getLogger(String name, Level level,
+            Formatter formatter) {
+        final Logger rootLogger = Logger.getLogger("");
+        rootLogger.setLevel(Level.ALL);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        if (formatter != null) {
+            consoleHandler.setFormatter(formatter);
+        }
+        consoleHandler.setLevel(level);
+        Logger input = Logger.getLogger(name);
+        input.setLevel(Level.ALL);
+        input.setUseParentHandlers(false);
+        input.addHandler(consoleHandler);
+        return input;
+    }
+    
+    
 // -------------- reflection: BEWARE - don't use for production!
     
     /**

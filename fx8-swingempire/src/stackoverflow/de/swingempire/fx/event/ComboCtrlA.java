@@ -6,6 +6,10 @@ package de.swingempire.fx.event;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.ListViewBehavior;
@@ -32,6 +36,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import sun.util.logging.PlatformLogger;
 
 /**
  * https://stackoverflow.com/q/51943654/203657
@@ -47,17 +52,26 @@ import javafx.stage.Stage;
  *     (Note: no InputMap involved!)
  *     install eventFilter to manually select text - borderline UX    
  *   
+ * Also: left/right not working if dropDown showing
+ * - if closed, textField gets pressed -> navigation
+ * - if open, listView is focused, textField does not get pressed -> no navigation
+ *   
  */
 public class ComboCtrlA extends Application {
     
     boolean comboInstalled;
     @Override
     public void start(Stage stage) {
+        // need to keep a reference to each ..
+       Logger logger = FXUtils.getInputLogger(Level.FINE);
+       Logger focus = FXUtils.getFocusLogger(Level.ALL);
+        
         HBox root = new HBox();
 
         ComboBox<String> cb = new ComboBox<String>();
         cb.setEditable(true);
 
+//        cb.fireEvent(event);
         ObservableList<String> items = FXCollections.observableArrayList("One", "Two", "Three", "Four", "Five", "Six",
                 "Seven", "Eight", "Nine", "Ten");
 
@@ -86,7 +100,7 @@ public class ComboCtrlA extends Application {
 
         root.getChildren().addAll(cb);
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 300, 100);
 
         stage.setScene(scene);
         stage.show();
