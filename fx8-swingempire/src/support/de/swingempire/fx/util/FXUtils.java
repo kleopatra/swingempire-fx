@@ -20,23 +20,34 @@ import java.util.logging.Logger;
 import java.util.stream.Collector;
 
 import com.sun.glass.ui.Robot;
-//import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
+import com.sun.javafx.scene.control.behavior.ListViewBehavior;
+import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
+import javafx.scene.control.skin.ListViewSkin;
 import javafx.util.Callback;
 
 /**
  * Collection of static utility methods (mostly for debugging), should
  * be version-independent and useable by version-dependent sources.
+ * 
+ * No longer true: version should be 9+.
+ * <p>
+ * 
  * 
  * unused threading code copied from jfxtras
  * https://github.com/JFXtras/jfxtras/blob/8.0/jfxtras-test-support/src/main/java/jfxtras/test/TestUtil.java
@@ -60,10 +71,13 @@ public class FXUtils {
      * @return
      */
     public static Logger getInputLogger(Level level) {
-        return getLogger("javafx.scene.input", level);
+        return getInputLogger(level, null);
     }
     
-    
+    public static Logger getInputLogger(Level level, Formatter formatter) {
+        return getLogger("javafx.scene.input", level, formatter);
+        
+    }
     /**
      * Returns the fx focusLogger configured to the given level with
      * default consoleHandler.
@@ -86,34 +100,111 @@ public class FXUtils {
 
     /**
      * @param name
-     * @param level
+     * @param level the level to set for the consoleHandler
      * @param formatter
      * @return
      */
     public static Logger getLogger(String name, Level level,
             Formatter formatter) {
-        final Logger rootLogger = Logger.getLogger("");
-        rootLogger.setLevel(Level.ALL);
+        getBaseLogger("");
         ConsoleHandler consoleHandler = new ConsoleHandler();
         if (formatter != null) {
             consoleHandler.setFormatter(formatter);
         }
         consoleHandler.setLevel(level);
-        Logger input = Logger.getLogger(name);
-        input.setLevel(Level.ALL);
+        Logger input = getBaseLogger(name);
         input.setUseParentHandlers(false);
         input.addHandler(consoleHandler);
         return input;
     }
+
+    /**
+     * Returns a logger for the given name with Level.ALL
+     */
+    public static Logger getBaseLogger(String name) {
+        Logger rootLogger = Logger.getLogger(name);
+        rootLogger.setLevel(Level.ALL);
+        return rootLogger;
+    }
     
     
 // -------------- reflection: BEWARE - don't use for production!
+ 
+
+    /**
+     * Utility method to hack around 
+     * https://bugs.openjdk.java.net/browse/JDK-8209788
+     * left/right keys dont move caret in textField if popup is displayed.
+     * <p>
+     * 
+     * This method adds a changeListener to the combo's showingProperty,
+     * which on first showing removes the traversal mappings  and removes itself.
+     * @param cb the combo with a listView as popupContent 
+     * 
+     * @see #removeTraversalMappings(ComboBox)
+     */
+    public static <T> void removeTraversalMappingsInShownListener(ComboBox<T> cb) {
+        cb.showingProperty().addListener(new ChangeListener<Boolean>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable,
+                    Boolean ov, Boolean nv) {
+                if (nv) {
+                    removeTraversalMappings(cb);
+                    observable.removeListener(this);
+                }
+                
+            } 
+        });    
+    }
+
+    /**
+     * Utility method to hack around 
+     * https://bugs.openjdk.java.net/browse/JDK-8209788
+     * left/right keys dont move caret in textField if popup is displayed.
+     * <p>
+     * 
+     * This method sets an onShown handler that removes the traversalBindings
+     * when first shown then nulls the handler.
+     * 
+     * @param cb the combo with a listView as popupContent 
+     * @see #removeTraversalMappings(ComboBox)
+     */
+    public static <T> void removeTraversalMappingsOnShown(ComboBox<T> cb) {
+        cb.setOnShown(e -> {
+            removeTraversalMappings(cb);
+            cb.setOnShown(null);
+        });
+    }
     
+    /**
+     * Utility method to hack around 
+     * https://bugs.openjdk.java.net/browse/JDK-8209788
+     * left/right keys dont move caret in textField if popup is displayed.
+     * <p>
+     * 
+     * The hack is to remove all traversal mappings from the behavior's
+     * inputMap. Note: this method assumes that all skins are instantiated.
+     * 
+     * @param cb the combo with a listView as popupContent 
+     */
+    public static <T> void removeTraversalMappings(ComboBox<T> cb) {
+        ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) cb.getSkin();
+        ListView<?> list = (ListView<?>) skin.getPopupContent();
+        ListViewSkin<?> listSkin = (ListViewSkin<?>) list.getSkin();
+        // reflective access to behavior
+        ListViewBehavior<?> listBehavior = (ListViewBehavior<?>) FXUtils.invokeGetFieldValue(
+                ListViewSkin.class, listSkin, "behavior");
+        InputMap<?> map = listBehavior.getInputMap();
+        map.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
+    }
+
     /**
      * This is a hack around InputMap not cleaning up internals on removing mappings.
      * We remove MousePressed/MouseReleased/MouseDragged mappings from the internal map.
      * <p>
-     * Beware: obviously this is dirty!
+     * 
+     * Not needed in "later" versions of fx9, the bug is fixed.
      * 
      * @param inputMap
      */
