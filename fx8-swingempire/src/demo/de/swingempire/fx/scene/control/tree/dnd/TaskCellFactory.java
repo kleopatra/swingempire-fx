@@ -25,6 +25,8 @@ import javafx.util.Callback;
  * cited by Jonathan: https://jonathangiles.net/java-desktop-links-of-the-week-august-27-2/
  * 
  * seems to be working (one minor issue: need to clear the cell if empty/item null)
+ * filed issue:
+ * https://github.com/cerebrosoft/treeview-dnd-example/issues/1
  */
 public class TaskCellFactory implements Callback<TreeView<TaskNode>, TreeCell<TaskNode>> {
     private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
@@ -40,7 +42,7 @@ public class TaskCellFactory implements Callback<TreeView<TaskNode>, TreeCell<Ta
             @Override
             protected void updateItem(TaskNode item, boolean empty) {
                 super.updateItem(item, empty);
-                if (item == null) {
+                if (item == null || empty) {
                     setGraphic(null);
                     setText(null);
                     return;
