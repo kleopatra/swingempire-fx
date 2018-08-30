@@ -24,6 +24,7 @@ import javafx.stage.Stage;
  * fine if setting maxSize of either root or combo to maxValue -1 (instead of maxValue)
  * might be an overflow error
  * somewhere along the size calculation path (commented the issue)
+ * all fine if popup had been opened once before resizing
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -42,7 +43,7 @@ public class LayoutFXGridPaneWithCombo extends Application {
 
         final Label label1 = new Label("Test");
         final ComboBox<String> combo1 = new ComboBox<>(fruits);
-        combo1.setMaxWidth(Double.MAX_VALUE-1);
+        combo1.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(label1, Priority.SOMETIMES);
         GridPane.setHgrow(combo1, Priority.ALWAYS);
 
