@@ -4,14 +4,16 @@
  */
 package de.swingempire.fx.event;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.behavior.ListViewBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.KeyBinding;
 import com.sun.javafx.scene.control.inputmap.KeyBinding.OptionalBoolean;
 
@@ -22,9 +24,10 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
@@ -94,21 +97,68 @@ public class ComboCtrlA extends Application {
          * @param ov the old value of the skin
          */
         protected void listViewSkinChanged(Skin<?> oldSkin) {
-            ListViewSkin<T> skin = (ListViewSkin<T>) getPopupListView().getSkin();
+            @SuppressWarnings("unchecked")
             ListViewBehavior<T> listBehavior = (ListViewBehavior<T>) 
-                    FXUtils.invokeGetFieldValue(ListViewSkin.class, skin, "behavior");
+                    FXUtils.invokeGetFieldValue(ListViewSkin.class, 
+                    (ListViewSkin<T>) getPopupListView().getSkin(), "behavior");
             
             // get inputmap
             InputMap<ListView<T>> listInputMap = listBehavior.getInputMap();
-            // remove focus bindings
-            listInputMap.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
             // search the child inputMap that contains the vertical navigation mappings
            Optional<InputMap<ListView<T>>> verticalChild = listInputMap.getChildInputMaps().stream()
                 .filter(child -> child.lookupMapping(new KeyBinding(UP)).isPresent())
                 .findFirst();
            
+           // remove focus bindings - shouldn't block, they are shared
+           listInputMap.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
+           // mappings in parent map to keep
+           List<KeyBinding> keepParent = List.of(new KeyBinding(PAGE_UP), new KeyBinding(PAGE_DOWN));
+           Predicate<Event> block = e -> true;
+           
+           // block existing mapings
+           listInputMap.getMappings().stream()
+               .filter(mapping -> !keepParent.contains(mapping.getMappingKey()))
+               .forEach(mapping -> mapping.setInterceptor(block));
+           
+           // block all child maps except vertical
+           listInputMap.getChildInputMaps().stream()
+               .filter(child -> child != verticalChild.get())
+               .forEach(child -> child.setInterceptor(block));
+           
+           // mappings in vertical map to keep
+           List<KeyBinding> keepVertical = List.of(new KeyBinding(UP), new KeyBinding(KP_UP),
+                   new KeyBinding(DOWN), new KeyBinding(KP_DOWN));
+           
+           // block all vertical mappings except those to keep
+           verticalChild.get().getMappings().stream()
+               .filter(mapping -> !keepVertical.contains(mapping.getMappingKey()))
+               .forEach(mapping -> mapping.setInterceptor(block));
+           
+           // remove onPressed handler that's set by super
+           getPopupListView().setOnKeyPressed(null);
+           
+           // for now, simply replace with mappings .. should do better (like commit)
+           EventHandler<KeyEvent> hider = e -> getSkinnable().hide();
+           List<KeyBinding> hideTriggers = List.of(new KeyBinding(ENTER), new KeyBinding(ESCAPE));
+           
+           List<KeyMapping> hideMappings = hideTriggers.stream()
+                   .map(b -> new KeyMapping(b, hider))
+                   .collect(Collectors.toList());
+           KeyMapping space = new KeyMapping(new KeyBinding(SPACE), e -> {
+               if (!getSkinnable().isEditable()) {
+                   getSkinnable().hide();
+               }
+           });
+           hideMappings.add(space);
+           hideMappings.forEach(m -> m.setAutoConsume(false));
+           
+           // add combo related mappings
+           InputMap<ListView<T>> comboRelatedMap = new InputMap<>(getPopupListView());
+           comboRelatedMap.getMappings().addAll(hideMappings);
+           
         }
 
+        @SuppressWarnings("unchecked")
         protected ListView<T> getPopupListView() {
             return (ListView<T>) getPopupContent();
         }
@@ -118,7 +168,7 @@ public class ComboCtrlA extends Application {
     @Override
     public void start(Stage stage) {
         // need to keep a reference to each ..
-       Logger logger = FXUtils.getInputLogger(Level.FINE);
+//       Logger logger = FXUtils.getInputLogger(Level.FINE);
 //       Logger focus = FXUtils.getFocusLogger(Level.ALL);
         
         HBox root = new HBox();
