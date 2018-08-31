@@ -4,26 +4,18 @@
  */
 package de.swingempire.fx.event;
 
-import java.time.LocalDate;
-
 import java.util.Optional;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.behavior.ListViewBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
-import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
-import com.sun.javafx.scene.control.inputmap.InputMap.Mapping;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
 import com.sun.javafx.scene.control.inputmap.KeyBinding.OptionalBoolean;
 
 import static com.sun.javafx.scene.control.inputmap.KeyBinding.OptionalBoolean.*;
-
-import com.sun.javafx.scene.control.inputmap.KeyBinding;
-
 import static javafx.scene.input.KeyCode.*;
 
 import de.swingempire.fx.util.FXUtils;
@@ -35,18 +27,15 @@ import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
-import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import sun.util.logging.PlatformLogger;
+import test.combobox.ComboTextFieldNavigation;
 
 /**
  * https://stackoverflow.com/q/51943654/203657
@@ -72,7 +61,8 @@ import sun.util.logging.PlatformLogger;
  * remedy: remove the mappings
  * 
  * Also: space hides popup
- * not yet understood
+ * that's a onKeyPressed handler installed by comboSkin on creation of listView
+ * it also hides on enter, esc
  * 
  * @see ComboTextFieldNavigation
  * 
@@ -80,9 +70,132 @@ import sun.util.logging.PlatformLogger;
  */
 public class ComboCtrlA extends Application {
     
+    public static class WComboBoxSkin<T> extends ComboBoxListViewSkin<T> {
+
+        public WComboBoxSkin(ComboBox<T> control) {
+            super(control);
+            installListViewSkinListener();
+        }
+
+        /**
+         * Creates a listener on the listView's skin property.
+         */
+        protected void installListViewSkinListener() {
+            getPopupListView().skinProperty().addListener((src, ov, nv) -> {
+                listViewSkinChanged(ov);
+            });
+        }
+        
+        /**
+         * Callback from listener to listViewSkin. This implementation 
+         * tweaks the listView's inputMap to suit its role in popup of
+         * the combo.
+         * 
+         * @param ov the old value of the skin
+         */
+        protected void listViewSkinChanged(Skin<?> oldSkin) {
+            ListViewSkin<T> skin = (ListViewSkin<T>) getPopupListView().getSkin();
+            ListViewBehavior<T> listBehavior = (ListViewBehavior<T>) 
+                    FXUtils.invokeGetFieldValue(ListViewSkin.class, skin, "behavior");
+            
+            // get inputmap
+            InputMap<ListView<T>> listInputMap = listBehavior.getInputMap();
+            // remove focus bindings
+            listInputMap.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
+            // search the child inputMap that contains the vertical navigation mappings
+           Optional<InputMap<ListView<T>>> verticalChild = listInputMap.getChildInputMaps().stream()
+                .filter(child -> child.lookupMapping(new KeyBinding(UP)).isPresent())
+                .findFirst();
+           
+        }
+
+        protected ListView<T> getPopupListView() {
+            return (ListView<T>) getPopupContent();
+        }
+        
+    }
+    
+    @Override
+    public void start(Stage stage) {
+        // need to keep a reference to each ..
+       Logger logger = FXUtils.getInputLogger(Level.FINE);
+//       Logger focus = FXUtils.getFocusLogger(Level.ALL);
+        
+        HBox root = new HBox();
+
+        ComboBox<String> cb = new ComboBox<String>() {
+
+            @Override
+            protected Skin<?> createDefaultSkin() {
+                return new WComboBoxSkin<>(this);
+            }
+            
+        };
+        cb.setEditable(true);
+
+//        cb.fireEvent(event);
+        ObservableList<String> items = FXCollections.observableArrayList("One", "Two", "Three", "Four", "Five", "Six",
+                "Seven", "Eight", "Nine", "Ten");
+
+//        FilteredList<String> filteredItems = new FilteredList<String>(items, p -> true);
+        cb.setItems(items);
+        
+//        cb.setOnShown(e -> {
+//            LOG.info("" + ((Control) ((ComboBoxListViewSkin<String>) cb.getSkin()).getPopupContent()).getSkin());
+////                removeTraversalMappings(cb);
+//                cb.setOnShown(null);
+//        });
+
+        ListView<String> list = new ListView<>(items);
+        // 
+        list.setOrientation(Orientation.HORIZONTAL);
+        root.getChildren().addAll(cb, list);
+
+        Scene scene = new Scene(root, 300, 100);
+
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    /**
+     * @param cb
+     */
+    protected void removeTraversalMappings(ComboBox<String> cb) {
+        ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) cb.getSkin();
+        ListView<?> list = (ListView<?>) skin.getPopupContent();
+        ListViewSkin<?> listSkin = (ListViewSkin<?>) list.getSkin();
+        // reflective access to behavior
+        ListViewBehavior<?> listBehavior = (ListViewBehavior<?>) FXUtils.invokeGetFieldValue(
+                ListViewSkin.class, listSkin, "behavior");
+        InputMap<?> map = listBehavior.getInputMap();
+        map.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
+    }
+
+    
+  //------------------ do not use    
+
     public final static String IS_POPUP_CONTENT = "IS_POPUP_CONTENT"; 
     
-    
+    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
+
+        public XComboBoxListViewSkin(ComboBox<T> control) {
+            super(control);
+            ListView<T> listView = (ListView<T>) getPopupContent();
+            listView.getProperties().put(IS_POPUP_CONTENT, true);
+            LOG.info("setIt: " + listView.getProperties().get(IS_POPUP_CONTENT));
+            listView.setSkin(new XListViewSkin<>(listView));
+        }
+        
+    }
+
+    /**
+     * Cant cleanly inject (private field in skin, skin wires some handling)
+     * So do tweak maps from skin - either ListViewSkin or combo. Latter
+     * might be better because we need some actions that are special to combo
+     * context. 
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class XListViewBehavior<T> extends ListViewBehavior<T> {
 
         /**
@@ -129,72 +242,9 @@ public class ComboCtrlA extends Application {
         }
         
     }
-    public static class XComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T> {
-
-        public XComboBoxListViewSkin(ComboBox<T> control) {
-            super(control);
-            ListView<T> listView = (ListView<T>) getPopupContent();
-            listView.getProperties().put(IS_POPUP_CONTENT, true);
-            LOG.info("setIt: " + listView.getProperties().get(IS_POPUP_CONTENT));
-            listView.setSkin(new XListViewSkin<>(listView));
-        }
-        
-    }
-    @Override
-    public void start(Stage stage) {
-        // need to keep a reference to each ..
-//       Logger logger = FXUtils.getInputLogger(Level.FINE);
-//       Logger focus = FXUtils.getFocusLogger(Level.ALL);
-        
-        HBox root = new HBox();
-
-        ComboBox<String> cb = new ComboBox<String>() {
-
-            @Override
-            protected Skin<?> createDefaultSkin() {
-                return new XComboBoxListViewSkin<>(this);
-            }
-            
-        };
-        cb.setEditable(true);
-
-//        cb.fireEvent(event);
-        ObservableList<String> items = FXCollections.observableArrayList("One", "Two", "Three", "Four", "Five", "Six",
-                "Seven", "Eight", "Nine", "Ten");
-
-//        FilteredList<String> filteredItems = new FilteredList<String>(items, p -> true);
-        cb.setItems(items);
-        
-        cb.setOnShown(e -> {
-            LOG.info("" + ((Control) ((ComboBoxListViewSkin<String>) cb.getSkin()).getPopupContent()).getSkin());
-//                removeTraversalMappings(cb);
-                cb.setOnShown(null);
-        });
-
-        ListView<String> list = new ListView<>(items);
-        // 
-        list.setOrientation(Orientation.HORIZONTAL);
-        root.getChildren().addAll(cb, list);
-
-        Scene scene = new Scene(root, 300, 100);
-
-        stage.setScene(scene);
-        stage.show();
-    }
-
-    /**
-     * @param cb
-     */
-    protected void removeTraversalMappings(ComboBox<String> cb) {
-        ComboBoxListViewSkin<?> skin = (ComboBoxListViewSkin<?>) cb.getSkin();
-        ListView<?> list = (ListView<?>) skin.getPopupContent();
-        ListViewSkin<?> listSkin = (ListViewSkin<?>) list.getSkin();
-        // reflective access to behavior
-        ListViewBehavior<?> listBehavior = (ListViewBehavior<?>) FXUtils.invokeGetFieldValue(
-                ListViewSkin.class, listSkin, "behavior");
-        InputMap<?> map = listBehavior.getInputMap();
-        map.getMappings().removeAll(FocusTraversalInputMap.getFocusTraversalMappings());
-    }
+    
+//------------- end of do not use
+    
 
     // c&p from KeyBinding ... just for formatting to understand what happens
     private KeyCode code;
