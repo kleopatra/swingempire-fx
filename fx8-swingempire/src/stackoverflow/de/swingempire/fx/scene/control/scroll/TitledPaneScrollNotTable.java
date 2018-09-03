@@ -10,86 +10,54 @@ import java.util.stream.Stream;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.VirtualContainerBase;
-import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
  * https://stackoverflow.com/q/52145683/203657
  * ScrollPane resets to 0 on expanding
- * to see: scroll table to right, collapse, expand
- * expected: scrollPane at value on collapse
- * actual: scrollPane at 0
  * 
- * could force a reset of scroll by setting max of container to zero.
- * but no idea why
- * 
- * giving up
- * 
- * It's special to handling in VirtualFlow: my comment on SO
- * "looks like the VirtualFlow is the culprit: it does some hearty optimization of 
- * cell layout - in particular, short-circuits if height or width is 0 
- * (done in collapse by TitledPaneSkin) and sets the hbar's visibility to 
- * false which in turn triggers resetting its value to 0 ..."
+ * same as original: but with explicit scrollPane
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class TitledPaneScroll extends Application {
+public class TitledPaneScrollNotTable extends Application {
 
     int counter;
     private Parent createContent() {
         
-        TableView<Object> table = new TableView<>(FXCollections.observableArrayList(new Object()));
-        table.getColumns().addAll(Stream
-                .generate(TableColumn::new)
-                .limit(10)
-                .map(col -> {
-                    col.setPrefWidth(50);
-                    col.setText("" + counter++);
-                    return col;
-                })
-                .collect(Collectors.toList())); 
+//        TableView<Object> table = new TableView<>(FXCollections.observableArrayList(new Object()));
+//        table.getColumns().addAll(Stream
+//                .generate(TableColumn::new)
+//                .limit(10)
+//                .map(col -> {
+//                    col.setPrefWidth(50);
+//                    col.setText("" + counter++);
+//                    return col;
+//                })
+//                .collect(Collectors.toList())); 
         
-        DoubleProperty hvalue = new SimpleDoubleProperty();
-        table.skinProperty().addListener((src, ov, nv) -> {
-            TableViewSkin<?> skin = (TableViewSkin<?>) nv;
-            VirtualFlow flow = (VirtualFlow) FXUtils
-                    .invokeGetFieldValue(VirtualContainerBase.class, skin, "flow");
-            ScrollBar bar = (ScrollBar) FXUtils
-                    .invokeGetFieldValue(VirtualFlow.class, flow, "hbar");
-            bar.valueProperty().addListener((s, o, n) -> {
-                if (n.intValue() == 0) {
-                    LOG.info("hbar value: " + n + "visible? " + bar.isVisible());
-                    bar.setValue(hvalue.get());
-//                    new RuntimeException("who is calling? \n").printStackTrace();
-                } else {
-                    hvalue.set(n.doubleValue());
-                }
-            });
-            
-            bar.visibleProperty().addListener((s, o, n) -> {
-                if (n) {
-                    bar.setValue(hvalue.get());
-                }
-            });
-            
-        });
+        VBox vbox = new VBox(10);
+        vbox.getChildren().addAll(Stream
+              .generate(Button::new)
+              .limit(5)
+              .map(col -> {
+                  col.setPrefWidth(500);
+                  col.setText("" + counter++);
+                  return col;
+              })
+              .collect(Collectors.toList())); 
         
-
+        ScrollPane table = new ScrollPane(vbox);
+        
         TitledPane titled = new TitledPane("title", table);
         titled.setAnimated(false);
         
@@ -133,9 +101,13 @@ public class TitledPaneScroll extends Application {
         
 //        ScrollPane scroll = new ScrollPane(titled);
 //        scroll.setFitToWidth(true);
+        
+//        scroll.hvalueProperty().addListener((src, ov, nv) -> {
+//            LOG.info("scroll: " + nv);
+//        });
 //        AnchorPane content = new AnchorPane(titled);
         BorderPane content = new BorderPane(titled);
-        content.setBottom(buttons);
+//        content.setBottom(buttons);
 //        titled.prefHeightProperty().bind(content.heightProperty());
 //        titled.prefWidthProperty().bind(content.prefWidthProperty());
 //        scroll.prefWidthProperty().bind(content.widthProperty());
@@ -145,7 +117,7 @@ public class TitledPaneScroll extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        stage.setScene(new Scene(createContent(), 400, 400));
+        stage.setScene(new Scene(createContent(), 400, 500));
         stage.setTitle(FXUtils.version());
         stage.show();
     }
@@ -156,6 +128,6 @@ public class TitledPaneScroll extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(TitledPaneScroll.class.getName());
+            .getLogger(TitledPaneScrollNotTable.class.getName());
 
 }
