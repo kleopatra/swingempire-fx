@@ -28,13 +28,20 @@ import javafx.stage.Stage;
  * select a single treeItem only 
  * 
  * here: experiment with a treeItem that's implements Toggle
+ * answered
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TreeSingleSelectedCheckboxWithToggle extends Application {
-    public static void main(String[] args) {
-        launch(args);
-    }
-
+    
+    /**
+     * A custom CheckBoxTreeItem that implements Toggle.
+     * 
+     * To control which/how many items can be selected at any
+     * time, add them to one or several ToggleGroups.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class ToggleTreeItem<T> extends CheckBoxTreeItem<T>
         implements Toggle {
 
@@ -83,13 +90,11 @@ public class TreeSingleSelectedCheckboxWithToggle extends Application {
             return toggleGroup == null ? null : toggleGroup.get();
         }
 
+        @Override
         public final ObjectProperty<ToggleGroup> toggleGroupProperty() {
             if (toggleGroup == null) {
                 toggleGroup = new ObjectPropertyBase<ToggleGroup>() {
                     private ToggleGroup old;
-//                    private ChangeListener<Toggle> listener = (o, oV, nV) ->
-//                        ParentHelper.getTraversalEngine(ToggleButton.this).setOverriddenFocusTraversability(nV != null ? isSelected() : null);
-
                     @Override protected void invalidated() {
                         final ToggleGroup tg = get();
                         if (tg != null && !tg.getToggles().contains(ToggleTreeItem.this)) {
@@ -97,15 +102,8 @@ public class TreeSingleSelectedCheckboxWithToggle extends Application {
                                 old.getToggles().remove(ToggleTreeItem.this);
                             }
                             tg.getToggles().add(ToggleTreeItem.this);
-//                            final ParentTraversalEngine parentTraversalEngine = new ParentTraversalEngine(ToggleButton.this);
-//                            ParentHelper.setTraversalEngine(ToggleButton.this, parentTraversalEngine);
-                            // If there's no toggle selected, do not override
-//                            parentTraversalEngine.setOverriddenFocusTraversability(tg.getSelectedToggle() != null ? isSelected() : null);
-//                            tg.selectedToggleProperty().addListener(listener);
                         } else if (tg == null) {
-//                            old.selectedToggleProperty().removeListener(listener);
                             old.getToggles().remove(ToggleTreeItem.this);
-//                            ParentHelper.setTraversalEngine(ToggleButton.this, null);
                         }
 
                         old = tg;
@@ -133,7 +131,6 @@ public class TreeSingleSelectedCheckboxWithToggle extends Application {
         @Override
         public void setUserData(Object value) {
             // TODO Auto-generated method stub
-            
         }
 
         @Override
@@ -144,6 +141,51 @@ public class TreeSingleSelectedCheckboxWithToggle extends Application {
         
     }
     
+    @SuppressWarnings("unchecked")
+    @Override
+    public void start(Stage primaryStage) {
+
+        ToggleGroup toggleGroup = new ToggleGroup();
+        ToggleTreeItem<String> rootItem = new ToggleTreeItem<>("Root");
+        toggleGroup.getToggles().add(rootItem);
+        final List<ToggleTreeItem<String>> treeItems = new ArrayList<>(6);
+        for (int i = 0; i < 6; i++) {
+            ToggleTreeItem<String> item = new ToggleTreeItem<>("L0" + i + "");
+            item.setIndependent(true);
+            treeItems.add(item);
+            toggleGroup.getToggles().add(item);
+            myList.add(new Dependant("0" + i + "", "type1"));
+        }
+        rootItem.getChildren().addAll(treeItems);
+
+        rootItem.setExpanded(true);
+        rootItem.setIndependent(true);
+        ToggleTreeItem<String> rootItem2 = new ToggleTreeItem<>("folder");
+        toggleGroup.getToggles().add(rootItem2);
+        final List<ToggleTreeItem<String>> treeItems2 = new ArrayList<>(6);
+        for (int i = 0; i < 6; i++) {
+            ToggleTreeItem<String> item = new ToggleTreeItem<>("L1" + i + "");
+            item.setIndependent(true);
+            treeItems2.add(item);
+            toggleGroup.getToggles().add(item);
+            myList.add(new Dependant("0" + i + "", "type2"));
+        }
+        rootItem2.getChildren().addAll(treeItems2);
+        rootItem2.setIndependent(true);
+        rootItem.getChildren().set(2, rootItem2);
+
+        TreeView tree = new TreeView<>(rootItem);
+
+        tree.setCellFactory(CheckBoxTreeCell.forTreeView());
+
+        tree.setRoot(rootItem);
+
+        StackPane root = new StackPane();
+        root.getChildren().add(tree);
+        primaryStage.setScene(new Scene(root, 300, 250));
+        primaryStage.show();
+    }
+
     public static class Dependant {
 
         String one;
@@ -153,66 +195,13 @@ public class TreeSingleSelectedCheckboxWithToggle extends Application {
             this.two = two;
         }
         
-        
     }
-    
     
     private List<Dependant> myList = new ArrayList();
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void start(Stage primaryStage) {
 
-        ToggleTreeItem<String> rootItem = new ToggleTreeItem("Root");
-        final List<ToggleTreeItem<String>> treeItems = new ArrayList(6);
-        ToggleGroup group1 = new ToggleGroup();
-        for (int i = 0; i < 6; i++) {
-            ToggleTreeItem<String> item = new ToggleTreeItem("L0" + i + "");
-            item.setIndependent(true);
-            treeItems.add(item);
-            group1.getToggles().add(item);
-            myList.add(new Dependant("0" + i + "", "type1"));
-        }
-        rootItem.getChildren().addAll(treeItems);
-
-        rootItem.setExpanded(true);
-        rootItem.setIndependent(true);
-        ToggleTreeItem<String> rootItem2 = new ToggleTreeItem("folder");
-        final List<ToggleTreeItem<String>> treeItems2 = new ArrayList(6);
-        for (int i = 0; i < 6; i++) {
-            ToggleTreeItem<String> item = new ToggleTreeItem("L1" + i + "");
-            item.setIndependent(true);
-            treeItems2.add(item);
-            myList.add(new Dependant("0" + i + "", "type2"));
-        }
-        rootItem2.getChildren().addAll(treeItems2);
-        rootItem2.setIndependent(true);
-        rootItem.getChildren().set(2, rootItem2);
-
-        TreeView tree = new TreeView(rootItem);
-
-        tree.setCellFactory((Object item) -> {
-
-            final CheckBoxTreeCell<String> cell = new CheckBoxTreeCell();
-
-//            cell.itemProperty().addListener((obs, s, s1) -> {
-//
-//                cell.disableProperty().unbind();
-//                if (s1 != null && !s1.isEmpty()) {
-//                    BooleanProperty prop = new SimpleBooleanProperty();
-//                    prop.set((s1.equals("folder")));
-//                    cell.disableProperty().bind(prop);
-//                }
-//            });
-            return cell;
-        });
-
-        tree.setRoot(rootItem);
-
-        StackPane root = new StackPane();
-        root.getChildren().add(tree);
-        primaryStage.setScene(new Scene(root, 300, 250));
-        primaryStage.show();
+    public static void main(String[] args) {
+        launch(args);
     }
 
 }
