@@ -42,6 +42,14 @@ import javafx.stage.Stage;
  * 
  * commented bug
  * 
+ * still open: why do we get two notifications for a single move?
+ * happens in textInputControl.backwards:
+ * 
+ * - first the caret is moved, the exact pos depends on whether or not we had a selection
+ *   via selectRange(pos, pos) -> sets new anchor/caret to pos each and triggers a notification
+ * - then deselect is called (always) which calles selectRange(getCaretPos, getCaretPos)
+ *   actually doing the same as the    
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TextFormatterNotification extends Application { 
@@ -57,7 +65,7 @@ public class TextFormatterNotification extends Application {
 
         UnaryOperator<TextFormatter.Change> filter = c -> { 
             System.out.println(id+" Has recieved change notification: \n   " + c); 
-            new RuntimeException("who is calling? \n ").printStackTrace();
+//            new RuntimeException("who is calling? \n ").printStackTrace();
             return c; 
         }; 
 
