@@ -4,16 +4,16 @@
  */
 package de.swingempire.fx.scene.control.text;
 
-import java.util.function.UnaryOperator; 
+import java.util.function.UnaryOperator;
 
-import javafx.application.Application; 
-import static javafx.application.Application.launch; 
-import javafx.geometry.Insets; 
-import javafx.scene.Scene; 
-import javafx.scene.control.TextField; 
-import javafx.scene.control.TextFormatter; 
-import javafx.scene.layout.StackPane; 
-import javafx.scene.layout.VBox; 
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage; 
 
 /**
@@ -37,6 +37,7 @@ import javafx.stage.Stage;
  * Looks like done in a focusListener installed in TextFieldBehavior's constructor
  * - selects all text if new focusOwner is its field (okay)
  * - unselects all text unconditionally (not okay, should do only if old focusOwner is its field)
+ * - unselect (and the notification) even happens if focus moved between unrelated controls, f.i.buttons)
  * 
  * fix might be to conditionally unselect
  * 
@@ -49,6 +50,7 @@ import javafx.stage.Stage;
  *   via selectRange(pos, pos) -> sets new anchor/caret to pos each and triggers a notification
  * - then deselect is called (always) which calles selectRange(getCaretPos, getCaretPos)
  *   actually doing the same as the    
+ * - not in home/end  
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -60,7 +62,33 @@ public class TextFormatterNotification extends Application {
 
 
     private TextField createFixedPrefixTextField(String prefix, String id) { 
-        TextField txtFldObj = new TextField(prefix); 
+        TextField txtFldObj = new TextField(prefix) {
+
+            /**
+             * This removes to double notification on back/forward
+             */
+            @Override
+            public void deselect() {
+//                if (getAnchor() == getCaretPosition()) return;
+                super.deselect();
+            }
+
+            /**
+             * Overridden to return if anchor and caret are already at the given 
+             * positions.
+             * 
+             * Removes both double notification on backward/forward and
+             * notification on unrelated focusOwner changes.
+             */
+            @Override
+            public void selectRange(int anchor, int caretPosition) {
+                if (getAnchor() == anchor && getCaretPosition() == caretPosition) return;
+                super.selectRange(anchor, caretPosition);
+            }
+            
+            
+            
+        }; 
         txtFldObj.setId(id); 
 
         UnaryOperator<TextFormatter.Change> filter = c -> { 
@@ -82,7 +110,7 @@ public class TextFormatterNotification extends Application {
         VBox box = new VBox(10); 
         box.setPadding(new Insets(10,10,10,10)); 
          
-        box.getChildren().addAll(txtFldObjA, txtFldObjB, txtFldObjC); 
+        box.getChildren().addAll(txtFldObjA, txtFldObjB, txtFldObjC, new Button("dummy"), new Button("other")); 
          
         StackPane root = new StackPane(box); 
         Scene scene = new Scene(root, 400, 400); 
