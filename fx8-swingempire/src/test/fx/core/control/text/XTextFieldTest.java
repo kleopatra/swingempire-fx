@@ -20,6 +20,5 @@ public class XTextFieldTest extends TextFieldTest {
     protected TextField createTextField(String text) {
         return new XTextField(text);
     }
-
     
 }

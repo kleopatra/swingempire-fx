@@ -37,6 +37,5 @@ public class XTextField extends TextField {
         super.selectRange(anchor, caretPosition);
     }
     
-
     
 }

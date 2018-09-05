@@ -4,9 +4,10 @@
  */
 package fx.core.control.text;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 //import javafx.scene.control.TextInputControlShim;
@@ -67,6 +68,8 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
  * c&p from core
@@ -76,19 +79,17 @@ import javafx.scene.control.TextFormatter;
 @RunWith(JUnit4.class)
 public class TextFieldTest {
 
+    // replace with core variant to kick off the fx thread
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
     protected TextField txtField;//Empty string
     protected TextField dummyTxtField;//With string value
 
-    protected TextField navigationField; // with sentence "The quick brown fox"
-    
     @Before 
     public void setup() {
         txtField = createTextField();
         dummyTxtField = createTextField("dummy");
-        navigationField = createTextField("The quick brown fox");
     }
 
     protected TextField createTextField() {
@@ -99,10 +100,41 @@ public class TextFieldTest {
         return new TextField(text);
     }
     
-    // Textformatter
+    // TextFormatter notification on focus traversal
     
     /**
-     * Test notification on navigation: backward.
+     * Test notification behavior on focus traversal.
+     * https://bugs.openjdk.java.net/browse/JDK-8210297
+     */
+    @Test
+    public void testFormatterNotificationOnTab() {
+        TextField first = createTextField("first");
+        TextField second = createTextField("second");
+        TextField third = createTextField("third");
+        
+        List<String> notifications = new ArrayList<>();
+        VBox box = new VBox(10, first, second, third);
+        Stage stage = new StageLoader(box).getStage();
+        first.requestFocus();
+        assertEquals(first, stage.getScene().getFocusOwner());
+        box.getChildren().forEach(node -> {
+            TextField field = (TextField) node;
+            UnaryOperator<TextFormatter.Change> filter = c -> { 
+                notifications.add(c.getControlText());
+                return c; 
+            }; 
+            field.setTextFormatter(new TextFormatter<>(filter));
+        });
+        
+        second.requestFocus();
+        assertEquals("sanity: seond is focuOwner", second, stage.getScene().getFocusOwner());
+        assertEquals(notifications.toString(), 2, notifications.size());
+    }
+    
+    // Textformatter notification on navigation.
+    
+    /**
+     * Test notification on navigation: home.
      */
     @Test
     public void testFormatterNotificationOnHome() {
@@ -114,6 +146,10 @@ public class TextFieldTest {
     
     /**
      * Test notification on navigation: backward.
+     * 
+     * This fails for core. 
+     * reported
+     * https://bugs.openjdk.java.net/browse/JDK-8210420
      */
     @Test
     public void testFormatterNotificationOnBackward() {
@@ -125,6 +161,10 @@ public class TextFieldTest {
     
     /**
      * Test notification on navigation: forward.
+     * 
+     * This fails for core. 
+     * reported
+     * https://bugs.openjdk.java.net/browse/JDK-8210420
      */
     @Test
     public void testFormatterNotificationOnForward() {
@@ -138,7 +178,75 @@ public class TextFieldTest {
     public void testFormatterNotificationOnForwardWord() {
         assertFormatterNotificationOnNavigation(t -> t.endOfNextWord());
     }
+ 
+    /**
+     * Test that navigation produces a single notification of Textformatter.
+     * 
+     * @param preFormatter the initial state transition before 
+     *    setting the formatter, may be null if initial state is default
+     * @param navigation the navigation
+     */
+    protected void assertFormatterNotificationOnNavigation(
+            Consumer<TextField> preFormatter,
+            Consumer<TextField> navigation) {
+        assertFormatterNotificationOnNavigation(preFormatter, navigation, null, null);
+    }
     
+    /**
+     * Test that navigation produces a single notification of Textformatter.
+     * 
+     * @param navigation the navigation
+     */
+    protected void assertFormatterNotificationOnNavigation(Consumer<TextField> navigation) {
+        assertFormatterNotificationOnNavigation(null, navigation, null, null);
+    }
+    
+    /**
+     * Test that navigation produces a single notification of textFormatter.
+     * A textField to navigate on is created with text "The quick brown fox"
+     * and a TextFormatter with a filter implemented to count the notifications.
+     * 
+     * @param preFormatter the initial state transition before 
+     *    setting the formatter, may be null if initial state is default
+     * @param navigation the navigation
+     * @param anchorProvider the expected anchor after navigation - sanity check, may be null.
+     * @param caretProvider the expected caret after navigation - sanity check, may be null.
+     */
+    protected void assertFormatterNotificationOnNavigation(
+            Consumer<TextField> preFormatter,
+            Consumer <TextField> navigation, 
+            Function<TextField, Integer> anchorProvider, 
+            Function<TextField, Integer> caretProvider) {
+        // textfield with text "The quick brown fox"
+        TextField txtField = createTextField("The quick brown fox");
+        // initial state - do before setting the formatter to not include in counting
+        if (preFormatter != null) {
+            preFormatter.accept(txtField);
+        }
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        UnaryOperator<TextFormatter.Change> filter = c -> { 
+            count.set(count.get() + 1);
+            return c; 
+        }; 
+        TextFormatter<String> formatter = new TextFormatter<>(filter);
+        txtField.setTextFormatter(formatter);
+        // navigate
+        navigation.accept(txtField);
+        // sanity tests of anchor/caret pos
+        // here we are not really interested in those (they are tested extensively
+        // in TextInputControlTest) - just for digging if things go wrong unexpectedly
+        if (anchorProvider != null) {
+            int anchor = anchorProvider.apply(txtField);
+            assertEquals("sanity: anchor at end", anchor, txtField.getAnchor());
+        }
+        if (caretProvider != null) {
+            int caret = caretProvider.apply(txtField);
+            assertEquals("sanity: caret at end", caret, txtField.getCaretPosition());
+        }
+        assertEquals("must have received a single notification", 1, count.get());
+    }
+    
+
     /**
      * Test notification on navigation: end.
      */
@@ -173,58 +281,6 @@ public class TextFieldTest {
         assertFormatterNotificationOnNavigation(null, navigation, positionProvider, positionProvider);
     }
     
-    protected void assertFormatterNotificationOnNavigation(
-            Consumer<TextField> preFormatter,
-            Consumer<TextField> navigation) {
-        assertFormatterNotificationOnNavigation(preFormatter, navigation, null, null);
-    }
-    
-    protected void assertFormatterNotificationOnNavigation(Consumer<TextField> navigation) {
-        assertFormatterNotificationOnNavigation(null, navigation, null, null);
-    }
-    
-    /**
-     * Test that navigation produces a single notification.
-     * 
-     * @param preFormatter the initial state transition before 
-     *    setting the formatter, may be null if initial state is default
-     * @param navigation the navigation
-     * @param anchorProvider the expected anchor after navigation - sanity check, may be null.
-     * @param caretProvider the expected caret after navigation - sanity check, may be null.
-     */
-    protected void assertFormatterNotificationOnNavigation(
-            Consumer<TextField> preFormatter,
-            Consumer <TextField> navigation, 
-            Function<TextField, Integer> anchorProvider, 
-            Function<TextField, Integer> caretProvider) {
-        // textfield with text "The quick brown fox"
-        TextField txtField = navigationField;
-        // initial state
-        if (preFormatter != null) {
-            preFormatter.accept(txtField);
-        }
-        IntegerProperty count = new SimpleIntegerProperty(0);
-        UnaryOperator<TextFormatter.Change> filter = c -> { 
-            count.set(count.get() + 1);
-            return c; 
-        }; 
-        TextFormatter<String> formatter = new TextFormatter<>(filter);
-        txtField.setTextFormatter(formatter);
-        // navigate
-        navigation.accept(txtField);
-        // sanity tests of anchor/caret pos
-        // here we are not really interested in those (they are tested extensively
-        // in TextInputControlTest) - just for digging if things go wrong unexpectedly
-        if (anchorProvider != null) {
-            int anchor = anchorProvider.apply(txtField);
-            assertEquals("sanity: anchor at end", anchor, txtField.getAnchor());
-        }
-        if (caretProvider != null) {
-            int caret = caretProvider.apply(txtField);
-            assertEquals("sanity: caret at end", caret, txtField.getCaretPosition());
-        }
-        assertEquals("must have received a single notification", 1, count.get());
-    }
     
     /**
      * Test that setting a do-nothing formatter with identity converter has no effect on anchor/caret.
