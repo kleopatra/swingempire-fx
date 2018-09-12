@@ -9,6 +9,7 @@ import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.util.Pair;
 
 /**
  * @author Jeanette Winzenburg, Berlin
@@ -51,12 +52,21 @@ public class ChangeReport implements ChangeListener {
     public Object getLastOldValue() {
         return oldValues.size() > 0 ? oldValues.get(0) : null;
     }
+    
     public Object getLastNewValue() {
         return newValues.size() > 0 ? newValues.get(0) : null;
     }
     
     public Object getNewValueAt(int index) {
         return index < newValues.size() ? newValues.get(index) : null;
+    }
+    
+    public List<Pair> getChanges() {
+        List<Pair> changes = new LinkedList<>();
+        for (int i = 0; i < sources.size(); i++) {
+            changes.add(i, new Pair(oldValues.get(i), newValues.get(i)));
+        }
+        return changes;
     }
     public void clear() {
         sources.clear();
