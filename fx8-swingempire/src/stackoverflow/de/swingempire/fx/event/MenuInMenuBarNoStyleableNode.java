@@ -8,16 +8,19 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.scene.Node;
+import javafx.css.Styleable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TreeItem;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
+ * Menu does implement neither getStyleableParent nor getStyleableNode correctly
+ * if used directly in a MenuButton or MenuBar (no way to ...?)
  * @author Jeanette Winzenburg, Berlin
  */
 public class MenuInMenuBarNoStyleableNode extends Application {
