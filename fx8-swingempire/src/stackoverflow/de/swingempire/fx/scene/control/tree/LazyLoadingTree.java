@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import de.swingempire.fx.util.TreeModificationReport;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -102,7 +101,7 @@ public class LazyLoadingTree extends Application {
             super(value);
             // Unload data on folding to reduce memory
             expandedProperty().addListener((observable, oldValue, newValue) -> {
-                LOG.info("getting expanded: " + newValue); 
+//                LOG.info("getting expanded: " + newValue); 
 //                        + " isLeaf: " + isLeaf() + " leafProp: " + leafProperty().get());
                 if (!newValue) {
                     flush();
@@ -110,7 +109,7 @@ public class LazyLoadingTree extends Application {
             });
             
             leafProperty().addListener((src, ov, nv) -> {
-                LOG.info("getting leafProp: " + nv );
+//                LOG.info("getting leafProp: " + nv );
             });
             
             super.getChildren().addListener((ListChangeListener) c -> {
@@ -123,11 +122,11 @@ public class LazyLoadingTree extends Application {
             if (childrenLoaded || !isExpanded()) {
                 return super.getChildren();
             }
-//            if (super.getChildren().size() == 0) {
-//                // Filler node (will translate into loading icon in the
-//                // TreeCell factory)
-//                super.getChildren().add(new TreeItem<>(null));
-//            }
+            if (super.getChildren().size() == 0) {
+                // Filler node (will translate into loading icon in the
+                // TreeCell factory)
+                super.getChildren().add(new TreeItem<>(new SingleItem("loading ...")));
+            }
             if (getValue() instanceof MultipleItem) {
                 if (!isLoadingItems) {
 //                    LOG.info("size: " + super.getChildren().size());
@@ -142,7 +141,7 @@ public class LazyLoadingTree extends Application {
             Task<List<TreeItem<Item>>> task = new Task<List<TreeItem<Item>>>() {
                 @Override
                 protected List<TreeItem<Item>> call() {
-                    LOG.info("in loading");
+//                    LOG.info("in loading");
                     List<SingleItem> downloadSet = ((MultipleItem) LazyTreeItem.this.getValue()).getEntries();
                     List<TreeItem<Item>> treeNodes = new ArrayList<>();
                     for (SingleItem download : downloadSet) {
@@ -163,7 +162,7 @@ public class LazyLoadingTree extends Application {
                 
             };
             task.valueProperty().addListener((src, ov, lv) -> {
-                LOG.info("in valueListener: " + lv.size() + super.getChildren());
+//                LOG.info("in valueListener: " + lv.size() + super.getChildren());
                 childrenLoaded = true;
                 isLoadingItems = false;
 //                super.getChildren().clear();
@@ -194,7 +193,7 @@ public class LazyLoadingTree extends Application {
         public boolean isLeaf() {
 //            return leafProperty().get();
             if (childrenLoaded) {
-                LOG.info("calling isLeaf " + callCount++);
+//                LOG.info("calling isLeaf " + callCount++);
 //                return true;
                 return getChildren().isEmpty();
             }
@@ -205,6 +204,7 @@ public class LazyLoadingTree extends Application {
 
     private void initTreeView() {
 //        treeView.setCellFactory(e -> createDefaultCellImpl());
+//        treeView.setFocusModel(new MyTreeViewFocusModel<>(treeView));
         treeView.setShowRoot(false);
         treeView.setRoot(new TreeItem<>(null));
         TreeItem<Item> parentItem = new TreeItem<>(new Item());
@@ -212,7 +212,7 @@ public class LazyLoadingTree extends Application {
         parentItem.setExpanded(true);
         
         List<SingleItem> items = new ArrayList<>();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10; i++) {
             items.add(new SingleItem(String.valueOf(i)));
         }
         // initialize MultipleItem with n entries and add as collapsed LazyTreeItem
@@ -220,10 +220,14 @@ public class LazyLoadingTree extends Application {
         lazyItem.addEventHandler(TreeItem.treeNotificationEvent(), e -> {
 //            LOG.info("tree event: " + e);
         });
-        parentItem.getChildren().add(lazyItem);
+        parentItem.getChildren().addAll(lazyItem, new LazyTreeItem(new MultipleItem(items)));
         
         treeView.getSelectionModel().selectedItemProperty().addListener((src, ov, nv) -> {
             LOG.info("selected: " + nv);
+        });
+        
+        treeView.getFocusModel().focusedItemProperty().addListener((src, ov, nv) -> {
+            LOG.info("focused: " + nv);
         });
 
         treeView.getRoot().getChildren().add(parentItem);
@@ -325,7 +329,7 @@ public class LazyLoadingTree extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("TreeView Lazy Load");
-        primaryStage.setScene(new Scene(new StackPane(treeView), 300, 275));
+        primaryStage.setScene(new Scene(new StackPane(treeView), 300, 500));
         initTreeView();
         primaryStage.show();
         
@@ -335,7 +339,7 @@ public class LazyLoadingTree extends Application {
         launch(args);
     }
     
-    public class Item {
+    public static class Item {
 
         @Override
         public String toString() {
@@ -347,7 +351,7 @@ public class LazyLoadingTree extends Application {
     /****************************************************************
      **********                  SingleItem              ************
      ****************************************************************/
-    public class SingleItem extends Item {
+    public static class SingleItem extends Item {
         private String id;
 
         public SingleItem(String id) {
@@ -368,7 +372,7 @@ public class LazyLoadingTree extends Application {
     /****************************************************************
      **********                  MultipleItem            ************
      ****************************************************************/
-    public class MultipleItem extends Item {
+    public static class MultipleItem extends Item {
 
         private List<SingleItem> entries = new ArrayList<>();
 
