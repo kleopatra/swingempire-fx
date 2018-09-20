@@ -21,6 +21,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
+ * TreeViewFocusModel (and/or its SelectionModel) still is broken at 
+ * several aspects - giving up ...
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class AddItemsTree extends Application {
@@ -38,10 +41,10 @@ public class AddItemsTree extends Application {
                 .generate(() -> "item: " + count++).limit(100000)
                 .map(TreeItem::new).collect(Collectors.toList());
         TreeItem<String> firstChild = new TreeItem<>("child");
-        firstChild.getChildren().setAll(nodeList);
+//        firstChild.getChildren().setAll(nodeList);
         firstChild.setExpanded(true);
-        tree.getRoot().getChildren().addAll(firstChild);
-        tree.getFocusModel().focus(1);
+        tree.getRoot().getChildren().addAll(firstChild); //, new TreeItem("dummy"));
+//        tree.getFocusModel().focus(0);
         tree.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.F1) {
                 firstChild.getChildren().setAll(nodeList);

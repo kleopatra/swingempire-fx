@@ -221,6 +221,7 @@ public class LazyLoadingTree extends Application {
 //            LOG.info("tree event: " + e);
         });
         parentItem.getChildren().addAll(lazyItem, new LazyTreeItem(new MultipleItem(items)));
+        treeView.getFocusModel().focus(2);
         
         treeView.getSelectionModel().selectedItemProperty().addListener((src, ov, nv) -> {
             LOG.info("selected: " + nv);
