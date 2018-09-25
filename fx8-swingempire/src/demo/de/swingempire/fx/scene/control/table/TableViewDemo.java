@@ -10,16 +10,18 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
-import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Labeled;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.control.skin.TableViewSkin;
@@ -122,8 +124,17 @@ public class TableViewDemo extends Application {
         autoSizeAll.setOnAction(e -> {
             doAutoSize(table);
         });
+        
+        /*
+         * row styling not updated on changing content
+         */
+        Button changeFirstName = new  Button("change firstName");
+        changeFirstName.setOnAction(e -> {
+            table.getItems().get(0).setFirstName("E to text styling");
+        });
+        
         FlowPane buttons = new FlowPane();
-        buttons.getChildren().addAll(button, addNested, addNormal, autoSizeEmail, prefEmail, autoSizeAll);
+        buttons.getChildren().addAll(button, addNested, addNormal, autoSizeEmail, prefEmail, autoSizeAll, changeFirstName);
         buttons.setHgap(10);
         buttons.setVgap(10);
         pane.setBottom(buttons);
@@ -224,11 +235,51 @@ public class TableViewDemo extends Application {
         // can't sort a filtered list?
 //        FilteredList<Person> filtered = new FilteredList(Person.persons());
         TableView table = new TableView(Person.persons());
+        
+        // --------------- rowfactory that styles children based on content
+        // no initial styling only after real changes (like
+        // changing items or selection
+        // https://stackoverflow.com/q/52425649/203657
+        table.setRowFactory(c -> new TableRow<Person>() {
+            @Override
+            public void updateItem(Person item, boolean empty) {
+                super.updateItem(item, empty);
+//                LOG.info("update with " + item + getChildren().size());
+                if (item == null || empty) {
+                    setStyle("");
+                } else {
+                    if (item.getFirstName().startsWith("E")) {
+                        // apply style to row is fine - but colors the free space as well
+//                        setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
+                        //We apply now the changes in all the cells of the row
+                        for (int i = 0; i < getChildren().size(); i++) {
+                            LOG.info("coloring ..");
+                            ((Labeled) getChildren().get(i)).setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
+                        }
+                    } else {
+                        for (int i = 0; i < getChildren().size(); i++) {
+                            ((Labeled) getChildren().get(i)).setStyle("");
+                        }
+                        setStyle("");
+                    }
+                }
+            }
+            
+        });
+        // does not work, neither does listener on skinProperty 
+//        table.sceneProperty().addListener((src, ov, nv) -> {
+//            table.setItems(Person.persons());
+//            //table.applyCss();
+//        });
+        
+        //---------end of row styling
+        
         // quick check if nodeOrientation is working - yeah
 //        table.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         TableColumn first = new TableColumn("First Name");
         first.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        first.setCellFactory(e -> new PlainTableCell());
+        first.setCellFactory(TextFieldTableCell.forTableColumn());
+//        first.setCellFactory(e -> new PlainTableCell());
         table.setEditable(true);
         table.getColumns().addAll(first);
         emailHeader = new TableColumn("Emails");
@@ -251,6 +302,8 @@ public class TableViewDemo extends Application {
         TableColumn last = new TableColumn("Last Name");
         last.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         table.getColumns().addAll(last);
+        
+        
         return table;
     }
 
@@ -260,6 +313,14 @@ public class TableViewDemo extends Application {
         primaryStage.setScene(new Scene(getContent(), 1000, 400));
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
+        // row styling
+        // set items after showing is the only thingy
+//        table.setItems(Person.persons());
+        // toggle selection doesn't work
+//        table.getSelectionModel().selectAll();
+//        table.getSelectionModel().clearSelection();
+//        // refresh doesn't work
+//        table.refresh();
     }
     
 
