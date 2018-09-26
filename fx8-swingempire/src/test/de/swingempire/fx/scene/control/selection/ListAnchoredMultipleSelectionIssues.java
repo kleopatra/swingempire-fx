@@ -18,6 +18,8 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
 /**
+ * not working in post-8 --> ignore!
+ * ----------- 
  * Testing MultipleSelection api in ListViewSelectionModel in both selection modes.
  * <p>
  * 
