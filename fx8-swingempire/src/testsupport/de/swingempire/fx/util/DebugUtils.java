@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxX;
-import de.swingempire.fx.scene.control.selection.ListViewAnchored;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -48,15 +47,15 @@ public class DebugUtils {
                 " / " + node.minWidth(-1) + " / " + node.maxWidth(-1);
         return size;
     }
-    public static class ListXFacade<T> extends ListViewAnchored<T> implements
-            Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
-
-        @Override
-        public ListViewAnchored<T> getControl() {
-            return this;
-        }
-
-    }
+//    public static class ListXFacade<T> extends ListViewAnchored<T> implements
+//            Facade<T, ListViewAnchored<T>, MultipleSelectionModel<T>> {
+//
+//        @Override
+//        public ListViewAnchored<T> getControl() {
+//            return this;
+//        }
+//
+//    }
 
     public static class ListFacade<T> extends ListView<T> implements
             Facade<T, ListView<T>, MultipleSelectionModel<T>> {

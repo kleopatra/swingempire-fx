@@ -20,6 +20,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.SelectionMode;
 
 /**
+ *
  * Testing singleselection api in ListViewSelectionModel in both selection modes.
  * Here we test unchanged core ListView with core selection/focusModel.
  * 
@@ -32,6 +33,10 @@ public class ListCoreSingleSelectionIssues extends SingleSelectionIssues<ListVie
     /**
      *  Old models still hanging around and regarding themselves as still
      *  attached to the listView.
+     *  
+     *  Revise to _not_ use the outdated custom focusModel.
+     *  No: The custom focusModel is just fine, compiles in all versions
+     *
      */
     @Test
     public void testFocusModelReleased() {
