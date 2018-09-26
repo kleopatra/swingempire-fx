@@ -6,8 +6,6 @@ package de.swingempire.fx.scene.control.tree;
 
 import java.util.logging.Logger;
 
-import com.sun.javafx.tools.packager.Log;
-
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;

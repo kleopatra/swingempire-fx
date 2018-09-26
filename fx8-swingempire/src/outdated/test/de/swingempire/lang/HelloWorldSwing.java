@@ -65,6 +65,11 @@ import com.sun.java.swing.plaf.windows.WindowsLabelUI;
 
 import de.swingempire.fx.util.FXUtils;        
 
+/**
+ * todo: setup project such that internal swing packages can be accessed.
+ * for now, moving into outdated
+ * @author Jeanette Winzenburg, Berlin
+ */
 public class HelloWorldSwing {
     /**
      * Create the GUI and show it.  For thread safety,

@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 
-import com.sun.glass.ui.Robot;
 import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.behavior.ListViewBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
@@ -34,7 +33,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
-import javafx.geometry.Point2D;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -545,6 +543,8 @@ public class FXUtils {
     }
 
     /**
+     * doesnt compile in fx11 - robot moved?
+     * ----
      * Get current mouse location. <p>
      * 
      * Copied from efxclipse:
@@ -554,17 +554,17 @@ public class FXUtils {
      * 
      * @return
      */
-    public Point2D getCursorLocation() {
-        Robot r = null;
-        try {
-            r = com.sun.glass.ui.Application.GetApplication().createRobot();
-            return new Point2D(r.getMouseX(), r.getMouseY());
-        } finally {
-            if (r != null) {
-                r.destroy();
-            }
-        }
-    }
+//    public Point2D getCursorLocation() {
+//        Robot r = null;
+//        try {
+//            r = com.sun.glass.ui.Application.GetApplication().createRobot();
+//            return new Point2D(r.getMouseX(), r.getMouseY());
+//        } finally {
+//            if (r != null) {
+//                r.destroy();
+//            }
+//        }
+//    }
 
     //--------------- copied from TBee's TestUtils    
     static public void sleep(int ms) {

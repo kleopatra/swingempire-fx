@@ -6,20 +6,15 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
-
-import static org.junit.Assert.*;
-
 import de.swingempire.fx.scene.control.comboboxx.ComboBoxXSelectionModel;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.skin.ComboBoxBaseSkin;
@@ -28,6 +23,7 @@ import javafx.scene.control.skin.ComboBoxListViewSkin;
 /**
  * Testing core ComboBox with ComboBoxXSelectionModel.
  * 
+ * commented the builder code - doesn't compile since long ..
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -42,73 +38,75 @@ public class CoreComboWithXSelectionIssues
      * blowing if set equal but not same list
      * 
      */
-    @Test
-    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
-    public void testSelectFirstMemoryWithBuilderEqualsList() {
-        view = 
-                ComboBoxBuilder.<String>create()
-                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
-                // no difference
-//                .editable(false)
-                .build();
-        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
-        view.getSelectionModel().selectFirst();
-        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
-        view.getSelectionModel().clearSelection();
-        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
-        assertEquals(null, view.getSelectionModel().getSelectedItem());
-        assertEquals(null, view.getValue());
-//        assertEquals("", getDisplayText());
-        
-    }
-    /**
-     * Trying to reproduce RT_26079 with builder: 
-     * fine if size of new list is different (here: longet)
-     * 
-     */
-    @Test
-    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
-    public void testSelectFirstMemoryWithBuilderSimilarLongerList() {
-        view = 
-                ComboBoxBuilder.<String>create()
-                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
-                // no difference
-//                .editable(false)
-                .build();
-        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
-        view.getSelectionModel().selectFirst();
-        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5", "E6"));
-        view.getSelectionModel().clearSelection();
-        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
-        assertEquals(null, view.getSelectionModel().getSelectedItem());
-        assertEquals(null, view.getValue());
-//        assertEquals("", getDisplayText());
-        
-    }
-    /**
-     * Trying to reproduce RT_26079 with builder: 
-     * blowing if set equal but not same list
-     * 
-     */
-    @Test
-    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
-    public void testSelectFirstMemoryWithBuilderSimilarList() {
-        view = 
-                ComboBoxBuilder.<String>create()
-                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
-                // no difference
-//                .editable(false)
-                .build();
-        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
-        view.getSelectionModel().selectFirst();
-        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5"));
-        view.getSelectionModel().clearSelection();
-        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
-        assertEquals(null, view.getSelectionModel().getSelectedItem());
-        assertEquals(null, view.getValue());
-//        assertEquals("", getDisplayText());
-
-    }
+//    @Test
+//    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
+//    public void testSelectFirstMemoryWithBuilderEqualsList() {
+//        view = 
+//                ComboBoxBuilder.<String>create()
+//                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
+//                // no difference
+////                .editable(false)
+//                .build();
+//        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
+//        view.getSelectionModel().selectFirst();
+//        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E3"));
+//        view.getSelectionModel().clearSelection();
+//        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+//        assertEquals(null, view.getSelectionModel().getSelectedItem());
+//        assertEquals(null, view.getValue());
+////        assertEquals("", getDisplayText());
+//        
+//    }
+//    /**
+//     * Trying to reproduce RT_26079 with builder: 
+//     * fine if size of new list is different (here: longet)
+//     * 
+//     */
+//    @Test
+//    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
+//    public void testSelectFirstMemoryWithBuilderSimilarLongerList() {
+//        view = 
+//                ComboBoxBuilder.<String>create()
+//                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
+//                // no difference
+////                .editable(false)
+//                .build();
+//        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
+//        view.getSelectionModel().selectFirst();
+//        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5", "E6"));
+//        view.getSelectionModel().clearSelection();
+//        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+//        assertEquals(null, view.getSelectionModel().getSelectedItem());
+//        assertEquals(null, view.getValue());
+////        assertEquals("", getDisplayText());
+//        
+//    }
+//    /**
+//     * Trying to reproduce RT_26079 with builder: 
+//     * blowing if set equal but not same list
+//     * 
+//     */
+//    @Test
+//    @ConditionalIgnore(condition = SelectionIgnores.IgnoreRT26079.class)
+//    public void testSelectFirstMemoryWithBuilderSimilarList() {
+//        view = 
+//                ComboBoxBuilder.<String>create()
+//                .items(FXCollections.observableArrayList("E1", "E2", "E3"))
+//                // no difference
+////                .editable(false)
+//                .build();
+//        view.setSelectionModel(new ComboBoxXSelectionModel<>(view.itemsProperty()));
+//        view.getSelectionModel().selectFirst();
+//        view.getItems().setAll(FXCollections.observableArrayList("E1", "E2", "E5"));
+//        view.getSelectionModel().clearSelection();
+//        assertEquals(-1, view.getSelectionModel().getSelectedIndex());
+//        assertEquals(null, view.getSelectionModel().getSelectedItem());
+//        assertEquals(null, view.getValue());
+////        assertEquals("", getDisplayText());
+//
+//    }
+    
+    
     @Override
     protected String getDisplayText() {
         Node node = ((ComboBoxBaseSkin) getView().getSkin()).getDisplayNode();
@@ -154,7 +152,10 @@ public class CoreComboWithXSelectionIssues
     @Override
     protected SelectionModel getDependentSelectionModel() {
         ComboBoxListViewSkin skin = (ComboBoxListViewSkin) getView().getSkin();
-        return skin.getListView().getSelectionModel();
+        // jdk8
+//        return skin.getListView().getSelectionModel();
+        // post-8
+        return ((ListView) skin.getPopupContent()).getSelectionModel();
     }
 
 
