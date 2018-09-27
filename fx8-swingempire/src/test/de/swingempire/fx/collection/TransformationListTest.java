@@ -7,6 +7,7 @@ package de.swingempire.fx.collection;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -47,6 +48,63 @@ public class TransformationListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     
+    
+    
+    //-------------- decorate with transform
+    
+    @Test
+    public void testChangeDecoratorNotify() {
+        ObservableList<Person> source = Person.persons();
+        ChangeDecorator<Person> decorator = new ChangeDecorator<>(source);
+        ListChangeReport sourceReport = new ListChangeReport(source);
+        ListChangeReport decoratorReport = new ListChangeReport(decorator);
+        source.retainAll(source.get(0), source.get(3));
+        assertEquals(sourceReport.getEventCount(), decoratorReport.getEventCount());
+        Change sourceChange = sourceReport.getLastChange();
+        Change decoratorChange = decoratorReport.getLastChange();
+        assertChangeEquals(sourceChange, decoratorChange);
+    }
+
+    /**
+     * @param s
+     * @param t
+     */
+    protected void assertChangeEquals(Change s, Change t) {
+        prettyPrint(s, true);
+        prettyPrint(t, true);
+        assertEquals(s.getList(), t.getList());
+        assertTrue(getChangeCount(s) > 0);
+        assertEquals(getChangeCount(s), getChangeCount(t));
+        s.reset();
+        t.reset();
+        while(s.next() && t.next()) {
+            assertEquals(s.getAddedSize(), t.getAddedSize());
+            assertEquals(s.getAddedSubList(), t.getAddedSubList());
+            assertEquals(s.getFrom(), t.getFrom());
+            assertEquals(s.getRemoved(), t.getRemoved());
+            assertEquals(s.getRemovedSize(), t.getRemovedSize());
+            assertEquals(s.getTo(), t.getTo());
+            assertEquals(s.wasAdded(), t.wasAdded());
+            assertEquals(s.wasRemoved(), t.wasRemoved());
+            assertEquals(s.wasReplaced(), t.wasReplaced());
+            assertEquals(s.wasPermutated(), t.wasPermutated());
+        }
+    }
+    
+    @Test
+    public void testChangeDecoratorSanity() {
+        ObservableList<Person> source = Person.persons();
+        ChangeDecorator<Person> decorator = new ChangeDecorator<>(source);
+        assertEquals(source.size(), decorator.size());
+        for (int i = 0; i < source.size(); i++) {
+            assertEquals(i, decorator.getSourceIndex(i));
+            assertEquals(i, decorator.getViewIndex(i));
+            assertSame(source.get(i), decorator.get(i));
+        }
+    }
+    
+    
+
     // ----------- check what happens with add/remove
 
     @Test
@@ -56,7 +114,7 @@ public class TransformationListTest {
         ListChangeReport report = new ListChangeReport(list);
         Person p = new Person("replaced-first", "replaced-last", "none");
         list.replace(2, p);
-        report.prettyPrintAll();
+//        report.prettyPrintAll();
     }
     
     public static class MyObservableList<E> extends ObservableListWrapper<E> {
@@ -434,6 +492,6 @@ public class TransformationListTest {
     }
 
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger
+    static final Logger LOG = Logger
             .getLogger(TransformationListTest.class.getName());
 }

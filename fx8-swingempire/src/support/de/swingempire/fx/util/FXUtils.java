@@ -360,6 +360,7 @@ public class FXUtils {
 //--------------- list change
 
     public enum ChangeType {
+        ANY(c -> true),
         PERMUTATED(Change::wasPermutated),
         UPDATED(Change::wasUpdated),
         REPLACED(Change::wasReplaced),
@@ -465,10 +466,31 @@ public class FXUtils {
     //---------------------- end copy
     
     /**
+     * Prints the change in human-readable form. Resets before always, after 
+     * if reset == true.
+     * 
+     * @param change the change to print
+     * @param reset flag to reset the change after printing
+     */
+    public static <T> void prettyPrint(Change<? extends T> change, boolean reset) {
+        doPrettyPrint(change);
+        if (reset) change.reset();
+    }
+    
+    /**
+     * Prints the change in human-readable form. Resets before but not after the print.
+     * 
+     * @param change the change to print
+     */
+    public static <T> void prettyPrint(Change<? extends T> change) {
+        prettyPrint(change, false);
+    }
+    
+    /**
      * Note: resets the change before processing, but not after!
      * @param change
      */
-    public static <T> void prettyPrint(Change<? extends T> change) {
+    private static <T> void doPrettyPrint(Change<? extends T> change) {
         StringBuilder sb = new StringBuilder("Change event data on list: " + change.getList());
         sb.append("\n " + change.getClass() + "\n " + change);
         int i = 0;

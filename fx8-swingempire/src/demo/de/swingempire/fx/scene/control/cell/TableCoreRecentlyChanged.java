@@ -54,9 +54,11 @@ public class TableCoreRecentlyChanged extends Application {
          */
         protected void updateRecentStyle(boolean highlight) {
             if (highlight) {
-                setStyle("-fx-background-color: #99ff99");
+                setStyle("-fx-background-color: aliceblue");
+//                setStyle("-fx-background-color: #99ff99");
             } else {
-                setStyle("-fx-background-color: #009900");
+//                setStyle("-fx-background-color: #009900");
+                setStyle("-fx-background-color: white");
             }
         }
         
@@ -139,7 +141,7 @@ public class TableCoreRecentlyChanged extends Application {
                 if (get()) {
                     if (recentTimer == null) {
                         recentTimer = new Timeline(new KeyFrame(
-                                Duration.millis(2500),
+                                Duration.millis(500),
                                 ae -> set(false)));
                     }
                     recentTimer.playFromStart();
