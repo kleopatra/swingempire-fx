@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -14,51 +15,74 @@ import com.sun.javafx.collections.SourceAdapterChange;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.Observable;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.TransformationList;
 import javafx.util.Duration;
 
+/**
+ * A transform that decorates the source list with a temporary change marker.
+ * The marker is activated on receiving a change of type wasUpdated from the 
+ * source list and removed after a configurable duration (default is 2 seconds).
+ * <p>
+ * PENDING JW: adds memory leaks? cpu usage and memory increasing ... inconclusive, 
+ *    profiler reveals nothing
+ * PENDING JW: threading, changes in source are assumed to happen on ... which thread?
+ *    updates are fired on the fx thread (due to using Timeline).. hmm really?
+ * 
+ * @author Jeanette Winzenburg, Berlin
+ */
 public class ChangeDecorator<E> extends TransformationList<E, E> {
 
+    /**
+     * Class that manages the marker timing per element.
+     */
     private class Marker<E> {
         private E element;
 
         private Timeline recentTimer;
 
-        ReadOnlyBooleanWrapper recentlyChanged = new ReadOnlyBooleanWrapper() {
-
-            @Override
-            protected void invalidated() {
-                if (get()) {
-                    if (recentTimer == null) {
-                        recentTimer = new Timeline(new KeyFrame(
-                                Duration.millis(2000), ae -> set(false)));
-                    }
-                    recentTimer.playFromStart();
-                } else {
-                    if (recentTimer != null)
-                        recentTimer.stop();
-                }
-            }
-
-        };
-
-        Marker(E element) {
+        private ReadOnlyBooleanWrapper recentlyChanged = new ReadOnlyBooleanWrapper(this, "changed", false);
+ 
+        public Marker(E element) {
             this.element = element;
+            restart();
+        }
+
+        public void restart() {
+            if (recentTimer == null) {
+                recentTimer = new Timeline(new KeyFrame(
+                       markerDuration , e -> recentlyChanged.set(false)));
+                
+            }
+            recentTimer.playFromStart();
             recentlyChanged.set(true);
         }
-
+        
         public void dispose() {
             recentTimer.stop();
-//                recentTimer = null;
-//                recentlyChanged = null;
             element = null;
+            recentTimer = null;
         }
 
+        public E getElement() {
+            return element;
+        }
+        
+        public boolean isDisposed() {
+            return element == null;
+        }
+        
+        public ReadOnlyBooleanProperty changedProperty() {
+            return recentlyChanged.getReadOnlyProperty();
+        }
+        
+        public boolean isMarking(E element) {
+            return element == this.element;
+        }
         @Override
         public String toString() {
             return "marker for: " + element;
@@ -66,31 +90,58 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     }
 
     private ObservableList<Marker<E>> markers;
-
-    private ListChangeListener markerListener;
-
+    
+    private Duration markerDuration;
+    
     /**
-     * @param source
+     * Instantiates a update decorator on the given list with default duration of 2 seconds.
+     * 
+     * @param source the list to decorate
      */
     public ChangeDecorator(ObservableList<E> source) {
-        super(source);
-        markers = FXCollections.observableArrayList(
-                e -> new Observable[] { e.recentlyChanged });
-        markerListener = c -> {
-            beginChange();
-            while (c.next()) {
-                if (c.wasUpdated()) {
-                    markerUpdated(c);
-                }
-            }
-            endChange();
-        };
-        markers.addListener(markerListener);
+        this(source, Duration.millis(2000));
     }
-
-    public boolean isDirty(E element) {
+    
+    
+    /**
+     * Instantiates an update decorator on the given list with the given 
+     * marker duration.
+     * 
+     * @param source the list to decorate
+     * @param markerDuration the duration of the marker
+     */
+    public ChangeDecorator(ObservableList<E> source, Duration markerDuration) {
+        super(source);
+        this.markerDuration = markerDuration;
+        markers = FXCollections.observableArrayList(
+                e -> new Observable[] { e.changedProperty() });
+        markers.addListener(this::markersChanged);
+    }
+    
+    /**
+     * Returns a boolean to indicate whether or not the given element is 
+     * currently marked.
+     * @param element the element to check
+     * @return true is marked, false otherwise.
+     */
+    public boolean isChanged(E element) {
         Optional<Marker<E>> marker = findMarkerFor(element);
         return marker.isPresent();
+    }
+
+
+    /**
+     * Callback for changes in markers.
+     * @param c
+     */
+    protected void markersChanged(Change<? extends Marker<E>> c) {
+        beginChange();
+        while (c.next()) {
+            if (c.wasUpdated()) {
+                markersUpdated(c);
+            }
+        }
+        endChange();
     }
 
     @Override
@@ -115,17 +166,17 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      * markers
      */
     private void cleanupMarkers() {
-        for (int index = markers.size() - 1; index > 0; index--) {
-            if (markers.get(index).element == null) {
-                markers.remove(index);
-            }
-        }
-//            for (Iterator iterator = markers.iterator(); iterator.hasNext();) {
-//                Marker marker = (Marker) iterator.next();
-//                if (marker.element == null) {
-//                    iterator.remove();
-//                }
+//        for (int index = markers.size() - 1; index > 0; index--) {
+//            if (markers.get(index).isDisposed()) {
+//                markers.remove(index);
 //            }
+//        }
+            for (Iterator<Marker<E>> iterator = markers.iterator(); iterator.hasNext();) {
+                Marker<E> marker = (Marker<E>) iterator.next();
+                if (marker.isDisposed()) {
+                    iterator.remove();
+                }
+            }
     }
 
     /**
@@ -133,12 +184,13 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      * 
      * @param c
      */
-    protected void markerUpdated(Change<Marker<E>> c) {
+    protected void markersUpdated(Change<? extends Marker<E>> c) {
         int from = c.getFrom();
         int to = c.getTo();
+        LOG.info("markers in update: " + c.getList());
         for (int index = from; index < to; index++) {
             Marker<E> marker = c.getList().get(index);
-            int sourceIndex = getSource().indexOf(marker.element);
+            int sourceIndex = getSource().indexOf(marker.getElement());
             nextUpdate(sourceIndex);
             // dispose only, we are in notification code
             // must not change list
@@ -162,8 +214,8 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      */
     protected void startMarker(E e) {
         Optional<Marker<E>> marker = findMarkerFor(e);
-        marker.ifPresentOrElse(m -> m.recentlyChanged.set(true), () -> {
-            markers.add(new Marker<>(e));
+        marker.ifPresentOrElse(Marker::restart, 
+                () -> {markers.add(new Marker<>(e));
         });
 
     }
@@ -174,14 +226,14 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      */
     protected Optional<Marker<E>> findMarkerFor(E e) {
         Optional<Marker<E>> marker = markers.stream()
-                .filter(m -> e.equals(m.element)).findFirst();
+                .filter(m -> m.isMarking(e)).findFirst();
         return marker;
     }
 
     protected void sourceAddedRemoved(Change<? extends E> c) {
         if (c.wasRemoved()) {
             List<ChangeDecorator.Marker> marked = markers.stream()
-                    .filter(m -> c.getRemoved().contains(m.element))
+                    .filter(m -> c.getRemoved().contains(m.getElement()))
                     .collect(Collectors.toList());
             markers.remove(marked);
             markers.forEach(Marker::dispose);
@@ -189,6 +241,8 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
 
     }
 
+    // ----------- implementing super abstract methods
+    
     @Override
     public int getSourceIndex(int index) {
         return index;
