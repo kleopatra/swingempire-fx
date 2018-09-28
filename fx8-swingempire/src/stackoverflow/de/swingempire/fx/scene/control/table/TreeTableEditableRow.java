@@ -29,6 +29,7 @@ import javafx.stage.Stage;
  * toggle editable of row based on some item property
  * 
  * TreeTableCell doesn't respect editability of row? None of cells do ...
+ * answered
  * 
  * @author Jeanette Winzenburg, Berlin
  */
