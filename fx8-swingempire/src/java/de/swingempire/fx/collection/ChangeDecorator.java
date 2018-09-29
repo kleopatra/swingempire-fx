@@ -15,8 +15,10 @@ import com.sun.javafx.collections.SourceAdapterChange;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -40,10 +42,10 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     /**
      * Class that manages the marker timing per element.
      */
-    private class Marker<E> {
+    protected class Marker<E> {
         private E element;
 
-        private Timeline recentTimer;
+        protected Timeline recentTimer;
 
         private ReadOnlyBooleanWrapper recentlyChanged = new ReadOnlyBooleanWrapper(this, "changed", false);
  
@@ -85,13 +87,14 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
         }
         @Override
         public String toString() {
-            return "marker for: " + element;
+            return "marker for: " + element + " changed: " + recentlyChanged.get();
         }
     }
 
-    private ObservableList<Marker<E>> markers;
+    protected static final Duration defaultDuration = Duration.seconds(2);
+    protected ObservableList<Marker<E>> markers;
     
-    private Duration markerDuration;
+    protected Duration markerDuration;
     
     /**
      * Instantiates a update decorator on the given list with default duration of 2 seconds.
@@ -99,7 +102,7 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      * @param source the list to decorate
      */
     public ChangeDecorator(ObservableList<E> source) {
-        this(source, Duration.millis(2000));
+        this(source, defaultDuration);
     }
     
     
@@ -126,7 +129,9 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
      */
     public boolean isChanged(E element) {
         Optional<Marker<E>> marker = findMarkerFor(element);
-        return marker.isPresent();
+        BooleanProperty result = new SimpleBooleanProperty();
+        marker.ifPresentOrElse(m -> result.set(m.changedProperty().get()), () -> result.set(false));
+        return result.get();
     }
 
 

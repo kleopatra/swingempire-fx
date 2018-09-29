@@ -5,16 +5,20 @@
 package de.swingempire.fx.collection;
 
 import java.text.Collator;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -26,15 +30,22 @@ import static de.swingempire.fx.util.FXUtils.*;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.junit.JavaFXThreadingRule;
 import de.swingempire.fx.property.PropertyIgnores.IgnoreReported;
 import de.swingempire.fx.util.ListChangeReport;
+import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.util.Callback;
+import javafx.util.Duration;
 
 /**
  * Tests around TansformationLists - trying to understand.
@@ -48,10 +59,64 @@ public class TransformationListTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
     
+    @ClassRule
+    public static TestRule classRule = new JavaFXThreadingRule();
     
     
     //-------------- decorate with transform
-    
+
+    @Test
+    public void testMarkerDuration() throws InterruptedException {
+        ObservableList<Person> persons = Person.persons();
+        Function<Person, Observable> first = p -> p.firstNameProperty();
+        List<Function<Person, Observable>> prods = List.of(p -> p.firstNameProperty(), p -> p.lastNameProperty());
+        ObservableList<Person> source = FXCollections.observableList(persons, 
+                p -> new Observable[] {first.apply(p)});
+        ChangeDecorator<Person> decorator = new ChangeDecorator<>(source);
+        List<ChangeDecorator<Person>.Marker<Person>> markers = decorator.markers;
+        assertTrue(markers.isEmpty());
+        Person person = source.get(0);
+        person.setFirstName("newname");
+        assertEquals(1, markers.size());
+        ChangeDecorator<Person>.Marker<Person> marker = markers.get(0);
+        assertTrue(marker.changedProperty().get());
+        assertTrue(decorator.isChanged(person));
+        assertSame(person, marker.getElement());
+        
+        // unexpected results .. can't wait until end of animation
+        // timeline reports back to fx thread
+        // need to learn more ..
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        ObjectProperty<Person> element = new SimpleObjectProperty<>();
+        BooleanProperty changed = new SimpleBooleanProperty(true);
+        Runnable r = () -> {
+//            marker.changedProperty().addListener((src, ov, nv) -> {
+//                countDownLatch.countDown();
+//            });
+            try {
+                long longValue = Double.valueOf(decorator.markerDuration.toMillis()).longValue();
+                LocalTime now = LocalTime.now();
+                Thread.sleep(longValue + 500);
+                LocalTime later = LocalTime.now();
+                element.set(marker.getElement());
+                changed.set(decorator.isChanged(person));
+                LOG.info("in thread: " + marker + marker.recentTimer.getStatus() + longValue + " - " + now + "/" + later);
+                
+                countDownLatch.countDown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+        };
+//        Platform.runLater(r);
+        Thread th = new Thread(r);
+        th.setDaemon(true);
+        th.start();
+        countDownLatch.await();
+        assertSame("element", person, marker.getElement());
+        assertFalse("changed must be false", marker.changedProperty().get());
+    }
+
     @Test
     public void testChangeDecoratorNotify() {
         ObservableList<Person> source = Person.persons();
@@ -70,8 +135,8 @@ public class TransformationListTest {
      * @param t
      */
     protected void assertChangeEquals(Change s, Change t) {
-        prettyPrint(s, true);
-        prettyPrint(t, true);
+//        prettyPrint(s, true);
+//        prettyPrint(t, true);
         assertEquals(s.getList(), t.getList());
         assertTrue(getChangeCount(s) > 0);
         assertEquals(getChangeCount(s), getChangeCount(t));
@@ -91,6 +156,17 @@ public class TransformationListTest {
         }
     }
     
+    @Test
+    public void testChangeDecoratorDuration() {
+        ObservableList<Person> source = Person.persons();
+        ChangeDecorator<Person> decorator = new ChangeDecorator<>(source);
+        assertEquals(ChangeDecorator.defaultDuration, decorator.markerDuration);
+        assertEquals(Duration.millis(2000), ChangeDecorator.defaultDuration);
+        Duration customDuration = Duration.seconds(1);
+        decorator = new ChangeDecorator(source, customDuration );
+        assertEquals(customDuration, decorator.markerDuration);
+        
+    }
     @Test
     public void testChangeDecoratorSanity() {
         ObservableList<Person> source = Person.persons();

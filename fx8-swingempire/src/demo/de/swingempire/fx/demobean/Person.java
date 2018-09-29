@@ -4,10 +4,14 @@
  */
 package de.swingempire.fx.demobean;
 
+import java.util.function.Function;
+
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.util.Callback;
 
 /**
  * Example fx bean. Copied from tutorial with added
@@ -86,6 +90,36 @@ public class Person {
                 new Person("Barbara", "Pope", "barbara.pope@example.com"),
                 new Person("Penelope", "Rooster", "penelope.rooster@example.com"),
                 new Person("Raphael", "Adamson", "raphael.adamson@example.com"));
+        
+    }
+    
+    /**
+     * Creates and returns a list of persons configured with extractors produces
+     * with the given functions.
+     * 
+     * hmm ... cant: the callback is an array of observables, how to create it given a function
+     * for the individual properties/observables?
+     * @param observables the list of functions to produce the observables, must not be 
+     * null and not empty
+     * 
+     * @return
+     */
+    public static ObservableList<Person> person(Function<Person, Observable>... observables) {
+        if (true) { //observables == null || observables.length == 0) {
+            
+            throw new IllegalArgumentException("tbd - not yet implemented .. how-to?");
+//            throw new IllegalArgumentException("functions must be not null and not empty");
+        }
+        Observable[] extractor = new Observable[observables.length];
+        Function<Person, Observable> first = observables[0];
+        
+        Callback<Person, Observable[]> cc = p -> new Observable[] {first.apply(p)};
+//        Observable fo = Person::firstNameProperty;
+//        Supplier s;
+//        for (int i = 0; i < observables.length; i++) {
+//            extractor[i] = t -> observables[i].apply(t);   
+//        }
+        return FXCollections.observableList(persons(), p -> extractor);
         
     }
 }
