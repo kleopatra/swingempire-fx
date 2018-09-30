@@ -30,8 +30,12 @@ import javafx.util.Duration;
  * The marker is activated on receiving a change of type wasUpdated from the 
  * source list and removed after a configurable duration (default is 2 seconds).
  * <p>
+ * The source list must be configured with extractors for the properties that
+ * should activate the marker. It's one marker for all such properties.
+ * <p>
  * PENDING JW: adds memory leaks? cpu usage and memory increasing ... inconclusive, 
  *    profiler reveals nothing
+ * <p>   
  * PENDING JW: threading, changes in source are assumed to happen on ... which thread?
  *    updates are fired on the fx thread (due to using Timeline).. hmm really?
  * 
@@ -85,6 +89,7 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
         public boolean isMarking(E element) {
             return element == this.element;
         }
+        
         @Override
         public String toString() {
             return "marker for: " + element + " changed: " + recentlyChanged.get();
@@ -98,6 +103,7 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     
     /**
      * Instantiates a update decorator on the given list with default duration of 2 seconds.
+     * The list must be configured with extractors to enable the marking.
      * 
      * @param source the list to decorate
      */
@@ -109,6 +115,7 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     /**
      * Instantiates an update decorator on the given list with the given 
      * marker duration.
+     * The list must be configured with extractors to enable the marking.
      * 
      * @param source the list to decorate
      * @param markerDuration the duration of the marker
@@ -215,7 +222,8 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     }
 
     /**
-     * @param e
+     * Starts the marker for the given element.
+     * @param e the element to mark
      */
     protected void startMarker(E e) {
         Optional<Marker<E>> marker = findMarkerFor(e);
@@ -226,6 +234,10 @@ public class ChangeDecorator<E> extends TransformationList<E, E> {
     }
 
     /**
+     * Returns the first marker that isMarking the given element.
+     * Note: also finds markers that are not yet disposed so they 
+     * can be restarted. Client code interested in the changed status
+     * must query the marker's changed property. 
      * @param e
      * @return
      */

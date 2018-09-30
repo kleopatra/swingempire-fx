@@ -125,10 +125,10 @@ public class TableChangeMarkerWithTransformList extends Application {
         changeOnThread.setOnAction(e -> {
             Runnable startTimeline = () -> {
                 // this does the update on FX thread
-//                Timeline tl = new Timeline(new KeyFrame(
-//                        Duration.millis(2000) , ae -> LOG.info("end: on fx " + Platform.isFxApplicationThread())));
-//                LOG.info("start: on fx " + Platform.isFxApplicationThread());
-//                tl.play();
+                Timeline tl = new Timeline(new KeyFrame(
+                        Duration.millis(2000) , ae -> LOG.info("end: on fx " + Platform.isFxApplicationThread())));
+                LOG.info("start: on fx " + Platform.isFxApplicationThread());
+                tl.play();
             };
             Thread th = new Thread(startTimeline);
             th.start();
