@@ -66,5 +66,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/TEST_FX"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

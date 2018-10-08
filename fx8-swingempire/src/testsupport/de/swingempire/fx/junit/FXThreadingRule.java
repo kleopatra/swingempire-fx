@@ -13,16 +13,19 @@ import javafx.application.Platform;
 
 /**
  * Method rule as precondition for all fx-tests.
+ * 
  * @author kleopatra
  */
 public class FXThreadingRule implements TestRule {
 
     @Override
     public Statement apply(Statement base, Description description) {
-        System.out.println("threading rule: on fx-at " + Platform.isFxApplicationThread());
+        System.out.println(
+                "threading rule: on fx-at " + Platform.isFxApplicationThread());
         if (!Platform.isFxApplicationThread())
-              throw new IllegalStateException("test must be run on fx-at " + description ); 
+            throw new IllegalStateException(
+                    "test must be run on fx-at " + description);
         return base;
-    }    
-    
+    }
+
 }
