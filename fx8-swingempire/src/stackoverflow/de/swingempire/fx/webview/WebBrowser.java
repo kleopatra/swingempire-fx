@@ -28,6 +28,9 @@ import javafx.stage.WindowEvent;
  *      because module javafx.graphics does not export com.sun.javafx.sg.prism to unnamed module @0xa01f14a
  * After adding that particular one to fx-11-opens, needed to add another bunch (right
  *   to the end of the graphics opens)     
+ *   
+ * Alternatively: added javafx.web explicitly as module (new line in fx-11-modules) 
+ *  kept the list of add-opens as xx-bak  
  */
 public class WebBrowser extends Application {
 
