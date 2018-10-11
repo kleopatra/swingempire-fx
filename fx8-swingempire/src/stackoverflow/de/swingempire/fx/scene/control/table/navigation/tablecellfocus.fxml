@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.beans.property.*?>
+<?import java.lang.*?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.swingempire.fx.scene.control.table.navigation.TableCellFocusController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" 
+prefHeight="400.0" prefWidth="600.0" 
+xmlns="http://javafx.com/javafx/10" xmlns:fx="http://javafx.com/fxml/1" 
+fx:controller="de.swingempire.fx.scene.control.table.navigation.TableCellFocusController">
    <center>
       <TableView fx:id="tv" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </center>

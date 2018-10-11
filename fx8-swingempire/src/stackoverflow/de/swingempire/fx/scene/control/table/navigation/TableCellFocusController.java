@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -24,6 +26,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
@@ -92,9 +95,10 @@ public class TableCellFocusController implements Initializable {
                     firstRow, lastRow, maxCols);
 
         });
+        
 
     }
-
+    
     public static class ComboBoxCell<S, T> extends TableCell<S, T> {
 
         private final ComboBox<DBComboChoice> combo = new ComboBox<>();

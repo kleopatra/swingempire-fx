@@ -44,8 +44,12 @@ public class ScalableScrollPaneDriver extends Application {
     private double prevSceneX;
     private double prevSceneY;
 
+    private double dummy;
+    
     @Override
     public void start(Stage primaryStage) {
+        dummy = 100;
+        System.out.println(dummy);
       try {
         ScalableScrollPane pane = new ScalableScrollPane();
         Circle circle = new Circle(20, 40, 20);

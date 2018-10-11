@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.beans.property.*?>
+<!-- must import lang!!! no default loading!!!
+/!-->
+<?import java.lang.*?>
+
+<GridPane fx:id="root" xmlns="http://javafx.com/javafx/" 
+	xmlns:fx="http://javafx.com/fxml/1" 
+	fx:controller="de.swingempire.fx.fxml.SizeController">
+    <fx:define>
+        <SimpleDoubleProperty fx:id="size">
+            <value>
+            <Double fx:value = "100" />
+            </value>
+        </SimpleDoubleProperty>
+    </fx:define>
+
+    <gridLinesVisible>false</gridLinesVisible>
+
+    <hgap>5</hgap>
+    <vgap>5</vgap>
+
+    <Button text="C" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0" focusTraversable="false"/>
+    <Button text="Backspace" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="0" GridPane.columnSpan="2" focusTraversable="false"/>
+
+    <Button text="7" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="1" focusTraversable="false"/>
+    <Button text="8" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" focusTraversable="false"/>
+    <Button text="9" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="1" focusTraversable="false"/>
+
+    <Button text="4" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="2" focusTraversable="false"/>
+    <Button text="5" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" focusTraversable="false"/>
+    <Button text="6" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="2" focusTraversable="false"/>
+
+    <Button text="1" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="3" focusTraversable="false"/>
+    <Button text="2" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" focusTraversable="false"/>
+    <Button text="3" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="3" focusTraversable="false"/>
+
+    <Button text="0" maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2" focusTraversable="false"/>
+    <Button text="." maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="2" GridPane.rowIndex="4" focusTraversable="false"/>
+
+    <Button text="E"  maxWidth="Infinity" maxHeight="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="2" GridPane.rowSpan="3" focusTraversable="false"/>
+
+    <!-- direct size binding doesn't work - need property on controller
+    <columnConstraints>
+        <ColumnConstraints fx:id="col1" prefWidth="${size.value}"/>
+        <ColumnConstraints fx:id="col2" prefWidth="${size.value}"/>
+        <ColumnConstraints fx:id="col3" prefWidth="${size.value}"/>
+        <ColumnConstraints fx:id="col4" prefWidth="${size.value}"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints fx:id="row1" prefHeight="${size.value}"/>
+        <RowConstraints fx:id="row2" prefHeight="${size.value}"/>
+        <RowConstraints fx:id="row3" prefHeight="${size.value}"/>
+        <RowConstraints fx:id="row4" prefHeight="${size.value}"/>
+        <RowConstraints fx:id="row5" prefHeight="${size.value}"/>
+    </rowConstraints>
+    /!-->
+    <columnConstraints>
+        <ColumnConstraints fx:id="col1" prefWidth="${controller.size}"/>
+        <ColumnConstraints fx:id="col2" prefWidth="${controller.size}"/>
+        <ColumnConstraints fx:id="col3" prefWidth="${controller.size}"/>
+        <ColumnConstraints fx:id="col4" prefWidth="${controller.size}"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints fx:id="row1" prefHeight="${controller.size}"/>
+        <RowConstraints fx:id="row2" prefHeight="${controller.size}"/>
+        <RowConstraints fx:id="row3" prefHeight="${controller.size}"/>
+        <RowConstraints fx:id="row4" prefHeight="${controller.size}"/>
+        <RowConstraints fx:id="row5" prefHeight="${controller.size}"/>
+    </rowConstraints>
+    
+    
+</GridPane>
+
