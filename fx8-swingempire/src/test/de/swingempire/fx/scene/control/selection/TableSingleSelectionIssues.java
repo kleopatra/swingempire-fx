@@ -35,6 +35,57 @@ import javafx.scene.control.TableView.TableViewSelectionModel;
 @RunWith(Parameterized.class)
 public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView, MultipleSelectionModel> {
 
+    /**
+     * Bug? selectPrevious clears the column selection
+     */
+    @Test
+    public void testSelectPrevious() {
+        ensureColumns(3);
+        int index = 3;
+        TableColumnBase column = (TableColumnBase) getView().getColumns().get(1);
+        getSelectionModel().select(index, column);
+        assertSelectedCells(index, column);
+        getSelectionModel().selectPrevious();
+        assertSelectedCells(index -1, column);
+    }
+    
+    /**
+     * Bug? selectPrevious clears the column selection
+     */
+    @Test
+    public void testSelectPreviousCellSelection() {
+        ensureColumns(3);
+        getSelectionModel().setCellSelectionEnabled(true);
+        int index = 3;
+        TableColumnBase column = (TableColumnBase) getView().getColumns().get(1);
+        getSelectionModel().select(index, column);
+
+        getSelectionModel().selectPrevious();
+        assertSelectedCell(true, index -1, column);
+    }
+    
+    protected void assertSelectedCell(boolean cellSelection, int index, TableColumnBase... columns) {
+        if (!cellSelection) {
+            assertSelectedCells(index, columns);
+            return;
+        }
+        TablePosition pos = getSelectedCells().get(0);
+        assertEquals("selected index: ", index, pos.getRow());
+        assertEquals("selected column: ", columns[0], pos.getTableColumn());
+    }
+    
+    /**
+     * Adds columns to the table that it has at least count columns
+     * @param count the target size
+     */
+    protected void ensureColumns(int count) {
+        if (getView().getColumns().size() >= count) return;
+        int i = 0;
+        while (getView().getColumns().size() < count) {
+            getView().getColumns().add(new TableColumn("added " + i++));
+        }
+    }
+
 //-------------------- tests around RT-36911 - trying to spec expected behaviour    
     /**
      * This is a track-down of RT-36911: below is a failing test. The IOOB happens if 
