@@ -11,6 +11,7 @@ import javafx.scene.control.skin.VirtualFlow;
 
 /**
  * API study: TableSkin with consistent selection/focus navigation.
+ * https://bugs.openjdk.java.net/browse/JDK-8207942
  * 
  * <ul> Important parts:
  * <li> use same method names as the models
