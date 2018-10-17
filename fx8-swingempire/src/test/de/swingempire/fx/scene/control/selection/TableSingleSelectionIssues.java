@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.hamcrest.core.IsSame;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -40,6 +41,7 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
      */
     @Test
     public void testSelectPrevious() {
+        if (multipleMode) return;
         ensureColumns(3);
         int index = 3;
         TableColumnBase column = (TableColumnBase) getView().getColumns().get(1);
@@ -54,6 +56,7 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
      */
     @Test
     public void testSelectPreviousCellSelection() {
+        if (multipleMode) return;
         ensureColumns(3);
         getSelectionModel().setCellSelectionEnabled(true);
         int index = 3;
