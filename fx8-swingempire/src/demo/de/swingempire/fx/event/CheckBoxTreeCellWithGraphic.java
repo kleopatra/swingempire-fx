@@ -41,6 +41,8 @@ import javafx.stage.Stage;
  * https://bugs.openjdk.java.net/browse/JDK-8209017
  * 
  * @author Jeanette Winzenburg, Berlin
+ * 
+ * @see GraphicInTreeTableItem
  */
 public class CheckBoxTreeCellWithGraphic extends Application {
 

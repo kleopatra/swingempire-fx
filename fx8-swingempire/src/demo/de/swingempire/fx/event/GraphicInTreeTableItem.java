@@ -41,7 +41,7 @@ import javafx.stage.Stage;
  * - actual: graphics on child rows still showing
  * 
  * 
- * 
+ * @see CheckBoxTreeCellWithGraphic
  * @author Jeanette Winzenburg, Berlin
  */
 public class GraphicInTreeTableItem extends Application
@@ -138,7 +138,7 @@ public class GraphicInTreeTableItem extends Application
             }
         }
         final TreeTableView<String> treeTableView = new TreeTableView<>(rootItem);
-        treeTableView.setRowFactory(cb -> new XTreeTableRow<>());
+//        treeTableView.setRowFactory(cb -> new XTreeTableRow<>());
         
         final TreeTableColumn<String, String> column1 = new TreeTableColumn<>();
         column1.setText("Name");
