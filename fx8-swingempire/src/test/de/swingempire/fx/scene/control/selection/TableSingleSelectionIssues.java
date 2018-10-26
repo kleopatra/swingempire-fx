@@ -37,7 +37,46 @@ import javafx.scene.control.TableView.TableViewSelectionModel;
 public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView, MultipleSelectionModel> {
 
     /**
+     * Bug? selectLeft does nothing if !cellSelectionEnabled.
+     * 
+     * API doc:
+     * _Selects the cell to the left of the currently selected cell_
+     * 
+     * Might be okay, if isSelected returns false? which it doesnt?
+     */
+    @Test
+    public void testSelectLeft() {
+        if (multipleMode) return;
+        ensureColumns(3);
+        int index = 3;
+        TableColumnBase column = (TableColumnBase) getView().getColumns().get(1);
+        getSelectionModel().select(index, column);
+        assertSelectedCells(index, column);
+        TableColumnBase left = (TableColumnBase) getView().getColumns().get(0);
+        getSelectionModel().selectLeftCell();
+        assertSelectedCells(index, left);
+    }
+    
+    /**
      * Bug? selectPrevious clears the column selection
+     */
+    @Test
+    public void testSelectLeftCellSelection() {
+        if (multipleMode) return;
+        ensureColumns(3);
+        getSelectionModel().setCellSelectionEnabled(true);
+        int index = 3;
+        TableColumnBase column = (TableColumnBase) getView().getColumns().get(1);
+        getSelectionModel().select(index, column);
+        TableColumnBase left = (TableColumnBase) getView().getColumns().get(0);
+        
+        getSelectionModel().selectLeftCell();
+        assertSelectedCell(true, index, left);
+    }
+    
+    /**
+     * 
+     * Bug? selectPrevious clears the column selection if !cellSelectionMode
      */
     @Test
     public void testSelectPrevious() {
@@ -52,7 +91,18 @@ public class TableSingleSelectionIssues extends SingleSelectionIssues<TableView,
     }
     
     /**
-     * Bug? selectPrevious clears the column selection
+     * Bug? selectPrevious selects left cell if cellSelectionEnabled
+     * 
+     * API doc:
+     * _select the index directly before the current focused index_
+     * 
+     * (ignore the "focused", that's a doc error, read as selected)
+     * The implementation does a left until the first column is reached,
+     * then wraps to the last of previous row. I think that's a 
+     * contract violation: super clearly refers to "index" which in 2D
+     * models is the row (and so treated in the rest of the impl)
+     * 
+     * 
      */
     @Test
     public void testSelectPreviousCellSelection() {
@@ -286,8 +336,24 @@ while the setup is borderline (?, maybe crossing as it results in a change of se
         TablePosition pos = getSelectedCells().get(0);
         assertEquals(index, pos.getRow());
         TableColumnBase first = columns != null ? columns[0] : null;
-        assertEquals(first, pos.getTableColumn());
+        String expectedName = getColumnText(first);
+        String actualName = pos.getTableColumn() !=  null ? pos.getTableColumn().getText() : "none";
+        assertEquals(getColumnError(first, pos.getTableColumn()), 
+                first, pos.getTableColumn());
     }
+
+    protected String getColumnError(TableColumnBase expected, TableColumnBase actual) {
+        return "expected : " + getColumnText(expected) + " but was: " + getColumnText(actual);
+    }
+    /**
+     * Convenience method to return the column text.
+     * @param first the column, may be null
+     * @return the text of the column if not null, _none_ otherwise
+     */
+    protected String getColumnText(TableColumnBase first) {
+        return first != null ? first.getText() : "none";
+    }
+    
     /**
      * Behaviour of selectedCells: select(int) vs. select(int, tableColumn)
      */

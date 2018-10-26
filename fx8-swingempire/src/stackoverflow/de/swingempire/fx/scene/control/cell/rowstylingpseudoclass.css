@@ -1,0 +1,12 @@
+.item-table-row:selected {
+    -fx-background-color: -fx-control-inner-background, green;
+}
+
+.item-table-row:valid {
+    -fx-background-color: -fx-control-inner-background, yellow;
+}
+
+.item-table-row:valid:selected {
+    -fx-background-color: -fx-control-inner-background, red;
+}
+
