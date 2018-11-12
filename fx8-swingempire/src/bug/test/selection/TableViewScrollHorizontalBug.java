@@ -33,6 +33,12 @@ import javafx.stage.Stage;
  * reported:
  * https://bugs.openjdk.java.net/browse/JDK-8213540
  * 
+ * --- 
+ * TableView: issues when reordering columns by dragging off viewport
+ * 
+ * reported:
+ * https://bugs.openjdk.java.net/browse/JDK-8213739
+ * 
  */
 public class TableViewScrollHorizontalBug extends Application {
 
