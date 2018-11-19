@@ -72,6 +72,8 @@ public class TableViewDemo extends Application {
     private Parent getContent() {
         table = createTableWithColumns();
         table.setTableMenuButtonVisible(true);
+        // needed to test navigation
+        table.getSelectionModel().setCellSelectionEnabled(true);
         
         table.getColumns().addListener((ListChangeListener) c -> {
             LOG.info("from columns: ");
@@ -282,15 +284,19 @@ public class TableViewDemo extends Application {
 //        first.setCellFactory(e -> new PlainTableCell());
         table.setEditable(true);
         table.getColumns().addAll(first);
-        emailHeader = new TableColumn("Emails");
-        table.getColumns().addAll(emailHeader);
+        
         TableColumn<Person, String> nestedPrimary = new TableColumn("Nested Primary");
 //        nestedPrimary.setCellValueFactory(c -> c.getValue().emailProperty());
         nestedPrimary.setCellValueFactory(new PropertyValueFactory<>("email"));
         TableColumn nestedSecondary = new TableColumn("Secondary");
         nestedSecondary.setCellValueFactory(new PropertyValueFactory<>("secondaryMail"));
-        emailHeader.getColumns().addAll(nestedPrimary, nestedSecondary);
         
+        emailHeader = new TableColumn("Emails");
+        table.getColumns().addAll(emailHeader);
+        // toggle nested
+//        emailHeader.getColumns().addAll(nestedPrimary, nestedSecondary);
+        table.getColumns().addAll(nestedPrimary, nestedSecondary);
+
         emailColumn = new TableColumn("Primary");
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         

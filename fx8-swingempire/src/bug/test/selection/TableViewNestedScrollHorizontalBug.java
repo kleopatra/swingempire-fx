@@ -8,45 +8,24 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
-import de.swingempire.fx.util.VirtualFlowTestUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
-import javafx.scene.control.IndexedCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
 /**
- * TableView:  focus left/right via keyboard must scroll cell into viewport
+ * TableView: incorrect scrolling to parent of nested columns.
  * 
- * reported:
- * https://bugs.openjdk.java.net/browse/JDK-8213540
- * 
- * --- 
- * TableView: issues when reordering columns by dragging off viewport
- * A: target not scrolled into viewport
- * B: reorderingLine stuck to incorrect column
- * 
- * win10 explorer: column headers only are scrolled into view, not reliable, though
- * problem: when invoking scrollTo(column), the target column "jumps" because the
- *   header (or entire viewport) is moved below the dragging ..
- * 
- * reported:
- * https://bugs.openjdk.java.net/browse/JDK-8213739
- * 
+ * reported as
+ * https://bugs.openjdk.java.net/browse/JDK-8214043
  */
-public class TableViewScrollHorizontalBug extends Application {
+public class TableViewNestedScrollHorizontalBug extends Application {
 
     private Parent getContent() {
         TableView<Locale> table = new TableView<>(FXCollections.observableArrayList(
@@ -60,9 +39,14 @@ public class TableViewScrollHorizontalBug extends Application {
         variant.setCellValueFactory(new PropertyValueFactory<>("variant"));
         TableColumn<Locale, String> display = new TableColumn<>("DisplayName");
         display.setCellValueFactory(new PropertyValueFactory<>("displayLanguage"));
-        table.getColumns().addAll(display, countryCode, language, variant);
+        TableColumn<Locale, String> nested = new TableColumn<>("Nested");
+        nested.getColumns().addAll(countryCode, language);
+        table.getColumns().addAll(display, nested, variant, new TableColumn<>("Dummy"));
 
+        Button scrollTo = new Button("ScrollTo Nested");
+        scrollTo.setOnAction(e -> table.scrollToColumn(nested));
         BorderPane pane = new BorderPane(table);
+        pane.setBottom(scrollTo);
         return pane;
     }
 
@@ -72,13 +56,13 @@ public class TableViewScrollHorizontalBug extends Application {
         primaryStage.setTitle(FXUtils.version());
         primaryStage.show();
     }
-    
+
     public static void main(String[] args) {
         launch(args);
     }
-    
+
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(TableViewScrollHorizontalBug.class.getName());
+    .getLogger(TableViewNestedScrollHorizontalBug.class.getName());
 
 }
