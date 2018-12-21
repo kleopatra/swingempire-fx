@@ -1,0 +1,42 @@
+.slider > .thumb,
+.slider > .thumb:hover,
+.slider:focused > .thumb{
+    -fx-background-color: #ff6a6a;
+    -fx-background-insets: 2 0 -23 0;
+    -fx-padding: 1 1 0 1;
+    -fx-background-radius: 0;
+}
+
+.slider:vertical > .thumb,
+.slider:vertical > .thumb:hover,
+.slider:vertical:focused > .thumb{
+    -fx-background-color: #ff6a6a;
+    -fx-background-insets: 0 -23 0 2;
+    -fx-padding: 1 0 1 1;
+    -fx-background-radius: 0;
+}
+
+.slider > .track,
+.slider:vertical > .track {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.slider > .axis {
+    -fx-tick-mark-stroke: transparent;
+    -fx-tick-label-font-size: 0.833333em;
+    -fx-tick-label-fill: #9a9a9a;
+    -fx-background-color: #333;
+}
+
+.slider.axis-top > .axis  {
+	-fx-side: TOP;
+}
+
+.slider.axis-left > .axis {
+	-fx-side: LEFT;
+}
+
+

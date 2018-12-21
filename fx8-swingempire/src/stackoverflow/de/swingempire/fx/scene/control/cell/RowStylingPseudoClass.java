@@ -45,7 +45,7 @@ public class RowStylingPseudoClass extends Application {
             protected void updateItem(String item, boolean empty) {
                 String old = getItem();
                 super.updateItem(item, empty);
-                LOG.info("old/new in cell: " + old + " / " + getItem());
+//                LOG.info("old/new in cell: " + old + " / " + getItem());
                 if (empty || item == null) {
                     setText(null);
                 } else {

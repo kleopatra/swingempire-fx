@@ -21,6 +21,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import test.tree.TreeTableIndentExperiment;
 
 /**
  * Similar, very old bug:
@@ -43,6 +44,7 @@ import javafx.stage.Stage;
  * @author Jeanette Winzenburg, Berlin
  * 
  * @see GraphicInTreeTableItem
+ * @see TreeTableIndentExperiment
  */
 public class CheckBoxTreeCellWithGraphic extends Application {
 
