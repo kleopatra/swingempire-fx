@@ -1,5 +1,5 @@
+--module-path=C:/java/third-party/openjfx/javafx-sdk-11/lib
 --add-modules javafx.controls
---add-modules javafx.web
 --add-modules javafx.fxml
 
 
