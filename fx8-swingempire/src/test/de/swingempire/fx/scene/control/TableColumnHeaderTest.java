@@ -78,7 +78,7 @@ public class TableColumnHeaderTest {
         tableColumnHeader = null;
     }
 
-    @Test
+    @Test @Ignore
     public void testNestedColumnRemove() {
         TableView<Person> tableView = new TableView<>(Person.persons());
         TableColumn<Person, String> nested = new TableColumn<>("Nested ");
@@ -106,7 +106,7 @@ public class TableColumnHeaderTest {
        
     }
     
-    @Test @Ignore
+    @Test 
     public void test_resizeColumnToFitContent() {
         ObservableList<Person> model = Person.persons();
 //                FXCollections.observableArrayList(
