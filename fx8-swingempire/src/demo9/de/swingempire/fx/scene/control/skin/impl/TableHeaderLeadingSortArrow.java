@@ -36,6 +36,7 @@ import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
@@ -94,13 +95,33 @@ public class TableHeaderLeadingSortArrow extends Application {
                         DEFAULT_SORT_ICON_DISPLAY);
 
         // property with lazy instantiation
-        private StyleableObjectProperty<ContentDisplay> sortIconDisplay;
+        private StyleableObjectProperty<ContentDisplay> sortIconDisplay ;
+//            = new SimpleStyleableObjectProperty<> (
+//                    CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
+//                    DEFAULT_SORT_ICON_DISPLAY) {
+//
+//                        @Override
+//                        protected void invalidated() {
+//                            LOG.info("display: " + get());
+//                            requestLayout();
+//                        }
+//                
+//            };
+
 
         protected StyleableObjectProperty<ContentDisplay> sortIconDisplayProperty() {
             if (sortIconDisplay == null) {
                 sortIconDisplay = new SimpleStyleableObjectProperty<>(
                         CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
-                        DEFAULT_SORT_ICON_DISPLAY);
+                        DEFAULT_SORT_ICON_DISPLAY) {
+
+                            @Override
+                            protected void invalidated() {
+                                LOG.info("display: " + get());
+//                                requestLayout();
+                            }
+                    
+                };
 
             }
             return sortIconDisplay;
@@ -239,6 +260,7 @@ public class TableHeaderLeadingSortArrow extends Application {
                     }
             
         };
+        table.setTableMenuButtonVisible(true);
         TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
         countryCode.setCellValueFactory(new PropertyValueFactory<>("country"));
         TableColumn<Locale, String> language = new TableColumn<>("Language");
@@ -256,9 +278,16 @@ public class TableHeaderLeadingSortArrow extends Application {
             scene.getStylesheets().add(uri.toExternalForm());
             
         });
+        Button toggleDisplay = new Button("toggle display on first");
+        toggleDisplay.setOnAction(e -> {
+            MyTableColumnHeader columnHeader = (MyTableColumnHeader) countryCode.getStyleableNode();
+            ContentDisplay old = columnHeader.getSortIconDisplay();
+            ContentDisplay display = old == ContentDisplay.LEFT ? ContentDisplay.RIGHT : ContentDisplay.LEFT;
+            columnHeader.setSortIconDisplay(display);
+        });
         
         BorderPane pane = new BorderPane(table);
-        pane.setBottom(button);
+        pane.setBottom(new HBox(10, button, toggleDisplay));
         return pane;
     }
 
@@ -303,6 +332,7 @@ public class TableHeaderLeadingSortArrow extends Application {
         protected TableHeaderRow createTableHeaderRow() {
             return new MyTableHeaderRow(this);
         }
+        
         
     }
 

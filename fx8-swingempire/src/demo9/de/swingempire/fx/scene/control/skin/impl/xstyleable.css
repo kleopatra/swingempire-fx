@@ -1,0 +1,14 @@
+.x-table-view {
+	-sfx-frozen-left-columns: 1;
+}
+
+.my-button2 {
+ /*  
+ */
+ -my-selected: true;
+}
+.my-button {
+ /*  
+ */
+ -my-selected: true;
+}
