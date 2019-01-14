@@ -5,18 +5,23 @@
 package de.swingempire.fx.scene.control.skin.impl;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.skin.impl.TableHeaderLeadingSortArrow.MyTableColumnHeader;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.css.CssMetaData;
-import javafx.css.SimpleStyleableObjectProperty;
+import javafx.css.StyleOrigin;
 import javafx.css.Styleable;
 import javafx.css.StyleableObjectProperty;
-import javafx.css.StyleablePropertyFactory;
+import javafx.css.StyleableProperty;
+import javafx.css.converter.EnumConverter;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -80,162 +85,172 @@ public class TableHeaderLeadingSortArrow extends Application {
         // --------------- make sort icon location styleable
         
         // use StyleablePropertyFactory to simplify styling-related code
-        private static final StyleablePropertyFactory<MyTableColumnHeader> FACTORY = 
-                new StyleablePropertyFactory<>(TableColumnHeader.getClassCssMetaData());
-
-        // default value (strictly speaking: an implementation detail)
-        // PENDING: what about RtoL orientation? Is it handled correctly in
-        // core?
-        private static final ContentDisplay DEFAULT_SORT_ICON_DISPLAY = ContentDisplay.RIGHT;
-
-        private static CssMetaData<MyTableColumnHeader, ContentDisplay> CSS_SORT_ICON_DISPLAY = 
-                FACTORY.createEnumCssMetaData(ContentDisplay.class,
-                        "-fx-sort-icon-display",
-                        header -> header.sortIconDisplayProperty(),
-                        DEFAULT_SORT_ICON_DISPLAY);
-
-        // property with lazy instantiation
-        private StyleableObjectProperty<ContentDisplay> sortIconDisplay ;
-//            = new SimpleStyleableObjectProperty<> (
-//                    CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
-//                    DEFAULT_SORT_ICON_DISPLAY) {
+//        private static final StyleablePropertyFactory<MyTableColumnHeader> FACTORY = 
+//                new StyleablePropertyFactory<>(TableColumnHeader.getClassCssMetaData());
 //
-//                        @Override
-//                        protected void invalidated() {
-//                            LOG.info("display: " + get());
-//                            requestLayout();
-//                        }
-//                
-//            };
-
-
-        protected StyleableObjectProperty<ContentDisplay> sortIconDisplayProperty() {
-            if (sortIconDisplay == null) {
-                sortIconDisplay = new SimpleStyleableObjectProperty<>(
-                        CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
-                        DEFAULT_SORT_ICON_DISPLAY) {
-
-                            @Override
-                            protected void invalidated() {
-                                LOG.info("display: " + get());
-//                                requestLayout();
-                            }
-                    
-                };
-
-            }
-            return sortIconDisplay;
-        }
-
-        protected ContentDisplay getSortIconDisplay() {
-            return sortIconDisplay != null ? sortIconDisplay.get()
-                    : DEFAULT_SORT_ICON_DISPLAY;
-        }
-
-        protected void setSortIconDisplay(ContentDisplay display) {
-            sortIconDisplayProperty().set(display);
-        }
-
-        /**
-         * Returnst the CssMetaData associated with this class, which may
-         * include the CssMetaData of its superclasses.
-         * 
-         * @return the CssMetaData associated with this class, which may include
-         *         the CssMetaData of its superclasses
-         */
-        public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
-            return FACTORY.getCssMetaData();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
-            return getClassCssMetaData();
-        }
-
-        // below is old-style styling (before 8u40) - keep for reference?
-        // not really needed because its copied from analogous handling in TableColumnHeader
 //        // default value (strictly speaking: an implementation detail)
-//        // PENDING: what about RtoL orientation? Is it handled correctly in core?
+//        // PENDING: what about RtoL orientation? Is it handled correctly in
+//        // core?
 //        private static final ContentDisplay DEFAULT_SORT_ICON_DISPLAY = ContentDisplay.RIGHT;
-//        private ObjectProperty<ContentDisplay> sortIconDisplay; 
-//        
-//        private ContentDisplay getSortIconDisplay() {
-//            return sortIconDisplay == null ? DEFAULT_SORT_ICON_DISPLAY : sortIconDisplay.get();
-//        }
-//        
-//        private ObjectProperty<ContentDisplay> sortIconDisplayProperty() {
+//
+//        private static CssMetaData<MyTableColumnHeader, ContentDisplay> CSS_SORT_ICON_DISPLAY = 
+//                FACTORY.createEnumCssMetaData(ContentDisplay.class,
+//                        "-fx-sort-icon-display",
+//                        header -> header.sortIconDisplayProperty(),
+//                        DEFAULT_SORT_ICON_DISPLAY);
+//
+//        // property with lazy instantiation
+//        private StyleableObjectProperty<ContentDisplay> sortIconDisplay ;
+////            = new SimpleStyleableObjectProperty<> (
+////                    CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
+////                    DEFAULT_SORT_ICON_DISPLAY) {
+////
+////                        @Override
+////                        protected void invalidated() {
+////                            LOG.info("display: " + get());
+////                            requestLayout();
+////                        }
+////                
+////            };
+//
+//
+//        protected StyleableObjectProperty<ContentDisplay> sortIconDisplayProperty() {
 //            if (sortIconDisplay == null) {
-//                sortIconDisplay = new StyleableObjectProperty<>(DEFAULT_SORT_ICON_DISPLAY) {
+//                sortIconDisplay = new SimpleStyleableObjectProperty<>(
+//                        CSS_SORT_ICON_DISPLAY, this, "sortIconDisplay",
+//                        DEFAULT_SORT_ICON_DISPLAY) {
 //
-//                    @Override
-//                    public CssMetaData<? extends Styleable, ContentDisplay> getCssMetaData() {
-//                        return StyleableProperties.SORT_ICON_DISPLAY;
-//                    }
-//
-//                    @Override
-//                    public Object getBean() {
-//                        return MyTableColumnHeader.this;
-//                    }
-//
-//                    @Override
-//                    public String getName() {
-//                        return "sortIconDisplay";
-//                    }
+//                            @Override
+//                            protected void invalidated() {
+//                                LOG.info("display: " + get());
+////                                requestLayout();
+//                            }
 //                    
 //                };
-//                
+//
 //            }
 //            return sortIconDisplay;
 //        }
-//        
-//        private static class StyleableProperties {
-//            private static final CssMetaData<MyTableColumnHeader, ContentDisplay> SORT_ICON_DISPLAY = new CssMetaData<MyTableColumnHeader, ContentDisplay>(
-//                    "-fx-sort-icon-display",
-//                    new EnumConverter<ContentDisplay>(ContentDisplay.class),
-//                    DEFAULT_SORT_ICON_DISPLAY) {
 //
-//                @Override
-//                public boolean isSettable(MyTableColumnHeader columnHeader) {
-//                    return columnHeader.sortIconDisplay == null
-//                            || !columnHeader.sortIconDisplay.isBound();
-//                }
+//        protected ContentDisplay getSortIconDisplay() {
+//            return sortIconDisplay != null ? sortIconDisplay.get()
+//                    : DEFAULT_SORT_ICON_DISPLAY;
+//        }
 //
-//                @Override
-//                public StyleableProperty<ContentDisplay> getStyleableProperty(
-//                        MyTableColumnHeader n) {
-//                    return (StyleableProperty<ContentDisplay>) n
-//                            .sortIconDisplayProperty();
-//                }
-//            };
-//
-//            private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
-//            static {
-//
-//                final List<CssMetaData<? extends Styleable, ?>> styleables = new ArrayList<CssMetaData<? extends Styleable, ?>>(
-//                        TableColumnHeader.getClassCssMetaData());
-//                styleables.add(SORT_ICON_DISPLAY);
-//                STYLEABLES = Collections.unmodifiableList(styleables);
-//
-//            }
-//
+//        protected void setSortIconDisplay(ContentDisplay display) {
+//            sortIconDisplayProperty().set(display);
 //        }
 //
 //        /**
-//         * Returnst the CssMetaData associated with this class, which may include the
-//         * CssMetaData of its superclasses.
-//         * @return the CssMetaData associated with this class, which may include the
-//         * CssMetaData of its superclasses
+//         * Returnst the CssMetaData associated with this class, which may
+//         * include the CssMetaData of its superclasses.
+//         * 
+//         * @return the CssMetaData associated with this class, which may include
+//         *         the CssMetaData of its superclasses
 //         */
 //        public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
-//            return StyleableProperties.STYLEABLES;
+//            return FACTORY.getCssMetaData();
 //        }
 //
 //        /** {@inheritDoc} */
-//        @Override 
+//        @Override
 //        public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
 //            return getClassCssMetaData();
 //        }
+
+        // below is old-style styling (before 8u40) - keep for reference?
+        // not really needed because its copied from analogous handling in TableColumnHeader
+        // anyway keep: quick check whether a manually set value is overridden
+        // yeah, it is, same as with factory
+        // default value (strictly speaking: an implementation detail)
+        // PENDING: what about RtoL orientation? Is it handled correctly in core?
+        private static final ContentDisplay DEFAULT_SORT_ICON_DISPLAY = ContentDisplay.RIGHT;
+        private ObjectProperty<ContentDisplay> sortIconDisplay; 
+        
+        private ContentDisplay getSortIconDisplay() {
+            return sortIconDisplay == null ? DEFAULT_SORT_ICON_DISPLAY : sortIconDisplay.get();
+        }
+        
+        private void setSortIconDisplay(ContentDisplay display) {
+            sortIconDisplayProperty().set(display);
+        }
+        private ObjectProperty<ContentDisplay> sortIconDisplayProperty() {
+            if (sortIconDisplay == null) {
+                sortIconDisplay = new StyleableObjectProperty<>(DEFAULT_SORT_ICON_DISPLAY) {
+
+                    @Override
+                    public CssMetaData<? extends Styleable, ContentDisplay> getCssMetaData() {
+                        return StyleableProperties.SORT_ICON_DISPLAY;
+                    }
+
+                    @Override
+                    public Object getBean() {
+                        return MyTableColumnHeader.this;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return "sortIconDisplay";
+                    }
+                    
+                };
+                
+            }
+            return sortIconDisplay;
+        }
+        
+        private static class StyleableProperties {
+            private static final CssMetaData<MyTableColumnHeader, ContentDisplay> SORT_ICON_DISPLAY = new CssMetaData<MyTableColumnHeader, ContentDisplay>(
+                    "-fx-sort-icon-display",
+                    new EnumConverter<ContentDisplay>(ContentDisplay.class),
+                    DEFAULT_SORT_ICON_DISPLAY) {
+
+                @Override
+                public boolean isSettable(MyTableColumnHeader columnHeader) {
+                    if (columnHeader.sortIconDisplay != null 
+                            && getStyleableProperty(columnHeader).getStyleOrigin() == StyleOrigin.USER) {
+                        
+                        return false;
+                    } 
+                    return columnHeader.sortIconDisplay == null
+                            || !columnHeader.sortIconDisplay.isBound();
+                }
+
+                @Override
+                public StyleableProperty<ContentDisplay> getStyleableProperty(
+                        MyTableColumnHeader n) {
+                    return (StyleableProperty<ContentDisplay>) n
+                            .sortIconDisplayProperty();
+                }
+            };
+
+            private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
+            static {
+
+                final List<CssMetaData<? extends Styleable, ?>> styleables = new ArrayList<CssMetaData<? extends Styleable, ?>>(
+                        TableColumnHeader.getClassCssMetaData());
+                styleables.add(SORT_ICON_DISPLAY);
+                STYLEABLES = Collections.unmodifiableList(styleables);
+
+            }
+
+        }
+
+        /**
+         * Returnst the CssMetaData associated with this class, which may include the
+         * CssMetaData of its superclasses.
+         * @return the CssMetaData associated with this class, which may include the
+         * CssMetaData of its superclasses
+         */
+        public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
+            return StyleableProperties.STYLEABLES;
+        }
+
+        /** {@inheritDoc} */
+        @Override 
+        public List<CssMetaData<? extends Styleable, ?>> getCssMetaData() {
+            return getClassCssMetaData();
+        }
 
         
 //-------- reflection acrobatics .. might use lookup and/or keeping aliases around

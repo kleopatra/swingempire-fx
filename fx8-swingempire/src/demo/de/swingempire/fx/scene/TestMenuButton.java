@@ -6,13 +6,14 @@ package de.swingempire.fx.scene;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
- * MenuButton popup appears for off the window
+ * MenuButton popup appears for off the window. same for combo
  * https://bugs.openjdk.java.net/browse/JDK-8088782
  * 
  * commented: user error, conflicting sizing constraints
@@ -27,9 +28,13 @@ public class TestMenuButton extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        MenuButton button = new MenuButton("button");
-        MenuItem item = new MenuItem("this is a test");
-        button.getItems().add(item);
+//        MenuButton button = new MenuButton("button");
+//        MenuItem item = new MenuItem("this is a test");
+//        button.getItems().add(item);
+        
+        ComboBox button = new ComboBox();
+        button.getItems().add("mine");
+        
         button.setMinSize(500, 500);
         
         BorderPane pane = new BorderPane(button);

@@ -9,6 +9,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.css.StyleManager;
+
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
@@ -31,10 +33,10 @@ import javafx.stage.Stage;
  * on the next call to applyCss().
  * 
  */
-public class MyButtonDriver extends Application {
-    
+public class StyleableButtonDriver extends Application {
+
     /**
-     * example code from StyleablePropertyFactory.
+     * example code from class doc of StyleablePropertyFactory.
      */
     private static class MyButton extends Button {
 
@@ -44,19 +46,18 @@ public class MyButtonDriver extends Application {
         MyButton(String labelText) {
             super(labelText);
             getStyleClass().add("my-button");
+//            setStyle("-my-selected: true");
         }
 
         // Typical JavaFX property implementation
-//        public StyleableProperty<Boolean> selectedProperty() { return selected; }
         public ObservableValue<Boolean> selectedProperty() { return (ObservableValue<Boolean>)selected; }
-//        public BooleanProperty selectedProperty() { return selected; }
         public final boolean isSelected() { return selected.getValue(); }
         public final void setSelected(boolean isSelected) { selected.setValue(isSelected); }
 
         // StyleableProperty implementation reduced to one line
         private final StyleableProperty<Boolean> selected =
-             FACTORY.createStyleableBooleanProperty(
-                    this, "selected", "-my-selected", s -> s.selected);
+                FACTORY.createStyleableBooleanProperty(
+                        this, "selected", "-my-selected", s -> s.selected);
 
         @Override
         public List<CssMetaData<? extends Styleable, ?>> getControlCssMetaData() {
@@ -68,55 +69,38 @@ public class MyButtonDriver extends Application {
         }
 
     }
-    int count;
     private Parent createContent() {
         MyButton button = new MyButton("styleable button");
         button.setOnAction(e ->  {
             // does not work: reset on applyCss
             boolean isSelected = button.isSelected();
             button.setSelected(!isSelected);
-//            LOG.info("old/selected: " + isSelected + " / " + button.isSelected());
         });
+
         CheckBox box = new CheckBox("button selected");
         box.selectedProperty().bind(button.selectedProperty());
-        
-        button.selectedProperty().addListener(c -> {
-            LOG.info("selected invalidated " + button.selected.getValue());
-            });
-        
+
         Button toggle = new Button("toggle button");
         toggle.setOnAction(e -> {
             boolean isSelected = button.isSelected();
             button.setSelected(!isSelected);
-            LOG.info("old/selected: " + isSelected + " / "
-                    + button.isSelected());
         });
-        
-        // plain label, plain text-fill property that's applied via css
-        Label custom = new Label("just some label with text");
-        
-        Button toggleLabel = new Button("toggle label");
-        toggleLabel.setOnAction(e -> custom.setTextFill(Color.RED));
-        
-        Button css = new Button("applyCss");
-        css.setOnAction(e -> {
-            custom.applyCss();
-            custom.layout();
-        });
-        
+
+
         BorderPane content = new BorderPane(button);
-        content.setBottom(new HBox(10, box, toggle, toggleLabel, css));
-        content.setTop(custom);
+        content.setBottom(new HBox(10, box, toggle));
         return content;
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent(), 300, 200));
-        URL uri = getClass().getResource("xstyleable.css");
-//        stage.getScene().getStylesheets().add(uri.toExternalForm());
-        Application.setUserAgentStylesheet(uri.toExternalForm());
-
+        //same behavior as setting the style directly
+                URL uri = getClass().getResource("xstyleable.css");
+//                stage.getScene().getStylesheets().add(uri.toExternalForm());
+//         not useful: would have to override all, but not needed, bug is fixed
+//        Application.setUserAgentStylesheet(null);
+        StyleManager.getInstance().addUserAgentStylesheet(uri.toExternalForm());        
         stage.setTitle(FXUtils.version());
         stage.show();
     }
@@ -127,6 +111,6 @@ public class MyButtonDriver extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(MyButtonDriver.class.getName());
+    .getLogger(StyleableButtonDriver.class.getName());
 
 }

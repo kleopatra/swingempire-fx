@@ -2,6 +2,13 @@
 	-sfx-frozen-left-columns: 1;
 }
 
+.label {
+	-fx-text-fill: blue;
+    /*
+    -fx-graphic: url("icon.png");
+    // url("../images/filterPopupIcon.png");	
+*/
+}
 .my-button2 {
  /*  
  */
