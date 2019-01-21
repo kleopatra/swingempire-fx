@@ -41,25 +41,13 @@ public class MyButton2Driver extends Application {
             }
         };
 
-        private static final CssMetaData CSS_META = FACTORY.createBooleanCssMetaData(
-                "-my-selected", s -> s.selected, false, false);
-        
-        MyButton2(String labelText) {
-            super(labelText);
-            getStyleClass().add("my-button2");
-        }
-
-        // Typical JavaFX property implementation
-        public ObservableValue<Boolean> selectedProperty() { return (ObservableValue<Boolean>)selected; }
-        public final boolean isSelected() { return selected.getValue(); }
-        public final void setSelected(boolean isSelected) { selected.setValue(isSelected); }
-
         // StyleableProperty implementation reduced to one line
         private final StyleableProperty<Boolean> selected =
                 // original line, doesn't compile
 //            new SimpleStyleableBooleanProperty(this, "selected", "my-selected");
             // this comiles but is it useful?    
-            new SimpleStyleableBooleanProperty(CSS_META) {
+            new SimpleStyleableBooleanProperty(FACTORY.createBooleanCssMetaData(
+                    "-my-selected", s -> s.selected, false, false)) {
 
                 @Override
                 protected void invalidated() {
@@ -68,6 +56,15 @@ public class MyButton2Driver extends Application {
                 }
         
         };
+        MyButton2(String labelText) {
+            super(labelText);
+            getStyleClass().add("my-button2");
+        }
+        
+        // Typical JavaFX property implementation
+        public ObservableValue<Boolean> selectedProperty() { return (ObservableValue<Boolean>)selected; }
+        public final boolean isSelected() { return selected.getValue(); }
+        public final void setSelected(boolean isSelected) { selected.setValue(isSelected); }
 
         public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
             return FACTORY.getCssMetaData();
