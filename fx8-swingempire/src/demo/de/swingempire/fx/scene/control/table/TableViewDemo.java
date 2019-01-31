@@ -10,6 +10,7 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -26,6 +27,7 @@ import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.control.skin.TableViewSkinBase;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
@@ -85,11 +87,23 @@ public class TableViewDemo extends Application {
         // strictly speaking, that's an implementation detail!!
         // can't rely on it, but will have to ...
         table.getVisibleLeafColumns().addListener((ListChangeListener) c -> {
-            LOG.info("from visibleLeafs: ");
-            FXUtils.prettyPrint(c);
+//            LOG.info("from visibleLeafs: ");
+//            FXUtils.prettyPrint(c);
         });
         
         BorderPane pane = new BorderPane(table);
+        
+        // https://stackoverflow.com/q/54445095/203657
+        // open columnControl externally
+        Button showCorner = new Button("open menu button");
+        showCorner.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+            Node corner = table.lookup(".show-hide-columns-button");
+            EventHandler<? super MouseEvent> handler = corner.getOnMousePressed();
+            corner.fireEvent(e);
+            
+        });
+        // --- end show columnControl
+        
         Button button = new Button("debug");
         button.setOnAction(e -> debugHeaders(table));
         
@@ -136,7 +150,7 @@ public class TableViewDemo extends Application {
         });
         
         FlowPane buttons = new FlowPane();
-        buttons.getChildren().addAll(button, addNested, addNormal, autoSizeEmail, prefEmail, autoSizeAll, changeFirstName);
+        buttons.getChildren().addAll(showCorner, button, addNested, addNormal, autoSizeEmail, prefEmail, autoSizeAll, changeFirstName);
         buttons.setHgap(10);
         buttons.setVgap(10);
         pane.setBottom(buttons);
