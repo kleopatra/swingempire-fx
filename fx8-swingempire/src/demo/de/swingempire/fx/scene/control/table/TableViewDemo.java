@@ -73,9 +73,9 @@ public class TableViewDemo extends Application {
 
     private Parent getContent() {
         table = createTableWithColumns();
-        table.setTableMenuButtonVisible(true);
-        // needed to test navigation
-        table.getSelectionModel().setCellSelectionEnabled(true);
+//        table.setTableMenuButtonVisible(true);
+//        // needed to test navigation
+//        table.getSelectionModel().setCellSelectionEnabled(true);
         
         table.getColumns().addListener((ListChangeListener) c -> {
             LOG.info("from columns: ");
