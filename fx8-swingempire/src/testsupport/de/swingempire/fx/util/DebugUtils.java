@@ -198,6 +198,21 @@ public class DebugUtils {
             delegate.addBounds(parent, node);
         }
     }
+    
+    public static void printState(ScrollBar bar) {
+        String barValues = "state of scrollBar:";
+        String result = barValues  
+                + "\n   " + "value:   " + bar.getValue()
+                + "\n   " + "max/min: " + bar.getMax() + " / " + bar.getMin()
+                + "\n   " + "amount:  " + bar.getVisibleAmount()
+                ;
+        LOG.info(result);
+        
+    }
+    public static void printBounds(ScrollBar bar) {
+        printBounds((Node) bar);
+        printState(bar);
+    }
 
     public static void printBounds(Node node) {
         String className = node.getClass().getName();

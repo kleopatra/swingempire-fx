@@ -8,7 +8,6 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -22,6 +21,9 @@ import javafx.stage.Stage;
 
 /**
  * TableRowSkin: incorrect layout if row has padding.
+ * 
+ * reported: 
+ * https://bugs.openjdk.java.net/browse/JDK-8218826
  * 
  * @author Jeanette Winzenburg, Berlin
  */

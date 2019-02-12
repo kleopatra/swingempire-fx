@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
+import de.swingempire.fx.util.DebugUtils;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.css.PseudoClass;
@@ -34,7 +35,7 @@ import javafx.stage.Stage;
  * Here: trying to dig why there are single pixels of underscrolled column 
  * are visible on the left if having some fixed overlay.
  * 
- * @see PlainTableViewSampleVisualGlitchBorder
+ * @see BugTableViewSampleVisualGlitchBorder
  * 
  * @author Jeanette Winzenburg, Berlin
  * 
@@ -63,13 +64,15 @@ public class PlainTableViewDebugRowLayout extends Application {
             final double horizontalPadding = snappedLeftInset() + snappedRightInset();
 
             double hbarValue = scrollBar.getValue();
-            double xLeft =  snappedLeftInset();
             TableColumnBase<T, ?> firstColumn = getVisibleLeafColumns().get(0);
             IndexedCell cell = getCellFor(firstColumn);
             cell.toFront();
             cell.relocate(snapSizeX(hbarValue), 0);
             if (getSkinnable().getIndex() == 0) {
-                LOG.info("x/xLeft/hbarValue: " + x + " / " + xLeft + " / " + hbarValue + " / pad: " + horizontalPadding);
+                DebugUtils.printBounds(hbar);
+                DebugUtils.printBounds(getVirtualFlow());
+                DebugUtils.printBounds(getSkinnable().getParent());
+                //                new RuntimeException("who is calling? \n").printStackTrace();
             }
         }
 
@@ -139,6 +142,7 @@ public class PlainTableViewDebugRowLayout extends Application {
 
     private TableView<Person> createPlainTable() {
         TableView<Person> table =  new TableView<>(Person.persons());
+        table.getSelectionModel().setCellSelectionEnabled(true);
         table.getColumns().addAll(createColumn("firstName"), 
                 createColumn("lastName"), createColumn("email"), createColumn("secondaryMail"));
         return table;
