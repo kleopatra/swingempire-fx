@@ -1,0 +1,10 @@
+.table-row-cell
+{
+    -fx-padding: 0 20 0 20 ;
+}
+
+.nested-column-header 
+{
+
+    -fx-padding: 0 20 0 20 ;
+}

@@ -39,7 +39,7 @@ import javafx.stage.Stage;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class PlainTableViewSample extends Application {
+public class PlainTableViewSampleVisualGlitchBorder extends Application {
 
     private Parent createContent() {
         TableView<Person> table = createPlainTable();
@@ -72,6 +72,6 @@ public class PlainTableViewSample extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(PlainTableViewSample.class.getName());
+            .getLogger(PlainTableViewSampleVisualGlitchBorder.class.getName());
 
 }

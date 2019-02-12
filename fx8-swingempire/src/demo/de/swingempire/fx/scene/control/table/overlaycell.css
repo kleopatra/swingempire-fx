@@ -1,0 +1,7 @@
+.table-cell:overlay
+{
+    -fx-background: -fx-control-inner-background;
+    -fx-background-color: lavenderblush;
+}
+
+
