@@ -4,6 +4,11 @@
     -fx-background-color: lavenderblush;
 }
 
+.overlay
+{
+    -fx-background-color: lavenderblush;
+}
+
 /*
 .table-row-cell
 {
