@@ -11,9 +11,10 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.DebugUtils;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
@@ -24,6 +25,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -42,6 +44,8 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
     
     public static class MyTableRowSkin<T> extends TableRowSkin<T> {
 
+        static boolean hasClippedListener; 
+        
         ScrollBar hbar;
         StackPane overlay;
         public MyTableRowSkin(TableRow<T> control) {
@@ -49,6 +53,33 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
             overlay = new StackPane();
             overlay.getStyleClass().setAll("overlay");
             getChildren().add(overlay);
+            if (!hasClippedListener) {
+                Region clip =  (Region) getVirtualFlow().lookup(".clipped-container");
+                TableView<T> table = (TableView<T>) getVirtualFlow().getParent();
+                if (clip != null) {
+                    Group sheet = (Group) clip.lookup(".sheet");
+                    Node clipRect = clip.getClip();
+                    clip.layoutXProperty().addListener((src, ov, nv) -> {
+                        double horPadding = table.snappedRightInset() + table.snappedLeftInset();
+                        if (table.getWidth() - horPadding != clip.getWidth()) {
+                            LOG.info("\nlayoutClipListener - table/flow: " + table.getWidth() + " / " + clip.getWidth());
+                        }
+//                        LOG.info("\nlayoutX listener: hbar value: " + getHorizontalScrollBar().getValue() + clipRect);
+//                        DebugUtils.printBounds(clipRect);
+////                        LOG.info("hbarValue " + ov + " / " + nv);
+                    });
+                    hasClippedListener = true;
+                    getHorizontalScrollBar().valueProperty().addListener((src, ov, nv) ->{
+                        double horPadding = table.snappedRightInset() + table.snappedLeftInset();
+                        if (table.getWidth() - horPadding != clip.getWidth()) {
+                            LOG.info("\nhbar listener - table/flow: " + table.getWidth() + " / " + clip.getWidth());
+                        }
+//                        LOG.info("\nhbar value listener " + getHorizontalScrollBar().getValue() + clipRect);
+//                        DebugUtils.printBounds(clipRect);
+//                        LOG.info("contentWidth: " + table.getProperties().get("TableView.contentWidth"));
+                    });
+                }
+            }
         }
 
         @Override
@@ -72,8 +103,7 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
             }
             overlay.toFront();
             if (getSkinnable().getIndex() == 0) {
-                LOG.info("index of overlay: " + getChildren().contains(overlay));
-                DebugUtils.printBounds(overlay);
+//                DebugUtils.printBounds(overlay);
 //                DebugUtils.printBounds(hbar);
 //                DebugUtils.printBounds(getVirtualFlow());
 //                DebugUtils.printBounds(getSkinnable().getParent());

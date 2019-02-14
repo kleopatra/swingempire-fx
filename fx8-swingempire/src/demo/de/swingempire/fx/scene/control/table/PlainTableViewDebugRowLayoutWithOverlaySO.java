@@ -144,6 +144,7 @@ public class PlainTableViewDebugRowLayoutWithOverlaySO extends Application {
         column.setCellValueFactory(new PropertyValueFactory<>(property));
         return column;
     }
+    
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));

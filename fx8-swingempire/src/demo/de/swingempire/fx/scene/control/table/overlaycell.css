@@ -9,6 +9,11 @@
     -fx-background-color: lavenderblush;
 }
 
+/* from SO: zero padding -> no focusborder, not possible
+.table-view {
+    -fx-padding: 0;
+}
+*/
 /*
 .table-row-cell
 {
