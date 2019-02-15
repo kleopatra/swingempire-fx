@@ -8,23 +8,27 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import de.swingempire.fx.demobean.Person;
-import de.swingempire.fx.util.DebugUtils;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -34,6 +38,9 @@ import javafx.stage.Stage;
  * are visible on the left if having some fixed overlay.
  * 
  * Here using a plain StackPane (vs. a Cell)
+ * 
+ * bug: https://bugs.openjdk.java.net/browse/JDK-8146406
+ * resize/relocate the overlay with +/- a single pixel to hack around 
  * 
  * @see BugTableViewSampleVisualGlitchBorder
  * 
@@ -93,16 +100,24 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
             ScrollBar scrollBar = getHorizontalScrollBar();
             if (scrollBar == null)  return;
 
+            Point2D xParent = getSkinnable().localToParent(x, y);
+//            Point2D 
+            
             double hbarValue = scrollBar.getValue();
+            Point2D hbarParent = getSkinnable().localToParent(hbarValue, 0);
             TableColumnBase<T, ?> firstColumn = getVisibleLeafColumns().get(0);
-            overlay.resize(firstColumn.getWidth(), h);
-            overlay.relocate(snapSizeX(hbarValue), 0);
             if (!getChildren().contains(overlay)) {
                 // children are cleared on change notification from columns, re-add
                 getChildren().add(overlay);
             }
             overlay.toFront();
+            // resize/relocate with +/- a single pixel to hack around 
+//            overlay.resize(firstColumn.getWidth() + 1, h);
+//            overlay.relocate(hbarValue - 1, 0);
+            overlay.resize(10, h);
+            overlay.relocate(hbarValue, 0);
             if (getSkinnable().getIndex() == 0) {
+                LOG.info("flow pref: " + getVirtualFlow().prefWidth(-1));
 //                DebugUtils.printBounds(overlay);
 //                DebugUtils.printBounds(hbar);
 //                DebugUtils.printBounds(getVirtualFlow());
@@ -124,18 +139,41 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
         
         // copied from TableRowSkinBase
         protected VirtualFlow getVirtualFlow() {
-            Parent p = getSkinnable();
-            while (p != null) {
-                if (p instanceof VirtualFlow) {
-                    return (VirtualFlow) p;
+            Parent node = getSkinnable();
+            while (node != null) {
+                if (node instanceof VirtualFlow) {
+                    return (VirtualFlow) node;
                 }
-                p = p.getParent();
+                node = node.getParent();
             }
             return null;
         }
 
     }
 
+    public static ScrollBar getHorizontalScrollBar(VirtualFlow flow) {
+        return (ScrollBar) FXUtils.invokeGetMethodValue(VirtualFlow.class, flow, "getHbar");
+    }
+    
+    public static VirtualFlow getVirtualFlow(Node node) {
+        return (VirtualFlow) node.lookup("VirtualFlow");
+//        while (node != null) {
+//            if (node instanceof VirtualFlow) {
+//                return (VirtualFlow) node;
+//            }
+//            node = node.getParent();
+//        }
+//        return null;
+    }
+    
+    public static ScrollBar getHbar(Node node) {
+        VirtualFlow flow = getVirtualFlow(node);
+        return getHorizontalScrollBar(flow);
+    }
+    
+    private ScrollBar hbar;
+    private Label valueLabel = new Label();
+    
     private Parent createContent() {
         TableView<Person> table = createPlainTable();
         table.setRowFactory(c -> {
@@ -148,9 +186,35 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
                 
             };
         });
-        table.getColumns().get(0).getStyleClass().add("overlay-column");
+//        table.getColumns().get(0).getStyleClass().add("overlay-column");
+        
+        double delta = 0.05;
+        Button up = new Button("+");
+        up.setOnAction(e -> {
+            installHbar(table);
+            double value = hbar.getValue();
+            hbar.setValue(value + delta);
+        });
+        Button down = new Button("-");
+        down.setOnAction(e -> {
+            installHbar(table);
+            double value = hbar.getValue();
+            hbar.setValue(value - delta);
+        });
+        
         BorderPane content = new BorderPane(table);
+        content.setBottom(new HBox(10, up, valueLabel, down));
         return content;
+    }
+
+    /**
+     * @param table
+     */
+    protected void installHbar(Node table) {
+        if (hbar == null) {
+            hbar = getHbar(table);
+            valueLabel.textProperty().bind(hbar.valueProperty().asString());
+        }
     }
 
     private TableView<Person> createPlainTable() {

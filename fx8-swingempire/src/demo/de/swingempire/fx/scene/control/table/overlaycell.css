@@ -1,19 +1,19 @@
-.table-cell:overlay
+.table-cell, .list-cell
 {
     -fx-background: -fx-control-inner-background;
-    -fx-background-color: lavenderblush;
+    -fx-background-color: red;
 }
 
 .overlay
 {
-    -fx-background-color: lavenderblush;
+    -fx-background-color: lightblue;
 }
 
 /* from SO: zero padding -> no focusborder, not possible
-.table-view {
-    -fx-padding: 0;
-}
 */
+.table-view, .list-view {
+    -fx-padding: 10;
+}
 /*
 .table-row-cell
 {
