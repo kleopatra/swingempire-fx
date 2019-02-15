@@ -30,7 +30,7 @@ import javafx.stage.Stage;
  * Same layout quirks as with table -> issue in VirtualFlow?
  * @author Jeanette Winzenburg, Berlin
  */
-public class PlainListViewHScroll extends Application {
+public class PlainListViewDebugRowLayoutWithOverlay extends Application {
 
     private static class MyListCellSkin<T> extends ListCellSkin<T> {
 
@@ -202,6 +202,6 @@ public class PlainListViewHScroll extends Application {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(PlainListViewHScroll.class.getName());
+            .getLogger(PlainListViewDebugRowLayoutWithOverlay.class.getName());
 
 }
