@@ -1,0 +1,3 @@
+.table-cell {
+    -fx-skin: "de.swingempire.fx.scene.control.cell.TableRowCustomMouse$CustomMouseTableCellSkin";
+}

@@ -11,6 +11,7 @@ import de.swingempire.fx.demobean.Person;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -23,7 +24,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.control.skin.VirtualFlow;
@@ -31,6 +31,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -237,6 +238,15 @@ public class PlainTableViewDebugRowLayoutWithOverlay extends Application {
         stage.getScene().getStylesheets().add(uri.toExternalForm());
 
         stage.setTitle(FXUtils.version());
+        
+//        Screen primary = Screen.getPrimary();
+//        Rectangle2D vb = primary.getVisualBounds();
+//        Rectangle2D raw = primary.getBounds();
+//        Rectangle2D visuals = raw;
+//        stage.setX(visuals.getMinX());
+//        stage.setY(visuals.getMinY());
+//        stage.setWidth(visuals.getWidth());
+//        stage.setHeight(visuals.getHeight());
         stage.show();
     }
 
