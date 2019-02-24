@@ -47,6 +47,7 @@ public class TableViewEditCommitValueRepresentation extends Application {
         first.setOnEditCommit(t -> {
             editValue = t.getNewValue();
             System.out.println("doing nothing");
+            table.refresh();
             
         });
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+	 fx:controller="de.swingempire.fx.scene.control.cell.focus.SyncrTwoTablesController">
+   <children>
+      <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+  <TableView fx:id="tableNoScroll" prefHeight="200.0" prefWidth="200.0">
+    <columns>
+      <TableColumn fx:id="tcName" prefWidth="75.0" text="Name" />
+    </columns>
+  </TableView>
+            <ScrollPane fx:id="scPane" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+              <content>
+                <AnchorPane>
+                     <children>
+              <TableView fx:id="tableScroll" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <columns>
+                  <TableColumn prefWidth="75.0" text="Column X" />
+                  <TableColumn prefWidth="75.0" text="Column X" />
+                </columns>
+              </TableView>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </ScrollPane>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>
+

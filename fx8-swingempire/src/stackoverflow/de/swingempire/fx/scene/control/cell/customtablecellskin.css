@@ -1,3 +1,12 @@
 .table-cell {
     -fx-skin: "de.swingempire.fx.scene.control.cell.TableRowCustomMouse$CustomMouseTableCellSkin";
 }
+
+/* unrelated: focus-color not taken 
+  https://stackoverflow.com/q/54689989/203657
+  worksforme
+.root {
+	-fx-focus-color: #C70039;
+	-fx-accent: #C70039;
+}
+*/

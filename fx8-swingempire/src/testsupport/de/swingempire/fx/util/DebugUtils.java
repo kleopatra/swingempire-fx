@@ -23,6 +23,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.FocusModel;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SelectionModel;
@@ -240,6 +241,18 @@ public class DebugUtils {
                 + "\n   " + "screenX/Y: " + event.getScreenX() + " / " + event.getScreenY()
         ;
         LOG.info(location);
+    }
+    
+    public static void printMenuItemContext(String prefix, MenuItem item) {
+        String context = prefix + " context of menuItem " + item.getText()
+            + "\n    " + "styleableNode:   " + item.getStyleableNode()
+            + "\n    " + "styleableParent: " + item.getStyleableParent()
+            + "\n    " + "parentPopup:     " + item.getParentPopup()
+            + "\n    " + "parentMenu:      " + item.getParentMenu()
+            + "\n"    
+        ;
+        LOG.info(context);
+        
     }
     public static void addAllBounds(Parent parent, Node node) {
         // PENDING JW: see no way to use a method reference if the method
