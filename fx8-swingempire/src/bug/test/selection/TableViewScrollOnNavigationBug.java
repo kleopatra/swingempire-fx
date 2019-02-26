@@ -40,6 +40,10 @@ public class TableViewScrollOnNavigationBug extends Application {
     private Parent getContent() {
         TableView<Locale> table = new TableView<>(FXCollections.observableArrayList(
                 Locale.getAvailableLocales()));
+        // quick check: initial selection + navigation in cellSelectionMode?
+        // table focused, navigate with key-down -> last column in first row selected
+//        table.getSelectionModel().setCellSelectionEnabled(true);
+        // --- end quick check
         TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
         countryCode.setCellValueFactory(new PropertyValueFactory<>("country"));
         TableColumn<Locale, String> language = new TableColumn<>("Language");
