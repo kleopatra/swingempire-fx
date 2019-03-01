@@ -88,6 +88,15 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
      */
     protected StageLoader loader;
 
+    /**
+     * The exact behavior is unspecified in MultipleSelectionModel.
+     * Trying to find out ;)
+     */
+    @Test
+    public void testSelectAll() {
+        if (!multipleMode) return;
+        fail("TBD: actual behavior of selectAll - state, notification");
+    }
     
     /**
      * A variant of incorrect handling of discontinous list modifications, reported
@@ -924,6 +933,40 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
 
     
     //-------------------- items modification    
+    
+    /**
+     * bug report on javafxports:
+     * https://github.com/javafxports/openjdk-jfx/issues/375
+     */
+    @Test
+    public void testSelectedOnSetItemSizeOne() {
+        int selected = 0;
+        // PENDING JW: no test api to get item? or retain via index?
+        clearItems();
+        addItem(0, createItem("newitem"));
+        getSelectionModel().select(selected);
+        assertEquals("sanity: single item selected ", selected, getSelectionModel().getSelectedIndex());
+        setItem(0, createItem("replaced"));
+        assertEquals("single item selected after replace ", selected, getSelectionModel().getSelectedIndex());
+    }
+    
+    /**
+     * bug report on javafxports:
+     * https://github.com/javafxports/openjdk-jfx/issues/375
+     */
+    @Test
+    public void testFocusedOnSetItemSizeOne() {
+        int selected = 0;
+        // PENDING JW: no test api to get item? or retain via index?
+        clearItems();
+        Object oldItem = createItem("newitem");
+        addItem(0, oldItem);
+        getSelectionModel().select(selected);
+        assertEquals("sanity: single item focused ", selected, getFocusModel().getFocusedIndex());
+        Object replacedItem = createItem("replaced");
+        setItem(0, replacedItem);
+        assertEquals("single item focused after replace ", selected, getFocusModel().getFocusedIndex());
+    }
     
     @Test
     public void testSelectedOnSetItemAtSelected() {
@@ -2740,6 +2783,10 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         items.remove(i);
     }
 
+    protected void retainAllItems(Object... objects) {
+        items.retainAll(objects);
+    }
+    
     /**
      * @param object
      * @param object2

@@ -35,6 +35,48 @@ import javafx.scene.control.SelectionMode;
 public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelectionIssues<ListView> {
 
     /**
+     * bug report on javafxports:
+     * https://github.com/javafxports/openjdk-jfx/issues/375
+     */
+    @Test
+    public void testSelectedFocused375() {
+        ListView<String> listView1 = new ListView<>();
+        ListView<String> listView2 = new ListView<>();
+        ListView<String> listView3 = new ListView<>();
+        listView1.getItems().add("TEST1");
+        listView1.setItems(FXCollections.observableArrayList("TEST1"));
+        listView1.getSelectionModel().select(0);
+        listView1.getFocusModel().focus(0);
+        printLog("1-1", listView1);
+        listView1.getItems().set(0, "TEST2");
+        printLog("1-2", listView1);
+
+        listView2.getItems().addAll("TEST1", "test1");
+        listView2.getSelectionModel().select(0);
+        listView2.getFocusModel().focus(0);
+        printLog("2-1", listView2);
+        listView2.getItems().set(0, "TEST2");
+        printLog("2-2", listView2);
+        listView2.getItems().set(0, "TEST3");
+        printLog("2-3", listView2);
+
+        listView3.setItems(FXCollections.observableArrayList("TEST1"));
+        listView3.getSelectionModel().select(0);
+        listView3.getFocusModel().focus(0);
+        printLog("3-1", listView3);
+        listView3.getItems().set(0, "TEST2");
+        printLog("3-2", listView3);
+        listView3.getItems().set(0, "TEST3");
+        printLog("3-3", listView3);
+    }
+
+    private void printLog(String label, ListView<String> listView) {
+            System.out.println(label + " selectedIndex : " + listView.getSelectionModel().getSelectedIndex() + ", selectedItem : " + listView.getSelectionModel().getSelectedItem());
+            System.out.println(label + " focusedIndex : " + listView.getFocusModel().getFocusedIndex() + ", focusedItem : " + listView.getFocusModel().getFocusedItem());
+    }
+
+
+    /**
      * Trying to make test fail for 
      * https://bugs.openjdk.java.net/browse/JDK-8197985
      * 
@@ -132,8 +174,10 @@ public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelecti
         });
         // add selectedIndex - changes nothing as it is already selected
         sm.select(selectedIndex);
-        assertSame("sanity: state unchanged", selected, sm.getSelectedItems().get(1));
-        assertEquals("sanity: state unchanged", 1, selectedIndex);
+        // PENDING JW: fishy - selected is first, not last?
+        // selectAll is unspecified, so testing specifics here is useless
+//        assertSame("sanity: state unchanged", selected, sm.getSelectedItems().get(1));
+//        assertEquals("sanity: state unchanged", 1, selectedIndex);
         assertEquals("sanity: state unchanged", selectedItems, sm.getSelectedItems());
         assertEquals("sanity: state unchanged", selectedIndices, sm.getSelectedIndices());
         assertEquals("must not fire if nothing changed", 0, counter.get());
@@ -158,8 +202,10 @@ public class ListCoreMultipleSelectionIssues extends AbstractListMultipleSelecti
         });
         // add selectedIndex - changes nothing as it is already selected
         sm.select(selectedIndex);
-        assertSame("sanity: state unchanged", selected, sm.getSelectedItems().get(1));
-        assertEquals("sanity: state unchanged", 1, selectedIndex);
+        // PENDING JW: fishy - selected is first, not last?
+        // selectAll is unspecified, so testing specifics here is useless
+//        assertSame("sanity: state unchanged", selected, sm.getSelectedItems().get(1));
+//        assertEquals("sanity: state unchanged", 1, selectedIndex);
         assertEquals("sanity: state unchanged", selectedItems, sm.getSelectedItems());
         assertEquals("sanity: state unchanged", selectedIndices, sm.getSelectedIndices());
         assertEquals("must not fire if nothing changed", 0, counter.get());

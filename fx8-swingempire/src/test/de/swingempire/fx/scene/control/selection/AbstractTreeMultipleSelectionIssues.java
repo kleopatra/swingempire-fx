@@ -1072,6 +1072,13 @@ public abstract class AbstractTreeMultipleSelectionIssues extends
         items.removeAll(treeItem);
     }
 
+    
+    @Override
+    protected void retainAllItems(Object... objects) {
+        getRootChildren().retainAll(objects);
+        items.retainAll(objects);
+    }
+
     @Override
     protected void removeItem(int pos) {
         getRootChildren().remove(pos);
