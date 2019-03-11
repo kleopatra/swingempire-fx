@@ -26,6 +26,9 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 /**
+ * Table: adjust vbar to write over corner.
+ * https://stackoverflow.com/q/55100873/203657
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TableWithoutCorner extends Application {
@@ -43,7 +46,6 @@ public class TableWithoutCorner extends Application {
         public MyTableHeader(TableViewSkinBase skin) {
             super(skin);
             this.skin = skin;
-            checkAlias();
         }
 
         @Override
@@ -52,14 +54,12 @@ public class TableWithoutCorner extends Application {
             adjustCornerLayout();
         }
 
-        /**
-         * 
-         */
         private void adjustCornerLayout() {
             checkAlias();
+            // tbd: check also if corner is visible
             if (!vBar.isVisible()) {
                 vBar.getProperties().remove("DELTA");
-            } else {
+            } else { 
                 vBar.getProperties().put("DELTA", getHeight());
             }
         }
