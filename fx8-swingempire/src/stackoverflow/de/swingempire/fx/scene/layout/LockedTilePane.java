@@ -29,6 +29,7 @@ public class LockedTilePane extends Application {
     {
         // Create a Button or any control item
         Button Button1 = new Button("1");
+        Button1.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         Button Button2 = new Button("ABC\n  2");
         Button Button3 = new Button("DEF\n  3");
         Button Button4 = new Button("GHI\n  4");
