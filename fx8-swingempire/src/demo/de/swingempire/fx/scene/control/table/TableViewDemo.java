@@ -256,32 +256,32 @@ public class TableViewDemo extends Application {
         // no initial styling only after real changes (like
         // changing items or selection
         // https://stackoverflow.com/q/52425649/203657
-        table.setRowFactory(c -> new TableRow<Person>() {
-            @Override
-            public void updateItem(Person item, boolean empty) {
-                super.updateItem(item, empty);
-//                LOG.info("update with " + item + getChildren().size());
-                if (item == null || empty) {
-                    setStyle("");
-                } else {
-                    if (item.getFirstName().startsWith("E")) {
-                        // apply style to row is fine - but colors the free space as well
-//                        setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
-                        //We apply now the changes in all the cells of the row
-                        for (int i = 0; i < getChildren().size(); i++) {
-                            LOG.info("coloring ..");
-                            ((Labeled) getChildren().get(i)).setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
-                        }
-                    } else {
-                        for (int i = 0; i < getChildren().size(); i++) {
-                            ((Labeled) getChildren().get(i)).setStyle("");
-                        }
-                        setStyle("");
-                    }
-                }
-            }
-            
-        });
+//        table.setRowFactory(c -> new TableRow<Person>() {
+//            @Override
+//            public void updateItem(Person item, boolean empty) {
+//                super.updateItem(item, empty);
+////                LOG.info("update with " + item + getChildren().size());
+//                if (item == null || empty) {
+//                    setStyle("");
+//                } else {
+//                    if (item.getFirstName().startsWith("E")) {
+//                        // apply style to row is fine - but colors the free space as well
+////                        setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
+//                        //We apply now the changes in all the cells of the row
+//                        for (int i = 0; i < getChildren().size(); i++) {
+//                            LOG.info("coloring ..");
+//                            ((Labeled) getChildren().get(i)).setStyle("-fx-background-color: rgba(255, 0, 0, .25);");
+//                        }
+//                    } else {
+//                        for (int i = 0; i < getChildren().size(); i++) {
+//                            ((Labeled) getChildren().get(i)).setStyle("");
+//                        }
+//                        setStyle("");
+//                    }
+//                }
+//            }
+//            
+//        });
         // does not work, neither does listener on skinProperty 
 //        table.sceneProperty().addListener((src, ov, nv) -> {
 //            table.setItems(Person.persons());
@@ -323,7 +323,12 @@ public class TableViewDemo extends Application {
         last.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         table.getColumns().addAll(last);
         
-        
+        //--------------- quick check: receiving scroll events, low-level input event from mouseWheel fi
+//        table.setOnScroll(e -> {
+//            LOG.info("getting scrollEvent: " + e);
+//        });
+        // ------------- end check scroll events
+
         return table;
     }
 

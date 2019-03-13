@@ -146,6 +146,7 @@ public class TableWithoutCorner extends Application {
             }
             
         }; 
+        table.setTableMenuButtonVisible(true);
         TableColumn<Locale, String> col = new TableColumn<>("Name");
         col.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         table.getColumns().addAll(col);
