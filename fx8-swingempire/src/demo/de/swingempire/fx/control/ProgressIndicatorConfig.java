@@ -139,7 +139,7 @@ public class ProgressIndicatorConfig extends Application {
      */
     private Parent getContent() {
         indicator = new ProgressIndicator(0);
-        indicator.setSkin(new MyProgressIndicatorSkin(indicator));
+//        indicator.setSkin(new MyProgressIndicatorSkin(indicator));
         // install listener _before_ skin is available
         // NPE in fx-9 - didn't dig
 //        customDoneText(indicator);

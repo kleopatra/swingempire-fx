@@ -53,7 +53,7 @@ public class ProgressSample extends Application {
  
         // change text under progressIndicator
         // http://stackoverflow.com/q/31814830/203657
-        configDone(pins[pins.length - 1]);
+//        configDone(pins[pins.length - 1]);
         final VBox vb = new VBox();
         vb.setSpacing(5);
         vb.getChildren().addAll(hbs);
