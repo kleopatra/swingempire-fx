@@ -49,7 +49,7 @@ public class ContextMenuOwner extends Application {
         MenuItem item = new MenuItem("copy to text field");
         menu.getItems().add(item);
         item.setOnAction(e -> {
-//            LOG.info("" + e.getSource() + "\n " + e.getTarget());
+            LOG.info("" + e.getSource() + "\n " + e.getTarget());
 //            LOG.info("" + item.getStyleableNode() + "\n " + item.getStyleableParent());
             
             LOG.info("" + menu.getOwnerNode());
