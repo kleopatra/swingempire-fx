@@ -22,6 +22,13 @@ import javafx.scene.control.skin.VirtualFlow;
  */
 public class SkinUtils {
     
+    /**
+     * Returns the virtualFlow of this containerBase. Accessed refectively: needed
+     * even in later versions of fx, because its scope is protected.
+     * 
+     * @param skin
+     * @return
+     */
     public static VirtualFlow<?> getVirtualFlow(VirtualContainerBase<?, ?> skin) {
         return (VirtualFlow<?>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, skin, "getVirtualFlow");
     }
