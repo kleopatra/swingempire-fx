@@ -38,6 +38,7 @@ public class ListViewScrollTweak extends Application {
          */
         public LListViewSkin(ListView<T> control) {
             super(control);
+            LOG.info("" + getVirtualFlow().getCellCount());
         }
 
         

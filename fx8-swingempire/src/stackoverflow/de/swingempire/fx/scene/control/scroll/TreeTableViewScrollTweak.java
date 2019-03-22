@@ -4,22 +4,25 @@
  */
 package de.swingempire.fx.scene.control.scroll;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import de.swingempire.fx.scene.control.scroll.TableViewScrollTweak.TVirtualFlow;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableRow;
+import javafx.scene.control.TreeTableView;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
+import javafx.scene.control.skin.TreeTableViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -33,13 +36,13 @@ import javafx.stage.Stage;
  * 
  * @author Jeanette Winzenburg, Berlin
  */
-public class TableViewScrollTweak extends Application {
+public class TreeTableViewScrollTweak extends Application {
 
-    public static class TTableViewSkin<T> extends TableViewSkin<T> {
+    public static class TTreeTableViewSkin<T> extends TreeTableViewSkin<T> {
 
-        public TTableViewSkin(TableView<T> control) {
+        public TTreeTableViewSkin(TreeTableView<T> control) {
             super(control);
-            updateItemCount();
+//            updateItemCount();
             LOG.info("" + getVirtualFlow().getCellCount());
         }
 
@@ -48,7 +51,7 @@ public class TableViewScrollTweak extends Application {
         @Override
         protected double computePrefHeight(double width, double topInset,
                 double rightInset, double bottomInset, double leftInset) {
-            double pref = ((TVirtualFlow) getVirtualFlow()).computePrefHeight(width);
+            double pref = ((TTVirtualFlow) getVirtualFlow()).computePrefHeight(width);
 //            LOG.info("skin: " + pref + getSkinnable().getScene().getWindow()); 
 //            new RuntimeException("who is calling? " + pref + "\n").printStackTrace();
             return  pref;
@@ -58,14 +61,14 @@ public class TableViewScrollTweak extends Application {
 
 
         @Override
-        protected VirtualFlow<TableRow<T>> createVirtualFlow() {
-            return new TVirtualFlow();
+        protected VirtualFlow<TreeTableRow<T>> createVirtualFlow() {
+            return new TTVirtualFlow();
         }
         
         
     }
     
-    public static class TVirtualFlow extends VirtualFlow {
+    public static class TTVirtualFlow extends VirtualFlow {
 
         /**
          * Overridden to allow access to super
@@ -84,16 +87,20 @@ public class TableViewScrollTweak extends Application {
 //                .limit(100)
 //                .map(c -> "item " + c)
 //                .collect(Collectors.toList());
-        TableView<Locale> control = new TableView<>(FXCollections.observableArrayList(Locale.getAvailableLocales())) {
+        List<TreeItem<Locale>> treeItems = Arrays.stream(Locale.getAvailableLocales()).map(TreeItem::new).collect(Collectors.toList());
+        TreeItem<Locale> root = new TreeItem<>(new Locale("dummy"));
+        root.setExpanded(true);
+        root.getChildren().addAll(treeItems);
+        TreeTableView<Locale> control = new TreeTableView<>(root) {
 
             @Override
             protected Skin<?> createDefaultSkin() {
-                return new TTableViewSkin(this);
+                return new TTreeTableViewSkin(this);
             }
             
         };
-        TableColumn<Locale, String> name = new TableColumn<>("DisplayName");
-        name.setCellValueFactory(new PropertyValueFactory<>("displayName"));
+        TreeTableColumn<Locale, String> name = new TreeTableColumn<>("DisplayName");
+        name.setCellValueFactory(new TreeItemPropertyValueFactory<Locale, String>("displayName"));
         control.getColumns().addAll(name);
         
         control.setFixedCellSize(25);
