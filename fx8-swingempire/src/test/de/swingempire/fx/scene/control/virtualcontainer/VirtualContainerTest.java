@@ -48,6 +48,8 @@ public class VirtualContainerTest {
 
     /**
      * bug in TableViewSkin: virtualFlow's cellCount not initialized.
+     * reported
+     * https://bugs.openjdk.java.net/browse/JDK-8221334
      */
     @Test
     public void testTableSkinCellCountInitial() {

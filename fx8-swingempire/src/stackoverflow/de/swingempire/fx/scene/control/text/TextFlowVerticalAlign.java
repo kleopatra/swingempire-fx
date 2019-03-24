@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.text;
 
+import java.awt.BorderLayout;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
@@ -76,10 +78,11 @@ public class TextFlowVerticalAlign extends Application {
         textFlow.getChildren().addAll(text1, iv, text2, iv2, text3, iv3);
 
         
-        Group group = new Group(textFlow);
+//        BorderPane content = new BorderPane(textFlow);
+        Group content = new Group(textFlow);
         // fishy, need to revise the debug util: textFlow has its layoutX/Y modified
         DebugUtils.addAllBounds(textFlow, text1);
-        Scene scene = new Scene(group, 500, 500, Color.WHITE);
+        Scene scene = new Scene(content, 500, 500, Color.WHITE);
         stage.setTitle("Hello Rich Text");
         stage.setScene(scene);
         stage.show();
