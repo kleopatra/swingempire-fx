@@ -96,16 +96,13 @@ public class NavigationController implements Initializable {
             }
         });
     }
+    
     /**
      * @param skin
      * @return
      */
     private VirtualFlow<?> getVirtualFlow(TableViewSkin skin) {
-        // note: hack for access still needed in fx11 (and later), it's protected in VirtualContainerBase!
         return SkinUtils.getVirtualFlow(skin);
-//        return (VirtualFlow<?>) FXUtils.invokeGetFieldValue(TableViewSkinBase.class, skin, "flow");
-        // following throws NoSuchMethodDeclaration - was wrong import (from swingempire.patch)
-//        return (VirtualFlow<?>) FXUtils.invokeGetMethodValue(VirtualContainerBase.class, skin, "getVirtualFlow");
     }
     /**
      * 
