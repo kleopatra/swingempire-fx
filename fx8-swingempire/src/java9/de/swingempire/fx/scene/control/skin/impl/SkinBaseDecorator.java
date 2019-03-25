@@ -27,55 +27,6 @@ import javafx.scene.control.SkinBase;
  */
 public interface SkinBaseDecorator {
 
-    
-//    /**
-//     * Removes all change listeners that are currently registered to the given property. 
-//     * 
-//     * @param observable the property to remove the listeners from.
-//     */
-//    default void unregisterChangeListener(ObservableValue<?> observable) {
-//        LambdaMultiplePropertyChangeListenerHandler handler = getChangeListenerHandler();
-//        if (handler == null) return;
-//        handler.unregisterChangeListeners(observable);
-//    }
-//
-//    default void registerChangeListener(ObservableValue<?> observable, Consumer<ObservableValue<?>> consumer) {
-//        LambdaMultiplePropertyChangeListenerHandler handler = getChangeListenerHandler();
-//        if (handler == null) return;
-//        handler.registerChangeListener(observable, consumer);
-//    }
-//    
-//    /**
-//     * 
-//     * @param observable the observable to listen to
-//     * @param consumer the action to apply on change
-//     * @param replace if true unregisters previously installed listeners before registration
-//     */
-//    default void registerChangeListener(ObservableValue<?> observable, Consumer<ObservableValue<?>> consumer, boolean replace) {
-//        if (replace) {
-//            unregisterChangeListener(observable);
-//        }
-//        registerChangeListener(observable, consumer);
-//    }
-//    
-//    default LambdaMultiplePropertyChangeListenerHandler getChangeListenerHandler() {
-//        return (LambdaMultiplePropertyChangeListenerHandler) 
-//                invokeGetFieldValue(TableColumnHeader.class, this, listenerName);
-//        
-//    }
-//
-//    /**
-//     * Removes all change listeners that are currently registered to the given property. 
-//     * 
-//     * @param observable the property to remove the listeners from.
-//     */
-//    default void unregisterChangeListener(ObservableValue<?> observable) {
-//        LambdaMultiplePropertyChangeListenerHandler handler = (LambdaMultiplePropertyChangeListenerHandler) 
-//                invokeGetFieldValue(SkinBase.class, this, "lambdaChangeListenerHandler");
-//        if (handler == null) return;
-//        handler.unregisterChangeListeners(observable);
-//    }
-//    
     /**
      * Disposes behavior (and InputMap) that was installed by super.
      * 
