@@ -7,13 +7,13 @@ package de.swingempire.fx.scene.control.scroll;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.skin.TableViewSkinBaseDecorator;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -35,25 +35,33 @@ import javafx.stage.Stage;
  */
 public class TableViewScrollTweak extends Application {
 
-    public static class TTableViewSkin<T> extends TableViewSkin<T> {
+    public static class TTableViewSkin<T> extends TableViewSkin<T> 
+        implements TableViewSkinBaseDecorator {
 
         public TTableViewSkin(TableView<T> control) {
             super(control);
+            // this is fix of bug https://bugs.openjdk.java.net/browse/JDK-8221334
+            // configure cell count
             updateItemCount();
-            LOG.info("" + getVirtualFlow().getCellCount());
         }
 
         
-        // no rows at all ... only header taken
+        /**
+         *  delegating to the flow without the config fix doesn't show any rows at all
+         *  (because the flow has not yet any cells)
+         */
         @Override
         protected double computePrefHeight(double width, double topInset,
                 double rightInset, double bottomInset, double leftInset) {
+            // delegate to flow for pref of viewport
             double pref = ((TVirtualFlow) getVirtualFlow()).computePrefHeight(width);
+            double header = getTableHeader().prefHeight(width);
 //            LOG.info("skin: " + pref + getSkinnable().getScene().getWindow()); 
 //            new RuntimeException("who is calling? " + pref + "\n").printStackTrace();
-            return  pref;
-//            return super.computePrefHeight(width, topInset, rightInset, bottomInset,
+            return  pref + header;
+//            double superResult = super.computePrefHeight(width, topInset, rightInset, bottomInset,
 //                    leftInset);
+//            return superResult;
         }
 
 
@@ -73,7 +81,7 @@ public class TableViewScrollTweak extends Application {
         @Override
         protected double computePrefHeight(double width) {
             double pref = super.computePrefHeight(width);
-            LOG.info("flow: " + pref + " / " + getParent().getClass());
+//            LOG.info("flow: " + pref + " / " + getParent().getClass());
             return pref;
         }
         
@@ -96,7 +104,7 @@ public class TableViewScrollTweak extends Application {
         name.setCellValueFactory(new PropertyValueFactory<>("displayName"));
         control.getColumns().addAll(name);
         
-        control.setFixedCellSize(25);
+//        control.setFixedCellSize(31);
         Button logSizes = new Button("Log Sizes");
         logSizes.setOnAction(e -> {
             LOG.info("pref/actual: " + control.prefHeight(-1) + " / " + control.getHeight());
@@ -111,6 +119,7 @@ public class TableViewScrollTweak extends Application {
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));
         stage.setTitle(FXUtils.version());
+        stage.setX(1000);
         stage.show();
     }
 

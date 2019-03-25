@@ -34,6 +34,7 @@ import javafx.scene.control.skin.TreeViewSkin;
 
 /**
  * Divers tests across all virtualized controls.
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
@@ -45,6 +46,20 @@ public class VirtualContainerTest {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
+    /**
+     * fixed by adding the missing updateItemCount 
+     */
+    @Test
+    public void testTableSkinCellCountInitialFix() {
+        TableView<Locale> control = new TableView<>(FXCollections.observableArrayList(Locale.getAvailableLocales()));
+        control.setSkin(new TableViewSkin<>(control) {
+            {
+                updateItemCount();
+                assertEquals("flow's cellCount must be initialized", control.getItems().size(), 
+                        getVirtualFlow().getCellCount());
+            }
+        });
+    }
 
     /**
      * bug in TableViewSkin: virtualFlow's cellCount not initialized.
