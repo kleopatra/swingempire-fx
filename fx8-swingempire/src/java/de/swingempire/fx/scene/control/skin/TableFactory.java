@@ -13,11 +13,13 @@ import java.util.stream.Collectors;
 
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Skin;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.control.skin.VirtualFlow;
@@ -112,6 +114,22 @@ public class TableFactory {
         return createTableColumn(property, -1);
     }
 
+    /**
+     * Creates and returns a TableColumn for the given property with initial default
+     * pref width and TextFieldTableCell as cell.
+     * <p>
+     * Note: the property must be of type String to be editable without error.
+     * 
+     * @param property
+     * @return
+     */
+    public static <T> TableColumn<T, String> createEditableTableColumn(String property) {
+        TableColumn<T, String> column = (TableColumn<T, String>) createTableColumn(property);
+        Callback<TableColumn<T, String>, TableCell<T, String>> c = TextFieldTableCell.forTableColumn();
+        column.setCellFactory(c);
+        return column;
+    }
+    
     public static <T> void createAndAddTableColumns(TableView<T> table, 
             Function<String, TableColumn<T, ?>> factory, String... properties) {
     }
