@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/testfxdependent/java"/>
+	<classpathentry kind="src" path="src/testfxdependent/demo"/>
+	<classpathentry kind="src" path="src/testfxdependent/test"/>
+	<classpathentry excluding="test/|demo/|java/" kind="src" path="src/testfxdependent"/>
 	<classpathentry kind="src" path="src/java9"/>
 	<classpathentry kind="src" path="src/demo9"/>
 	<classpathentry kind="src" path="src/test9"/>
@@ -66,5 +70,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/testfx-dependent"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/testfx-all-in-one"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
