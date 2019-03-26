@@ -80,6 +80,7 @@ public class TableViewScrollTweak extends Application {
          */
         @Override
         protected double computePrefHeight(double width) {
+            LOG.info("parent: " + getParent());
             double pref = super.computePrefHeight(width);
 //            LOG.info("flow: " + pref + " / " + getParent().getClass());
             return pref;

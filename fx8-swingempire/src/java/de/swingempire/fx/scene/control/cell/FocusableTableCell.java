@@ -24,8 +24,9 @@ import javafx.scene.control.TableView.TableViewFocusModel;
  * 
  * Notes:
  * - must add some styling for <code>.table-cell:focused</code>
- * - hampered by focusedCell being set only on clicking with mouse
- * - even that is lost when moving the focus via ctrl-somekey 
+ * - partly fixed in fx11: hampered by focusedCell being set only on clicking with mouse, is set
+ *   also by tabbing into and then navigate by arrow keys
+ * - fixed in fx11: even that is lost when moving the focus via ctrl-somekey 
  * 
  */
 public class FocusableTableCell<S, T> extends TableCell<S, T> {
