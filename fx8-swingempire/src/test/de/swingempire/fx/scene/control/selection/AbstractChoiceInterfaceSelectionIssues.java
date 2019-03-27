@@ -172,6 +172,55 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
     }
     
     /**
+     * Test against SO: 
+     * 
+     * sequence: 
+     * - start unselected
+     * - setValue to uncontained
+     * - select (via select(index))
+     * - setValue to uncontained again
+     */
+    @Test
+    public void testSetValueUpdatesSelectedItemAgain() {
+        initSkin();
+        int index = 2;
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+        getSelectionModel().select(index);
+        assertEquals(items.get(index), getSelectionModel().getSelectedItem());
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+    }
+    
+    /**
+     * Test against SO: 
+     * 
+     * sequence: 
+     * - start unselected
+     * - setValue to uncontained
+     * - select (via select(item))
+     * - setValue to uncontained again
+     */
+    @Test
+    public void testSetValueUpdatesSelectedItemAgain2() {
+        initSkin();
+        int index = 2;
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+        Object item = items.get(index);
+        getSelectionModel().select(item);
+        assertEquals(item, getSelectionModel().getSelectedItem());
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+    }
+    
+    /**
      * Regression guard: combo value must not be changed on setAll 
      * https://javafx-jira.kenai.com/browse/RT-20945
      */
