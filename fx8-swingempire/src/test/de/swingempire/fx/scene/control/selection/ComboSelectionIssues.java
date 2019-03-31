@@ -5,12 +5,14 @@
 package de.swingempire.fx.scene.control.selection;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
+import com.sun.javafx.tk.Toolkit;
 
 import static org.junit.Assert.*;
 
@@ -40,7 +42,66 @@ import javafx.scene.control.skin.ComboBoxListViewSkin;
 public class ComboSelectionIssues 
     extends AbstractChoiceInterfaceSelectionIssues<ComboBox, SingleSelectionModel> {
 
+ 
+    /**
+     * Test against SO: 
+     * 
+     * sequence: 
+     * - start unselected
+     * - setValue to uncontained
+     * - select (via select(index))
+     * - setValue to uncontained again
+     */
+    @Test
+    public void testSetValueUpdatesSelectedItemAgain() {
+        initSkin();
+        int index = 2;
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+        getSelectionModel().select(index);
+        assertEquals(items.get(index), getSelectionModel().getSelectedItem());
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("display must be synced to value", uncontained, getDisplayText());
+    }
     
+    /**
+     * Test against SO: 
+     * 
+     * sequence: 
+     * - start unselected
+     * - setValue to uncontained
+     * - select (via select(item))
+     * - setValue to uncontained again
+     */
+    @Test
+    public void testSetValueUpdatesSelectedItemAgain2() {
+        initSkin();
+        int index = 2;
+        Object uncontained = "uncontained";
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        Toolkit.getToolkit().firePulse();
+        assertEquals("display must be synced to value", uncontained, lookupDisplayText());
+        Object item = items.get(index);
+        getSelectionModel().select(item);
+        assertEquals(item, getSelectionModel().getSelectedItem());
+        getChoiceView().setValue(uncontained);
+        assertEquals("selectedItem must be synced to value", uncontained, getSelectionModel().getSelectedItem());
+        assertEquals("value must be displayed", uncontained, lookupDisplayText());
+        
+//        assertEquals("display must be synced to value", uncontained, getDisplayText());
+    }
+    
+
+    protected String lookupDisplayText() {
+        ListCell cell = (ListCell) getView().lookup(".list-cell");
+        assertNotNull(cell);
+        LOG.info("" + cell);
+        return cell.getText();
+    }
     /**
      * Used in bug report for ChoiceBox. Here adjusted for comboBox
      * Standalone test: setting a selectionModel which has a selected item
@@ -268,4 +329,7 @@ public class ComboSelectionIssues
     }
 
 
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(ComboSelectionIssues.class.getName());
 }
