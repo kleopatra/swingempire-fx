@@ -41,6 +41,10 @@ import javafx.stage.Stage;
  * for comparison, see tab "direct" and do the same: 
  * - as expected, items are visibly removed from the showing popup   
  * 
+ * reported: https://bugs.openjdk.java.net/browse/JDK-8219620
+ * 
+ * hack around: hook into ContextMenuContainer
+ * @see de.swingempire.fx.scene.control.MenuKeepOpenOnChange
  * 
  * @author Jeanette Winzenburg, Berlin
  */

@@ -32,6 +32,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import test.combobox.MenuModifyItemsWhileShowing;
 
 /**
  * Keep menu open on dynamic change of 
@@ -45,6 +46,11 @@ import javafx.stage.Stage;
  *   listening to the items of the menu such that they are not kept in synch
  * - a way out is to reflectively access the submenu and update its items on 
  *   modifications of those of the menu    
+ *   
+ * reported: https://bugs.openjdk.java.net/browse/JDK-8219620
+ *   
+ * @see test.combobox.MenuModifyItemsWhileShowing
+ *   
  */
 public class MenuKeepOpenOnChange extends Application {
 
