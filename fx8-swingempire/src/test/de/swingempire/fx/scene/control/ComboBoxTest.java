@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.time.LocalDate;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -25,9 +26,14 @@ import javafx.beans.property.Property;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.SelectionModel;
+import javafx.scene.control.skin.ColorPickerSkin;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
+import javafx.scene.control.skin.DatePickerSkin;
+import javafx.scene.paint.Color;
 
 /**
  * 
@@ -58,6 +64,13 @@ public class ComboBoxTest {
     /**
      * quick test: action only fired after combo has a skin,
      * here by adding to the scenegraph via StageLoader
+     * 
+     * open issue: https://bugs.openjdk.java.net/browse/JDK-8087704
+     * 
+     * related issue: https://bugs.openjdk.java.net/browse/JDK-8133328
+     * wants DatePicker to _not_ fire action if value changed programmatically
+     * that's a wrong expectation because ComboBoxBase specifies action
+     * behavior to be fired whenever the value changes
      */
     @Test
     public void testActionBeforeScenegraph() {
@@ -86,7 +99,69 @@ public class ComboBoxTest {
         cb.setValue(cb.getItems().get(0));
         assertEquals("before", 1, before.get());
     }
+    
+    /**
+     * same for ColorPicker
+     */
+    @Test
+    public void testActionWithSkinColorPicker() {
+        ColorPicker picker = new ColorPicker();
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        picker.setOnAction(e -> before.set(1));
+        picker.setSkin(new ColorPickerSkin(picker));
+        picker.setValue(Color.RED);
+        assertEquals("before", 1, before.get());
+    }
+    
+    /**
+     * Same for datePicker: no action before
+     */
+    @Test
+    public void testActionBeforeScenegraphColorPicker() {
+        ColorPicker cb = new ColorPicker();
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        IntegerProperty after = new SimpleIntegerProperty(0);
+        cb.setOnAction(e -> before.set(1));
+        cb.setValue(Color.RED);
+        new StageLoader(cb);
+        cb.setOnAction(e -> after.set(1));
+        cb.setValue(Color.BEIGE);
+        assertEquals("after", 1, after.get());
+        assertEquals("before", 1, before.get());
+    }
+    
+    
+    /**
+     * same for datePicker
+     */
+    @Test
+    public void testActionWithSkinDatePicker() {
+        DatePicker picker = new DatePicker();
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        picker.setOnAction(e -> before.set(1));
+        picker.setSkin(new DatePickerSkin(picker));
+        picker.setValue(LocalDate.now());
+        assertEquals("before", 1, before.get());
+    }
 
+    /**
+     * Same for datePicker: no action before
+     */
+    @Test
+    public void testActionBeforeScenegraphDatePicker() {
+        DatePicker cb = new DatePicker();
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        IntegerProperty after = new SimpleIntegerProperty(0);
+        cb.setOnAction(e -> before.set(1));
+        cb.setValue(LocalDate.now());
+        new StageLoader(cb);
+        cb.setOnAction(e -> after.set(1));
+        cb.setValue(LocalDate.now().minusDays(5));
+        assertEquals("after", 1, after.get());
+        assertEquals("before", 1, before.get());
+    }
+
+    
 //------------- end combo action fired by skin
     
     @Test (expected = IllegalStateException.class)

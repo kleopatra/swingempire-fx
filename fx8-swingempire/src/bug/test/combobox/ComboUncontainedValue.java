@@ -114,7 +114,7 @@ public class ComboUncontainedValue extends Application {
             }
 
         };
-        testCombo.setButtonCell(custom);
+//        testCombo.setButtonCell(custom);
         
         Button nullIt = new Button("Set null");
         nullIt.setOnAction(e -> {
