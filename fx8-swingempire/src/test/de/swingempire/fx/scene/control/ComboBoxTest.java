@@ -19,8 +19,12 @@ import com.codeaffine.test.ConditionalIgnoreRule;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.util.StageLoader;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -49,6 +53,41 @@ public class ComboBoxTest {
 
     ComboBox<String> comboBox;
     SelectionModel<String> sm;
+
+//------------ combo action fired by skin    
+    /**
+     * quick test: action only fired after combo has a skin,
+     * here by adding to the scenegraph via StageLoader
+     */
+    @Test
+    public void testActionBeforeScenegraph() {
+        ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList("one", "two"));
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        IntegerProperty after = new SimpleIntegerProperty(0);
+        cb.setOnAction(e -> before.set(1));
+        cb.setValue(cb.getItems().get(0));
+        new StageLoader(cb);
+        cb.setOnAction(e -> after.set(1));
+        cb.setValue(cb.getItems().get(1));
+        assertEquals("after", 1, after.get());
+        assertEquals("before", 1, before.get());
+    }
+    
+    /**
+     * quick test: action only fired after combo has a skin,
+     * here by setting the skin at instantiation time
+     */
+    @Test
+    public void testActionWithSkin() {
+        ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList("one", "two"));
+        IntegerProperty before = new SimpleIntegerProperty(0);
+        cb.setOnAction(e -> before.set(1));
+        cb.setSkin(new ComboBoxListViewSkin<>(cb));
+        cb.setValue(cb.getItems().get(0));
+        assertEquals("before", 1, before.get());
+    }
+
+//------------- end combo action fired by skin
     
     @Test (expected = IllegalStateException.class)
     public void testPropertyWithThrowingListener() {
