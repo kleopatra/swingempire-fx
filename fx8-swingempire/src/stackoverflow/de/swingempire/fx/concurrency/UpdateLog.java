@@ -9,7 +9,6 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -28,6 +27,7 @@ public class UpdateLog extends Application {
         primaryStage.show();
         new Thread(scheduler).start();
     }
+    
     public static void main(String[] args) {
         launch(args);
     }
