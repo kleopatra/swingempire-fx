@@ -11,19 +11,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -31,6 +31,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.TableViewSkin;
@@ -40,6 +41,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Callback;
 
 /**
@@ -67,69 +69,148 @@ import javafx.util.Callback;
  */
 public class SummaryTableDemo extends Application
 {
+    /**
+     * TableSkin that initially forces its VirtualFlow into having
+     * at least one rowCell.
+     * 
+     * <p>
+     * posted as update to the answer on SO
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class TweakedTableSkin<T> extends TableViewSkin<T> {
 
-    // random hacking ...
+        private boolean forceNotEmpty = false;
+        
+        ChangeListener showingListener = (src, ov, nv) -> {
+            initForceNotEmpty(src);
+        };
+        
+        public TweakedTableSkin(TableView<T> control) {
+            super(control);
+            
+            Window window = getSkinnable().getScene().getWindow();
+            if (window != null)
+                window.showingProperty().addListener(showingListener);
+        }
+
+        /**
+         * Overridden to force a re-layout with faked itemCount after calling
+         * super if the fake flag is true.
+         */
+        @Override
+        protected void layoutChildren(double x, double y, double w, double h) {
+            super.layoutChildren(x, y, w, h);
+            if (forceNotEmpty) {
+                forceNotEmptyLayout();
+            }
+        }
+
+        /**
+         * Callback from listener installed on window's showing property.
+         * Implemented to set the forceNotEmpty flag and remove the listener.
+         */
+        private void initForceNotEmpty(ObservableValue src) {
+            forceNotEmpty = true;
+            src.removeListener(showingListener);
+        }
+        
+        /**
+         * Enforces a layout pass on the flow with at least one row.
+         * Resets the forceNotEmpty flag and triggers a second
+         * layout pass with the correct count.
+         */
+        private void forceNotEmptyLayout() {
+            if (!forceNotEmpty) return;
+            updateItemCount();
+            forceNotEmpty = false;
+            updateItemCount();
+        }
+        
+        /**
+         * Overridden to return at least 1 if forceNotEmpty is true.
+         */
+        @Override
+        protected int getItemCount() {
+            int itemCount = super.getItemCount();
+            if (forceNotEmpty && itemCount == 0) {
+                itemCount = 1;
+            }
+            return itemCount;
+        }
+
+    }
+
+
+    /**
+     * Experiment: try to force an initial layout pass in the table's flow even if there
+     * are not items.
+     * 
+     * Essentially the same as the answer on SO - but with logging...
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class FakeNotEmptyTableSkin<T> extends TableViewSkin<T> {
 
-        boolean fakeNotEmpty = false;
-        boolean initial = true;
+        private boolean fakeNotEmpty = false;
+        
+        ChangeListener fakeTrigger = (src, ov, nv) -> {
+            initFake(src);
+        };
+        
         /**
          * @param control
          */
         public FakeNotEmptyTableSkin(TableView<T> control) {
             super(control);
+            
+            Window window = getSkinnable().getScene().getWindow();
+            VirtualFlow<TableRow<T>> virtualFlow = getVirtualFlow();
+            
+            window.showingProperty().addListener(fakeTrigger);
+            LOG.info("flow: " + virtualFlow.getWidth() + window.isShowing());
+            virtualFlow.widthProperty().addListener(( src, ov, nv) -> {
+                LOG.info("flow: " + nv);
+            });
         }
 
+        
+        @Override
+        protected void layoutChildren(double x, double y, double w, double h) {
+            super.layoutChildren(x, y, w, h);
+            if (fakeNotEmpty) {
+                fakeItemCount();
+            }
+        }
+
+        protected void initFake(ObservableValue src) {
+            fakeNotEmpty = true;
+            src.removeListener(fakeTrigger);
+        }
+        
+        protected void fakeItemCount() {
+            fakeNotEmpty = true;
+            updateItemCount();
+            fakeNotEmpty = false;
+            updateItemCount();
+        }
         @Override
         protected int getItemCount() {
             int itemCount = super.getItemCount();
-//            fakeNotEmpty = false;
-//            if (itemCount == 0) {
-//                itemCount = 1;
-//                fakeNotEmpty = true;
-//                
-//            }
-//            if (fakeNotEmpty) {
-//                Node placeHolder = getSkinnable().lookup("placeholder");
-//                if (placeHolder != null) {
-//                    placeHolder.setVisible(true);
-//                    
-//                }
-//            }
-////            if (initial) {
-////                initial = false;
-////            }
+            if (fakeNotEmpty && itemCount == 0) {
+                itemCount = 1;
+            }
             return itemCount;
         }
 
-        @Override
-        protected void updateItemCount() {
-            super.updateItemCount();
-            if (initial) {
-                int count = getItemCount();
-                if (count == 0) {
-                    fakeNotEmpty = true;
-                    getVirtualFlow().setCellCount(1);
-                    getVirtualFlow().setVisible(true);
-                  Node placeHolder = getSkinnable().lookup("placeholder");
-                  if (placeHolder != null) {
-                      placeHolder.setVisible(false);
-                      
-                  }
-                }
-            }
-        }
-        
-        
-        
     }
 
     private TableView<Data> mainTable = new TableView<>() {
 
         @Override
         protected Skin<?> createDefaultSkin() {
-            // TODO Auto-generated method stub
-            return new FakeNotEmptyTableSkin(this);
+//            return new FakeNotEmptyTableSkin<>(this);
+            return new TweakedTableSkin<>(this);
         }
         
     };
