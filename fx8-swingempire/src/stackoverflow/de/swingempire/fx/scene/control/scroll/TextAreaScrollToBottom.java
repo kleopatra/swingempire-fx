@@ -22,6 +22,8 @@ import javafx.stage.Stage;
 /**
  * SO: textArea not scrolled to bottom on input
  * happens "early" - "later" it's default to scroll to bottom
+ * 
+ * looks like a bug, report!
  * @author Jeanette Winzenburg, Berlin
  */
 public class TextAreaScrollToBottom extends Application {
