@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -20,6 +21,7 @@ import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -30,6 +32,20 @@ import javafx.stage.Stage;
  * 
  * - looks fishy but working as expected 
  * - subclassing core ComboBoxTableCell is fine as well
+ * 
+ * The NPE if table child of TitledPane (in fx8, fixed in fx11) is due to
+ * https://bugs.openjdk.java.net/browse/JDK-8196827
+ * comboSkin doesn't guard itself against null scene in show
+ * (actually, positionAndShowPopup which is called from show)
+ * hack is custom skin that guards's against null scene in show
+ * 
+ * another quirk (in fx8): layout of popup not adjusted to changing column width
+ * - incorrect the very first time it's opened
+ * - second time it's adjusted
+ * - resize column: width the same as the second time always
+ * 
+ * in fx11: incorrect on first opening after resize of colum
+ * due to "early" showing?
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -45,7 +61,10 @@ public class ComboTableCellShow extends Application {
         public void startEdit() {
             super.startEdit();
             if (isEditing() && getGraphic() instanceof ComboBox) {
-                ((ComboBoxBase) getGraphic()).show();
+                Platform.runLater(( ) -> {
+                    // does not help with layout issue
+                    ((ComboBox) getGraphic()).show();
+                });
             }
         }
         
@@ -134,7 +153,12 @@ public class ComboTableCellShow extends Application {
         table.getColumns().addAll(col);
         table.setItems(FXCollections.observableArrayList(Arrays.asList(new Model("a"),new Model("b"))));
         
-        BorderPane content = new BorderPane(table);
+        // spurious npe in ComboBoxPopupControl.positionAndShowPopup
+        // after expanding/collapsing the titledPane several (?) times
+        // not in fx11 - but: popup not really closed on collapsing the titledPane
+        // on re-opening, it appears somewhere in the middle
+        TitledPane titled = new TitledPane("some titled", table);
+        BorderPane content = new BorderPane(titled);
         return content;
     }
 
