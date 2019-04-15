@@ -66,6 +66,7 @@ public class TabMappingsInterceptor extends Application {
             Predicate<? extends Event> interceptor = e -> true;
             tabMapping.ifPresentOrElse(
                     mapping -> {
+                        LOG.info("mapping: " + mapping );
                         mapping.setInterceptor(interceptor);
                         mapping.setDisabled(true);
                     }, 
