@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.beans.property.*?>
+<GridPane fx:controller="de.swingempire.fx.fxml.ChoiceBoxController"
+      xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+
+    <ChoiceBox fx:id="choiceBox" GridPane.columnIndex="0" GridPane.rowIndex="0"></ChoiceBox>
+
+    <Button fx:id="button" GridPane.columnIndex="0" GridPane.rowIndex="1" text="CHANGE"></Button>
+</GridPane>
