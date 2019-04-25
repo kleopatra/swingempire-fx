@@ -21,6 +21,10 @@ import javafx.util.Callback;
  * added custom rowfactory with overridden isItemChanged plus
  * custom TableRowSkin.
  * 
+ * status fx-11: 
+ * - default tableRow doesn't update
+ * - override isItemChanged to check for identity does update
+ * 
  * @author Jonathan
  */
 public class TestCaseRT_22463 extends Application {

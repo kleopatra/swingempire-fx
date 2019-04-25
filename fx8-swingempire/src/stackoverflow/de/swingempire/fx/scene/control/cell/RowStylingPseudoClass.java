@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import de.swingempire.fx.scene.control.cell.TableRowValidMarker.RowTest;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -24,42 +25,51 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+/**
+ * Change row style based on a (valid) property in the item.
+ * There are several questions on SO around the issue, f.i.
+ * https://stackoverflow.com/q/52519470/203657
+ * 
+ * at it's base, there's a bug in TableRow (left-over from identity vs. equality check)
+ * https://bugs.openjdk.java.net/browse/JDK-8092821
+ * which leads to row.updateItem not called on list change notifications of type update.
+ * 
+ * ItemTableRow:
+ * This workaround is from fabian: add/remove a listener to the item's validProperty
+ * in updateItem and let that listener update the the style.
+ * 
+ * TableRowCustomIsItemChanged:
+ * Workaround with overridden isItemChanged - implemented to check item's validProperty and OR with
+ * super. valid column must be contained and visible or items must be configured with extractor
+ * 
+ * @author Jeanette Winzenburg, Berlin
+ * @author fabian
+ * 
+ * @see RowStylingUpdate
+ */
 public class RowStylingPseudoClass extends Application {
 
     @Override
     public void start(Stage primaryStage) {
       TableView<Item> table = new TableView<>(createDummyData(10));
+      // setting editable is needed for CheckBoxTableCell!
+      table.setEditable(true);
 //      table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
       table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-      table.setRowFactory(t -> new ItemTableRow());
+//      table.setRowFactory(t -> new ItemTableRow());
+      table.setRowFactory(t -> new TableRowCustomIsItemChanged());
 
       TableColumn<Item, String> nameCol = new TableColumn<>("Name");
-      nameCol.setCellFactory(c -> {
-          TableCell<Item, String> cell = new TableCell<>() {
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                String old = getItem();
-                super.updateItem(item, empty);
-//                LOG.info("old/new in cell: " + old + " / " + getItem());
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                }
-            }
-              
-          };
-          return cell;
-      });
       nameCol.setCellValueFactory(features -> features.getValue().nameProperty());
       table.getColumns().add(nameCol);
 
       TableColumn<Item, Boolean> validCol = new TableColumn<>("Valid");
+      validCol.setCellFactory(CheckBoxTableCell.forTableColumn(validCol));
       validCol.setCellValueFactory(features -> features.getValue().validProperty());
       table.getColumns().add(validCol);
 
@@ -81,6 +91,47 @@ public class RowStylingPseudoClass extends Application {
         launch(args);
     }
 
+    
+    public static class TableRowCustomIsItemChanged extends TableRow<Item> {
+        private static final PseudoClass VALID = PseudoClass.getPseudoClass("valid");
+        public TableRowCustomIsItemChanged() {
+            getStyleClass().add("item-table-row");
+          }
+
+
+        @Override
+        protected boolean isItemChanged(Item oldItem, Item newItem) {
+            boolean changed = super.isItemChanged(oldItem, newItem);
+            if (oldItem != null && newItem != null && newItem == oldItem) {
+                changed = changed || (oldItem.isValid() != newItem.isValid());
+            }
+            return true;
+        }
+
+
+        @Override
+        protected void updateItem(Item item, boolean empty) {
+            super.updateItem(item, empty);
+          if (empty || item == null) {
+            updateValidPseudoClass(false);
+          } else {
+            updateValidPseudoClass(item.isValid());
+          }
+        }
+
+        private void updateValidPseudoClass(boolean active) {
+            pseudoClassStateChanged(VALID, active);
+          }
+
+       
+    }
+    /**
+     * Un/Registers listener to validProperty and toggles style (here: pseudoClass) on change
+     * 
+     * will work always, whether or not the property is shown in a column
+     * 
+     * @author fabian
+     */ 
     public static class ItemTableRow extends TableRow<Item> {
 
         private static final PseudoClass VALID = PseudoClass.getPseudoClass("valid");
@@ -122,7 +173,7 @@ public class RowStylingPseudoClass extends Application {
 
       }
 
-    public class Item {
+    private static class Item {
 
         private final StringProperty name = new SimpleStringProperty(this, "name");
         public final void setName(String name) { this.name.set(name); }
