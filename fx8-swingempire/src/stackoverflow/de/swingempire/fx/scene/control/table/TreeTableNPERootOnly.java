@@ -27,6 +27,10 @@ import javafx.stage.Stage;
  * empty cells
  * https://stackoverflow.com/q/55530779/203657
  * 
+ * Bug: reported by ??
+ * https://bugs.openjdk.java.net/browse/JDK-8222454
+ * Issue is 
+ * 
  * answered by slaw (expanded on my comment ;)
  * 
  * @author Jeanette Winzenburg, Berlin
