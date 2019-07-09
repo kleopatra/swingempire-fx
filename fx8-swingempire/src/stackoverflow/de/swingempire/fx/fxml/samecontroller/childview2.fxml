@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<AnchorPane fx:id="child2" id="child2" prefHeight="244.0" prefWidth="568.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" 
+fx:controller="de.swingempire.fx.fxml.samecontroller.MainViewController">
+    <children>
+        <HBox id="hBox2" layoutX="32.0" layoutY="14.0" prefHeight="51.0" prefWidth="200.0" spacing="10.0">
+            <children>
+                <Button fx:id="button3" prefHeight="37.0" text="Button 3" onAction="#handleButtonEvent" />
+                <Button fx:id="button4" prefHeight="37.0" text="Button 4" onAction="#handleButtonEvent" />
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>
+

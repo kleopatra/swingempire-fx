@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.beans.property.*?>
+<HBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+	fx:controller="de.swingempire.fx.fxml.IncludeMainController"
+	fx:id="myChild">
+
+   <children>
+      <Button fx:id="childLabel" text="just some text" onAction="#print" />
+   </children>
+</HBox>

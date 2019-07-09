@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="280.0" prefWidth="500.0"
+    xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2"
+    fx:controller="de.swingempire.fx.fxml.samecontroller.MainViewController">
+    <children>
+        <VBox prefHeight="280.0" prefWidth="500.0" fx:id="view"
+            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <fx:include fx:id="child1" source="childview1.fxml" />
+                <fx:include fx:id="child2" source="childview2.fxml" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
+
