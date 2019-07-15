@@ -23,7 +23,10 @@ import javafx.stage.Stage;
  * TreeView scrolling unpredictable when expanding/collapsing a node.
  * https://stackoverflow.com/q/57025089/203657
  * 
- * Looks like a bug.
+ * Looks like a bug. Suspect TreeViewSkin, but it does nothing but
+ * registering a treeModification listener on the root, call markItemCountDirty 
+ * which forces a updateItemCount (implemented to request a flow.rebuildCells
+ * on the next layout pass).
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -31,8 +34,7 @@ public class TreeExpandScroll extends Application {
 
     private Parent createContent() {
         TreeItem<String> root = createSubTree("root");
-        TreeItem<String> treeItem = root.getChildren().get(5);
-        createChildren(treeItem);
+        root.getChildren().stream().forEach(i -> createChildren(i));
         TreeView<String> tree = new TreeView<>(root);
         BorderPane content = new BorderPane(tree);
         return content;
