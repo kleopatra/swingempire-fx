@@ -24,7 +24,7 @@ import javafx.stage.Stage;
  * TableView:  multipe selection lost on setItem
  * 
  * reported as
- * https://bugs.openjdk.java.net/browse/JDK-8186904 
+ * https://bugs.openjdk.java.net/browse/JDK-8186908 
  * 
  */
 public class TableViewMultipleSelectionLostOnSet extends Application {
