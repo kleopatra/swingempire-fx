@@ -35,7 +35,7 @@ public class BarChartBug extends Application {
         xAxis = new CategoryAxis();
         yAxis = new NumberAxis();
         barChart = new BarChart<>(xAxis, yAxis);
-        
+        barChart.setAnimated(false);
         Button initData = new Button("init");
         initData.setOnAction(e -> {
             xAxis.setLabel("Numer indeksu");
