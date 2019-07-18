@@ -11,6 +11,7 @@ import de.swingempire.fx.collection.FilteredListX;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SelectionMode;
@@ -50,6 +51,9 @@ import javafx.stage.Stage;
  * ListView
  * - FilteredListX doesn't help much
  * 
+ * bug in new coordinates: https://bugs.openjdk.java.net/browse/JDK-8087910
+ * still virulent in fx11 (no wonder, FilteredList still doesn't support fine grained notification)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -61,9 +65,9 @@ public class TableViewFilterSelectionRT_39289 extends Application {
     public void start(Stage primaryStage) throws Exception {
         ObservableList<Locale> items = FXCollections.observableArrayList(Locale.getAvailableLocales());
         items.remove(0);
-//        FilteredList<Locale> filtered = new FilteredList<>(items, always);
+        FilteredList<Locale> filtered = new FilteredList<>(items, always);
         // inverse check: patched filteredList keeps selection
-        FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
+//        FilteredListX<Locale> filtered = new FilteredListX<>(items, always);
         TableView<Locale> tableView = new TableView<>();
 //        ListView tableView = new ListView();
         tableView.setItems(filtered);

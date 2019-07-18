@@ -378,6 +378,7 @@ public class TransformationListTest {
         assertTrue("single remove " , wasSingleRemoved(report.getLastChange()));
     }
     
+    
     /**
      * Testing removal of filtered items. Note: predicate != 0
      */
@@ -396,7 +397,7 @@ public class TransformationListTest {
         assertEquals(0, filtered.size());
         assertEquals(1, report.getEventCount());
         assertTrue("single remove but was " + report.getLastChange(), wasSingleRemoved(report.getLastChange()));
-//        prettyPrint(report.getLastChange());
+        prettyPrint(report.getLastChange());
     }
     
     @Test
