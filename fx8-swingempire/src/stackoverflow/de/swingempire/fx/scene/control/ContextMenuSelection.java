@@ -6,11 +6,15 @@ package de.swingempire.fx.scene.control;
 
 import java.util.logging.Logger;
 
+import com.sun.javafx.scene.control.ContextMenuContent;
+
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -66,7 +70,15 @@ public class ContextMenuSelection extends Application {
                 // focusOwner set after first showing
                 if (ov == null) {
                     // transfer focus to root
-                    scene.getRoot().requestFocus();
+                    // old hack (see the beware section) on why it doesn't work
+                    //  scene.getRoot().requestFocus();
+                    
+                    // next try: 
+                    // grab the containing ContextMenuContainer and force the internal
+                    // book-keeping into no-item-focused state
+                    Parent parent = nv.getParent().getParent();
+                    parent.requestFocus();
+                    FXUtils.invokeSetFieldValue(ContextMenuContent.class, parent, "currentFocusedIndex", -1);
                     // cleanup
                     contextMenu.setOnShown(null);
                 }
@@ -83,6 +95,16 @@ public class ContextMenuSelection extends Application {
         contextMenu.getItems().add(menuItem2);
         contextMenu.getItems().add(menuItem3);
 
+        // quick check: action triggered after 
+        // - hover mouse
+        // - move mouse out
+        // - press enter
+        // result: action of last hover is triggered
+        contextMenu.getItems().forEach(item -> {
+            item.setOnAction(e -> {
+                LOG.info("" + item.getText());
+            });
+        });
         // create a tilepane
 //        TilePane tilePane = new TilePane(label1);
         BorderPane content = new BorderPane(label1);
