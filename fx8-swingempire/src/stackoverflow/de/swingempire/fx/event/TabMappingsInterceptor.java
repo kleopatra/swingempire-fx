@@ -36,7 +36,7 @@ import javafx.stage.Stage;
  * Focustraversal mappings are shared - globally disabled if set interceptor?
  * 
  * not even disabled on the current list...
- * global focus traversal is also managed be scene in its KeyboardShortCutHandler
+ * global focus traversal is also managed by scene in its KeyboardShortCutHandler
  * handles Tab/shift, up, down, left right
  * 
  * global focusTraversalMappings only used by:
