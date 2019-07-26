@@ -4,9 +4,22 @@
  */
 package de.swingempire.fx.chart;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import com.sun.javafx.charts.Legend;
+import com.sun.javafx.charts.Legend.LegendItem;
 
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.Axis;
@@ -15,9 +28,11 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.TilePane;
 import javafx.stage.Stage;
 
@@ -25,15 +40,60 @@ import javafx.stage.Stage;
  * Simple example taken from oracle tutorial.
  * https://docs.oracle.com/javafx/2/charts/line-chart.htm
  * 
- * Problem: items in legend are uniformly spaced, if one is much longer
- * than others looks not so good
- * https://stackoverflow.com/q/51721274/203657
+ * Problem: legenditems should be editable
+ * https://stackoverflow.com/q/57179252/203657
  * 
  * Legend can be set (it's an arbitrary node) but then we have to take
  * over completely - Legend is-a TilePane which is a internal class 
+ * 
+ * Legend.LegendItem is a class that encapsulates the text/symbol, default
+ * is shown in a label. But: users (like Legend) privately access its field
+ * label and go from there ... even though the type of the item is not part
+ * of the api. So we need to replace the items with our own?
+ * 
+ * needs mor work, this quick hack doesn't report the edited value back to the
+ * series!
  */
 //@SuppressWarnings({ "unchecked", "rawtypes" })
-public class LineChartWithCustomLegend extends Application {
+public class LineChartWithEditableLegendItems extends Application {
+    
+    public static class LegendItemWrapper {
+
+        private LegendItem item;
+        private Node symbol;
+        private TextField field;
+        private Pane pane;
+        private int index;
+        
+        ReadOnlyStringWrapper text = new ReadOnlyStringWrapper(this, "text");
+        
+        public LegendItemWrapper(LegendItem item) {
+           this(item, -1);
+        }
+        
+        public LegendItemWrapper(LegendItem item, int index) {
+            this.item = item;
+            this.index = index;
+        }
+        
+        public Node getLegendItemNode() {
+            if (pane == null) {
+                symbol = item.getSymbol();
+                field = new TextField(item.getText());
+                text.bind(field.textProperty());
+                pane = new HBox(10, symbol, field);
+            }
+            return pane;
+        }
+        
+        public ReadOnlyStringProperty textProperty() {
+            return text.getReadOnlyProperty();
+        }
+        
+        public int getIndex() {
+            return index;
+        }
+    }
     
     public static class MyLineChart<X, Y> extends LineChart<X, Y> {
 
@@ -43,6 +103,8 @@ public class LineChartWithCustomLegend extends Application {
 
         private TilePane legendAlias;
         private FlowPane legendReplacement;
+        
+        private ChangeListener<String> textListener = (src, ov, nv) -> handleTextChange(src, nv);
         
         @Override
         protected void updateLegend() {
@@ -54,12 +116,36 @@ public class LineChartWithCustomLegend extends Application {
                 legendAlias = (TilePane) legend;
                 legendReplacement = new FlowPane(10, 10);
                 setLegend(legendReplacement);
+                
             }
             if (legendAlias != null && legendAlias.getChildren().size() > 0) {
-                legendReplacement.getChildren().setAll(legendAlias.getChildren());
+                List<LegendItem> original = ((Legend) legendAlias).getItems();
+                List<LegendItemWrapper> wrapper = new ArrayList<>();
+                for (int i = 0; i < original.size(); i++) {
+                    LegendItemWrapper iw = new LegendItemWrapper(original.get(i), i);
+                    iw.textProperty().addListener(textListener);
+                    wrapper.add(iw);
+                }
+                
+//                        original.stream()
+//                        .map(LegendItemWrapper::new)
+//                        .collect(Collectors.toList());
+                List<Node> wrapperNodes = wrapper.stream()
+                        .map(LegendItemWrapper::getLegendItemNode)
+                        .collect(Collectors.toList());
                 legendAlias.getChildren().clear();
+                legendReplacement.getChildren().setAll(wrapperNodes);
                 setLegend(legendReplacement);
             }
+        }
+        
+        private void handleTextChange(ObservableValue<? extends String> src, String nv) {
+            LegendItemWrapper wrapper = (LegendItemWrapper)  ((ReadOnlyStringProperty) src).getBean();
+            LOG.info("getting change? from " + wrapper);
+            int index = wrapper.getIndex();
+            Series series = getData().get(index);
+            series.setName(nv);
+            
         }
         
     }
@@ -75,7 +161,7 @@ public class LineChartWithCustomLegend extends Application {
         lineChart.setTitle("Stock Monitoring, 2010");
                           
         XYChart.Series<String, Number> series1 = new XYChart.Series<>();
-        series1.setName("Portfolio 1 with a very long name");
+        series1.setName("Portfolio 1");
         
         series1.getData().add(new XYChart.Data<>("Jan", 23));
         series1.getData().add(new XYChart.Data<>("Feb", 14));
@@ -122,13 +208,30 @@ public class LineChartWithCustomLegend extends Application {
         
         lineChart.getData().addAll(series1, series2, series3);
         
+        
+        BooleanProperty removed = new SimpleBooleanProperty(false);
         Button remove = new Button("remove");
         remove.setOnAction(e -> {
             lineChart.getData().remove(series1);
+            removed.set(true);
         });
+        remove.disableProperty().bind(removed);
+        
         Button add = new Button("add");
-        add.setOnAction(e -> lineChart.getData().add(series1));
-        HBox buttons = new HBox(10, remove, add);
+        add.setOnAction(e -> {
+            
+            lineChart.getData().add(series1);
+            removed.set(false);
+        }
+           );
+        add.disableProperty().bind(removed.not());
+        
+        Button editName = new Button("edit name");
+        editName.setOnAction(e -> {
+            series1.setName(series1.getName() + "X");
+        });
+        
+        HBox buttons = new HBox(10, remove, add, editName);
         BorderPane root = new BorderPane(lineChart);
         root.setBottom(buttons);
         Scene scene  = new Scene(root,800,600);       
@@ -144,7 +247,7 @@ public class LineChartWithCustomLegend extends Application {
     
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
-            .getLogger(LineChartWithCustomLegend.class.getName());
+            .getLogger(LineChartWithEditableLegendItems.class.getName());
 }
 
 
