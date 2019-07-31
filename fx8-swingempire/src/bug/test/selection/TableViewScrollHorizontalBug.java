@@ -11,6 +11,8 @@ import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.VirtualFlowTestUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.MapChangeListener.Change;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -45,12 +47,18 @@ import javafx.stage.Stage;
  * reported:
  * https://bugs.openjdk.java.net/browse/JDK-8213739
  * 
+ * ----
+ * quick check: listen for property "TableView.contentWidth"
+ * 
  */
 public class TableViewScrollHorizontalBug extends Application {
 
     private Parent getContent() {
         TableView<Locale> table = new TableView<>(FXCollections.observableArrayList(
                 Locale.getAvailableLocales()));
+        // quick check: contentWidth listening
+        addContentWidthListener(table);
+        // end quick check
         table.getSelectionModel().setCellSelectionEnabled(true);
         TableColumn<Locale, String> countryCode = new TableColumn<>("CountryCode");
         countryCode.setCellValueFactory(new PropertyValueFactory<>("country"));
@@ -66,6 +74,22 @@ public class TableViewScrollHorizontalBug extends Application {
         return pane;
     }
 
+    private final static String SET_CONTENT_WIDTH = "TableView.contentWidth";
+    private void addContentWidthListener(TableView<?> table) {
+        table.getProperties().addListener(new MapChangeListener<Object, Object>() {
+            @Override
+            public void onChanged(Change<? extends Object, ? extends Object> c) {
+                if (c.wasAdded() && SET_CONTENT_WIDTH.equals(c.getKey())) {
+                    LOG.info("contentWidth added: " + c.getValueAdded());
+//                    if (c.getValueAdded() instanceof Number) {
+//                        setContentWidth((Double) c.getValueAdded());
+//                    }
+//                    getProperties().remove(SET_CONTENT_WIDTH);
+                }
+            }
+        });
+
+    }
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setScene(new Scene(getContent(), 200, 400));

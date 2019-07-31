@@ -1,0 +1,25 @@
+.table-row-cell:selected{
+    -fx-background-color: lightgray ;
+}
+
+
+.table-cell:filled:even {
+   -fx-border-color: #00000000 white #00000000 #00000000;
+}
+
+.table-cell:filled:odd {
+   -fx-border-color: white;
+}
+
+.table-cell:selected {
+   -fx-border-color: white;
+}
+
+.table-row-cell:redRow {
+    -fx-background-color: red;
+}
+
+
+.table-row-cell:aquaRow {
+    -fx-background-color: aqua ;
+}
