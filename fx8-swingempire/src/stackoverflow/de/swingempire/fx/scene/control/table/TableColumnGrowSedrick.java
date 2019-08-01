@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.JTable;
+
 import com.sun.javafx.scene.control.TableColumnBaseHelper;
 
 import de.swingempire.testfx.util.FXUtils;
@@ -18,6 +20,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableView.ResizeFeatures;
 import javafx.scene.layout.VBox;
@@ -44,6 +47,41 @@ public class TableColumnGrowSedrick extends Application{
     public static void main(String[] args) {
         launch(args);
     }
+    public static final Callback<ResizeFeatures, Boolean> MY_CONSTRAINED_RESIZE_POLICY = new Callback<ResizeFeatures, Boolean>() {
+
+        private boolean isFirstRun = true;
+
+        @Override public String toString() {
+            return "constrained-resize";
+        }
+
+        @Override public Boolean call(ResizeFeatures prop) {
+           // JTable table;
+            TableColumn<?, ?> column = prop.getColumn();
+            String text = column != null ? column.getText() : "table resize";
+            String width = column != null ? " width/ min/pref/max/: " 
+                    + column.getWidth()  
+                    + "/" + column.getMinWidth()
+                    + "/" + column.getPrefWidth()
+                     + "/" + column.getMaxWidth()
+                    
+                    :   "";
+//            LOG.info("resizeFeature: " + text + width + " / delta" + prop.getDelta());
+            TableView<?> table = prop.getTable();
+            List<? extends TableColumnBase<?,?>> visibleLeafColumns = table.getVisibleLeafColumns();
+            Boolean result = TableColumnResizeHelper.constrainedResize(prop,
+                                               isFirstRun,
+                                               getContentWidth(table),
+                                               visibleLeafColumns);
+            isFirstRun = ! isFirstRun ? false : ! result;
+            return result;
+        }
+        
+        private double getContentWidth(TableView<?> table) {
+            return  (double) FXUtils.invokeGetFieldValue(TableView.class, table, "contentWidth");
+        }
+
+    };
 
     public static final Callback<ResizeFeatures, Boolean> MY_RESIZE_POLICY = new Callback<ResizeFeatures, Boolean>() {
         @Override public String toString() {
@@ -159,7 +197,9 @@ public class TableColumnGrowSedrick extends Application{
         primaryStage.setTitle("TableColumnGrow Sample");
         primaryStage.show();
 
-        tableView.setColumnResizePolicy(MY_RESIZE_POLICY);
+//        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableView.setColumnResizePolicy(MY_CONSTRAINED_RESIZE_POLICY);
+//        tableView.setColumnResizePolicy(MY_RESIZE_POLICY);
 //        // Sedrick: binding the prefWidth of first to sum of second and last
 //        DoubleProperty width = new SimpleDoubleProperty();
 //        width.bind(colMiddleName.widthProperty().add(colLastName.widthProperty()));
