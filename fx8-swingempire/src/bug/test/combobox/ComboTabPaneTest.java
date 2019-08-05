@@ -66,12 +66,12 @@ public class ComboTabPaneTest extends Application
     // -> weird appearence as described in report
     ComboBox<String> combo  = new ComboBox<>();  
     // setting style here -> appearence okay, leaving only NPE
-    combo.setStyle("-fx-skin: 'test.combobox.ComboTabPaneTest$ComboBoxListViewSkin'");
+//    combo.setStyle("-fx-skin: 'test.combobox.ComboTabPaneTest$ComboBoxListViewSkin'");
     System.out.println("skin" + combo.getSkin());
     combo.setItems(FXCollections.<String>observableArrayList("Regular", "ReadOnly", "Disabled", "Disabled/ReadOnly"));
     combo.setDisable(false);
     combo.setEditable(false);
-    
+        
     combo.setValue("ReadOnly");
     p.getChildren().add(combo);
     return p;
@@ -93,12 +93,12 @@ public class ComboTabPaneTest extends Application
     public ComboBoxListViewSkin(ComboBox<T> combo)
     {
       super(combo);
-      System.out.println(this);
-      System.out.println("editor " +((ComboBox<String>) getSkinnable()).getEditor());
-      System.out.println("getEditor " + getEditor());
-      ComboBoxListViewBehavior beh = (ComboBoxListViewBehavior) FXUtils.invokeGetMethodValue(javafx.scene.control.skin.ComboBoxListViewSkin.class, 
-              this, "getBehavior");
-      System.out.println("" + beh.getNode());
+//      System.out.println(this);
+//      System.out.println("editor " +((ComboBox<String>) getSkinnable()).getEditor());
+//      System.out.println("getEditor " + getEditor());
+//      ComboBoxListViewBehavior beh = (ComboBoxListViewBehavior) FXUtils.invokeGetMethodValue(javafx.scene.control.skin.ComboBoxListViewSkin.class, 
+//              this, "getBehavior");
+//      System.out.println("" + beh.getNode());
       StackPane arrowButton = null;
 //      new RuntimeException("dumping").printStackTrace();
       try

@@ -12,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SingleSelectionModel;
@@ -29,6 +30,9 @@ import javafx.stage.Stage;
  * the list in the popup and invoke its scrollTo(selected). Drawback: as always
  * there is no fine-grained control of target position, it's always scrolled
  * to the top.
+ * 
+ * Not even on opening, Bug? not-a-regression, same in fx8/9/11 
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -50,7 +54,7 @@ public class ComboSelectOnChar extends Application {
             "Dqeqe",
             "Fefaf",
             "Gert",
-            "Wqad",
+            "Wqad is a longish name or what?",
             "Xsad",
             "Zzz"
             
@@ -58,10 +62,19 @@ public class ComboSelectOnChar extends Application {
     
     private Parent createContent() {
         
+        ChoiceBox<String> choice = new ChoiceBox<>(options);
+        // Bug?: selected item not scrolled to visible on showing popup
+        for (int i = 0; i < 20; i++) {
+            choice.getItems().add(0, "item " + i);
+        }
+        
         cb = new ComboBox<>(options);
-        selectOptionOnKey();
-        //cb.getSelectionModel().select("Gert");
+//        selectOptionOnKey();
+        // Bug?: selected item not scrolled to visible on showing popup
+        choice.getSelectionModel().select("Gert");
+        cb.getSelectionModel().select("Gert");
         BorderPane content = new BorderPane(cb);
+        content.setTop(choice);
         return content;
     }
 
