@@ -14,6 +14,7 @@ import com.sun.javafx.scene.control.TableColumnBaseHelper;
 
 import de.swingempire.testfx.util.FXUtils;
 import javafx.application.Application;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
@@ -36,6 +37,22 @@ import javafx.util.Callback;
  * drawback: filling column must not be resizable
  * 
  * Trying with simple resizePolicy
+ * 
+ * ----
+ * 
+ * unrelated: horizontal scrollbar flickers on/off with constrainedResize
+ * https://bugs.openjdk.java.net/browse/JDK-8089009
+ * reported 2014
+ *
+ * there are more open bugs, see scribbles on tableView
+ * -------
+ * 
+ * unrelated: initial sizing doesn't honor prefWidth
+ * https://bugs.openjdk.java.net/browse/JDK-8157687
+ * reported 2016
+ * 
+ * analysed by reported to be caused by field isFirstRun: should be false
+ * to force prefWidth honoring (can be seen here to be true)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -70,7 +87,9 @@ public class TableColumnGrowSedrick extends Application{
             TableView<?> table = prop.getTable();
             List<? extends TableColumnBase<?,?>> visibleLeafColumns = table.getVisibleLeafColumns();
             Boolean result = TableColumnResizeHelper.constrainedResize(prop,
-                                               isFirstRun,
+                     // providing an unconditional false leads to correct initial sizing
+                     // honoring prefWidth
+                                               false,
                                                getContentWidth(table),
                                                visibleLeafColumns);
             isFirstRun = ! isFirstRun ? false : ! result;
@@ -181,6 +200,7 @@ public class TableColumnGrowSedrick extends Application{
         colMiddleName.setCellValueFactory(tf -> tf.getValue().middleNameProperty());
         colLastName.setCellValueFactory(tf -> tf.getValue().lastNameProperty());
 
+        colFirstName.setPrefWidth(160);
         tableView.getColumns().addAll(colFirstName, colMiddleName, colLastName);
 
         tableView.getItems().addAll(
@@ -216,6 +236,15 @@ public class TableColumnGrowSedrick extends Application{
 //        });
     }
     
+
+    private void configureColumn(TableColumn column, Callback factory, double minWidth, double prefWidth, double maxWidth) {
+        column.setCellValueFactory(factory);
+        if (minWidth >= 0) {
+            column.setMinWidth(minWidth);
+            column.setPrefWidth(prefWidth);
+            column.setMaxWidth(maxWidth);
+        }
+    }
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger
             .getLogger(TableColumnGrowSedrick.class.getName());
