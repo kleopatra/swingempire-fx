@@ -40,7 +40,7 @@ public class DragAndDropExample extends Application {
         primaryStage.setTitle("Drag and Drop");
         layout = new BorderPane();
         contentPane = new StackPane();
-        Scene scene = new Scene(layout, 800, 800, Color.WHITE);
+        Scene scene = new Scene(layout, 800, 400, Color.WHITE);
  
  
  
