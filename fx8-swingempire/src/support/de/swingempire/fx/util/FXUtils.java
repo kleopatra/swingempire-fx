@@ -22,6 +22,7 @@ import java.util.stream.Collector;
 import com.sun.javafx.scene.control.behavior.FocusTraversalInputMap;
 import com.sun.javafx.scene.control.behavior.ListViewBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
+import com.sun.javafx.scene.control.inputmap.InputMap.Mapping;
 import com.sun.javafx.tk.Toolkit;
 
 import de.swingempire.fx.scene.control.selection.AnchoredSelectionModel;
@@ -124,7 +125,14 @@ public class FXUtils {
         rootLogger.setLevel(Level.ALL);
         return rootLogger;
     }
+
+// -------- internal api: InputMap
     
+    public static void prettyPrintMappings(InputMap inputMap) {
+        inputMap.getMappings().stream().forEach(e -> {
+            System.out.println(((Mapping) e).getMappingKey());
+        });
+   }
     
 // -------------- reflection: BEWARE - don't use for production!
  

@@ -61,10 +61,10 @@ public class TextFieldAction extends Application {
 //        textField.setSkin(new TextFieldSkin(textField));
         TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, "initial");
         // fixed!
-        textField.skinProperty().addListener((src, ov, nv) -> {
-            replaceEnter(textField);
-            
-        });
+//        textField.skinProperty().addListener((src, ov, nv) -> {
+//            replaceEnter(textField);
+//            
+//        });
         textField.setTextFormatter(formatter);
         textField.setOnAction(e -> {
             System.out.println("textfield action: " + 

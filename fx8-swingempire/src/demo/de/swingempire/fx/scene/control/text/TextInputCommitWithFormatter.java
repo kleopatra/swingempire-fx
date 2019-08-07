@@ -55,8 +55,11 @@ public class TextInputCommitWithFormatter extends Application {
         Button button = new Button("I'm the default");
         button.setDefaultButton(true);
         button.setOnAction(e -> LOG.info("triggered: " + button.getText()));
+        Button cancel = new Button("I'm the cancel");
+        cancel.setCancelButton(true);
+        cancel.setOnAction(e -> LOG.info("triggered: " + button.getText()));
         BorderPane content = new BorderPane( createTextContent());
-        content.setBottom(button);
+        content.setBottom(new HBox(10, button, cancel));
         return content;
     }
 

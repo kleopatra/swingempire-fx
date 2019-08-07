@@ -45,6 +45,7 @@ public class TextInputWithDefaultButton extends Application {
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
 
+        
         // TextField
         TextField textField = new TextField();
 

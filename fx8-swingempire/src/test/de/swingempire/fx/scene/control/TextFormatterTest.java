@@ -4,9 +4,11 @@
  */
 package de.swingempire.fx.scene.control;
 
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -16,14 +18,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.codeaffine.test.ConditionalIgnoreRule;
+import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
+import static javafx.scene.control.TextFormatter.*;
 import static org.junit.Assert.*;
 
+import de.swingempire.fx.GlobalIgnores.IgnoreSpecUnclear;
 import de.swingempire.fx.junit.JavaFXThreadingRule;
+import de.swingempire.fx.util.ChangeReport;
 import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.StageLoader;
 import javafx.beans.property.IntegerProperty;
@@ -47,7 +53,7 @@ import javafx.util.converter.IntegerStringConverter;
  * @author Jeanette Winzenburg, Berlin
  */
 @RunWith(JUnit4.class)
-//@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class TextFormatterTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
@@ -55,6 +61,72 @@ public class TextFormatterTest {
     @ClassRule
     public static TestRule classRule = new JavaFXThreadingRule();
 
+// ------------ dirty property in textField with formatter
+    
+    // field with empty text and identityformatter with initially empty string as value
+    private TextField emptyField;
+    
+    public static <T> boolean isDirty(TextField field) {
+        TextFormatter<T> textFormatter = (TextFormatter<T>) field.getTextFormatter();
+        if (textFormatter == null || textFormatter.getValueConverter() == null) return false;
+        String fieldText = field.getText();
+        StringConverter<T> valueConverter = textFormatter.getValueConverter();
+        String formatterText = valueConverter.toString(textFormatter.getValue());
+        // todo: handle empty string vs. null value
+        return !Objects.equals(fieldText, formatterText);
+    }
+    
+    @Test
+    public void testDirtyClearedOnCancel() {
+        emptyField.appendText("some");
+        emptyField.cancelEdit();
+        assertFalse(isDirty(emptyField));
+    }
+    
+    @Test
+    public void testDirtyClearedOnCommit() {
+        emptyField.appendText("some");
+        emptyField.commitValue();
+        assertFalse(isDirty(emptyField));
+    }
+    
+    @Test
+    public void testDirtyOnAppend() {
+        emptyField.appendText("text");
+        assertTrue("", isDirty(emptyField));
+    }
+    /**
+     * Setting the formatter changes the field's text to the value of 
+     * the formatter, expected notification from textfield
+     */
+    @Test
+    public void testTextFieldInitialNotification() {
+        String initial = "initial";
+        String dummy = "dummy";
+        TextField field = new TextField(dummy);
+        ChangeReport report = new ChangeReport(field.textProperty());
+        TextFormatter formatter = new TextFormatter(IDENTITY_STRING_CONVERTER, initial);
+        field.setTextFormatter(formatter);
+        assertEquals(1, report.getEventCount());
+        assertEquals(dummy, report.getLastOldValue());
+        assertEquals(initial, report.getLastNewValue());
+    }
+    
+    /**
+     * Setting the formatter changes the field's text to the value of 
+     * the formatter.
+     */
+    @Test
+    public void testTextFieldInitial() {
+        String initial = "initial";
+        TextField field = new TextField("dummy");
+        TextFormatter formatter = new TextFormatter(IDENTITY_STRING_CONVERTER, initial);
+        field.setTextFormatter(formatter);
+        assertEquals(initial, field.getText());
+    }
+    
+//------------ end dirty property  
+    
     /**
      * Replace the text of the control with a text in the filter which is
      * longer than the current.
@@ -226,10 +298,11 @@ public class TextFormatterTest {
      * ENTER pressed.
      */
     @Test
+    @ConditionalIgnore(condition = IgnoreSpecUnclear.class)
     public void testTextFormatterValueChangeAction() {
         TextField field = new TextField();
         String initialValue = "initial";
-        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, initialValue);
         field.setTextFormatter(formatter);
         IntegerProperty count = new SimpleIntegerProperty(0);
         field.setOnAction(e -> {
@@ -249,7 +322,7 @@ public class TextFormatterTest {
     public void testTextFormatterValueChange() {
         TextField field = new TextField();
         String initialValue = "initial";
-        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, initialValue);
         field.setTextFormatter(formatter);
         String updatedValue = "updated";
         formatter.setValue(updatedValue);
@@ -266,7 +339,7 @@ public class TextFormatterTest {
     public void testTextFormatterSetText() {
         TextField field = new TextField();
         String initialValue = "initial";
-        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, initialValue);
         field.setTextFormatter(formatter);
         String updatedValue = "updated";
         field.setText(updatedValue);
@@ -285,7 +358,7 @@ public class TextFormatterTest {
     public void testTextFormatterAppendText() {
         TextField field = new TextField();
         String initialValue = "initial";
-        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, initialValue);
         field.setTextFormatter(formatter);
         String updatedValue = "updated";
         field.appendText(updatedValue);
@@ -302,9 +375,16 @@ public class TextFormatterTest {
     public void testTextFormatterSet() {
         TextField field = new TextField();
         String initialValue = "initial";
-        TextFormatter<String> formatter = new TextFormatter<>(TextFormatter.IDENTITY_STRING_CONVERTER, initialValue);
+        TextFormatter<String> formatter = new TextFormatter<>(IDENTITY_STRING_CONVERTER, initialValue);
         field.setTextFormatter(formatter);
         assertEquals("field must be updated on setting formatter", initialValue, field.getText());
+    }
+    
+    @Before
+    public void setup() {
+        emptyField = new TextField();
+        emptyField.setTextFormatter(new TextFormatter<>(IDENTITY_STRING_CONVERTER, ""));
+        assertEquals("sanity: empty field", emptyField.getTextFormatter().getValue(), emptyField.getText());
     }
     
     @SuppressWarnings("unused")
