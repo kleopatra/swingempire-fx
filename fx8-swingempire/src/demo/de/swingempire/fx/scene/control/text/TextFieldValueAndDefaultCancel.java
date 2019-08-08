@@ -81,7 +81,7 @@ public class TextFieldValueAndDefaultCancel extends Application {
      * @param field the field to handle a cancel for
      * @param ev the received keyEvent 
      */
-    protected void cancel(TextField field, KeyEvent ev) {
+    protected void cancelEdit(TextField field, KeyEvent ev) {
         boolean dirty = isDirty(field);
         field.cancelEdit();
         if (dirty) {
