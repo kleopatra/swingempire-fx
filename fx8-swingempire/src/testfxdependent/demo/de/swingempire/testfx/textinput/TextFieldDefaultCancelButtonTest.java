@@ -5,11 +5,16 @@
 package de.swingempire.testfx.textinput;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.testfx.framework.junit.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.ButtonMatchers;
@@ -18,11 +23,14 @@ import static javafx.scene.input.KeyCode.*;
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.*;
 
+import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -30,9 +38,10 @@ import javafx.util.StringConverter;
 /**
  * @author Jeanette Winzenburg, Berlin
  */
+@RunWith(Parameterized.class)
 public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
-    TextFieldDefaultCancelButtonPane root;
+    private TextFieldDefaultCancelButtonPane root;
     
     /**
      * Remove the textformatter: then this should pass.
@@ -73,7 +82,8 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         //release(ESCAPE);
         
         assertEquals("uncommitted changes, cancel action must not be triggered", 0, actions.size());
-        fail("passing accidentally - cancel is never delivered to cancel button");
+        if (!(root.field.getSkin() instanceof XTextFieldSkin))
+            fail("passing accidentally - cancel is never delivered to cancel button");
     }
     
     /**
@@ -171,7 +181,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     
     @Override
     public void start(Stage stage) {
-        root = new TextFieldDefaultCancelButtonPane();
+        root = new TextFieldDefaultCancelButtonPane(skinProvider);
         Scene scene = new Scene(root, 100, 100);
         stage.setScene(scene);
         stage.show();
@@ -182,15 +192,38 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         
     }
     
+    Function<TextField, TextFieldSkin> skinProvider;
+    public TextFieldDefaultCancelButtonTest(Function<TextField, TextFieldSkin> skinProvider) {
+        this.skinProvider = skinProvider;
+    }
+    
+    @Parameters
+    public static Collection<Function<TextField, TextFieldSkin>> skinProviders() {
+        return  List.of(
+                field -> new XTextFieldSkin(field), 
+                field -> new TextFieldSkin(field)
+                );
+    }
+
     public static class TextFieldDefaultCancelButtonPane extends VBox { // fixme: don't extend a layout!
         
-        public TextField field;
-        public Button cancel;
-        public Button ok;
+        protected TextField field;
+        protected Button cancel;
+        protected Button ok;
         
         public TextFieldDefaultCancelButtonPane() {
+            this(null);
+        }
+        public TextFieldDefaultCancelButtonPane(Function<TextField, TextFieldSkin> skinProvider) {
             super(100);
-            field = new TextField();
+            field = new TextField() {
+
+                @Override
+                protected Skin<?> createDefaultSkin() {
+                    return skinProvider == null ? super.createDefaultSkin() : skinProvider.apply(this);
+                }
+                
+            };
             TextFormatter<String> fieldFormatter = new TextFormatter<>(
                     TextFormatter.IDENTITY_STRING_CONVERTER, "textField ...");
             field.setTextFormatter(fieldFormatter);

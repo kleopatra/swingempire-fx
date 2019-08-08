@@ -6,8 +6,9 @@ package de.swingempire.testfx.textinput;
 
 import java.util.logging.Logger;
 
+import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
+import de.swingempire.fx.util.FXUtils;
 import de.swingempire.testfx.textinput.TextFieldDefaultCancelButtonTest.TextFieldDefaultCancelButtonPane;
-import de.swingempire.testfx.util.FXUtils;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -19,7 +20,7 @@ import javafx.stage.Stage;
 public class TextFieldDefaultCancelButtonApp extends Application {
 
     private Parent createContent() {
-        TextFieldDefaultCancelButtonPane pane = new TextFieldDefaultCancelButtonPane();
+        TextFieldDefaultCancelButtonPane pane = new TextFieldDefaultCancelButtonPane(field -> new XTextFieldSkin(field));
         return pane;
     }
 
