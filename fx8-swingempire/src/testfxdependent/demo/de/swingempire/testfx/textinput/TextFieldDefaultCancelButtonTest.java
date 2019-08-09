@@ -25,6 +25,7 @@ import static org.testfx.api.FxAssert.*;
 
 import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Skin;
@@ -36,16 +37,89 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 /**
+ * Test textField behaviour in the context of default/cancel button.
+ * 
+ * This uses plain core classes.
+ * <p>
+ *  
+ * Note: using a parameterized test is working fine, but takes double the 
+ * time for running .. so extended.
+ *  
  * @author Jeanette Winzenburg, Berlin
  */
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
 public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
-    private TextFieldDefaultCancelButtonPane root;
+    protected TextFieldDefaultCancelButtonPane root;
+    
+    /**
+     * Remove the textformatter and register an action handler
+     * that consumes the actionEvent
+     * cancel button should be  triggered once
+     * 
+     * Core doesn't pass - action is triggered twice ... already reported?
+     */
+    @Test
+    public void testTextNoFormatterWithActionHandlerEscapeCancelButton() {
+        root.field.setTextFormatter(null);
+        root.field.addEventHandler(ActionEvent.ANY, e -> e.consume());
+        List<ActionEvent> actions = new ArrayList<>();
+        root.cancel.setOnAction(e -> actions.add(e));
+        press(ESCAPE);
+        assertEquals("cancel action must be triggered once", 1, actions.size());
+    }
+    
+    /**
+     * Remove the textformatter and register an action handler
+     * that consumes the actionEvent
+     * default button should not be triggered.
+     * 
+     * https://bugs.openjdk.java.net/browse/JDK-8207774
+     */     
+    @Test
+    public void testTextNoFormatterWithActionHandlerEnterDefaultButton() {
+        root.field.setTextFormatter(null);
+        root.field.addEventHandler(ActionEvent.ANY, e -> e.consume());
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(e -> actions.add(e));
+        press(ENTER);
+        release(ENTER);
+        assertEquals("default action must not be triggered with onAction handler", 0, actions.size());
+    }
+    
+    /**
+     * Remove the textformatter and setOnAction, cancel button should be 
+     * triggered
+     * 
+     * Core doesn't pass - action is triggered twice ... already reported?
+     */
+    @Test
+    public void testTextNoFormatterWithOnActionEscapeCancelButton() {
+        root.field.setTextFormatter(null);
+        root.field.setOnAction(e -> {});
+        List<ActionEvent> actions = new ArrayList<>();
+        root.cancel.setOnAction(e -> actions.add(e));
+        press(ESCAPE);
+        assertEquals("cancel action must be triggered once", 1, actions.size());
+    }
+    
+    /**
+     * Remove the textformatter and setOnAction: default button 
+     * should not be triggered.
+     */     
+    @Test
+    public void testTextNoFormatterWithOnActionEnterDefaultButton() {
+        root.field.setTextFormatter(null);
+        root.field.setOnAction(e -> {});
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(e -> actions.add(e));
+        press(ENTER);
+        assertEquals("default action must not be triggered with onAction handler", 0, actions.size());
+    }
     
     /**
      * Remove the textformatter: then this should pass.
-     * Doesn't - action is triggered twice ... already reported?
+     * Core doesn't - action is triggered twice ... already reported?
      */
     @Test
     public void testTextNoFormatterEscapeCancelButton() {
@@ -53,18 +127,20 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.cancel.setOnAction(e -> actions.add(e));
         press(ESCAPE);
-        //release(ESCAPE);
         assertEquals("cancel action must be triggered once", 1, actions.size());
     }
     
     /**
-     * Remove the textformatter: check field text.
+     * Remove the textformatter: then this should pass.
+     * Core doesn't - action is triggered twice ... already reported?
      */
     @Test
-    public void testTextNoFormatter() {
-        String text = root.field.getText();
+    public void testTextNoFormatterEnterDefaultButton() {
         root.field.setTextFormatter(null);
-        assertEquals(text, root.field.getText());
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(e -> actions.add(e));
+        press(ENTER);
+        assertEquals("default action must be triggered once", 1, actions.size());
     }
     
     /**
@@ -79,26 +155,10 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.cancel.setOnAction(e -> actions.add(e));
         press(ESCAPE);
-        //release(ESCAPE);
         
         assertEquals("uncommitted changes, cancel action must not be triggered", 0, actions.size());
         if (!(root.field.getSkin() instanceof XTextFieldSkin))
             fail("passing accidentally - cancel is never delivered to cancel button");
-    }
-    
-    /**
-     * Test that enter on unchanged text triggers default button.
-     * This fails because TextFieldBehavior consumes the event 
-     * if the field has a TextFormatter.
-     */
-    @Test
-    public void testTextEscapeCancelButton() {
-        List<ActionEvent> actions = new ArrayList<>();
-        root.cancel.setOnAction(e -> actions.add(e));
-        press(ESCAPE);
-        //release(ESCAPE);
-            
-        assertEquals("cancel action must be triggered once", 1, actions.size());
     }
     
     /**
@@ -111,10 +171,22 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(e -> actions.add(e));
         press(ENTER);
-//        release(ENTER);
         assertEquals("uncommitted changes, default action must not be triggered", 0, actions.size());
     }
     
+    /**
+     * Test that enter on unchanged text triggers default button.
+     * This fails because TextFieldBehavior consumes the event 
+     * if the field has a TextFormatter.
+     */
+    @Test
+    public void testTextEscapeCancelButton() {
+        List<ActionEvent> actions = new ArrayList<>();
+        root.cancel.setOnAction(e -> actions.add(e));
+        press(ESCAPE);
+        assertEquals("cancel action must be triggered once", 1, actions.size());
+    }
+
     /**
      * Test that enter on unchanged text triggers default button.
      */
@@ -123,8 +195,18 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(e -> actions.add(e));
         press(ENTER);
-//        release(ENTER);
         assertEquals("default action must be triggered once", 1, actions.size());
+    }
+  
+//--------------------- sanity testing of ui state   
+    /**
+     * Remove the textformatter: check field text is unchanged.
+     */
+    @Test
+    public void testTextNoFormatter() {
+        String text = root.field.getText();
+        root.field.setTextFormatter(null);
+        assertEquals(text, root.field.getText());
     }
     
     /**
@@ -138,7 +220,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         press(ENTER);
 //        release(ENTER);
         assertEquals(initial + text, root.field.getText());
-        assertEquals(initial + text, getValue(root.field));
+        assertEquals(initial + text, getFormatterValue(root.field));
     }
     
     /**
@@ -150,20 +232,9 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         String text = "some";
         root.field.appendText(text);
         assertEquals(initial + text, root.field.getText());
-        assertEquals(initial, getValue(root.field));
+        assertEquals(initial, getFormatterValue(root.field));
     }
     
-    /**
-     * @param field
-     * @return
-     */
-    private <T> String getValue(TextField field) {
-        TextFormatter<T> textFormatter = (TextFormatter<T>) field.getTextFormatter();
-        StringConverter<T> valueConverter = textFormatter.getValueConverter();
-        String formatterText = valueConverter.toString(textFormatter.getValue());
-        return formatterText;
-    }
-
     @Test
     public void testTextIsFocused() {
         verifyThat(root.field, NodeMatchers.isFocused());
@@ -179,32 +250,58 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
        verifyThat(root.ok, ButtonMatchers.isDefaultButton());
     }
     
+    /**
+     * Returns the value of the formatter of a textfield, converted to a String by
+     * its converter. The formatter must not be null.
+     * 
+     * @param field the TextField 
+     * @return the value of the formatter converted to a string by
+     *   its converter
+     * @throws NullPointerException if the field has no formatter  
+     */
+    protected <T> String getFormatterValue(TextField field) {
+        TextFormatter<T> textFormatter = (TextFormatter<T>) field.getTextFormatter();
+        StringConverter<T> valueConverter = textFormatter.getValueConverter();
+        String formatterText = valueConverter.toString(textFormatter.getValue());
+        return formatterText;
+    }
+
     @Override
     public void start(Stage stage) {
-        root = new TextFieldDefaultCancelButtonPane(skinProvider);
+        root = new TextFieldDefaultCancelButtonPane(getSkinProvider());
         Scene scene = new Scene(root, 100, 100);
         stage.setScene(scene);
         stage.show();
     }
 
+    protected Function<TextField, TextFieldSkin> getSkinProvider() {
+        return TextFieldSkin::new;
+    }
     @Before
     public void setup() {
         
     }
     
-    Function<TextField, TextFieldSkin> skinProvider;
-    public TextFieldDefaultCancelButtonTest(Function<TextField, TextFieldSkin> skinProvider) {
-        this.skinProvider = skinProvider;
-    }
-    
-    @Parameters
-    public static Collection<Function<TextField, TextFieldSkin>> skinProviders() {
-        return  List.of(
-                field -> new XTextFieldSkin(field), 
-                field -> new TextFieldSkin(field)
-                );
-    }
+    // fields/methods needed when using parameterized test 
+//    Function<TextField, TextFieldSkin> skinProvider;
+//    public TextFieldDefaultCancelButtonTest(Function<TextField, TextFieldSkin> skinProvider) {
+//        this.skinProvider = skinProvider;
+//    }
+//    
+//    @Parameters
+//    public static Collection<Function<TextField, TextFieldSkin>> skinProviders() {
+//        return  List.of(
+//                field -> new XTextFieldSkin(field), 
+//                field -> new TextFieldSkin(field)
+//                );
+//    }
 
+    /**
+     * TestUI to exercise: single textfield, default and cancel button. 
+     * The textField starts with having a textFormatter and no action handler. 
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class TextFieldDefaultCancelButtonPane extends VBox { // fixme: don't extend a layout!
         
         protected TextField field;

@@ -50,21 +50,20 @@ public class XTextFieldSkin extends TextFieldSkin {
     protected void fire(KeyEvent e) {
         TextField textField = getSkinnable();
         EventHandler<ActionEvent> onAction = textField.getOnAction();
-        ActionEvent actionEvent = new ActionEvent(textField, null);
+        ActionEvent actionEvent = new ActionEvent(textField, textField);
         // first commit, then fire
         boolean dirty = isDirty(textField);
 
         textField.commitValue();
-        if (dirty) {
-            e.consume();
-        }
         textField.fireEvent(actionEvent);
         // nothing more to do, consume
-        if (dirty) return;
-        // PENDING JW: missing forwardToParent
-        if (onAction == null && !actionEvent.isConsumed()) {
-            forwardToParent(e);
+        if (dirty || onAction != null || actionEvent.isConsumed()) {
+            e.consume();
         }
+        // original
+//        if (onAction == null && !actionEvent.isConsumed()) {
+//            forwardToParent(e);
+//        }
     }
 
     protected void forwardToParent(KeyEvent event) {
