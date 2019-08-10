@@ -52,6 +52,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
     protected TextFieldDefaultCancelButtonPane root;
     
+    
     /**
      * Remove the textformatter and register an action handler
      * that consumes the actionEvent
@@ -62,7 +63,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     @Test
     public void testTextNoFormatterWithActionHandlerEscapeCancelButton() {
         root.field.setTextFormatter(null);
-        root.field.addEventHandler(ActionEvent.ANY, e -> e.consume());
+        root.field.addEventHandler(ActionEvent.ACTION, e -> e.consume());
         List<ActionEvent> actions = new ArrayList<>();
         root.cancel.setOnAction(e -> actions.add(e));
         press(ESCAPE);
@@ -79,7 +80,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     @Test
     public void testTextNoFormatterWithActionHandlerEnterDefaultButton() {
         root.field.setTextFormatter(null);
-        root.field.addEventHandler(ActionEvent.ANY, e -> e.consume());
+        root.field.addEventHandler(ActionEvent.ACTION, e -> e.consume());
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(e -> actions.add(e));
         press(ENTER);

@@ -24,7 +24,7 @@ public class TextFieldDefaultCancelButtonApp extends Application {
         TextFieldDefaultCancelButtonPane pane = new TextFieldDefaultCancelButtonPane(field -> new XTextFieldSkin(field));
         // https://bugs.openjdk.java.net/browse/JDK-8207774
         pane.field.setTextFormatter(null);
-        pane.field.addEventHandler(ActionEvent.ANY, e -> {
+        pane.field.addEventHandler(ActionEvent.ACTION, e -> {
             e.consume();
             });
         // end bug

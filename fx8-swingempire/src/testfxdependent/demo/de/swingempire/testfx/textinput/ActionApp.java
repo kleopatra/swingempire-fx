@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.EventTarget;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
@@ -36,13 +37,33 @@ import javafx.stage.Stage;
  */
 public class ActionApp extends Application {
 
+    public static class XActionEvent extends ActionEvent {
+
+        public XActionEvent() {
+            super();
+        }
+
+        public XActionEvent(Object source, EventTarget target) {
+            super(source, target);
+        }
+
+        @Override
+        public ActionEvent copyFor(Object newSource, EventTarget newTarget) {
+            XActionEvent copy =  (XActionEvent) super.copyFor(newSource, newTarget);
+            if (isConsumed()) copy.consume();
+            return copy;
+        }
+        
+        
+    }
+    
     // create a simple ui - static because must be same for ActionTest
     public static Parent createContent() {
         TextField field = new TextField();
         // some handler to fire an actionEvent
         field.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.A) {
-                ActionEvent action = new ActionEvent(field, field);
+                ActionEvent action = new XActionEvent(field, field);
                 field.fireEvent(action);
                 LOG.info("action/consumed? " + action + action.isConsumed());
             }
@@ -51,6 +72,7 @@ public class ActionApp extends Application {
         field.addEventHandler(ActionEvent.ACTION, e -> {
             e.consume();
             LOG.info("action received " + e + e.isConsumed());
+            
         });
         
         VBox actionUI = new VBox(field);

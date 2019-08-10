@@ -13,8 +13,10 @@ import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import de.swingempire.fx.util.FXUtils;
+import de.swingempire.testfx.textinput.ActionApp.XActionEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.TextFieldSkin;
@@ -50,7 +52,7 @@ public class XTextFieldSkin extends TextFieldSkin {
     protected void fire(KeyEvent e) {
         TextField textField = getSkinnable();
         EventHandler<ActionEvent> onAction = textField.getOnAction();
-        ActionEvent actionEvent = new ActionEvent(textField, textField);
+        ActionEvent actionEvent = new XActionEvent(textField, textField);
         // first commit, then fire
         boolean dirty = isDirty(textField);
 
@@ -153,5 +155,27 @@ public class XTextFieldSkin extends TextFieldSkin {
         // todo: handle empty string vs. null value
         return !Objects.equals(fieldText, formatterText);
     }
+    
+    public static class XActionEvent extends ActionEvent {
+
+        public XActionEvent() {
+            super();
+        }
+
+        public XActionEvent(Object source, EventTarget target) {
+            super(source, target);
+        }
+
+        @Override
+        public ActionEvent copyFor(Object newSource, EventTarget newTarget) {
+            XActionEvent copy =  (XActionEvent) super.copyFor(newSource, newTarget);
+            if (isConsumed()) copy.consume();
+            return copy;
+        }
+        
+        
+    }
+    
+
 
 }
