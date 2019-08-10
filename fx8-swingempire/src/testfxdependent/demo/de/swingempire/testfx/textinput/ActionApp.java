@@ -12,6 +12,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventTarget;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -33,10 +34,20 @@ import javafx.stage.Stage;
  * 
  * environment: fx11, testfx Oct 2018 
  * 
+ * unrelated to TestFx: happens whenever an eventFilter of (same or super type of the fired event)
+ * is registered anywhere in
+ * the parent hierarchy (which TestFx does in FiredEvents of FxTooltipContext, for EventType.ROOT)
+ * 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ActionApp extends Application {
 
+    /**
+     * Trying to hack: use an event that sync's the consumed flag on copyFor.
+     * Doesn't help: the copy will be consumed, the original is unchanged.
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class XActionEvent extends ActionEvent {
 
         public XActionEvent() {
@@ -51,9 +62,14 @@ public class ActionApp extends Application {
         public ActionEvent copyFor(Object newSource, EventTarget newTarget) {
             XActionEvent copy =  (XActionEvent) super.copyFor(newSource, newTarget);
             if (isConsumed()) copy.consume();
+            LOG.info("copy: " + copy.isConsumed() + copy);
             return copy;
         }
-        
+
+        @Override
+        public String toString() {
+            return "@" + Integer.toHexString(hashCode()) + super.toString();
+        }
         
     }
     
@@ -65,24 +81,30 @@ public class ActionApp extends Application {
             if (e.getCode() == KeyCode.A) {
                 ActionEvent action = new XActionEvent(field, field);
                 field.fireEvent(action);
-                LOG.info("action/consumed? " + action + action.isConsumed());
+                LOG.info("action/consumed? "  + action.isConsumed()+ action);
             }
         });
         // another handler to consume the fired action
         field.addEventHandler(ActionEvent.ACTION, e -> {
             e.consume();
-            LOG.info("action received " + e + e.isConsumed());
+            LOG.info("action received " + e.isConsumed()+ e );
             
         });
         
-        VBox actionUI = new VBox(field);
+        Button dummy = new Button("do nothing");
+        dummy.addEventFilter(ActionEvent.ACTION, e -> LOG.info("in filter on scene"));
+        VBox actionUI = new VBox(field, dummy);
+        actionUI.addEventFilter(KeyEvent.KEY_PRESSED, e -> LOG.info("in filter on scene"));
         return actionUI;
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        stage.setScene(new Scene(createContent()));
+        Scene scene = new Scene(createContent());
+//        scene.getRoot().addEventFilter(ActionEvent.ACTION, e -> LOG.info("in filter on scene"));
+        stage.setScene(scene);
         stage.setTitle(FXUtils.version());
+        stage.setX(100);
         stage.show();
     }
 
