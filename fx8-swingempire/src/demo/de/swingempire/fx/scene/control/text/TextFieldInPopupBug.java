@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.control.text;
 
+import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
@@ -36,6 +38,7 @@ public class TextFieldInPopupBug  extends Application {
 
         public static void main(String[] args) {
             launch(args);
+            
         }
 
         @Override
@@ -48,7 +51,15 @@ public class TextFieldInPopupBug  extends Application {
                     Popup popup = new Popup();
                     popup.setAutoHide(true);
                     popup.setHideOnEscape(true);
-                    TextField textField = new TextField("Focus on this one, ESCAPE doesn't work");
+                    // informal testing: XTextFieldSkin is okay
+                    TextField textField = new TextField("Focus on this one, ESCAPE doesn't work") {
+
+//                        @Override
+//                        protected Skin<?> createDefaultSkin() {
+//                            return new XTextFieldSkin(this);//super.createDefaultSkin();
+//                        }
+                        
+                    };
                     textField.setTextFormatter(new TextFormatter(TextFormatter.IDENTITY_STRING_CONVERTER));
                     VBox box = new VBox(10, textField, new CheckBox("Focus on this one, ESCAPE works"));
                     box.setPadding(new Insets(10));
