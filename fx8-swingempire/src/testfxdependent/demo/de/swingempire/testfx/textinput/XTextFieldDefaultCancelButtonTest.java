@@ -36,25 +36,29 @@ public class XTextFieldDefaultCancelButtonTest
      * https://bugs.openjdk.java.net/browse/JDK-8207774
      * 
      * Temporarily overridden to debug: works okay in app, fails here
+     * Reason is the eventFilter on stage (registered for debugging by TestFX
+     * to log all events). Leads to passing a copy of the action around, vs
+     * the instance fired by the skin. Need to get really dirty: once an
+     * eventFilter is added to a parent, it's not fully removed.
      */
     @Override
     @Test
     public void testTextNoFormatterWithActionHandlerEnterDefaultButton() {
         Runnable r = () -> {
-        };
-            root.field.setTextFormatter(null);
-            root.field.addEventHandler(ActionEvent.ACTION, 
+        root.field.setTextFormatter(null);
+        root.field.addEventHandler(ActionEvent.ACTION, 
                 e -> {
                     e.consume();
                 });
-            
+
+        };
         TestFXUtils.runAndWaitForFx(r);
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
-        release(ENTER);
+        //release(ENTER);
         assertEquals(
-                "default action must not be triggered with onAction handler", 0,
+                "enter with consuming action handler must not trigger default button", 0,
                 actions.size());
     }
 

@@ -52,7 +52,7 @@ public class XTextFieldSkin extends TextFieldSkin {
     protected void fire(KeyEvent e) {
         TextField textField = getSkinnable();
         EventHandler<ActionEvent> onAction = textField.getOnAction();
-        ActionEvent actionEvent = new XActionEvent(textField, textField);
+        ActionEvent actionEvent = new ActionEvent(textField, textField);
         // first commit, then fire
         boolean dirty = isDirty(textField);
 

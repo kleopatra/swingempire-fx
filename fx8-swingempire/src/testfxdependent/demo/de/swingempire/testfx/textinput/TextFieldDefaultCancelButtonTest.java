@@ -22,6 +22,7 @@ import org.testfx.matcher.control.ButtonMatchers;
 import static javafx.scene.input.KeyCode.*;
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.*;
+import static de.swingempire.testfx.util.TestFXUtils.*;
 
 import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.event.ActionEvent;
@@ -32,6 +33,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.TextFieldSkin;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -52,6 +54,24 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
     protected TextFieldDefaultCancelButtonPane root;
     
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8207759 default button triggered
+     * even if enter is consumed
+     */
+    @Test
+    public void testTextNoFormatterEnterHandlerConsume() {
+        root.field.setOnKeyPressed(e -> {
+            if (ENTER == e.getCode()) {
+                e.consume();
+                LOG.info("consumed: " + e);
+            }
+        });
+
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(actions::add);
+        press(ENTER);
+        assertEquals("enter with consuming onKeyPressed must not trigger default button", 0, actions.size());
+    }
     
     /**
      * Remove the textformatter and register an action handler
@@ -67,7 +87,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.cancel.setOnAction(e -> actions.add(e));
         press(ESCAPE);
-        assertEquals("cancel action must be triggered once", 1, actions.size());
+        assertEquals("esc with consuming action handler must trigger cancel button", 1, actions.size());
     }
     
     /**
@@ -82,10 +102,10 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         root.field.setTextFormatter(null);
         root.field.addEventHandler(ActionEvent.ACTION, e -> e.consume());
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
         release(ENTER);
-        assertEquals("default action must not be triggered with onAction handler", 0, actions.size());
+        assertEquals("enter with consuming action handler must not trigger default button", 0, actions.size());
     }
     
     /**
@@ -99,9 +119,9 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         root.field.setTextFormatter(null);
         root.field.setOnAction(e -> {});
         List<ActionEvent> actions = new ArrayList<>();
-        root.cancel.setOnAction(e -> actions.add(e));
+        root.cancel.setOnAction(actions::add);
         press(ESCAPE);
-        assertEquals("cancel action must be triggered once", 1, actions.size());
+        assertEquals("esc with onAction handler must trigger default button", 1, actions.size());
     }
     
     /**
@@ -113,9 +133,9 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         root.field.setTextFormatter(null);
         root.field.setOnAction(e -> {});
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
-        assertEquals("default action must not be triggered with onAction handler", 0, actions.size());
+        assertEquals("enter with onAction handler must not trigger default button", 0, actions.size());
     }
     
     /**
@@ -126,9 +146,9 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     public void testTextNoFormatterEscapeCancelButton() {
         root.field.setTextFormatter(null);
         List<ActionEvent> actions = new ArrayList<>();
-        root.cancel.setOnAction(e -> actions.add(e));
+        root.cancel.setOnAction(actions::add);
         press(ESCAPE);
-        assertEquals("cancel action must be triggered once", 1, actions.size());
+        assertEquals("esc without formatter must trigger cancel button", 1, actions.size());
     }
     
     /**
@@ -139,9 +159,9 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     public void testTextNoFormatterEnterDefaultButton() {
         root.field.setTextFormatter(null);
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
-        assertEquals("default action must be triggered once", 1, actions.size());
+        assertEquals("enter without formatter must trigger default button", 1, actions.size());
     }
     
     /**
@@ -172,11 +192,11 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(e -> actions.add(e));
         press(ENTER);
-        assertEquals("uncommitted changes, default action must not be triggered", 0, actions.size());
+        assertEquals("enter on uncommitted changes must not trigger default button", 0, actions.size());
     }
     
     /**
-     * Test that enter on unchanged text triggers default button.
+     * Test that esc on unchanged text triggers cancel button.
      * This fails because TextFieldBehavior consumes the event 
      * if the field has a TextFormatter.
      */
@@ -185,7 +205,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.cancel.setOnAction(e -> actions.add(e));
         press(ESCAPE);
-        assertEquals("cancel action must be triggered once", 1, actions.size());
+        assertEquals("esc on unchanged text must trigger cancel button", 1, actions.size());
     }
 
     /**
@@ -196,7 +216,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(e -> actions.add(e));
         press(ENTER);
-        assertEquals("default action must be triggered once", 1, actions.size());
+        assertEquals("enter on unchanged text must trigger default button", 1, actions.size());
     }
   
 //--------------------- sanity testing of ui state   
@@ -269,6 +289,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
     @Override
     public void start(Stage stage) {
+        stopStoringFiredEvents(stage);
         root = new TextFieldDefaultCancelButtonPane(getSkinProvider());
         Scene scene = new Scene(root, 100, 100);
         stage.setScene(scene);
@@ -278,6 +299,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     protected Function<TextField, TextFieldSkin> getSkinProvider() {
         return TextFieldSkin::new;
     }
+    
     @Before
     public void setup() {
         
