@@ -44,6 +44,8 @@ import javafx.stage.Stage;
  * 
  * https://bugs.openjdk.java.net/browse/JDK-8092352: fixme - do not dispatch if there are not filters
  * 
+ * reported https://bugs.openjdk.java.net/browse/JDK-8229467 (against fx11)
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class ActionDispatchBug extends Application {
@@ -62,7 +64,7 @@ public class ActionDispatchBug extends Application {
         // another handler to consume the fired action
         field.addEventHandler(ActionEvent.ACTION, action -> {
             action.consume();
-            LOG.info("action received " + action.isConsumed() + " @" + action.hashCode() );
+            LOG.info("action consumed: " + " @" + action.hashCode() );
         });
         
         VBox actionUI = new VBox(field);
@@ -79,7 +81,7 @@ public class ActionDispatchBug extends Application {
 //        stage.addEventFilter(EventType.ROOT, filter);
 //        stage.removeEventFilter(EventType.ROOT, filter);
         
-        stage.setTitle(FXUtils.version());
+        //stage.setTitle(FXUtils.version());
         stage.setX(100);
         stage.show();
     }
