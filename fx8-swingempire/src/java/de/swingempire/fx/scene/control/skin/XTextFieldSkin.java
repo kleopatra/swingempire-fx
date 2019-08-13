@@ -13,7 +13,6 @@ import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import de.swingempire.fx.util.FXUtils;
-import de.swingempire.testfx.textinput.ActionApp.XActionEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventTarget;
