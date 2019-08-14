@@ -47,17 +47,90 @@ import javafx.util.StringConverter;
 public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
     protected TextFieldDefaultCancelButtonPane root;
+
+//----------------- https://bugs.openjdk.java.net/browse/JDK-8207759    
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8207759 default button triggered
+     * even if enter is consumed
+     * hack: set property to disable the forwarding of the event
+     * 
+     * Here: with formatter
+     * still virulent in fx11, fixed by XTextFieldSkin
+     */
+    @Test
+    public void testTextEnterHandlerConsumeHackProperty() {
+        root.field.getProperties().put("TextInputControlBehavior.disableForwardToParent", true);
+        root.field.setOnKeyPressed(e -> {
+            if (ENTER == e.getCode()) {
+                e.consume();
+                //LOG.info("consumed: " + e);
+            }
+        });
+        
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(actions::add);
+        press(ENTER);
+        assertEquals("enter with consuming onKeyPressed must not trigger default button", 0, actions.size());
+    }
     
     /**
      * https://bugs.openjdk.java.net/browse/JDK-8207759 default button triggered
      * even if enter is consumed
+     * Here: with formatter
+     * still virulent in fx11, fixed by XTextFieldSkin
      */
     @Test
-    public void testTextNoFormatterEnterHandlerConsume() {
+    public void testTextEnterHandlerConsume() {
         root.field.setOnKeyPressed(e -> {
             if (ENTER == e.getCode()) {
                 e.consume();
-                LOG.info("consumed: " + e);
+                //LOG.info("consumed: " + e);
+            }
+        });
+        
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(actions::add);
+        press(ENTER);
+        assertEquals("enter with consuming onKeyPressed must not trigger default button", 0, actions.size());
+    }
+    
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8207759 default button triggered
+     * even if enter is consumed
+     * here: without formatter
+     * still virulent in fx11, fixed by XTextFieldSkin
+     */
+    @Test
+    public void testTextNoFormatterEnterHandlerConsume() {
+        root.field.setTextFormatter(null);
+        root.field.setOnKeyPressed(e -> {
+            if (ENTER == e.getCode()) {
+                e.consume();
+                //LOG.info("consumed: " + e);
+            }
+        });
+        
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(actions::add);
+        press(ENTER);
+        assertEquals("enter with consuming onKeyPressed must not trigger default button", 0, actions.size());
+    }
+    /**
+     * https://bugs.openjdk.java.net/browse/JDK-8207759 default button triggered
+     * even if enter is consumed
+     * hack: set property to disable the forwarding of the event
+     * 
+     * here: without formatter -
+     * still virulent in fx11, fixed by XTextFieldSkin
+     */
+    @Test
+    public void testTextNoFormatterEnterHandlerConsumeHackWithProperty() {
+        root.field.getProperties().put("TextInputControlBehavior.disableForwardToParent", true);
+        root.field.setTextFormatter(null);
+        root.field.setOnKeyPressed(e -> {
+            if (ENTER == e.getCode()) {
+                e.consume();
+                //LOG.info("consumed: " + e);
             }
         });
 
@@ -66,7 +139,8 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         press(ENTER);
         assertEquals("enter with consuming onKeyPressed must not trigger default button", 0, actions.size());
     }
-    
+
+//---------------- https://bugs.openjdk.java.net/browse/JDK-8207774    
     /**
      * Remove the textformatter and register an action handler
      * that consumes the actionEvent
@@ -168,7 +242,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         String text = "some";
         root.field.appendText(text);
         List<ActionEvent> actions = new ArrayList<>();
-        root.cancel.setOnAction(e -> actions.add(e));
+        root.cancel.setOnAction(actions::add);
         press(ESCAPE);
         
         assertEquals("uncommitted changes, cancel action must not be triggered", 0, actions.size());
@@ -184,7 +258,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         String text = "some";
         root.field.appendText(text);
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
         assertEquals("enter on uncommitted changes must not trigger default button", 0, actions.size());
     }
@@ -197,7 +271,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     @Test
     public void testTextEscapeCancelButton() {
         List<ActionEvent> actions = new ArrayList<>();
-        root.cancel.setOnAction(e -> actions.add(e));
+        root.cancel.setOnAction(actions::add);
         press(ESCAPE);
         assertEquals("esc on unchanged text must trigger cancel button", 1, actions.size());
     }
@@ -212,7 +286,8 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         press(ENTER);
         assertEquals("enter on unchanged text must trigger default button", 1, actions.size());
     }
-  
+
+//-------------------- https://bugs.openjdk.java.net/browse/JDK-8152557  
     /**
      * Guard against regression
      * https://bugs.openjdk.java.net/browse/JDK-8152557
@@ -245,6 +320,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         root.field.appendText(text);
         press(ENTER);
     }
+    
 //--------------------- sanity testing of ui state   
     /**
      * Remove the textformatter: check field text is unchanged.

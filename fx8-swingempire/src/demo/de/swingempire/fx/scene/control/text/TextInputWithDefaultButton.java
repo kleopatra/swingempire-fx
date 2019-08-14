@@ -23,6 +23,7 @@ import javafx.stage.Stage;
  * 
  * https://stackoverflow.com/q/51388408/203657
  * Default button always triggered, even when consuming the enter.
+ * reported by OP https://bugs.openjdk.java.net/browse/JDK-8207759
  * 
  * What to expect? 
  * - node.setEventHandler(xxEvent) is doc'ed to be called as last handler in the chain

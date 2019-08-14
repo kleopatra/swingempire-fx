@@ -69,11 +69,17 @@ import javafx.util.StringConverter;
  * TODO test against https://stackoverflow.com/q/51388408/203657 and the bugs
  * referenced there. 
  * 
- * Note: my answer on that demonstrates that forwardToParent is evil - stricter analysis is needed! 
+ * the question is reported by OP as https://bugs.openjdk.java.net/browse/JDK-8207759,
+ * example from question (and bug report) is copied here as TextInputWithDefaultButton
+ * 
+ * TODO: my answer on that demonstrates that forwardToParent is evil - stricter analysis is needed! 
  * 
  * 
  * @see de.swingempire.fx.scene.control.text.TextFieldValueAndDefaultCancel
  * @see de.swingempire.fx.scene.control.text.TextFieldCancelSO
+ * @see de.swingempire.fx.scene.control.text.TextFieldActionHandler
+ * @see de.swingempire.fx.scene.control.text.TextFieldAction
+ * @see de.swingempire.fx.scene.control.text.TextInputWithDefaultButton
  * 
  * @author Jeanette Winzenburg, Berlin
  */
