@@ -25,6 +25,52 @@ import javafx.util.StringConverter;
 
 /**
  * Distill inputmap tweaks into custom skin.
+ * <p>
+ * Expected behavior:
+ * <ul>
+ * <li> esc/enter must be consumed if they triggered a "real" cancel/commit 
+ *   in the value/text
+ * <li> esc/enter must not be consumed if they did not trigger a "real" cancel/commit
+ * </ul>
+ * 
+ * Definition of a "real" cancel/commit: there are uncommitted changes in the 
+ * input control. For a TextField it's not entirely straightforward, because
+ * a bare TextField has no notion of commit - it's only introduced with a 
+ * TextFormatter. In the latter case, we can compare the TextField's text (converted
+ * with the formatter's converter) with the value of its formatter: if they are not equal,
+ * the there are uncommitted changes and the enter/escape should be used to commit/cancel
+ * the change and be consumed. Otherwise do nothing and let the event pass without consuming.
+ * <p>
+ * TextFieldBehavior implements the enter/escape (fx11)
+ * <p> enter: the keyMapping autoConsumes -  this sequence was introduced to fix 
+ *    https://bugs.openjdk.java.net/browse/JDK-8152557 where the formatters value was
+ *    not yet updated on receiving the actionEvent
+ * <ul> 
+ * <li> commit
+ * <li> fire actionEvent 
+ * <li> if there's neither an onAction handler nor the fired action consumed, forward the enter
+ *   to parent
+ * </ul>  
+ * <p> escape: the keyMapping does not autoConsume -  was introduced when fixing 
+ * https://bugs.openjdk.java.net/browse/JDK-8090230, where a popup  hideOnEscape wasn't closed when it
+ * contained a focused textField (which still is virulent if the textField has a formatter)
+ * <ul>
+ * <li> if there is a formatter, cancel and consume 
+ * <li>  otherwise call super (which effectively forwards to parent)
+ * </ul>
+ * 
+ * Bug: enter/consume are always consumed if the field has a formatter - the implementation
+ * isn't good enough because it doesn't compare the formatter's value against the textfield's
+ * property. Doing so resolves issues with default/cancel buttons and hiding popup/closing
+ * dialogs containing focused textfields
+ * 
+ * <p>
+ * 
+ * TODO test against https://stackoverflow.com/q/51388408/203657 and the bugs
+ * referenced there. 
+ * 
+ * Note: my answer on that demonstrates that forwardToParent is evil - stricter analysis is needed! 
+ * 
  * 
  * @see de.swingempire.fx.scene.control.text.TextFieldValueAndDefaultCancel
  * @see de.swingempire.fx.scene.control.text.TextFieldCancelSO

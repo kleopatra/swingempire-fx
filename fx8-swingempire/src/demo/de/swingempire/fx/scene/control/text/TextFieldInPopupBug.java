@@ -29,8 +29,14 @@ import javafx.stage.Stage;
  * always in fx8: the old mechanism in behaviorbase consumes if it finds
  * a matching action in its list of bindings
  * 
- * fixed in fx9: consume the esc only if formatter set, then the 
- * bug is back
+ * fixed in fx9: consume the esc only if formatter set, such that behavior differs
+ * for fields with/out formatter 
+ * - without: behaves as expected
+ * - with: bug is back
+ * 
+ * Using XTextFieldSkin fixes the issue completely.
+ * 
+ * @see de.swingempire.fx.scene.control.skin.XTextFieldSkin
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -54,10 +60,10 @@ public class TextFieldInPopupBug  extends Application {
                     // informal testing: XTextFieldSkin is okay
                     TextField textField = new TextField("Focus on this one, ESCAPE doesn't work") {
 
-//                        @Override
-//                        protected Skin<?> createDefaultSkin() {
-//                            return new XTextFieldSkin(this);//super.createDefaultSkin();
-//                        }
+                        @Override
+                        protected Skin<?> createDefaultSkin() {
+                            return new XTextFieldSkin(this);//super.createDefaultSkin();
+                        }
                         
                     };
                     textField.setTextFormatter(new TextFormatter(TextFormatter.IDENTITY_STRING_CONVERTER));

@@ -5,35 +5,29 @@
 package de.swingempire.testfx.textinput;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.testfx.framework.junit.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.ButtonMatchers;
 
+import static de.swingempire.testfx.util.TestFXUtils.*;
 import static javafx.scene.input.KeyCode.*;
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.*;
-import static de.swingempire.testfx.util.TestFXUtils.*;
 
 import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.skin.TextFieldSkin;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -214,11 +208,43 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
     @Test
     public void testTextEnterDefaultButton() {
         List<ActionEvent> actions = new ArrayList<>();
-        root.ok.setOnAction(e -> actions.add(e));
+        root.ok.setOnAction(actions::add);
         press(ENTER);
         assertEquals("enter on unchanged text must trigger default button", 1, actions.size());
     }
   
+    /**
+     * Guard against regression
+     * https://bugs.openjdk.java.net/browse/JDK-8152557
+     * change must be committed when receiving actionEvent
+     * here: added action handler
+     */
+    @Test
+    public void testTextEnterCommittedInActionHandler() {
+        String initial = root.field.getText();
+        String text = "appended";
+        root.field.addEventHandler(ActionEvent.ACTION, e -> {
+            assertEquals("text change must be committed", initial + text, root.field.getTextFormatter().getValue());
+        });
+        root.field.appendText(text);
+        press(ENTER);
+    }
+    /**
+     * Guard against regression
+     * https://bugs.openjdk.java.net/browse/JDK-8152557
+     * change must be committed when receiving actionEvent
+     * here: onAction
+     */
+    @Test
+    public void testTextEnterCommittedOnAction() {
+        String initial = root.field.getText();
+        String text = "appended";
+        root.field.setOnAction(e -> {
+            assertEquals("text change must be committed", initial + text, root.field.getTextFormatter().getValue());
+        });
+        root.field.appendText(text);
+        press(ENTER);
+    }
 //--------------------- sanity testing of ui state   
     /**
      * Remove the textformatter: check field text is unchanged.

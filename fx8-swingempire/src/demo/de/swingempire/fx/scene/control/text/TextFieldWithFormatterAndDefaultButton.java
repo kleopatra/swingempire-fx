@@ -7,11 +7,13 @@ package de.swingempire.fx.scene.control.text;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 
+import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
@@ -21,6 +23,18 @@ import javafx.stage.Stage;
 /**
  * https://stackoverflow.com/q/50970411/203657
  * focused textfield with textformatter does not trigger default cancel button
+ * 
+ * 
+ * To reproduce:
+ * - focus id (that's the textField with a formatter)
+ * - press esc 
+ * - expected: dialog closed
+ * - actual: nothing happens
+ * 
+ * This is the original question: when replacing default skin with XTextfieldSkin,
+ * the problem is solved.
+ * 
+ * @see de.swingempire.fx.scene.control.skin.XTextFieldSkin
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -32,7 +46,14 @@ public class TextFieldWithFormatterAndDefaultButton extends Application {
             HBox hb1 = new HBox();
             hb1.getChildren().addAll(new Label("Name: "), name);
 
-            TextField id = new TextField();
+            TextField id = new TextField() {
+
+                @Override
+                protected Skin<?> createDefaultSkin() {
+                    return new XTextFieldSkin(this);
+                }
+                
+            };
             id.setTextFormatter(getNumberFormatter()); // numbers only
             HBox hb2 = new HBox();
             hb2.getChildren().addAll(new Label("ID: "), id);

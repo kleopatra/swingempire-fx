@@ -43,6 +43,10 @@ import javafx.util.StringConverter;
  * needed: a dirty property in textfield and/or formatter?   
  * textInputControl.commit/cancel are final, can't hook into
  * 
+ * this is experimenting, complete solution is distilled into skin
+ * 
+ * @see @see de.swingempire.fx.scene.control.skin.XTextFieldSkin
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class TextFieldValueAndDefaultCancel extends Application {

@@ -12,6 +12,7 @@ import com.sun.javafx.scene.control.inputmap.InputMap;
 import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
 import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
+import de.swingempire.fx.scene.control.skin.XTextFieldSkin;
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -34,14 +35,24 @@ import javafx.util.StringConverter;
 /**
  * TextField with TextFormatter has unexpected behavior on cancel/commit
  * (shows when having cancel/default buttons)
- * 
+ * <p>
+ * This is an answer to https://stackoverflow.com/q/50970411/203657
+ * there the context was textField with formatter and cancel button in a dialog.
+ * Here it's only a plain pane with cancel button.
+ *  
+ * <p>
  * Expected behavior:
- * - esc/enter must be consumed if they triggered a "real" cancel/commit 
+ * <ul>
+ * <li> esc/enter must be consumed if they triggered a "real" cancel/commit 
  *   in the value/text
- * - esc/enter must not be consumed if they did not trigger a "real" cancel/commit
+ * <li> esc/enter must not be consumed if they did not trigger a "real" cancel/commit
+ * <ul>
  * 
  * needed: a dirty property in textfield and/or formatter?   
  * textInputControl.commit/cancel are final, can't hook into
+ * decided on a utility method to check for dirtyness
+ * 
+ * @see de.swingempire.fx.scene.control.skin.XTextFieldSkin
  * 
  * @author Jeanette Winzenburg, Berlin
  */
