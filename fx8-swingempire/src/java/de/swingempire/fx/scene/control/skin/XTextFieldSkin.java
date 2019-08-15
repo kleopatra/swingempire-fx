@@ -40,6 +40,7 @@ import javafx.util.StringConverter;
  * with the formatter's converter) with the value of its formatter: if they are not equal,
  * the there are uncommitted changes and the enter/escape should be used to commit/cancel
  * the change and be consumed. Otherwise do nothing and let the event pass without consuming.
+ * 
  * <p>
  * TextFieldBehavior implements the enter/escape (fx11)
  * <p> enter: the keyMapping autoConsumes -  this sequence was introduced to fix 
