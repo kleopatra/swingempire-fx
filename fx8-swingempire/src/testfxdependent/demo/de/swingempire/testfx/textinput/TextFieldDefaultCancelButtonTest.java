@@ -391,7 +391,8 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
 
     @Override
     public void start(Stage stage) {
-        stopStoringFiredEvents(stage);
+        // don't need here, tests will fail anyway - hack on sub
+        //stopStoringFiredEvents(stage);
         root = new TextFieldDefaultCancelButtonPane(getSkinProvider());
         Scene scene = new Scene(root, 100, 100);
         stage.setScene(scene);

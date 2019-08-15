@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control.skin;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
 import com.sun.javafx.scene.control.behavior.TextInputControlBehavior;
@@ -89,7 +90,8 @@ public class XTextFieldSkin extends TextFieldSkin {
     private TextFieldBehavior behavior;
     
     /**
-     * @param control
+     * Instantiates a XTextFieldSkin for the control.
+     * @param control the textfield to skin.
      */
     public XTextFieldSkin(TextField control) {
         super(control);
@@ -100,18 +102,127 @@ public class XTextFieldSkin extends TextFieldSkin {
         installEnter();
     }
 
-    // note: this differs from experiment in TextFieldValueAndDefaultCancel
+    
+    /**
+     * Returns a boolean to indicate whether the given field has uncommitted
+     * changes.
+     * 
+     * @param <T> the type of the formatter's value
+     * @param field the field to analyse
+     * @return true if the field has a textFormatter with converter and
+     *    uncommitted changes, false otherwise
+     */
+    public static <T> boolean isDirty(TextField field) {
+        TextFormatter<T> textFormatter = (TextFormatter<T>) field.getTextFormatter();
+        if (textFormatter == null || textFormatter.getValueConverter() == null) return false;
+        String fieldText = field.getText();
+        StringConverter<T> valueConverter = textFormatter.getValueConverter();
+        String formatterText = valueConverter.toString(textFormatter.getValue());
+        // todo: handle empty string vs. null value
+        return !Objects.equals(fieldText, formatterText);
+    }
+
+//------------------ hack around interfering eventFilter    
+    /**
+     * Hack around https://bugs.openjdk.java.net/browse/JDK-8229467
+     * Having an eventFilter in the dispatch chain consumes prevents
+     * consuming the fired event.
+     * 
+     * The idea here: the fire method stores the fired action in the
+     * the field's properties, this utility method consumes both the
+     * received and the stored action, if available. Then fire can
+     * check if any is consumed.
+     * 
+     * @param received the action received by a handler
+     * @param textField the textField on which a handler might be added/set
+     * 
+     * @throws NullPointerException if either the action or textField is null
+     */
+    public static void consumeAction(ActionEvent received, TextField textField) {
+        Objects.requireNonNull(received, "action must not be null");
+        Objects.requireNonNull(textField, "textField must not be null");
+        received.consume();
+        ActionEvent firedAction = (ActionEvent) textField.getProperties().get("firedAction");
+        if (firedAction != null) {
+            firedAction.consume();
+        }
+    }
+    
+    /**
+     * Hack around interfering eventFilter.
+     * This implementation stores the fired action in the fields properties map
+     * before firing.
+     * 
+     * @param action the action to fire on the textField
+     */
+    protected void fireAction(ActionEvent action) {
+        TextField textField = getSkinnable();
+        textField.getProperties().put("firedAction", action);
+        textField.fireEvent(action);
+    }
+    
+    /**
+     * Hack around interfering eventFilter.
+     * 
+     * Checks and returns the consumed state of the given action, removed the stored
+     * property
+     * 
+     * @param action the action that had been fired on the textfield
+     * @return
+     */
+    protected boolean isConsumed(ActionEvent action) {
+        getSkinnable().getProperties().remove("firedAction");
+        return action.isConsumed();
+    }
+
+//-------------- end hack around interfering eventFilter
+
+    /**
+     * Commits the text, fires an actionEvent and consumes the keyEvent if it
+     * was "used by the textField" in any way, otherwise let it pass through the
+     * normal dispatch.
+     * <p>
+     * "Used" by the textField is true if
+     * <ul>
+     * <li>text is dirty or
+     * <li>the actionEvent is consumed
+     * <li>the textField has an onAction handler
+     * </ul>
+     * 
+     * <p>
+     * <b>Note</b>: action firing and checking for being consumed is
+     * encapsulated into separate methods that are aware of the hack around
+     * interfering eventFilters. For the hack to be effective, the textfield must
+     * have this skin installed and client code must
+     * cooperate by calling the static utility method to consume the action.
+     * 
+     * <code><pre>
+     * textField.addEventHandler(action -> {
+     *     doStuff();
+     *     XTextFieldSkin.conumeAction(action, textField)); 
+     * });
+     * </pre></code>
+     *
+     * @param e the keyEvent that triggered the mapping.
+     */
     protected void fire(KeyEvent e) {
+        /*
+         * PENDING JW: really want the last bullet? Why should the onAction be
+         * treated differently from the others? Maybe because they typically don't
+         * consume in "normal" client code?
+         * 
+         */
+        // note: this differs from experiment in TextFieldValueAndDefaultCancel
         TextField textField = getSkinnable();
         EventHandler<ActionEvent> onAction = textField.getOnAction();
         ActionEvent actionEvent = new ActionEvent(textField, textField);
-        // first commit, then fire
         boolean dirty = isDirty(textField);
 
+        // first commit, then fire
         textField.commitValue();
-        textField.fireEvent(actionEvent);
-        // nothing more to do, consume
-        if (dirty || onAction != null || actionEvent.isConsumed()) {
+        fireAction(actionEvent);
+        // key is really "used", consume
+        if (dirty || isConsumed(actionEvent) || onAction != null) {
             e.consume();
         }
         // original
@@ -120,20 +231,12 @@ public class XTextFieldSkin extends TextFieldSkin {
 //        }
     }
 
-    protected void forwardToParent(KeyEvent event) {
-        // fix for JDK-8145515
-        if (getNode().getProperties().containsKey(TextInputControlBehavior.DISABLE_FORWARD_TO_PARENT)) {
-            return;
-        }
-
-        if (getNode().getParent() != null) {
-            getNode().getParent().fireEvent(event);
-        }
-    }
-
-
     /**
-     * Custom EventHandler that's mapped to ESCAPE.
+     * Cancels the field's edit and consumes the keyEvent if it
+     * was "used by the textField", otherwise let it pass through the
+     * normal dispatch.
+     * <p>
+     * "Used" by the textField is true if text is dirty.
      * 
      * @param field the field to handle a cancel for
      * @param ev the received keyEvent 
@@ -151,10 +254,7 @@ public class XTextFieldSkin extends TextFieldSkin {
         InputMap inputMap = behavior.getInputMap();
         KeyBinding binding = new KeyBinding(KeyCode.ENTER);
 
-        KeyMapping keyMapping = new KeyMapping(binding, e -> {
-//            e.consume();
-            fire(e);
-        });
+        KeyMapping keyMapping = new KeyMapping(binding, this::fire);
         // by default, mappings consume the event - configure not to
         keyMapping.setAutoConsume(false);
         // note: this fails prior to 9-ea-108
@@ -189,25 +289,28 @@ public class XTextFieldSkin extends TextFieldSkin {
         inputMap.getMappings().add(keyMapping);
     }
     
+//------------------------ unused debugging help    
     /**
-     * Returns a boolean to indicate whether the given field has uncommitted
-     * changes.
-     * 
-     * @param <T> the type of the formatter's value
-     * @param field the field to analyse
-     * @return true if the field has a textFormatter with converter and
-     *    uncommitted changes, false otherwise
+     * Copy from XTextInputControlBehavior. Not used here.
+     * @param event
      */
-    public static <T> boolean isDirty(TextField field) {
-        TextFormatter<T> textFormatter = (TextFormatter<T>) field.getTextFormatter();
-        if (textFormatter == null || textFormatter.getValueConverter() == null) return false;
-        String fieldText = field.getText();
-        StringConverter<T> valueConverter = textFormatter.getValueConverter();
-        String formatterText = valueConverter.toString(textFormatter.getValue());
-        // todo: handle empty string vs. null value
-        return !Objects.equals(fieldText, formatterText);
-    }
+    protected void forwardToParent(KeyEvent event) {
+        // fix for JDK-8145515
+        if (getNode().getProperties().containsKey(TextInputControlBehavior.DISABLE_FORWARD_TO_PARENT)) {
+            return;
+        }
     
+        if (getNode().getParent() != null) {
+            getNode().getParent().fireEvent(event);
+        }
+    }
+
+    /**
+     * ActionEvent that keeps the consumed flag on copyFor.
+     * 
+     * Not used here.
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class XActionEvent extends ActionEvent {
 
         public XActionEvent() {
@@ -228,6 +331,8 @@ public class XTextFieldSkin extends TextFieldSkin {
         
     }
     
-
+    @SuppressWarnings("unused")
+    private static final Logger LOG = Logger
+            .getLogger(XTextFieldSkin.class.getName());
 
 }

@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import org.junit.Test;
 
+import static de.swingempire.testfx.util.TestFXUtils.*;
 import static javafx.scene.input.KeyCode.*;
 import static org.junit.Assert.*;
 
@@ -18,6 +19,7 @@ import de.swingempire.testfx.util.TestFXUtils;
 import javafx.event.ActionEvent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.TextFieldSkin;
+import javafx.stage.Stage;
 
 /**
  * Test textField behaviour in the context of default/cancel button.
@@ -44,15 +46,18 @@ public class XTextFieldDefaultCancelButtonTest
     @Override
     @Test
     public void testTextNoFormatterWithActionHandlerEnterDefaultButton() {
+        // limit the hack to when absolutely necessary
+        stopStoringFiredEvents((Stage) root.getScene().getWindow());
+
         Runnable r = () -> {
+        };
+        TestFXUtils.runAndWaitForFx(r);
         root.field.setTextFormatter(null);
         root.field.addEventHandler(ActionEvent.ACTION, 
                 e -> {
                     e.consume();
                 });
-
-        };
-        TestFXUtils.runAndWaitForFx(r);
+        
         List<ActionEvent> actions = new ArrayList<>();
         root.ok.setOnAction(actions::add);
         press(ENTER);
@@ -61,6 +66,38 @@ public class XTextFieldDefaultCancelButtonTest
                 "enter with consuming action handler must not trigger default button", 0,
                 actions.size());
     }
+    
+    /**
+     * Test the hack around eventFilters (let utility method in skin consume). 
+     * This should pass without the hack
+     */
+    @Test
+    public void testTextNoFormatterWithActionHandlerEnterDefaultButtonConsumedBySkin() {
+//        Runnable r = () -> {
+//        };
+//        TestFXUtils.runAndWaitForFx(r);
+        root.field.setTextFormatter(null);
+        root.field.addEventHandler(ActionEvent.ACTION, 
+                e -> {
+                    XTextFieldSkin.consumeAction(e, root.field);
+                });
+
+        List<ActionEvent> actions = new ArrayList<>();
+        root.ok.setOnAction(actions::add);
+        press(ENTER);
+        //release(ENTER);
+        assertEquals(
+                "enter with consuming action handler must not trigger default button", 0,
+                actions.size());
+    }
+
+    
+    @Override
+    public void start(Stage stage) {
+        //stopStoringFiredEvents(stage);
+        super.start(stage);
+    }
+
 
     @Override
     protected Function<TextField, TextFieldSkin> getSkinProvider() {
