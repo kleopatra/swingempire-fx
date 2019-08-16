@@ -150,6 +150,7 @@ public class TextFieldInPopupTest extends ApplicationTest {
 
     @Override
     public void start(Stage stage) throws Exception {
+        // PENDING move to XTest methods where needed
         TestFXUtils.stopStoringFiredEvents(stage);
         root = new TextFieldInPopupPane(getSkinProvider()); // createContent();
         Scene scene = new Scene(root, 100, 100);

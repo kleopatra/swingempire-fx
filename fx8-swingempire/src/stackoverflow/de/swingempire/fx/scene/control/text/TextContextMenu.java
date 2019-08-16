@@ -33,6 +33,11 @@ import javafx.stage.Stage;
 /**
  * https://stackoverflow.com/q/51307577/203657
  * CustomMenuItem with TextField - action of item above is triggered.
+ * reported by OP as https://bugs.openjdk.java.net/browse/JDK-8207385
+ * 
+ * same fix as https://bugs.openjdk.java.net/browse/JDK-8145515
+ * use flag "TextInputControlBehavior.disableForwardToParent" in textfield's
+ * properties map for core
  * 
  * Part is a bug in ContextMenuContainer:
  * - registers a keyHandler on ENTER that calls MenuItemContainer.doSelect on
@@ -96,7 +101,8 @@ public class TextContextMenu extends Application {
 //            }
 //        });
 //        /* I */
-        textField.getProperties().put("TextInputControlBehavior.disableForwardToParent", true);
+//        textField.getProperties().put("TextInputControlBehavior.disableForwardToParent", true);
+        
         textField.addEventHandler(ActionEvent.ACTION, event -> {
             System.out.println("ADD: " + textField.getText() + " | "
                     + event

@@ -205,6 +205,8 @@ public class XTextFieldSkin extends TextFieldSkin {
      * });
      * </pre></code>
      *
+     * PENDING JW: must respect TextInputControlBehavior.disableForwardToParent, if/how?
+     * 
      * @param e the keyEvent that triggered the mapping.
      */
     protected void fire(KeyEvent e) {
