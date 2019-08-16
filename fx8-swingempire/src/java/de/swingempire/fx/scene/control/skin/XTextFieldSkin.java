@@ -122,7 +122,9 @@ public class XTextFieldSkin extends TextFieldSkin {
         return !Objects.equals(fieldText, formatterText);
     }
 
-//------------------ hack around interfering eventFilter    
+//------------------ hack around interfering eventFilter   
+    public static String TEXT_FIELD_FIRED_ACTION = "textfield.firedAction";
+    
     /**
      * Hack around https://bugs.openjdk.java.net/browse/JDK-8229467
      * Having an eventFilter in the dispatch chain consumes prevents
@@ -142,7 +144,7 @@ public class XTextFieldSkin extends TextFieldSkin {
         Objects.requireNonNull(received, "action must not be null");
         Objects.requireNonNull(textField, "textField must not be null");
         received.consume();
-        ActionEvent firedAction = (ActionEvent) textField.getProperties().get("firedAction");
+        ActionEvent firedAction = (ActionEvent) textField.getProperties().get(TEXT_FIELD_FIRED_ACTION);
         if (firedAction != null) {
             firedAction.consume();
         }
@@ -157,7 +159,7 @@ public class XTextFieldSkin extends TextFieldSkin {
      */
     protected void fireAction(ActionEvent action) {
         TextField textField = getSkinnable();
-        textField.getProperties().put("firedAction", action);
+        textField.getProperties().put(TEXT_FIELD_FIRED_ACTION, action);
         textField.fireEvent(action);
     }
     
@@ -171,7 +173,7 @@ public class XTextFieldSkin extends TextFieldSkin {
      * @return
      */
     protected boolean isConsumed(ActionEvent action) {
-        getSkinnable().getProperties().remove("firedAction");
+        getSkinnable().getProperties().remove(TEXT_FIELD_FIRED_ACTION);
         return action.isConsumed();
     }
 
