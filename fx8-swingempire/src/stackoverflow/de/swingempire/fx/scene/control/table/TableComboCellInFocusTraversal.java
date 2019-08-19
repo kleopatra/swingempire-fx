@@ -74,6 +74,7 @@ public class TableComboCellInFocusTraversal extends Application {
             
         });
         
+        table.getSelectionModel().setCellSelectionEnabled(true);
         // Note: due to bug https://bugs.openjdk.java.net/browse/JDK-8089652
         // users have to click once into the table to trigger the column to be !=null
         // we hack around by forcing the initial cell focus if the item is != null
@@ -84,7 +85,7 @@ public class TableComboCellInFocusTraversal extends Application {
         table.getFocusModel().focusedCellProperty().addListener((src, ov, nv) -> {
             LOG.info("focused: " + nv);
             if (nv != null && nv.getTableColumn() == firstName) {
-//                table.edit(nv.getRow(), firstName);
+                table.edit(nv.getRow(), firstName);
             }
         });
         BorderPane content = new BorderPane(table);
