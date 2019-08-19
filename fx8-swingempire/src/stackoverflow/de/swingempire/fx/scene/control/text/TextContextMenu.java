@@ -38,7 +38,7 @@ import javafx.stage.Stage;
  * same fix as https://bugs.openjdk.java.net/browse/JDK-8145515
  * use flag "TextInputControlBehavior.disableForwardToParent" in textfield's
  * properties map for core
- * 
+ * <p>
  * Part is a bug in ContextMenuContainer:
  * - registers a keyHandler on ENTER that calls MenuItemContainer.doSelect on
  *  the item at currentFocusedIndex

@@ -31,12 +31,33 @@ import javafx.stage.Stage;
 /**
  * Test https://bugs.openjdk.java.net/browse/JDK-8207385
  * action of menuItem above custom item containing a textfield is triggered 
+ * 
+ * basically a bug in MenuItemContainer/ContextMenuContent, helped by 
+ * core event dispatch - workaround is to set disableForwardToParent on the field
+ * (was introduced to fix https://bugs.openjdk.java.net/browse/JDK-8145515)
+ * 
  * @author Jeanette Winzenburg, Berlin
+ * @see de.swingempire.fx.scene.control.text.TextContextMenu
  */
 public class TextFieldInContextMenuTest extends ApplicationTest {
 
     protected TextFieldInContextMenuPane root;
   
+    
+    /**
+     * TextField with do-nothing onAction: passing for core.
+     */
+    @Test
+    public void testEnterOnActionHandler() {
+        root.textField.setOnAction(action -> {});
+        doOpenAndFocus();
+        press(ENTER);
+        assertNoActions();
+    }
+    
+    /**
+     * TextField with consuming action handler: failing for core.
+     */
     @Test
     public void testEnterActionHandlerConsume() {
         root.textField.addEventHandler(ActionEvent.ACTION, action -> action.consume());
@@ -46,7 +67,9 @@ public class TextFieldInContextMenuTest extends ApplicationTest {
     }
     
     /**
-     * Workaround: disable forwarding
+     * Workaround: disable forwarding - custom property in field's 
+     * property map.
+     * 
      * passing for core, failing for x
      */
     @Test
@@ -86,6 +109,7 @@ public class TextFieldInContextMenuTest extends ApplicationTest {
         assertTrue(root.menu.isShowing());
 //        Runnable r = (() -> root.textField.requestFocus());
 //        runAndWaitForFx(r);
+        
         clickOn(root.textField);
     }
     
@@ -104,6 +128,12 @@ public class TextFieldInContextMenuTest extends ApplicationTest {
     }
 
 
+    /**
+     * Test UI: have a TextField (without formatter, no actionHandler, no onAction, no initial text)
+     * in a customMenuItem of the items of a MenuButton.
+     *  
+     * @author Jeanette Winzenburg, Berlin
+     */
     public static class TextFieldInContextMenuPane extends VBox {
         protected MenuButton menu;
         protected TextField textField;

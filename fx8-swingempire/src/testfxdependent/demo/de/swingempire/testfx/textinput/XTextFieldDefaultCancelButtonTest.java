@@ -10,6 +10,8 @@ import java.util.function.Function;
 
 import org.junit.Test;
 
+import com.sun.javafx.scene.control.behavior.TextInputControlBehavior;
+
 import static javafx.scene.input.KeyCode.*;
 import static org.junit.Assert.*;
 
@@ -26,18 +28,27 @@ import javafx.stage.Stage;
 
 /**
  * Test textField behaviour in the context of default/cancel button.
+ * <p>
  * 
  * This uses XTextFieldSkin.
+ * <p>
+ * PENDING JW: this contains also basic XTextFieldSkin test, move that part
+ *  into dedicated test class.
+ *  
  * @author Jeanette Winzenburg, Berlin
  * @see de.swingempire.fx.scene.control.skin.XTextFieldSkin
  */
 public class XTextFieldDefaultCancelButtonTest
         extends TextFieldDefaultCancelButtonTest {
 
- // ---------- testing hack around interfering EventFilter   
+ // ---------- testing XTextFieldSkin: hack around interfering EventFilter   
     
     /**
-     * Test that eventFilter on parent does interfere without using hack
+     * Test that eventFilter on parent does interfere without using hack.
+     * 
+     * Note: this test is a bit whacky - need to remove the interfering filter
+     * from TestFx and install a custom filter to see that the default
+     * button <b>is</b> triggered (kind of double negation, a bit confusing)
      */
     @Test
     public void testTextNoFormatterParentEventFilterEnterDefaultButtonTriggered() {
@@ -47,7 +58,6 @@ public class XTextFieldDefaultCancelButtonTest
         root.addEventFilter(EventType.ROOT, e -> {});
         root.field.setTextFormatter(null);
         root.field.addEventHandler(ActionEvent.ACTION, e -> {
-//            consumeAction(e, root.field);
             e.consume();
         });
         
@@ -56,7 +66,7 @@ public class XTextFieldDefaultCancelButtonTest
         press(ENTER);
         // release(ENTER);
         assertEquals(
-                "enter with consuming action handler but no hack trigger default button",
+                "enter with consuming action handler but no hack triggers default button",
                 1, actions.size());
         
     }
@@ -139,7 +149,15 @@ public class XTextFieldDefaultCancelButtonTest
         });
         press(CANCEL);
     }
-//-------------- end hack testing
+//-------------- XTextFieldSkin: sanity
+    
+    @Test
+    public void testDisableForwardSpelling() {
+        assertEquals(TextInputControlBehavior.DISABLE_FORWARD_TO_PARENT,
+               TEXT_FIELD_DISABLED_FORWARD_TO_PARENT);
+    }
+    
+//--------------------------    
     
     /**
      * Remove the textformatter and register an action handler that consumes the

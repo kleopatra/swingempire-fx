@@ -123,8 +123,20 @@ public class XTextFieldSkin extends TextFieldSkin {
     }
 
 //------------------ hack around interfering eventFilter   
+    /**
+     * Custom key to store the action fired by enter mapping. The value is
+     * valid only during the dispatch.
+     */
     public static String TEXT_FIELD_FIRED_ACTION = "textfield.firedAction";
-    
+    /**
+     * Core key to block behavior's forwardToParent method. Introduced
+     * to fix https://bugs.openjdk.java.net/browse/JDK-8145515
+     * textField in editable combo: custom enter filter not invoked.
+     * <p>
+     * This also helps in https://bugs.openjdk.java.net/browse/JDK-8207385 
+     * Wrong menuItem action triggered
+     */
+    public static String TEXT_FIELD_DISABLED_FORWARD_TO_PARENT = "TextInputControlBehavior.disableForwardToParent";
     /**
      * Hack around https://bugs.openjdk.java.net/browse/JDK-8229467
      * Having an eventFilter in the dispatch chain consumes prevents
