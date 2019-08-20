@@ -18,9 +18,14 @@ import javafx.stage.Stage;
 /**
  * test fix https://bugs.openjdk.java.net/browse/JDK-8145515
  * textField in editable combo: custom enter filter not invoked.  
- * 
+ * <p>
  * editor still (or again?) doesn't receive the ENTER .. or misunderstood
  * bug/fix?
+ * <p>
+ * Probably again, regression introduced by fixing 
+ * https://bugs.openjdk.java.net/browse/JDK-8149622
+ * <p>
+ * Regression reported as https://bugs.openjdk.java.net/browse/JDK-8229914
  * 
  * @author Jeanette Winzenburg, Berlin
  */
