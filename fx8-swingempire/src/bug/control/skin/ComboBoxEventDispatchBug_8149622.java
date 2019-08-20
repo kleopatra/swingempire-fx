@@ -29,6 +29,7 @@ import javafx.stage.Stage;
  * noted for fx11
  * <p>
  * still broken for editable combo
+ * reported: https://bugs.openjdk.java.net/browse/JDK-8229924
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -43,26 +44,22 @@ public class ComboBoxEventDispatchBug_8149622 extends Application {
         ComboBox<String> cb = new ComboBox<>();
         cb.getItems().addAll("Test", "hello", "world");
         // event dispatch still broken if editable!
-//        cb.setEditable(true);
+        cb.setEditable(true);
         
         cb.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             
-            List<StackFrame> stack = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                .walk(s ->
-                s.limit(10).collect(Collectors.toList()));
-            stack.forEach(System.out::println);
-            System.out.println("combobox filter - " + "\n stacK:" + event);
+            System.out.println("combobox filter" );
 //            new RuntimeException().printStackTrace();
         });
         
-        cb.addEventHandler(KeyEvent.KEY_RELEASED, event -> System.out.println("combobox handler"+ "\n" + event));
+        cb.addEventHandler(KeyEvent.KEY_RELEASED, event -> System.out.println("combobox handler"));
         
         VBox root = new VBox(cb);
 
         Scene scene = new Scene(root);
 
-        scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> System.out.println("scene filter"+ "\n" + event));
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> System.out.println("scene handler"+ "\n" + event));
+        scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> System.out.println("scene filter"));
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> System.out.println("scene handler"));
 
         primaryStage.setScene(scene);
         primaryStage.show();

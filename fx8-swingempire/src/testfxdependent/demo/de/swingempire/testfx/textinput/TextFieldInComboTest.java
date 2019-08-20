@@ -7,7 +7,9 @@ package de.swingempire.testfx.textinput;
 import java.lang.StackWalker.StackFrame;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -95,31 +97,103 @@ public class TextFieldInComboTest extends ApplicationTest {
         }
         
     }
+    /**
+     * test https://bugs.openjdk.java.net/browse/JDK-8149622
+     * original reported against not-editable combo.
+     * 
+     * anything in the event to distinguish having
+     *   received it in a filter vs handler? no, but can walk the stackframes.
+     */
+    @Test
+    public void testEnterDispatchSequenceWithRecord() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder();
+        root.comboBox.addEventHandler(KeyEvent.KEY_RELEASED, recorder::record);
+        root.comboBox.addEventFilter(KeyEvent.KEY_RELEASED, recorder::record);
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, recorder::record);
+        scene.addEventFilter(KeyEvent.KEY_RELEASED, recorder::record);
+        runAndWaitForFx(() -> {
+            root.comboBox.setEditable(false);
+        });
+        verifyThat(root.comboBox, NodeMatchers.isFocused());
+        press(ENTER);
+        release(ENTER);
+        // this is real testing
+        assertEquals("each filter must be notified once", 4, recorder.getRecordSize());
+        
+        // this is testing of recorder
+        recorder.forEach(stack -> assertEquals("size of stack: " + stack, 1, stack.size()));
+        
+        // check expected event and corresponding handler
+        List<Object> sources = List.of(scene, root.comboBox, root.comboBox, scene);
+        List<String> methods = List.of("Capturing", "Capturing", "Bubbling", "Bubbling");
+        // use accessors on recorder
+        for (int i = 0; i < sources.size(); i++) {
+            assertEquals("expected event source", sources.get(i), recorder.getEventSource(i));
+            StackFrame frame = recorder.getFirstStackFrame(i);
+            String methodFragment = methods.get(i);
+            assertTrue("expected method: " + methodFragment + "but was: "  + frame.getMethodName(), 
+                    frame.getMethodName().contains(methodFragment));
+         }
+        
+        // use recorder api + functions
+        for (int i = 0; i < sources.size(); i++) {
+            Object source = sources.get(i);
+            recorder.forEvent(i, event -> 
+                assertEquals("expected event source", source, event.getSource()));
+            String methodFragment = methods.get(i);
+            recorder.forFirstStackFrame(i, first -> assertTrue(
+                    "expected method: " + methodFragment + "but was: "  + first.getMethodName(), 
+                    first.getMethodName().contains(methodFragment)));
+        }
+        
+    }
     
-    public static class EventStackRecord {
+    /**
+     * Keeps state of received event and stacktrace.
+     * 
+     * @author Jeanette Winzenburg, Berlin
+     */
+    public static class EventStackRecorder {
         
         private List<Event> events;
         private List<List<StackFrame>> stackFrames;
         
-        public EventStackRecord() {
+        private int depth;
+        
+        public EventStackRecorder() {
+            this(1);
+        }
+        
+        public EventStackRecorder(int depth) {
             events = new ArrayList<>();
             stackFrames = new ArrayList<>();
+            this.depth = depth;
         }
+        
         /**
-         * Collects the event and stackFrames with depth 1.
+         * Returns the recorded size. 
+         * @return the count of recorded events
+         * @throws IllegalStateException if # of events differs from # of stackFrames
+         */
+        public int getRecordSize() {
+            checkRecordSize();
+            return events.size();
+        }
+        
+        private void checkRecordSize() {
+           if (events.size() != stackFrames.size()) 
+               throw new IllegalStateException("recorded events " + events.size() 
+               + " must must be same size as recorded stackFrames " + stackFrames.size());
+            
+        }
+
+        /**
+         * Collects the event and stackFrames with the depth of this record.
          * 
          * @param event the event passed into the caller
          */
-        public void collect(KeyEvent event) {
-            collect(event, 1);
-        }
-        /**
-         * Collects the event and stackFrames with given depth.
-         * 
-         * @param event the event passed into the caller
-         * @param depth the depth to walk into the stack (actual - 2 for this and caller)
-         */
-        public void collect(KeyEvent event, int depth) {
+        public void record(KeyEvent event) {
             events.add(event);
             List<StackFrame> stack = StackWalker.getInstance(RETAIN_CLASS_REFERENCE).walk(s -> s
                     .skip(1 /*this*/ + 1 /* caller */)
@@ -128,6 +202,51 @@ public class TextFieldInComboTest extends ApplicationTest {
             stackFrames.add(stack);
         }
         
+        /**
+         * Applies the given consumer to each recorded list of StackFrames.
+         * 
+         * @param action the consumer to apply
+         */
+        public void forEach(Consumer<List<? super StackFrame>> action) {
+            stackFrames.forEach(action::accept);
+        }
+        
+        /**
+         * Re-inventing asserts?
+         * @param index
+         * @param predicate
+         */
+        public void testEventSource(int index, Predicate<Object> predicate) {
+            predicate.test(getEventSource(index));
+        }
+        
+        public void forEvent(int index, Consumer<Event> eventConsumer) {
+            eventConsumer.accept(events.get(index));
+        }
+        
+        public void forFirstStackFrame(int index, Consumer<StackFrame> stackFrameConsumer) {
+            stackFrameConsumer.accept(getFirstStackFrame(index));
+        }
+        
+        /**
+         * Returns the eventSource of event at index
+         * @param index
+         * @return the eventSource of the recorded event at index
+         * 
+         */
+        public Object getEventSource(int index) {
+            return events.get(index).getSource();
+        }
+        
+        /**
+         * Returns the first stackFrame of the List of stackFrames at index.
+         * 
+         * @param index
+         * @return
+         */
+        public StackFrame getFirstStackFrame(int index) {
+            return stackFrames.get(index).get(0);
+        }
    }
     
     /**
