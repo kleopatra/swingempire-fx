@@ -22,6 +22,7 @@ import de.swingempire.fx.GlobalIgnores.IgnoreDebug;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
@@ -40,15 +41,32 @@ public class MapTest {
     @Rule
     public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
-    ObservableMap<Integer, String> map;
-    ObservableList<String> list;
-    
+    private ObservableMap<Integer, String> map;
+    private ObservableList<String> list;
+
+    /**
+     * Use listener on Map to manually update list on change.
+     */
+    @Test
+    public void testAddToMap() {
+        map.addListener((MapChangeListener) c -> {
+            list.clear();
+            list.addAll(map.values());
+        });
+        map.put(-1, "x");
+        assertContainAll();
+        assertSameSequenceStream();
+    }
     /**
      * for each over map.values.stream must have same sequence as 
      * list values
      */
     @Test
     public void testSequenceSameStream() {
+        assertSameSequenceStream();
+    }
+
+    protected void assertSameSequenceStream() {
         IntegerProperty count = new SimpleIntegerProperty(0);
         //LOG.info("list?" + list + "values: " + map.values());
         map.values().forEach(next -> {
@@ -66,7 +84,6 @@ public class MapTest {
     public void testSequenceSame() {
         Iterator it = map.values().iterator();
         IntegerProperty count = new SimpleIntegerProperty(0);
-        LOG.info("list?" + list + "values: " + map.values());
         while (it.hasNext()) {
             int index = count.get();
             Object next = it.next();
