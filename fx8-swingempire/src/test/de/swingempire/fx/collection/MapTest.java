@@ -4,7 +4,7 @@
  */
 package de.swingempire.fx.collection;
 
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -19,6 +19,8 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.GlobalIgnores.IgnoreDebug;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -42,15 +44,39 @@ public class MapTest {
     ObservableList<String> list;
     
     /**
-     * TODO: iterator over map.values must have same sequence as 
+     * for each over map.values.stream must have same sequence as 
+     * list values
+     */
+    @Test
+    public void testSequenceSameStream() {
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        //LOG.info("list?" + list + "values: " + map.values());
+        map.values().forEach(next -> {
+            int index = count.get();
+            assertEquals("value must be same at " + index + " " + next , next, list.get(index));
+            count.set(++index);
+        });
+    }
+    
+    /**
+     * iterator over map.values must have same sequence as 
      * list values
      */
     @Test
     public void testSequenceSame() {
-        
+        Iterator it = map.values().iterator();
+        IntegerProperty count = new SimpleIntegerProperty(0);
+        LOG.info("list?" + list + "values: " + map.values());
+        while (it.hasNext()) {
+            int index = count.get();
+            Object next = it.next();
+            assertEquals("value must be same at " + index + " " + next , next, list.get(index));
+            count.set(++index);
+        }
     }
     
     @Test
+    @ConditionalIgnore(condition=IgnoreDebug.class)
     public void testNaivePutUpdateList() {
         map.put(3, "c");
         assertContainAll();
