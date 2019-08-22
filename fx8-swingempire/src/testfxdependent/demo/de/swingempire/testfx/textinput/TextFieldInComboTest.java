@@ -29,9 +29,20 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * Test bugs around eventHandlers/filters in ComboBox.
+ * <p>
  * test fix https://bugs.openjdk.java.net/browse/JDK-8145515
  * textField in editable combo: custom enter filter not invoked.  
- * 
+ * <p>
+ * Regression, broken again, not invoked
+ * https://bugs.openjdk.java.net/browse/JDK-8229914
+ * <p>
+ * Probably introduced by (incomplete) fix of 
+ * https://bugs.openjdk.java.net/browse/JDK-8149622
+ * EventDispatch sequence incorrect for (not-editable) combo
+ * <p>
+ * Incomplete because still virulent (and worse) for editable
+ * https://bugs.openjdk.java.net/browse/JDK-8229924
  * 
  * @author Jeanette Winzenburg, Berlin
  * 
@@ -44,7 +55,7 @@ public class TextFieldInComboTest extends ApplicationTest {
     
     /**
      * test https://bugs.openjdk.java.net/browse/JDK-8149622
-     * original reported against not-editable combo.
+     * original reported against not-editable combo (fixed)
      */
     @Test
     public void testEnterDispatchSequence() {
@@ -73,8 +84,9 @@ public class TextFieldInComboTest extends ApplicationTest {
     /**
      * test https://bugs.openjdk.java.net/browse/JDK-8149622
      * original reported against not-editable combo.
-     * 
-     * Here we test an editable combo (default for our test ui)
+     * <p>
+     * Here we test an editable combo (default for our test ui), still broken
+     * https://bugs.openjdk.java.net/browse/JDK-8229924
      */
     @Test
     public void testEnterDispatchSequenceEditable() {
@@ -97,7 +109,9 @@ public class TextFieldInComboTest extends ApplicationTest {
     
     /**
      * Regression: filter on editor not invoked for enter key.
-     * 
+     * https://bugs.openjdk.java.net/browse/JDK-8229914
+     * <p>
+     * was fixed as https://bugs.openjdk.java.net/browse/JDK-8145515
      */
     @Test
     public void testEnterFilter() {

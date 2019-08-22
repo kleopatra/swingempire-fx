@@ -31,6 +31,7 @@ import javafx.stage.Stage;
 /**
  * Test https://bugs.openjdk.java.net/browse/JDK-8207385
  * action of menuItem above custom item containing a textfield is triggered 
+ * <p>
  * 
  * basically a bug in MenuItemContainer/ContextMenuContent, helped by 
  * core event dispatch - workaround is to set disableForwardToParent on the field
