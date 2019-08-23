@@ -146,7 +146,6 @@ public class TextFieldInComboTest extends ApplicationTest {
         return TextFieldSkin::new;
     }
 
-
     /**
      * TestUI: have an editable ComboBox (aka: TextField in combo)
      * 

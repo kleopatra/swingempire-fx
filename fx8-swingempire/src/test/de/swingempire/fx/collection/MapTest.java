@@ -19,6 +19,7 @@ import com.codeaffine.test.ConditionalIgnoreRule.ConditionalIgnore;
 import static org.junit.Assert.*;
 
 import de.swingempire.fx.GlobalIgnores.IgnoreDebug;
+import de.swingempire.fx.util.ListChangeReport;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -44,14 +45,62 @@ public class MapTest {
     private ObservableMap<Integer, String> map;
     private ObservableList<String> list;
 
+    private MapBackedObservableList backedList;
+    
+//------------------------- map-backed list
+    
+    @Test
+    public void testMapBackedNotification() {
+        ListChangeReport report = new ListChangeReport(backedList);
+        map.put(50, "very well");
+        assertMapBackedListContent();
+        assertEquals("backed list must have fired", 1, report.getEventCount());
+    }
+    @Test
+    public void testMapBackedGet() {
+        assertMapBackedListContent();
+    }
+
+    protected void assertMapBackedListContent() {
+        Iterator<?> it = map.values().iterator();
+        int index = 0;
+        while (it.hasNext()) {
+            Object next = it.next();
+            assertEquals("get at index: " + index, next, backedList.get(index));
+            index++;
+        }
+    }
+    
+    @Test
+    public void testMapBackedSize() {
+        assertEquals("size: ", map.size(), backedList.size());
+    }
+//-------------------------- manual listening    
     /**
      * Use listener on Map to manually update list on change.
      */
     @Test
-    public void testAddToMap() {
+    public void testSyncEmpty() {
+        // single value
+        map.remove(1);
+        list.setAll(map.values());
         map.addListener((MapChangeListener) c -> {
-            list.clear();
-            list.addAll(map.values());
+            list.setAll(map.values());
+        });
+        // remove last
+        map.remove(2);
+        assertTrue(map.isEmpty());
+        assertContainAll();
+        assertSameSequenceStream();
+    }
+    
+    /**
+     * Use listener on Map to manually update list on change.
+     */
+    @Test
+    public void testPutToMap() {
+        map.addListener((MapChangeListener) c -> {
+            list.setAll(map.values());
         });
         map.put(-1, "x");
         assertContainAll();
@@ -114,6 +163,7 @@ public class MapTest {
     }
 
     @Test
+    @ConditionalIgnore(condition=IgnoreDebug.class)
     public void testSequence() {
         map.put(-1, "some");
         LOG.info("" + map);
@@ -189,6 +239,7 @@ public class MapTest {
         map.put(2, "b");
 
         list = FXCollections.observableArrayList(map.values());
+        backedList = new MapBackedObservableList<>(map);
     }
     @SuppressWarnings("unused")
     private static final Logger LOG = Logger.getLogger(MapTest.class.getName());
