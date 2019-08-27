@@ -51,8 +51,12 @@ import javafx.util.Callback;
  * https://bugs.openjdk.java.net/browse/JDK-8157687
  * reported 2016
  * 
- * analysed by reported to be caused by field isFirstRun: should be false
+ * analysed by reporter to be caused by field isFirstRun: should be false
  * to force prefWidth honoring (can be seen here to be true)
+ * 
+ * --------------
+ * 
+ * trying custom policies: not really working .. ;)
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -218,8 +222,8 @@ public class TableColumnGrowSedrick extends Application{
         primaryStage.show();
 
 //        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.setColumnResizePolicy(MY_CONSTRAINED_RESIZE_POLICY);
-//        tableView.setColumnResizePolicy(MY_RESIZE_POLICY);
+//        tableView.setColumnResizePolicy(MY_CONSTRAINED_RESIZE_POLICY);
+        tableView.setColumnResizePolicy(MY_RESIZE_POLICY);
 //        // Sedrick: binding the prefWidth of first to sum of second and last
 //        DoubleProperty width = new SimpleDoubleProperty();
 //        width.bind(colMiddleName.widthProperty().add(colLastName.widthProperty()));

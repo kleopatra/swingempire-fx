@@ -21,6 +21,8 @@ import javafx.stage.Stage;
  * menuItem setting bold on action doesn't work
  * 
  * worksforme .. also fxml (after fixing incorrect id of menu in  fxml)
+ * issue in fx8: style only set initially (in MenuItemContainer.createChildren), no listener
+ * to keep in sync. fx11 binds the style of the label.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
