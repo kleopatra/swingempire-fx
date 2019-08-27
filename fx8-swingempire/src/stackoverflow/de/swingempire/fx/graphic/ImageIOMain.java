@@ -22,8 +22,19 @@ import javafx.stage.Stage;
  * https://stackoverflow.com/q/57673051/203657
  * can't write snapshot as jpeg (could in fx8, can't in fx12)
  * 
+ * it's a bug: https://bugs.openjdk.java.net/browse/JDK-8119048
+ * 
  * problem with JPEGImageWriterSpi: reports false from canEncode
- * because the colorModel of the snapshot supports alpha.
+ * because the colorModel of the snapshot supports alpha. jpeg
+ * can't handle alpha channel, previous versions of the writer
+ * simply ignored that fact and produced garbage (wrong colors,
+ * pixelated ..). In some jdk version, the check against 
+ * alpha was added. 
+ * 
+ * On the other hand, SwingFXUils.fromFXImage always produces
+ * image with alpha.  
+ * the workaround is copy the BufferedImage into one without
+ * alpha channel before writing it
  */
 public class ImageIOMain extends Application {
 
