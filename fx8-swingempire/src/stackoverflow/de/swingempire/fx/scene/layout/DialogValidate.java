@@ -30,12 +30,19 @@ import javafx.stage.Window;
  * Problem (layout? or other as well?)
  * https://stackoverflow.com/q/57682554/203657
  * 
+ * Don't we see the spurious not found? Maybe not ... or else ... 
+ * what's so happening? it's gone quickly before it manifests itself
+ * really tricky 
+ * 
+ * Do we get the spurious not found or not? can't dderijeknr
+ * kldjflkerid f
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class DialogValidate extends Application {
+    private Dialog<String> d;
     
-
-    public void showCustomDialog(ActionEvent ac) {
+     public void showCustomDialog(ActionEvent ac) {
         // layout
         TextField field =  new TextField();
         field.setPrefColumnCount(20);
@@ -62,6 +69,10 @@ public class DialogValidate extends Application {
             return null;
         });
         
+        // wiring
+        dialog.getDialogPane().lookupButton(ButtonType.OK);
+        dialog.getContentText();
+        
         // onCloseRequest for dialog != onCloseRequest for window
         // bug or feature?
         dialog.setOnCloseRequest(e -> {
@@ -85,7 +96,7 @@ public class DialogValidate extends Application {
     
     // original in question
     public void showDialog() {
-        Dialog dialog = new Dialog<>();
+        Dialog<String> dialog = new Dialog<>();
         
 //        dialog.setResizable(false);
 
