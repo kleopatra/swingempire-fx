@@ -31,6 +31,7 @@ import javafx.stage.Stage;
  * - where in the dispatch chain do accelerators are triggered
  * 
  * @author Jeanette Winzenburg, Berlin
+ * @see de.swingempire.fx.scene.control.text.TextFieldActionHandler
  */
 public class TextInputWithDefaultButton extends Application {
 

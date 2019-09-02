@@ -30,24 +30,25 @@ import javafx.stage.Stage;
  * TextField: behaviour must not forward ENTER if consumed by actionHandler
  * 
  * Changed to log the notification of handlers/filters in the chain:
- * - for actors like F5: 
+ * <ul>
+ * <li> for actors like F5: 
  *   filter.parent -> filter-field -> handler-field -> onKeyPressed-field -> handler-parent -> acc
- * - for ENTER:
+ * <li> for ENTER:
  *   filter.parent -> filter-field -> handler-field -> action -> filter-parent -> handler-parent
  *   -> acc -> onKeyPressed-field  
- *   
+ * </ul>  
  * normal keys are dispatched as expected, sequence for enter is broken ..
- * 
+ * <p>
  * digging into
- * https://stackoverflow.com/q/51388408/203657
- * accelerator triggered even if ENTER consumed in keyPressedHandler
- * bug: https://bugs.openjdk.java.net/browse/JDK-8207759
+ * https://stackoverflow.com/q/51388408/203657 <br>
+ * accelerator triggered even if ENTER consumed in keyPressedHandler <br>
+ * reported as bug: https://bugs.openjdk.java.net/browse/JDK-8207759
  * reason seems to be the manual event dispatch .. 
  * this example is used for an answer on SO
  *  
- * @see de.swingempire.fx.scene.control.text.TextFieldAction
  * 
  * @author Jeanette Winzenburg, Berlin
+ * @see de.swingempire.fx.scene.control.text.TextInputWithDefaultButton
  */
 public class TextFieldActionHandler extends Application {
 
@@ -57,15 +58,15 @@ public class TextFieldActionHandler extends Application {
     //    private KeyCode actor = KeyCode.F5;
     private Parent createContent() {
         textField = new TextField("just some text");
-        textField.skinProperty().addListener((src, ov, nv) -> {
-            replaceEnter(textField);
-
-        });
+//        textField.skinProperty().addListener((src, ov, nv) -> {
+//            replaceEnter(textField);
+//
+//        });
         // only this here is in the bug report, with consume
         // https://bugs.openjdk.java.net/browse/JDK-8207774
         textField.addEventHandler(ActionEvent.ACTION, e -> {
             System.out.println("action added: " + e);
-            //            e.consume();
+                        e.consume();
         });
 
         //everything else is digging around
