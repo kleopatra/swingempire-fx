@@ -2,7 +2,7 @@
  * Created on 20.08.2019
  *
  */
-package de.swingempire.testfx.textinput;
+package de.swingempire.testfx.textinput.comboforbug;
 
 import java.util.logging.Logger;
 
@@ -17,12 +17,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * @author Jeanette Winzenburg, Berlin
+ * https://bugs.openjdk.java.net/browse/JDK-8229914
+ * regression: eventfilter for keyPressed of ENTER not notified
+ * 
+ * Plain application.
  */
 public class TextFieldInComboBug extends Application {
 
-    private Parent createContent() {
-        ComboBoxPopupControl b;
+    public Parent createContent() {
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setEditable(true);
         comboBox.getItems().addAll("something to choose", "another thingy to have");
@@ -32,11 +34,6 @@ public class TextFieldInComboBug extends Application {
             LOG.info("got key in editor filter: " + e);
         });
         
-        // ENTER released received
-        comboBox.getEditor().addEventFilter(KeyEvent.KEY_RELEASED, e -> {
-            LOG.info("got key in editor filter: " + e);
-        });
-
         VBox content = new VBox(10, comboBox);
         return content;
     }
