@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import static java.lang.StackWalker.Option.*;
 
 import javafx.event.Event;
-import javafx.scene.input.KeyEvent;
+//import javafx.scene.input.KeyEvent;
 
 /**
  * Keeps state of received event and stacktrace.
@@ -25,6 +25,7 @@ import javafx.scene.input.KeyEvent;
  */
 public class EventStackRecorder {
 
+    
     private List<Event> events;
     private List<List<StackFrame>> stackFrames;
 
@@ -65,7 +66,7 @@ public class EventStackRecorder {
      * 
      * @param event the event passed into the caller
      */
-    public void record(KeyEvent event) {
+    public void record(Event event) {
         events.add(event);
         List<StackFrame> stack = StackWalker.getInstance(RETAIN_CLASS_REFERENCE)
                 .walk(s -> s.skip(1 /* this */ + 1 /* caller */).limit(depth)
@@ -101,6 +102,12 @@ public class EventStackRecorder {
         stackFrameConsumer.accept(getFirstStackFrame(index));
     }
 
+    public void log(int index) {
+        String log = "for index: " + index 
+                + "\n event: " + events.get(index)
+                + "\n stack: " + getFirstStackFrame(index);
+        System.out.println(log);
+    }
     /**
      * Returns the eventSource of event at index
      * 

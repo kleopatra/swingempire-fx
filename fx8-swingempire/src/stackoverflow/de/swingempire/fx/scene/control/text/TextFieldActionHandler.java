@@ -4,12 +4,15 @@
  */
 package de.swingempire.fx.scene.control.text;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
 import com.sun.javafx.scene.control.inputmap.InputMap;
-import com.sun.javafx.scene.control.inputmap.KeyBinding;
 import com.sun.javafx.scene.control.inputmap.InputMap.KeyMapping;
+import com.sun.javafx.scene.control.inputmap.KeyBinding;
 
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
@@ -17,6 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.TextFieldSkin;
 import javafx.scene.input.KeyCode;
@@ -28,6 +32,7 @@ import javafx.stage.Stage;
 /**
  * https://bugs.openjdk.java.net/browse/JDK-8207774
  * TextField: behaviour must not forward ENTER if consumed by actionHandler
+ * 
  * 
  * Changed to log the notification of handlers/filters in the chain:
  * <ul>
@@ -54,8 +59,31 @@ public class TextFieldActionHandler extends Application {
 
     private TextField textField;
 
-    private KeyCode actor = KeyCode.ENTER;
-    //    private KeyCode actor = KeyCode.F5;
+    private KeyCode enter = KeyCode.ENTER;
+    private KeyCode normal = KeyCode.F5;
+    
+    private KeyCode actor = normal;
+    
+    private KeyCode getActor() {
+        return actor;
+    }
+    
+    private void toggleActor() {
+        if (actor == normal) {
+            actor = enter;
+        } else {
+            actor = enter;
+        }
+        updateAccelerator(textField.getScene());
+    }
+    
+    private void updateAccelerator(Scene scene) {
+       if (scene == null) return;
+       scene.getAccelerators().put(KeyCombination.keyCombination(getActor().getName()),
+               () -> logEvent("in accelerator", null));
+//               () -> System.out.println("in accelerator"));
+    }
+
     private Parent createContent() {
         textField = new TextField("just some text");
 //        textField.skinProperty().addListener((src, ov, nv) -> {
@@ -64,10 +92,10 @@ public class TextFieldActionHandler extends Application {
 //        });
         // only this here is in the bug report, with consume
         // https://bugs.openjdk.java.net/browse/JDK-8207774
-        textField.addEventHandler(ActionEvent.ACTION, e -> {
-            System.out.println("action added: " + e);
-                        e.consume();
-        });
+//        textField.addEventHandler(ActionEvent.ACTION, e -> {
+//            System.out.println("action added: " + e);
+//                        e.consume();
+//        });
 
         //everything else is digging around
         textField.setOnKeyPressed(event -> {
@@ -97,27 +125,51 @@ public class TextFieldActionHandler extends Application {
             logEvent("-> onKeyPressed on parent ",  event);
         });
 
+        Button log = new Button("log");
+        log.setOnAction(e -> printTraces());
+        Button toggleActor = new Button("toggle");
+        toggleActor.setOnAction(e -> toggleActor());
+        pane.getChildren().addAll(log, toggleActor);
         return pane;
     }
 
     private void logEvent(String message, KeyEvent event) {
-        logEvent(message, event, false);
+        printWithStackTrace(message, event);
+        //logEvent(message, event, false);
     }
 
     private void logEvent(String message, KeyEvent event, boolean consume) {
-        if (event.getCode() == actor) {
-            System.out.println(message + " source: " + event.getSource().getClass().getSimpleName() 
+        if (event.getCode() == getActor()) {
+            System.out.println(event.getCode()  + message  
+                    + " source: " + event.getSource().getClass().getSimpleName() 
                     + " target: " + event.getTarget().getClass().getSimpleName());
+            
             if (consume)
                 event.consume();    
         }
 
     }
+    
+    private void printTraces() {
+        traces.forEach(s -> System.out.println(s));
+        traces.clear();
+    }
+    List<String> traces = new ArrayList<>();
+    
+    private void printWithStackTrace(String message, KeyEvent event) {
+        if (event != null && event.getCode() != getActor())return;
+        String eventText = "no event ";
+        if (event != null) {
+            eventText = "source: " + event.getSource() + " target: " + event.getTarget();
+        }
+        traces.add(getActor() + " on " + message + "\n    " + eventText);
+        Arrays.stream(new RuntimeException().getStackTrace()).forEach(s -> traces.add(s.toString()));
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         Scene scene = new Scene(createContent());
-        scene.getAccelerators().put(KeyCombination.keyCombination(actor.getName()),
-                () -> System.out.println("in accelerator"));
+        updateAccelerator(scene);
         stage.setScene(scene);
         stage.setTitle(FXUtils.version());
         stage.show();

@@ -171,6 +171,7 @@ public class EventDispatchTestExample extends ApplicationTest {
             recorder.forFirstStackFrame(i, first -> assertTrue(
                     "expected method: " + methodFragment + "but was: "  + first.getMethodName(), 
                     first.getMethodName().contains(methodFragment)));
+            LOG.info(source + methodFragment);
         }
         
     }

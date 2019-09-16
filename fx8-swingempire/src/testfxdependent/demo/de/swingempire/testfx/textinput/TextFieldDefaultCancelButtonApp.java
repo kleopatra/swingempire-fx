@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 public class TextFieldDefaultCancelButtonApp extends Application {
 
     private Parent createContent() {
-        TextFieldDefaultCancelButtonPane pane = new TextFieldDefaultCancelButtonPane(field -> new XTextFieldSkin(field));
+        TextFieldDefaultCancelButtonPane pane = new TextFieldDefaultCancelButtonPane(); //field -> new XTextFieldSkin(field));
         // https://bugs.openjdk.java.net/browse/JDK-8207774
         pane.field.setTextFormatter(null);
         pane.field.addEventHandler(ActionEvent.ACTION, e -> {
