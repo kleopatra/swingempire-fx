@@ -33,19 +33,35 @@ public class EventStackRecorder {
     private List<String> handlerTypes;
     
     private int depth;
-
+    private int callerDepth;
+    
     public EventStackRecorder() {
         this(1);
     }
 
+    /**
+     * Instantiates a recorder with callerDepth 1 and depth to record.
+     * 
+     * @param depth the depth to record
+     */
     public EventStackRecorder(int depth) {
+        this(1, depth);
+    }
+
+    /**
+     * Instantiates a recorder with callerDepth and depth to record.
+     * 
+     * @param callerDepth the stack depth of the caller
+     * @param depth the depth to record
+     */
+    public EventStackRecorder(int callerDepth, int depth) {
         events = new ArrayList<>();
         stackFrames = new ArrayList<>();
         handlers = new ArrayList<>();
         handlerTypes = new ArrayList<>();
         this.depth = depth;
+        this.callerDepth = callerDepth;
     }
-
     /**
      * Returns the recorded size.
      * 
@@ -53,7 +69,7 @@ public class EventStackRecorder {
      * @throws IllegalStateException if # of events differs from # of
      *         stackFrames
      */
-    public int getRecordSize() {
+    public int recordedSize() {
         checkRecordSize();
         return events.size();
     }
@@ -72,9 +88,18 @@ public class EventStackRecorder {
      * @param event the event passed into the caller
      */
     public void record(Event event) {
+        int selfDepth = 1;
+        doRecord(event, selfDepth);
+    }
+
+    /**
+     * @param event
+     * @param selfDepth
+     */
+    protected void doRecord(Event event, int selfDepth) {
         events.add(event);
         List<StackFrame> stack = StackWalker.getInstance(RETAIN_CLASS_REFERENCE)
-                .walk(s -> s.skip(1 /* this */ + 1 /* caller */).limit(depth)
+                .walk(s -> s.skip(selfDepth /* this */ + callerDepth /* caller */).limit(depth)
                         .collect(Collectors.toList()));
         stackFrames.add(stack);
     }
@@ -88,10 +113,11 @@ public class EventStackRecorder {
     }
     
     private void record(Event event, Object handler, String handlerType) {
-        record(event);
+        doRecord(event, 2);
         handlers.add(handler);
         handlerTypes.add(handlerType);
     }
+    
     /**
      * Applies the given consumer to each recorded list of StackFrames.
      * 
@@ -139,7 +165,7 @@ public class EventStackRecorder {
             eventText += " code: " + ((KeyEvent) event).getCode();
         }
         String handlerText = "";
-        if (handlers.size() == getRecordSize() && handlers.get(index) != null) {
+        if (handlers.size() == recordedSize() && handlers.get(index) != null) {
             handlerText = "\n     handler: " + handlers.get(index).getClass() + " type: " + handlerTypes.get(index);
         }
         String log = "\n------ Event for index: " + index + " @" + event.hashCode()
@@ -170,5 +196,9 @@ public class EventStackRecorder {
      */
     public StackFrame getFirstStackFrame(int index) {
         return stackFrames.get(index).get(0);
+    }
+    
+    public List<StackFrame> getStackFrames(int index) {
+        return stackFrames.get(index);
     }
 }

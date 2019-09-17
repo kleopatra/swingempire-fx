@@ -145,7 +145,7 @@ public class EventDispatchTestExample extends ApplicationTest {
         press(ENTER);
         release(ENTER);
         // this is real testing
-        assertEquals("each filter must be notified once", 4, recorder.getRecordSize());
+        assertEquals("each filter must be notified once", 4, recorder.recordedSize());
         
         // this is testing of recorder
         recorder.forEach(stack -> assertEquals("size of stack: " + stack, 1, stack.size()));

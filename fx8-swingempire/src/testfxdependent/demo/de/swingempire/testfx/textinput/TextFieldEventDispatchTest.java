@@ -46,10 +46,10 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
         
         root.ok.setOnAction(recorder::record);
         press(ENTER);
-        assertEquals(2, recorder.getRecordSize());
+        assertEquals(2, recorder.recordedSize());
         List<Object> sources = List.of(root.field, root.ok);
         
-        for (int i = 0; i < recorder.getRecordSize(); i++) {
+        for (int i = 0; i < recorder.recordedSize(); i++) {
             int index = i;
             recorder.forEvent(i, e -> assertEquals("event source at " + index, sources.get(index), e.getSource()));
         }
@@ -64,10 +64,10 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
         
         root.ok.setOnAction(recorder::record);
         press(ENTER);
-        assertEquals(2, recorder.getRecordSize());
+        assertEquals(2, recorder.recordedSize());
         List<Object> sources = List.of(root.field, root.ok);
         
-        for (int i = 0; i < recorder.getRecordSize(); i++) {
+        for (int i = 0; i < recorder.recordedSize(); i++) {
             int index = i;
             recorder.forEvent(i, e -> assertEquals("event source at " + index, sources.get(index), e.getSource()));
         }
@@ -85,8 +85,8 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
         root.ok.setOnAction(recorder::record);
         press(ENTER);
 //        recorder.forEach(action -> LOG.info("" + action));
-        assertEquals(2, recorder.getRecordSize());
-        for (int i = 0; i < recorder.getRecordSize(); i++) {
+        assertEquals(2, recorder.recordedSize());
+        for (int i = 0; i < recorder.recordedSize(); i++) {
             Object event = recorder.getEventSource(i);
             LOG.info("" + event + recorder.getFirstStackFrame(i));
         }
@@ -119,7 +119,6 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
         });
         root.field.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             recorder.recordFilter(e, root.field);
-            
         });
         scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             recorder.recordHandler(e, scene);
@@ -138,7 +137,7 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
 //        assertEquals("each filter must be notified once", 5, recorder.getRecordSize());
         List<Object> sources = List.of(scene, root.field, root.field, scene, root.ok);
         
-        for (int i = 0; i < recorder.getRecordSize(); i++) {
+        for (int i = 0; i < recorder.recordedSize(); i++) {
             recorder.log(i);
 //            int index = i;
 //            recorder.forEvent(i, e -> assertEquals("event source at " + index, sources.get(index), e.getSource()));
