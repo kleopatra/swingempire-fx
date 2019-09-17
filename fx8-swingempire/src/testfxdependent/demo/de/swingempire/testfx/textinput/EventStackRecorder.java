@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import static java.lang.StackWalker.Option.*;
 
 import javafx.event.Event;
+import javafx.scene.input.KeyEvent;
 //import javafx.scene.input.KeyEvent;
 
 /**
@@ -28,7 +29,9 @@ public class EventStackRecorder {
     
     private List<Event> events;
     private List<List<StackFrame>> stackFrames;
-
+    private List<Object> handlers;
+    private List<String> handlerTypes;
+    
     private int depth;
 
     public EventStackRecorder() {
@@ -38,6 +41,8 @@ public class EventStackRecorder {
     public EventStackRecorder(int depth) {
         events = new ArrayList<>();
         stackFrames = new ArrayList<>();
+        handlers = new ArrayList<>();
+        handlerTypes = new ArrayList<>();
         this.depth = depth;
     }
 
@@ -74,6 +79,19 @@ public class EventStackRecorder {
         stackFrames.add(stack);
     }
 
+    public void recordHandler(Event event, Object handler) {
+        record(event, handler, "handler");
+    }
+    
+    public void recordFilter(Event event, Object handler) {
+        record(event, handler, "filter");
+    }
+    
+    private void record(Event event, Object handler, String handlerType) {
+        record(event);
+        handlers.add(handler);
+        handlerTypes.add(handlerType);
+    }
     /**
      * Applies the given consumer to each recorded list of StackFrames.
      * 
@@ -102,10 +120,35 @@ public class EventStackRecorder {
         stackFrameConsumer.accept(getFirstStackFrame(index));
     }
 
-    public void log(int index) {
+    public void logFirst(int index) {
         String log = "for index: " + index 
                 + "\n event: " + events.get(index)
                 + "\n stack: " + getFirstStackFrame(index);
+        System.out.println(log);
+    }
+    
+    
+    public void log(int index) {
+        Event event = events.get(index);
+        String eventText = "source: " + event.getSource().getClass()
+                + "\n     target: " + event.getTarget().getClass()
+                + "\n     type: " + event.getEventType()
+                + " consumed: " + event.isConsumed()
+        ;        
+        if (event instanceof KeyEvent) {
+            eventText += " code: " + ((KeyEvent) event).getCode();
+        }
+        String handlerText = "";
+        if (handlers.size() == getRecordSize() && handlers.get(index) != null) {
+            handlerText = "\n     handler: " + handlers.get(index).getClass() + " type: " + handlerTypes.get(index);
+        }
+        String log = "\n------ Event for index: " + index + " @" + event.hashCode()
+                + "\n " + eventText + handlerText + "\n Frames: ";
+        List<StackFrame> frames = stackFrames.get(index);
+        for(int i = 0; i < frames.size(); i++) {
+            log += "\n " + frames.get(i);
+            
+        }
         System.out.println(log);
     }
     /**

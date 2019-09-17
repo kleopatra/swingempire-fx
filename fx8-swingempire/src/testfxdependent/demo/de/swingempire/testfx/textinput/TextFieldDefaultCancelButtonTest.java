@@ -439,14 +439,7 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
         }
         public TextFieldDefaultCancelButtonPane(Function<TextField, TextFieldSkin> skinProvider) {
             super(100);
-            field = new TextField() {
-
-                @Override
-                protected Skin<?> createDefaultSkin() {
-                    return skinProvider == null ? super.createDefaultSkin() : skinProvider.apply(this);
-                }
-                
-            };
+            field = createTextField(skinProvider);
             TextFormatter<String> fieldFormatter = new TextFormatter<>(
                     TextFormatter.IDENTITY_STRING_CONVERTER, "textField ...");
             field.setTextFormatter(fieldFormatter);
@@ -463,6 +456,25 @@ public class TextFieldDefaultCancelButtonTest extends ApplicationTest {
             
             getChildren().addAll(field, cancel, ok);
             
+        }
+        /**
+         * @param skinProvider
+         * @return
+         */
+        protected TextField createTextField(
+                Function<TextField, TextFieldSkin> skinProvider) {
+            if (skinProvider == null) {
+                return new TextField();
+            }
+            return new TextField()
+            {
+
+                @Override
+                protected Skin<?> createDefaultSkin() {
+                    return skinProvider == null ? super.createDefaultSkin() : skinProvider.apply(this);
+                }
+                
+            };
         }
     }
     
