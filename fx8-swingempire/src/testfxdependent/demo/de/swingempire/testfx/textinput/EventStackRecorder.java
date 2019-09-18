@@ -153,7 +153,11 @@ public class EventStackRecorder {
         System.out.println(log);
     }
     
-    
+    public void logAll() {
+        for (int i = 0; i < recordedSize(); i++) {
+            log(i);
+        }
+    }
     public void log(int index) {
         Event event = events.get(index);
         String eventText = "source: " + event.getSource().getClass()
