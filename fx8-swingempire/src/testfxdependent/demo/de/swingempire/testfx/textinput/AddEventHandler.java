@@ -14,44 +14,46 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * Quick check: sibling handlers are notified
+ * Controls' behavior must not depend on sequence of handler registration
+ * <p>
+ * reported:
+ * https://bugs.openjdk.java.net/browse/JDK-8231245
  * 
+ * <hr>
+ * Quick check: sibling handlers are notified
+ * <p>
  * but: again difference between register before/after showing
  * before: action not triggered if one of the handlers consumes the event
  * after: action triggered always, independent of consumed or not
- * 
+ * <p>
  * behavior different from fx8: action never triggered if keyEvent
  *    is consumed, doesn't matter if registered before/after
+ *    same in Swing
+ *<p>    
+ * --> this seems to be the expected behavior   
+ * 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class AddEventHandler extends Application {
 
-    private Button button;
-    private boolean registerBeforeShowing;
+    private Button before;
+    private Button after;
     
-    private Parent createContent() {
-        // some simple control that's focusable
-        button = new Button("just to have a simple control");
-        if (registerBeforeShowing) {
-            registerHandlers();  
-        }
-        VBox content = new VBox(10, button, new Button("dummy"), 
-                new Label("before showing: " + registerBeforeShowing));
-        return content;
-    }
-
-    protected void registerHandlers() {
+    protected void registerHandlers(Button button) {
         button.addEventHandler(KEY_PRESSED, e -> {
-            System.out.println("receiving in first");
-            e.consume();
+            if (e.getCode() == KeyCode.ENTER) {
+                e.consume();
+            }
+            System.out.println(e.getCode() + " received in first");
         });
         button.addEventHandler(KEY_PRESSED, e -> {
-            System.out.println("receiving in second");
+            System.out.println(e.getCode() + " received in second");
         });
         button.setOnKeyPressed(e -> {
             System.out.println("singleton");
@@ -60,15 +62,22 @@ public class AddEventHandler extends Application {
             System.out.println("action");
         });
     }
+    
+    private Parent createContent() {
+        // some simple control that's focusable
+        before = new Button("handlers registered BEFORE showing");
+        registerHandlers(before);  
+        after = new Button("handlers registered AFTER showing");
+        VBox content = new VBox(10, before, after); 
+        return content;
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));
         stage.setTitle(FXUtils.version());
         stage.show();
-        if (!registerBeforeShowing) {
-            registerHandlers();
-        }
+        registerHandlers(after);
     }
 
     public static void main(String[] args) {
