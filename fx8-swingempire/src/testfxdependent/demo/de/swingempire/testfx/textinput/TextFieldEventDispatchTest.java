@@ -17,10 +17,15 @@ import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.ButtonMatchers;
 
 import static javafx.scene.input.KeyCode.*;
+import static javafx.scene.input.KeyEvent.*;
+import static java.util.stream.Collectors.*;
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.*;
 
 import de.swingempire.testfx.textinput.TextFieldDefaultCancelButtonTest.TextFieldDefaultCancelButtonPane;
+import fx.core.testsupport.KeyEventFirer;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.TextFieldSkin;
@@ -108,9 +113,113 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
         press(ENTER);
     }
     
+    /**
+     * use plain list to collect the events
+     */
+    @Test
+    public void testEventSequenceEnterHandler() {
+        Scene scene = root.getScene();
+        List<Event> events = new ArrayList<>();
+        EventHandler<KeyEvent> adder = events::add;
+        scene.addEventHandler(KEY_PRESSED, adder);
+        root.addEventHandler(KEY_PRESSED, adder);
+        root.field.addEventHandler(KEY_PRESSED, adder);
+        root.ok.setOnAction(events::add);
+        KeyCode enter = ENTER;
+        press(enter);
+        assertEquals("event count", 4, events.size());
+        List<Object> sources = events.stream()
+                .map(e -> e.getSource())
+                .collect(toList());      
+        List<Object> expected = List.of(root.field, root, scene, root.ok);
+        assertEquals(EventStackRecorder.compareSources(expected, sources), expected, sources);
+    }
+    
+    /**
+     * Sanity: test event sequence for F5.
+     */
+    @Test
+    public void testEventSequenceF5Record() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder(20);
+        EventHandler<KeyEvent> adder = recorder::record;
+        scene.addEventHandler(KEY_PRESSED, adder);
+        root.addEventHandler(KEY_PRESSED, adder);
+        root.field.addEventHandler(KEY_PRESSED, adder);
+        KeyCode enter = F5;
+        press(enter);
+        assertEquals("event count", 3, recorder.recordedSize());
+        List<Object> expected = List.of(root.field, root, scene);
+        assertEquals(recorder.compareSources(expected), expected, recorder.getEventSources());
+    }
     
     @Test
-    public void testEventDispatch() {
+    public void testEventSequenceEscapeHandlerRecord() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder(20);
+        EventHandler<KeyEvent> adder = recorder::record;
+        scene.addEventHandler(KEY_PRESSED, adder);
+        root.addEventHandler(KEY_PRESSED, adder);
+        root.field.addEventHandler(KEY_PRESSED, adder);
+        root.cancel.setOnAction(recorder::record);
+        KeyCode enter = ESCAPE;
+        press(enter);
+        assertEquals("event count", 4, recorder.recordedSize());
+        List<Object> expected = List.of(root.field, root, scene, root.cancel);
+        assertEquals(recorder.compareSources(expected), expected, recorder.getEventSources());
+    }
+    
+    @Test
+    public void testEventSequenceEscapeFilterRecord() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder(20);
+        EventHandler<KeyEvent> adder = recorder::record;
+        scene.addEventFilter(KEY_PRESSED, adder);
+        root.addEventFilter(KEY_PRESSED, adder);
+        root.field.addEventFilter(KEY_PRESSED, adder);
+        root.cancel.setOnAction(recorder::record);
+        KeyCode enter = ESCAPE;
+        press(enter);
+        assertEquals("event count", 4, recorder.recordedSize());
+        List<Object> expected = List.of(scene, root, root.field, root.cancel);
+        assertEquals(recorder.compareSources(expected), expected, recorder.getEventSources());
+    }
+    
+    @Test
+    public void testEventSequenceEnterHandlerRecord() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder(20);
+        EventHandler<KeyEvent> adder = recorder::record;
+        scene.addEventHandler(KEY_PRESSED, adder);
+        root.addEventHandler(KEY_PRESSED, adder);
+        root.field.addEventHandler(KEY_PRESSED, adder);
+        root.ok.setOnAction(recorder::record);
+        KeyCode enter = ENTER;
+        press(enter);
+        assertEquals("event count", 4, recorder.recordedSize());
+        List<Object> expected = List.of(root.field, root, scene, root.ok);
+        assertEquals(recorder.compareSources(expected), expected, recorder.getEventSources());
+    }
+    
+    @Test
+    public void testEventSequenceEnterFilterRecord() {
+        Scene scene = root.getScene();
+        EventStackRecorder recorder = new EventStackRecorder(20);
+        EventHandler<KeyEvent> adder = recorder::record;
+        scene.addEventFilter(KEY_PRESSED, adder);
+        root.addEventFilter(KEY_PRESSED, adder);
+        root.field.addEventFilter(KEY_PRESSED, adder);
+        root.ok.setOnAction(recorder::record);
+        KeyCode enter = ENTER;
+        press(enter);
+        assertEquals("event count", 4, recorder.recordedSize());
+        List<Object> expected = List.of(scene, root, root.field, root.ok);
+        assertEquals(recorder.compareSources(expected), expected, recorder.getEventSources());
+    }
+    
+    @Ignore
+    @Test
+    public void logEventDispatch() {
         Scene scene = root.getScene();
         EventStackRecorder recorder = new EventStackRecorder(20);
         root.field.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
@@ -137,11 +246,7 @@ public class TextFieldEventDispatchTest extends ApplicationTest {
 //        assertEquals("each filter must be notified once", 5, recorder.getRecordSize());
         List<Object> sources = List.of(scene, root.field, root.field, scene, root.ok);
         
-        for (int i = 0; i < recorder.recordedSize(); i++) {
-            recorder.log(i);
-//            int index = i;
-//            recorder.forEvent(i, e -> assertEquals("event source at " + index, sources.get(index), e.getSource()));
-        }
+        recorder.logAll();
     }
     
     

@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.lang.StackWalker.Option.*;
+import static java.util.stream.Collectors.*;
 
 import javafx.event.Event;
 import javafx.scene.input.KeyEvent;
@@ -62,6 +63,17 @@ public class EventStackRecorder {
         this.depth = depth;
         this.callerDepth = callerDepth;
     }
+    
+    /**
+     * Clears all recorded state.
+     */
+    public void clear() {
+        events.clear();
+        stackFrames.clear();
+        handlers.clear();
+        handlerTypes.clear();
+    }
+    
     /**
      * Returns the recorded size.
      * 
@@ -181,6 +193,13 @@ public class EventStackRecorder {
         }
         System.out.println(log);
     }
+    
+    public List<Object> getEventSources() {
+        return events.stream()
+                .map(e -> e.getSource())
+                .collect(toList());      
+    }
+    
     /**
      * Returns the eventSource of event at index
      * 
@@ -204,5 +223,18 @@ public class EventStackRecorder {
     
     public List<StackFrame> getStackFrames(int index) {
         return stackFrames.get(index);
+    }
+    
+    public String compareSources(List<Object> expected) {
+        return compareSources(expected, getEventSources());
+    }
+    
+    public static String compareSources(List<Object> expected, List<Object> sources) {
+        StringBuilder out = new StringBuilder("expected/actual: \n ");
+        expected.stream().forEach(o -> out.append(" " + o.getClass().getSimpleName()));
+        out.append("\n ");
+        sources.stream().forEach(o -> out.append(" " + o.getClass().getSimpleName()));
+        out.append("\n ");
+        return out.toString();
     }
 }
