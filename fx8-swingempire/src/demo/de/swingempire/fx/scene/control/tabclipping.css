@@ -1,0 +1,5 @@
+.tab-label {
+   -fx-text-overrun : clip;
+}
+
+
