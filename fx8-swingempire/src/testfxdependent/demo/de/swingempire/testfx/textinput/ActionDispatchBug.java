@@ -49,7 +49,6 @@ import javafx.stage.Stage;
  * @author Jeanette Winzenburg, Berlin
  */
 public class ActionDispatchBug extends Application {
-
     
     public Parent createContent() {
         TextField field = new TextField();

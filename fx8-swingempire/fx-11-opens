@@ -18,9 +18,11 @@
 --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
 --add-opens javafx.graphics/com.sun.javafx.css=ALL-UNNAMED
 --add-opens javafx.graphics/com.sun.javafx.scene.traversal=ALL-UNNAMED
+--add-opens javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED
 --add-opens javafx.graphics/com.sun.prism.impl=ALL-UNNAMED
 --add-opens javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED
 --add-opens javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED
 --add-opens javafx.graphics/javafx.stage=ALL-UNNAMED
 --add-opens javafx.graphics/javafx.scene=ALL-UNNAMED
+--add-opens javafx.graphics/javafx.scene.text=ALL-UNNAMED
 --add-opens java.base/sun.util.logging=ALL-UNNAMED

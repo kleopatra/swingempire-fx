@@ -19,6 +19,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * Oct. 2019: closed as cannot-reproduce - could be non-mac only?
+ * Mac has no binding for enter in buttonBehaviour.
+ * 
  * Controls' behavior must not depend on sequence of handler registration
  * <p>
  * reported:
@@ -44,6 +47,7 @@ public class AddEventHandler extends Application {
 
     private Button before;
     private Button after;
+    
     
     protected void registerHandlers(Button button) {
         button.addEventHandler(KEY_PRESSED, e -> {
@@ -78,14 +82,19 @@ public class AddEventHandler extends Application {
         stage.setTitle(FXUtils.version());
         stage.show();
         registerHandlers(after);
+        String version = "java: " + System.getProperty("java.version")+ "-" + System.getProperty("java.vm.version")
+             + " (" + System.getProperty("os.arch") + ")"
+             + "\n  fx: " + System.getProperty("javafx.runtime.version") ;
+        System.out.println(version);
+
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    @SuppressWarnings("unused")
-    private static final Logger LOG = Logger
-            .getLogger(AddEventHandler.class.getName());
+//    @SuppressWarnings("unused")
+//    private static final Logger LOG = Logger
+//            .getLogger(AddEventHandler.class.getName());
 
 }
