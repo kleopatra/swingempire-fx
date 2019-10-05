@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.beans.property.*?>
+
+
+<AnchorPane id="AnchorPane" prefHeight="283.0" prefWidth="437.0"
+	 xmlns="http://javafx.com/javafx/8.0.171" 
+	 xmlns:fx="http://javafx.com/fxml/1" 
+	fx:controller="de.swingempire.fx.fxml.CustomerManagerController">
+    <children>
+        <Button fx:id="button" layoutX="309.0" layoutY="25.0" onAction="#handleButtonAction" text="New Customer" />
+      <TableView fx:id="customerTable" layoutX="6.0" layoutY="61.0" prefHeight="215.0" prefWidth="426.0">
+        <columns>
+          <TableColumn fx:id="custname" prefWidth="75.0" text="Customer Name" />
+          <TableColumn fx:id="city" prefWidth="75.0" text="City" />
+        </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+    </children>
+</AnchorPane>  
