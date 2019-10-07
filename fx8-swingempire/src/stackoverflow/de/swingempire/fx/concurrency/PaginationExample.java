@@ -2,7 +2,7 @@
  * Created on 22.07.2015
  *
  */
-package de.swingempire.fx.control;
+package de.swingempire.fx.concurrency;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -60,10 +60,10 @@ public class PaginationExample extends Application {
             
             // support custom navigation controls
             // http://stackoverflow.com/q/31540001/203657
-            @Override
-            protected Skin createDefaultSkin() {
-                return new CustomPaginationSkin(this);
-            }
+//            @Override
+//            protected Skin createDefaultSkin() {
+//                return new CustomPaginationSkin(this);
+//            }
         };
         pagination.setStyle("-fx-border-color:red;");
         pagination.setPageFactory(pageIndex -> createPage(pageIndex));
