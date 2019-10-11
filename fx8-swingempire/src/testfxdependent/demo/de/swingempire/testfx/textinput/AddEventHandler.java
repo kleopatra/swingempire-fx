@@ -39,7 +39,11 @@ import javafx.stage.Stage;
  *    same in Swing
  *<p>    
  * --> this seems to be the expected behavior   
- * 
+ * <p>
+ * reported: https://bugs.openjdk.java.net/browse/JDK-8231245
+ * <p>
+ * had been closed as not-reproducible (on mac), changed to consume with
+ * space (should now be reproducible on mac as well) and reopened.
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -47,15 +51,17 @@ public class AddEventHandler extends Application {
 
     private Button before;
     private Button after;
-    
-    
-    protected void registerHandlers(Button button) {
-        button.addEventHandler(KEY_PRESSED, e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                e.consume();
-            }
-            System.out.println(e.getCode() + " received in first");
-        });
+        // non-mac only (mac has this binding deactivated by interceptor)
+        // private KeyCode consumeWith = KeyCode.ENTER;
+        // this should be active for all OS 
+        private KeyCode consumeWith = KeyCode.SPACE;
+        protected void registerHandlers(Button button) {
+            button.addEventHandler(KEY_PRESSED, e -> {
+                if (e.getCode() == consumeWith) {
+                    e.consume();
+                }
+                System.out.println(e.getCode() + " received in first");
+            });
         button.addEventHandler(KEY_PRESSED, e -> {
             System.out.println(e.getCode() + " received in second");
         });
