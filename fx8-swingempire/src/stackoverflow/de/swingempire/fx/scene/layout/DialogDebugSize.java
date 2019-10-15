@@ -4,6 +4,7 @@
  */
 package de.swingempire.fx.scene.layout;
 
+import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,6 +24,18 @@ import javafx.stage.Stage;
  * 
  * - at the time of receiving the onShown, the window is not yet showing if using shwoAndWait
  * - workaround: use showing listener to adjust size/location
+ * 
+ * <p>
+ * 
+ * quick check: change icon of dialog
+ * https://stackoverflow.com/q/58241811/203657
+ * 
+ * older questions:
+ * https://stackoverflow.com/q/43505213/203657 - 
+ * both explicitly without owner (accepted answer), with owner the others
+ * 
+ * fixed bug: https://bugs.openjdk.java.net/browse/JDK-8093842
+ * always have same icon as its ownerWindow
  */
 public class DialogDebugSize extends Application {
 
@@ -38,7 +51,8 @@ public class DialogDebugSize extends Application {
                 alert.setHeaderText("This is an alert!");
                 alert.setContentText(
                         "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-                alert.initOwner(primaryStage);
+                // set owner of alert to stage will bind its icon 
+//                alert.initOwner(primaryStage);
                 alert.setOnShown(new EventHandler<DialogEvent>() {
                     @Override
                     public void handle(DialogEvent event) {
@@ -70,6 +84,9 @@ public class DialogDebugSize extends Application {
             }
             
         });
+        // set custom icon on the alert's owner
+        // slaw has doubts whether that's guaranteed to be a stage, though
+//        ((Stage) (alert.getDialogPane().getScene().getWindow())).getIcons().add(FXUtils.getIcon());
         alert.showAndWait();
 
             }
@@ -81,6 +98,7 @@ public class DialogDebugSize extends Application {
         Scene scene = new Scene(root, 300, 250);
 
         primaryStage.setTitle("Hello World!");
+        primaryStage.getIcons().add(FXUtils.getIcon());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

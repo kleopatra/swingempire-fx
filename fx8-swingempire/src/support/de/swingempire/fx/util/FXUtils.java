@@ -38,6 +38,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.control.skin.ListViewSkin;
+import javafx.scene.image.Image;
 import javafx.util.Callback;
 
 /**
@@ -364,6 +365,10 @@ public class FXUtils {
     public static String version(boolean withOS) {
         String version = System.getProperty("java.version")+ "-" + System.getProperty("java.vm.version");
         return withOS ? version + " (" + System.getProperty("os.arch") + ")" : version;
+    }
+    
+    public static Image getIcon() {
+        return new Image(FXUtils.class.getResourceAsStream("/de/swingempire/fx/util/kleopatra.jpg"));
     }
 //--------------- list change
 
