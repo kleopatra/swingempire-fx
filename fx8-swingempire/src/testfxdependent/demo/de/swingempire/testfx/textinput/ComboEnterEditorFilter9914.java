@@ -34,6 +34,12 @@ public class ComboEnterEditorFilter9914 extends Application {
             System.out.println("got released in editor filter: " + e);
         });
 
+        // quick check: how is action handled?
+        // combo invoked only if value changed
+        comboBox.setOnAction(e -> System.out.println("action on combo"));
+        // editor: never invoked
+        comboBox.getEditor().setOnAction(e -> System.out.println("action on editor"));
+        // end quick check
         VBox content = new VBox(10, comboBox);
         return content;
     }
