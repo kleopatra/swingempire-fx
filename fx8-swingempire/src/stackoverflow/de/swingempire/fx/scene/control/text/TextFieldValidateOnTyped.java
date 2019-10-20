@@ -26,19 +26,44 @@ import javafx.stage.Stage;
 public class TextFieldValidateOnTyped extends Application {
     
     private Parent createContent() {
-        TextField field = new TextField("some text that shouldn't grow");
-        int maxLength = field.getLength();
-        field.setPrefColumnCount(maxLength);
-        field.setOnKeyTyped(e -> {
-                if (field.getText().length() > 10) {
-                    
-                    e.consume();
-                
-                }
-                field.setOnKeyTyped(e1 -> {
+        TextField txtDescription = new TextField(
+                "some text that shouldn't grow");
+        int maxLength = txtDescription.getLength();
+        txtDescription.setPrefColumnCount(maxLength);
+        // answer: consume if > maxlength - can't work, already handled by skin
+        txtDescription.setOnKeyTyped(e -> {
+            if (txtDescription.getText().length() > 10) {
+                e.consume();
+            }
+            txtDescription.setOnKeyTyped(e1 -> {
             });
         });
-        BorderPane content = new BorderPane(field);
+
+        // original: one off error, the max is reached every second time around
+        txtDescription.setOnKeyTyped(e -> {
+            int maxCharacters = 31;
+            if (txtDescription.getText().trim().length() > maxCharacters) {
+                String result = txtDescription.getText().trim();
+                int L = txtDescription.getText().trim().length();
+                String strNew = result.substring(0, L - 2);
+
+                txtDescription.setText(" ");
+                System.out.println("## strNew " + strNew + " RESULT " + result);
+                txtDescription.setText(" ");
+                txtDescription.setText(strNew);
+
+//                alertTYPE = "7";
+//                try {
+//                    customAlert();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(CBManagerController.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+
+                txtDescription.requestFocus();
+            }
+
+        });
+        BorderPane content = new BorderPane(txtDescription);
         return content;
     }
 
