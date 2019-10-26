@@ -7,6 +7,8 @@ package de.swingempire.testfx.event;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.event.CompositeEventDispatcher;
+
 import static javafx.scene.input.KeyEvent.*;
 import static javafx.scene.input.KeyCode.*;
 
@@ -32,17 +34,17 @@ public class DispatchDiverterApp extends Application {
 
     EventHandlerReport report = new EventHandlerReport();
     
-    
     public static class DispatchButton extends Button {
         
         private Node target;
+        CompositeEventDispatcher composite;
 
         private EventDispatcher retargeter;
         
         public DispatchButton(String text, Node target) {
-            super(text);
+            super(text, target);
             this.target = target;
-            // just an example (
+            // just an example 
             addEventFilter(KEY_PRESSED, this::interceptPressed);
         }
         /**
@@ -50,16 +52,15 @@ public class DispatchDiverterApp extends Application {
          * @param ev
          */
         private void interceptPressed(KeyEvent ev) {
-            if (ev.getCode() == ENTER) {
-                if (getOnAction() != null) {
-                    ev.consume();
-                }
-            }
+//            if (ev.getCode() == ENTER) {
+//                if (getOnAction() != null) {
+//                    ev.consume();
+//                }
+//            }
         }
         @Override
         public EventDispatchChain buildEventDispatchChain(
                 EventDispatchChain tail) {
-            EventDispatchChain original = super.buildEventDispatchChain(tail);
             if (target != null && target.getEventDispatcher() != null) {
 //                if (retargeter == null) {
 //                    retargeter = (ev, tail1) -> {
@@ -72,10 +73,10 @@ public class DispatchDiverterApp extends Application {
 //                        return ev;
 //                    };
 //                }
-                original = original.append(target.getEventDispatcher());
-//                original = original.append(retargeter);
+                tail = tail.append(target.getEventDispatcher());
             }
-            return original;
+            tail = super.buildEventDispatchChain(tail);
+            return tail;
         }
 
     }
@@ -86,23 +87,20 @@ public class DispatchDiverterApp extends Application {
         target.setOnAction(e -> System.out.println("from target"));
         
         Button dispatcher = new DispatchButton("dispatcher", target);
-//        Button dispatcher = new Button("no dispatcher");
-        
-//        dispatcher.setOnAction(e -> System.out.println("dispatcher"));
-//        Event.fireEvent(eventTarget, event);
         dispatcher.setOnAction(e -> {
-            report.logAll();
-            report.getEvents().forEach(ev -> {
-                
-            });
-            report.clear();
+            LOG.info("dispatcher ...");
         });
         
         Button okButton = new Button("ok");
         okButton.setDefaultButton(true);
-        okButton.setOnAction(e -> System.out.println("okbutton"));
+        okButton.setOnAction(e -> { 
+            System.out.println("okbutton ... ");
+            report.logAll();
+            report.clear();
+            
+        });
         
-        VBox content = new VBox(10, dispatcher, target, okButton);
+        VBox content = new VBox(10, dispatcher, okButton);
         List<EventHandler<KeyEvent>> handlers = List.of(
                 report.addEventFilter(content, KEY_PRESSED)
                 , report.addEventFilter(dispatcher, KEY_PRESSED)
