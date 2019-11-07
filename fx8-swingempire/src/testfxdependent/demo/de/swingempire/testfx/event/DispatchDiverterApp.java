@@ -7,7 +7,12 @@ package de.swingempire.testfx.event;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.sun.javafx.event.BasicEventDispatcher;
 import com.sun.javafx.event.CompositeEventDispatcher;
+import com.sun.javafx.event.EventHandlerManager;
+import com.sun.javafx.scene.EnteredExitedHandler;
+import com.sun.javafx.scene.NodeEventDispatcher;
+import com.sun.javafx.scene.control.FakeFocusTextField;
 
 import static javafx.scene.input.KeyEvent.*;
 import static javafx.scene.input.KeyCode.*;
@@ -22,6 +27,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
@@ -34,6 +40,33 @@ public class DispatchDiverterApp extends Application {
 
     EventHandlerReport report = new EventHandlerReport();
     
+    public static class RetargetEventDispatcher extends CompositeEventDispatcher {
+
+        private final NodeEventDispatcher targetHandler;
+       
+        private final NodeEventDispatcher original;
+        
+        public RetargetEventDispatcher(NodeEventDispatcher original, NodeEventDispatcher last) {
+            super();
+            this.original = original;
+            this.targetHandler = last;
+            insertNextDispatcher(original);
+            insertNextDispatcher(last);
+            
+        }
+
+        @Override
+        public BasicEventDispatcher getFirstDispatcher() {
+            return original.getFirstDispatcher();
+        }
+
+        @Override
+        public BasicEventDispatcher getLastDispatcher() {
+            return targetHandler.getLastDispatcher();
+        }
+        
+    }
+    
     public static class DispatchButton extends Button {
         
         private Node target;
@@ -44,35 +77,65 @@ public class DispatchDiverterApp extends Application {
         public DispatchButton(String text, Node target) {
             super(text, target);
             this.target = target;
+            if (target instanceof FakeFocusTextField) {
+                focusedProperty().addListener((src, ov, focused) -> {
+                    ((FakeFocusTextField) target).setFakeFocus(focused);
+                });
+            }
             // just an example 
             addEventFilter(KEY_PRESSED, this::interceptPressed);
+            
+//            installCustomNodeEventDispatcher();
         }
+        
+        /**
+         * 
+         */
+        private void installCustomNodeEventDispatcher() {
+            original = (NodeEventDispatcher) getEventDispatcher();
+            NodeEventDispatcher targetDispatcher = (NodeEventDispatcher) target.getEventDispatcher();
+            setEventDispatcher(new RetargetEventDispatcher(original, targetDispatcher));
+            
+        }
+
+        
+        NodeEventDispatcher original;
+//        /**
+//         * 
+//         */
+//        private void installCustomEventDispatcher() {
+//            original = getEventDispatcher();
+//            EventDispatcher diverter = (event, tail) -> {
+//                event = original.dispatchEvent(event, tail);
+//                if (event instanceof KeyEvent) {
+//                    event = event.copyFor(event.getSource(), target);
+//                    event = target.getEventDispatcher().dispatchEvent(event, tail);
+////                    tail = tail.prepend(target.getEventDispatcher());
+//                } //else {
+//                if (event != null) {
+//                }
+//                return event;
+//            };
+//            setEventDispatcher(diverter);
+//            
+//        }
         /**
          * Here we handle the keys the dispatcher is interested in.
          * @param ev
          */
         private void interceptPressed(KeyEvent ev) {
-//            if (ev.getCode() == ENTER) {
-//                if (getOnAction() != null) {
+            if (ev.getCode() == ENTER) {
+                if (getOnAction() != null) {
+                    // prevents all dispatch - our own actionHandler is not triggered 
 //                    ev.consume();
-//                }
-//            }
+                }
+            }
         }
+        
         @Override
         public EventDispatchChain buildEventDispatchChain(
                 EventDispatchChain tail) {
             if (target != null && target.getEventDispatcher() != null) {
-//                if (retargeter == null) {
-//                    retargeter = (ev, tail1) -> {
-//                        if (ev instanceof KeyEvent) {
-//                            System.out.println("before ev: " + ev);
-//                            ev = ev.copyFor(ev.getSource(), target);
-//                            System.out.println("changed ev: " + ev);
-//                            ev = tail1.dispatchEvent(ev);
-//                        }
-//                        return ev;
-//                    };
-//                }
                 tail = tail.append(target.getEventDispatcher());
             }
             tail = super.buildEventDispatchChain(tail);
@@ -82,13 +145,13 @@ public class DispatchDiverterApp extends Application {
     }
     private Parent createContent() {
         
-        TextField target = new TextField();
+        TextField target = new FakeFocusTextField();
         target.setPrefColumnCount(30);
-        target.setOnAction(e -> System.out.println("from target"));
+        target.setOnAction(e -> System.out.println("from target textField: " + e ));
         
         Button dispatcher = new DispatchButton("dispatcher", target);
         dispatcher.setOnAction(e -> {
-            LOG.info("dispatcher ...");
+            LOG.info("in dispatcher ..." + e);
         });
         
         Button okButton = new Button("ok");
@@ -113,6 +176,7 @@ public class DispatchDiverterApp extends Application {
         return content;
     }
 
+    
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));
