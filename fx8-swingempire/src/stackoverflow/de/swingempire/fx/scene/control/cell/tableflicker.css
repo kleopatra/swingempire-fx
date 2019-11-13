@@ -1,0 +1,25 @@
+    .customtable{
+    -fx-background-color:darkgray;
+ }
+
+ .customtable .column-header{
+     -fx-text-fill: -fx-selection-bar-text;
+     -fx-padding: -0.0625em -0.0625em -0.0625em -0.0625em;
+ }
+
+ .customtable .table-cell {
+    -fx-background-color:darkgray;
+     -fx-border-color: transparent -fx-table-cell-border-color -fx-table-cell-border-color transparent;
+     -fx-padding: 0.0em;
+     -fx-alignment: CENTER-LEFT;
+ }
+
+ .customtable .table-cell:odd {
+    -fx-background-color:derive(darkgray,20.0%);
+  }
+
+ .table-view.customtable .table-row-cell:hover .table-cell {
+     -fx-background-color: red;
+ }
+
+*/

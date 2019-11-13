@@ -28,7 +28,6 @@ import javafx.stage.Stage;
  * @author Jeanette Winzenburg, Berlin
  */
 public class NestedEventDispatchChain extends Application {
-
     
     private KeyCode key = DIGIT1;
     private Parent createContent() {

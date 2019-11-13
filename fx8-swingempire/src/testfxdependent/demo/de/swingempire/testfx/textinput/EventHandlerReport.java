@@ -82,6 +82,12 @@ public class EventHandlerReport {
         node.addEventFilter(type, handler);
         return handler;
     }
+    
+    public EventHandler setOnKeyPressed(Node node) {
+        EventHandler handler = createEventHandler("onKeyPressed");
+        node.setOnKeyPressed(handler);
+        return handler;
+    }
     /**
      * Clears all internal state. Here: clears list of events/handlers.
      */
