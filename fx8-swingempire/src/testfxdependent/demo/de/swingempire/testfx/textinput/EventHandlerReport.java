@@ -47,7 +47,7 @@ public class EventHandlerReport {
      * @return an eventHandler that adds itself and the event to the list of
      *         handlers/events, respectively.
      */
-    public <T extends Event> EventHandler<T> createEventHandler(String type) {
+    public <T extends Event> EventHandler<T> createBookkeeper(String type) {
         EventHandler<T> handler = new EventHandler<>() {
 
             @Override
@@ -60,34 +60,68 @@ public class EventHandlerReport {
         return handler;
     }
 
+    public <T extends Event> EventHandler<T> createEventHandler(String type,
+            EventHandler<T> workhorse) {
+        EventHandler<T> adder = createBookkeeper(type);
+        if (workhorse == null) return adder;
+        EventHandler<T> chain = e -> {
+            workhorse.handle(e);
+            adder.handle(e);
+
+        };
+        return chain;
+    }
+    
     public <T extends Event> EventHandler<T> addEventHandler(Scene node, EventType<T> type) {
-        EventHandler<T> handler = createEventHandler("handler");
+        return addEventHandler(node, type, null);
+    }
+    
+    public <T extends Event> EventHandler<T> addEventHandler(Scene node, EventType<T> type, EventHandler<T> workhorse) {
+        EventHandler<T> handler = createEventHandler("handler", workhorse);
         node.addEventHandler(type, handler);
         return handler;
     }
     
     public <T extends Event> EventHandler<T> addEventFilter(Scene node, EventType<T> type) {
-        EventHandler<T> handler = createEventHandler("filter");
+        return addEventFilter(node, type, null);
+    }
+    
+    public <T extends Event> EventHandler<T> addEventFilter(Scene node, EventType<T> type, EventHandler<T> workhorse) {
+        EventHandler<T> handler = createEventHandler("filter", workhorse);
         node.addEventFilter(type, handler);
         return handler;
     }
+    
     public <T extends Event> EventHandler<T> addEventHandler(Node node, EventType<T> type) {
-        EventHandler<T> handler = createEventHandler("handler");
+        return addEventHandler(node, type, null);
+    }
+    
+    public <T extends Event> EventHandler<T> addEventHandler(Node node, EventType<T> type, EventHandler<T> workhorse) {
+        EventHandler<T> handler = createEventHandler("handler", workhorse);
         node.addEventHandler(type, handler);
         return handler;
     }
     
     public <T extends Event> EventHandler<T> addEventFilter(Node node, EventType<T> type) {
-        EventHandler<T> handler = createEventHandler("filter");
+        return addEventFilter(node, type, null);
+    }
+    
+    public <T extends Event> EventHandler<T> addEventFilter(Node node, EventType<T> type, EventHandler<T> workhorse) {
+        EventHandler<T> handler = createEventHandler("filter", workhorse);
         node.addEventFilter(type, handler);
         return handler;
     }
     
-    public EventHandler setOnKeyPressed(Node node) {
-        EventHandler handler = createEventHandler("onKeyPressed");
+    public  EventHandler<KeyEvent> setOnKeyPressed(Node node) {
+        return setOnKeyPressed(node, null);
+    }
+    
+    public  EventHandler<KeyEvent> setOnKeyPressed(Node node, EventHandler<KeyEvent> workhorse) {
+        EventHandler<KeyEvent> handler = createEventHandler("onKeyPressed", workhorse);
         node.setOnKeyPressed(handler);
         return handler;
     }
+    
     /**
      * Clears all internal state. Here: clears list of events/handlers.
      */
