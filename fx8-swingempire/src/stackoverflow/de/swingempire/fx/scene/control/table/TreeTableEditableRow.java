@@ -23,6 +23,7 @@ import javafx.scene.control.cell.CheckBoxTreeTableCell;
 import javafx.scene.control.cell.TextFieldTreeTableCell;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  * https://stackoverflow.com/a/52529200/203657
@@ -127,6 +128,34 @@ public class TreeTableEditableRow extends Application {
         root.getChildren().add(ttv);
         stage.setScene(new Scene(root, 300, 300));
         stage.show();
+    }
+    
+    /**
+     * Answer from wcmatthysen: utility method to bind replace column's
+     * cell factory with a wrapper that listens to the cell's row property
+     * and binds its own editability to row editability
+     * 
+     * https://stackoverflow.com/a/58905149/203657
+     */
+    public static <S, T> void bindCellToRowEditibility(TreeTableColumn<S, T> treeTableColumn) {
+        // Keep a handle on the original callback function.
+        Callback<TreeTableColumn<S, T>, TreeTableCell<S, T>> callback = treeTableColumn.getCellFactory();
+        // Install a new callback function that performs the delegation.
+        treeTableColumn.setCellFactory(column -> {
+            TreeTableCell<S, T> cell = callback.call(column);
+            // Add a listener so that we pick up when a new row is set for the cell.
+            cell.tableRowProperty().addListener((observable, oldRow, newRow) -> {
+                // If the new row is non-null, we proceed.
+                if (newRow != null) {
+                    // We get the cell and row editable-properties.
+                    BooleanProperty cellEditableProperty = cell.editableProperty();
+                    BooleanProperty rowEditableProperty = newRow.editableProperty();
+                    // Bind the cell's editable-property with its row's property.
+                    cellEditableProperty.bind(rowEditableProperty);
+                }
+            });
+            return cell;
+        });
     }
     
     public class Person {
