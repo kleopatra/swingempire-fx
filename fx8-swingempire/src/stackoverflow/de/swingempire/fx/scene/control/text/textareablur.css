@@ -1,0 +1,7 @@
+.text-area-centered *.text {
+    -fx-text-alignment: center ;
+}
+.text-area-centered .scroll-pane {
+    -fx-hbar-policy: NEVER;
+    -fx-vbar-policy: NEVER;
+}
