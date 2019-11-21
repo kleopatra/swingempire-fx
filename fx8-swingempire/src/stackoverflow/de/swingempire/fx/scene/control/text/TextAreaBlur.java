@@ -65,6 +65,7 @@ public class TextAreaBlur extends Application {
 
     private void OnClickButton(ActionEvent event)
     {
+        textarea.setCache(false);
         if(clickNo == 1)
         {
             textarea.setText("7");
