@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+ <?import javafx.scene.layout.*?>
+
+    <?import javafx.scene.chart.LineChart?>
+    <?import javafx.scene.chart.CategoryAxis?>
+    <?import javafx.scene.chart.NumberAxis?>
+    <?import javafx.scene.chart.BarChart?>
+    <BorderPane 
+    	xmlns="http://javafx.com/javafx/10.0.2-internal" 
+    	xmlns:fx="http://javafx.com/fxml/1" 
+    	fx:controller="de.swingempire.fx.chart.GraphController">
+       <center>
+
+          <StackPane fx:id="stackPane" >
+             <children>
+                <BarChart fx:id="barChart" >
+                  <xAxis>
+                    <CategoryAxis side="BOTTOM" />
+                  </xAxis>
+                  <yAxis>
+                    <NumberAxis fx:id = "yAxis" side="LEFT" />
+                  </yAxis>
+                </BarChart>
+
+                 <LineChart fx:id="lineChartEffective"  stylesheets="@effectivs.css">
+                     <xAxis>
+                         <CategoryAxis fx:id = "xAxis" side="BOTTOM" />
+                     </xAxis>
+                     <yAxis>
+                         <NumberAxis fx:id="yAxisRight" side="RIGHT"/>
+                     </yAxis>
+                 </LineChart>
+
+             </children>
+          </StackPane>
+
+       </center>
+    </BorderPane>
+
