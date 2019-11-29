@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -43,7 +44,7 @@ public class RadioButtonFireAction extends Application {
 
         VBox root = new VBox(2);
         root.getChildren().addAll(rBtn, other, btn);
-        
+
         Scene scene = new Scene(root, 150, 50);
         primaryStage.setTitle("RBExample");
         primaryStage.setScene(scene);

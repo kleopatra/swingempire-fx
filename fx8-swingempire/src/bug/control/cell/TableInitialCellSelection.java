@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -35,7 +36,7 @@ public class TableInitialCellSelection extends Application {
 
     private Parent createContent() {
         ObservableList<Locale> data = FXCollections.observableArrayList(
-                Arrays.stream(Locale.getAvailableLocales(), 10, 20).collect(Collectors.toList()));
+                Arrays.stream(Locale.getAvailableLocales(), 10, 200).collect(Collectors.toList()));
         TableView<Locale> table = new TableView<>(data);
         table.getColumns().addAll(createTableColumn("displayLanguage"), createTableColumn("displayCountry"));
         table.getSelectionModel().setCellSelectionEnabled(true);

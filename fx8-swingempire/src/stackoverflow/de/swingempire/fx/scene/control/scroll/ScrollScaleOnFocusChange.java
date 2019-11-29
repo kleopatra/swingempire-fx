@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -53,6 +54,7 @@ public class ScrollScaleOnFocusChange extends Application
         myVBox.getChildren().addAll(myHBox, myTextField);
 
         ScrollPane myScrollPane = new ScrollPane(myVBox);
+
         myScrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         myScrollPane.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 
