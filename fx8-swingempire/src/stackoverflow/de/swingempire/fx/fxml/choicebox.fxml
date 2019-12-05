@@ -8,5 +8,6 @@
 
     <ChoiceBox fx:id="choiceBox" GridPane.columnIndex="0" GridPane.rowIndex="0"></ChoiceBox>
 
-    <Button fx:id="button" GridPane.columnIndex="0" GridPane.rowIndex="1" text="CHANGE"></Button>
+    <Button fx:id="button" onMouseEntered="#over" GridPane.columnIndex="0" GridPane.rowIndex="1" text="CHANGE">
+    </Button>
 </GridPane>

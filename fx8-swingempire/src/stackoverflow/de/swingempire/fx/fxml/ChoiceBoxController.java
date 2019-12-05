@@ -7,6 +7,7 @@ package de.swingempire.fx.fxml;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.input.MouseEvent;
 
 public class ChoiceBoxController {
 
@@ -29,5 +30,11 @@ public class ChoiceBoxController {
 
     public void setButton(Button button) {
         this.button = button;
+    }
+    
+    // quick check: setting singleton event handlers
+    @FXML
+    private void over(MouseEvent e) {
+        System.out.println(e);
     }
 }

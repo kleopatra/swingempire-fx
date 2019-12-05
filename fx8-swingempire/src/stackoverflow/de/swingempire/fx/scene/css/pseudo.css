@@ -1,0 +1,13 @@
+/**
+ * experimenting with pseudo-classes: 
+ * problem in xtableView: layout of content not trigger on toggling
+ * pseudo-state
+ */
+
+
+.button:special {
+  -fx-text-fill: red;
+  /*-fx-label-padding: 100;*/
+}
+
+
