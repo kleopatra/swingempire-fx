@@ -8,12 +8,15 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.TilePane;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 /**
  * Drag released not fired.
@@ -84,8 +87,16 @@ public class DnDReleased extends Application {
             button2.startFullDrag();
         });
 
-        button2.setOnMouseReleased((event) -> {
-            button2.setMouseTransparent(false);
+        button2.setOnDragExited(e -> {
+        });
+        
+        button2.setOnMouseReleased((e) -> {
+            Stage stage = createStage(e, button2);
+            System.out.println("creating and showing");
+            if (stage != null) {
+                stage.show();
+            }
+           button2.setMouseTransparent(false);
         });
 
         // button1 event handlers
@@ -115,6 +126,25 @@ public class DnDReleased extends Application {
 
         primaryStage.setScene(new Scene(mainBorderPane, 300, 275));
         primaryStage.show();
+    }
+
+
+    /**
+     * Create and show a new window if dropped outside of parent.
+     */
+    private Stage createStage(MouseEvent e, Button button2) {
+        double xScreen = e.getScreenX();
+        double yScreen = e.getScreenY();
+        Window bWindow = (Stage) button2.getScene().getWindow();
+        if (xScreen < bWindow.getX() || yScreen < bWindow.getY()) {
+            Stage stage = new Stage();
+            stage.setX(xScreen - 50);
+            stage.setY(yScreen - 50);
+            BorderPane content = new BorderPane(new Button(button2.getText()));
+            stage.setScene(new Scene(content)); 
+            return stage;
+        }
+        return null;
     }
 
 
