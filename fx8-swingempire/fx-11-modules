@@ -2,5 +2,6 @@
 --add-modules javafx.controls
 --add-modules javafx.fxml
 --add-modules javafx.swing
+--add-modules javafx.media
 
 
