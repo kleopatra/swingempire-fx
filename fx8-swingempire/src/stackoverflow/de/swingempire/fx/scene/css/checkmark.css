@@ -1,0 +1,29 @@
+.check-box {
+    -fx-label-padding: 0;
+}
+.check-box > .box {
+    -fx-background-color: #616161;
+    -fx-background-insets: 0;
+    -fx-border-color: #424242;
+    -fx-border-radius: 1;
+    -fx-background-radius: 1;
+    -fx-padding: 0.25em;
+}
+.check-box:hover > .box {
+    -fx-background-color: #1ABC9C;
+    -fx-background-insets: 0;
+    -fx-border-color:#424242;
+    -fx-background-radius: 1;
+}
+.check-box:pressed > .box {
+    -fx-background-color: #138e76;
+    -fx-background-insets: 0;
+    -fx-border-color: #424242;
+    -fx-background-radius: 1;
+}
+.check-box > .box > .mark {
+    -fx-padding: 0.25em;
+}
+.check-box:armed > .box > .mark {
+    -fx-background-color: #000000;
+}
