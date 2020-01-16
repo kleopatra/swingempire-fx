@@ -25,4 +25,5 @@
 --add-opens javafx.graphics/javafx.stage=ALL-UNNAMED
 --add-opens javafx.graphics/javafx.scene=ALL-UNNAMED
 --add-opens javafx.graphics/javafx.scene.text=ALL-UNNAMED
+--add-opens javafx.media/javafx.scene.media=ALL-UNNAMED
 --add-opens java.base/sun.util.logging=ALL-UNNAMED
