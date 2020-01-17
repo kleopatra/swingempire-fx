@@ -14,12 +14,18 @@ import javafx.scene.control.TreeView;
  */
 public class TreeViewController {
 
-    @FXML TreeView<String> treeView;
-    @FXML TextField inputText;
-    @FXML TreeItem<String> treeRoot;
+    @FXML private TextField inputText;
+    @FXML private TreeView<String> treeView;
     
     @FXML
     private void initialize() {
-//        treeView.setRoot(treeRoot);
+        treeView.setRoot(createItemHierarchy(new TreeItem<String>("root1"), new TreeItem<String>("root2")));
     }
+    
+    private TreeItem<String> createItemHierarchy(TreeItem<String>... root1) {
+        TreeItem<String> root = new TreeItem<>("base root");
+        root.getChildren().addAll(root1);
+        return root ;
+    }
+
 }
