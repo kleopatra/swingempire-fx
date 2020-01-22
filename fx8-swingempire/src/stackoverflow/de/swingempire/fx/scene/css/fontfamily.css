@@ -1,0 +1,17 @@
+
+
+@font-face {
+   font-family: 'hover';
+   font-weight: normal;
+   font-size: normal;
+   src: local(Bauhaus 93);
+}
+.root {
+
+	-fx-hover: 'Bauhaus 93';
+
+}
+
+.button:hover {
+	-fx-font-family: 'hover';
+}
