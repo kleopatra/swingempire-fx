@@ -25,6 +25,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 /**
+ * https://stackoverflow.com/q/47643298/203657
+ * oldish layout requirement: have wrapping text at exact size that it requires
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class LabelTextWrapping extends Application {
