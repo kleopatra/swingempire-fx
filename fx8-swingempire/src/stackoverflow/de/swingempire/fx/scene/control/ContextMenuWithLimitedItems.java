@@ -22,6 +22,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.ContextMenuSkin;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
@@ -86,6 +87,12 @@ public class ContextMenuWithLimitedItems extends Application {
        
     }
     
+    /**
+     * Using an arbitrary constant in size setting is _not_ good enough: without
+     * having a max on the ContextMenu, vertical positioning of the menu is broken
+     * - still positioned as if it would fill the entire screen height
+     */
+    private static double max = 200;
     public static class MaxSizedContextMenu extends ContextMenu {
         
         public MaxSizedContextMenu() {
@@ -95,13 +102,20 @@ public class ContextMenuWithLimitedItems extends Application {
                     ((Region) content).setMaxHeight(getMaxHeight());
                 }
             });
+            // from comment to answer: needed to use on-shown
+            // but then: forgot to add a useage note 
+            // (that setting max on contextMenu is crucial)
+//            addEventHandler(Menu.ON_SHOWN, e -> {
+//                Node content = getSkin().getNode();
+//                if (content instanceof Region) {
+//                    ((Region) content).setMaxHeight(max);
+//                }
+//            });
             
         }
     }
     private Parent createContent() {
-        Button button = new Button("Dummy");
-        ContextMenu menu = 
-                new MaxSizedContextMenu();
+        ContextMenu menu = new MaxSizedContextMenu();
         // on the fly creation
                 new ContextMenu() {
             {
@@ -125,8 +139,18 @@ public class ContextMenuWithLimitedItems extends Application {
             
         });
         menu.skinProperty().addListener((src, ov, nv) -> LOG.info("" + nv));
+        Button button = new Button("tweaked ContextMenu");
         button.setContextMenu(menu);
-        return new BorderPane(button);
+        
+        Button normal = new Button("normal ContextMenu");
+        ContextMenu normalMenu = new ContextMenu();
+        Stream.iterate(0, i -> i+1).limit(7).forEach(i -> {
+            normalMenu.getItems().add(new MenuItem("item " + i));
+            
+        });
+        normal.setContextMenu(normalMenu);
+        
+        return new BorderPane(new HBox(button, normal));
     }
 
     @Override
