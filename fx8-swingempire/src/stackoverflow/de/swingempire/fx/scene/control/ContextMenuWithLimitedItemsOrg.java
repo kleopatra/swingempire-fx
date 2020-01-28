@@ -6,7 +6,6 @@ package de.swingempire.fx.scene.control;
 
 import de.swingempire.testfx.util.FXUtils;
 import javafx.application.Application;
-import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -14,8 +13,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
  
 /**
@@ -29,7 +28,7 @@ public class ContextMenuWithLimitedItemsOrg extends Application {
         primaryStage.setTitle("Hello World!");
  
         Button btn = new Button();
-        btn.setText("Show ContextMenu");
+        btn.setText("Show ContextMenu Tweaked");
         ContextMenu ctx = new MaxSizedContextMenu();
         for (int i = 0; i < 100; i++) {
             ctx.getItems().add(new MenuItem("Testing" + i));
@@ -37,22 +36,34 @@ public class ContextMenuWithLimitedItemsOrg extends Application {
         // not visible
         //        ctx.setShowRelativeToWindow(true);
         // access reflectively, no change
-        FXUtils.invokeGetMethodValue(ContextMenu.class, ctx, 
-                "setShowRelativeToWindow", Boolean.TYPE, true);
+//        FXUtils.invokeGetMethodValue(ContextMenu.class, ctx, 
+//                "setShowRelativeToWindow", Boolean.TYPE, true);
         btn.setOnAction(event -> {
             // Vertical location of the popup is wrong
-            ctx.show(btn, Side.TOP, 0, 0);
+            showContextMenu(btn, ctx);
 //            Bounds local = btn.getBoundsInLocal();
 //            Bounds screen = btn.localToScreen(local);
 //            ctx.show(btn, screen.getMinX(), screen.getMinY());
         });
  
-        StackPane root = new StackPane();
-        root.getChildren().add(btn);
+        Button normal = new Button("normal short");
+        ContextMenu normalCtx = new ContextMenu();
+        for (int i = 0; i < 8; i++) {
+            normalCtx.getItems().add(new MenuItem("Normal" + i));
+        }
+        normal.setOnAction(e -> showContextMenu(normal, normalCtx));
+        
+        HBox root = new HBox(10);
+        root.getChildren().addAll(btn, normal);
         primaryStage.setScene(new Scene(root, 300, 250));
         primaryStage.show();
     }
  
+    private void showContextMenu(Node anchor, ContextMenu ctx) {
+//        ctx.show(anchor, Side.TOP, 0, 0);
+        ctx.show(anchor, 0, 0);
+        System.out.println("pref: " + ctx.prefHeight(-1));
+    }
     
     public static void main(String[] args) {
         launch(args);
@@ -61,8 +72,8 @@ public class ContextMenuWithLimitedItemsOrg extends Application {
     public static class MaxSizedContextMenu extends ContextMenu {
  
         public MaxSizedContextMenu() {
-            setPrefHeight(300);
-            setMaxHeight(Region.USE_PREF_SIZE);
+//            setPrefHeight(300);
+//            setMaxHeight(Region.USE_PREF_SIZE);
             setMaxHeight(301.0);
  
             addEventHandler(Menu.ON_SHOWING, e -> {
