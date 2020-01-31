@@ -1,3 +1,4 @@
+--add-opens javafx.controls/javafx.scene.chart=ALL-UNNAMED
 --add-opens javafx.controls/javafx.scene.control=ALL-UNNAMED
 --add-opens javafx.controls/javafx.scene.control.skin=ALL-UNNAMED 
 --add-opens javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED 
