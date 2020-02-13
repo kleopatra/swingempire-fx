@@ -4,13 +4,17 @@
  */
 package de.swingempire.fx.chart;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import com.sun.javafx.charts.Legend;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -19,6 +23,7 @@ import javafx.scene.chart.PieChart.Data;
 import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
@@ -39,6 +44,11 @@ public class CorrelatedChartColors extends Application {
     public void start(Stage primaryStage) {
         PieChart pieChart = new PieChart();
         pieChart.setData(getPieData());
+        final HashMap<String, Integer> colors = new HashMap<>();
+        pieChart.getData().stream().forEach((pd)->{
+            colors.put(pd.getName(), pieChart.getData().indexOf(pd));
+        });
+
         
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
@@ -53,6 +63,22 @@ public class CorrelatedChartColors extends Application {
         Scene scene = new Scene(new HBox(pieChart, sbc));
         primaryStage.setScene(scene);
         primaryStage.show();
+        //can only get nodes after charts are drawn
+        barData.stream().forEach((bd)->{
+            int num = colors.get(bd.getName());
+            //eg. chart-bar series1 data0 default-color1
+            bd.getData().get(0).getNode().getStyleClass().setAll("chart-bar","series"+num,"data0","default-color"+num);
+        });
+
+        Legend legend = (Legend)sbc.lookup(".chart-legend");
+        legend.getChildrenUnmodifiable().stream().forEach((l)->{
+            Label label = (Label)l;
+            Node n = label.getGraphic();
+            int num = colors.get(label.getText());
+            //eg. chart-legend-item-symbol chart-bar series1 bar-legend-symbol default-color1
+            n.getStyleClass().setAll("chart-legend-item-symbol","chart-bar","series"+num,"bar-legend-symbol","default-color"+num);
+        });
+
     }
 
     /**
