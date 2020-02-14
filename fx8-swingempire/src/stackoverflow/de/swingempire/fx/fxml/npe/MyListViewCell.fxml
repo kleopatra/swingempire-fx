@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<fx:root maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" 
+minWidth="-Infinity" prefHeight="400.0" prefWidth="1049.0" 
+stylesheets="@mylistviewcell.css" 
+type="HBox" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <StackPane prefWidth="280.0" style="-fx-background-color: #dd550c;">
+            <children>
+                <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@images/au_logo.png" />
+                    </image>
+                </ImageView>
+            </children>
+        </StackPane>
+        <VBox style="-fx-background-color: #dd550c;" HBox.hgrow="ALWAYS">
+            <children>
+                <Label fx:id="cellLblTitle" alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: white;" text="Title">
+                    <font>
+                        <Font name="System Bold" size="28.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="2.0" left="5.0" right="5.0" top="5.0" />
+                    </VBox.margin>
+                </Label>
+                <HBox maxWidth="1.7976931348623157E308" spacing="5.0" style="-fx-background-color: #dd550c;" VBox.vgrow="ALWAYS">
+                    <children>
+                        <GridPane prefWidth="500.0" style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            </rowConstraints>
+                            <children>
+                                <Label text="Bib ID:" GridPane.rowIndex="1">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </Label>
+                                <Label text="PO Number:" GridPane.rowIndex="2">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </Label>
+                                <Label text="URL:" GridPane.rowIndex="3">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </Label>
+                                <CheckBox fx:id="cellCbCounter" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Counter" GridPane.rowIndex="6">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </CheckBox>
+                                <CheckBox fx:id="cellCbStatsOnly" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Stats Only" GridPane.rowIndex="7">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </CheckBox>
+                                <CheckBox fx:id="cellCbOtherStats" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Other Stats" GridPane.rowIndex="8">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </CheckBox>
+                                <Label text="Username:" GridPane.rowIndex="4">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </Label>
+                                <Label text="Password:" GridPane.rowIndex="5">
+                                    <font>
+                                        <Font name="System Bold" size="14.0" />
+                                    </font>
+                                    <GridPane.margin>
+                                        <Insets left="5.0" />
+                                    </GridPane.margin>
+                                </Label>
+                                <TextField fx:id="cellTfBibId" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1">
+                                    <GridPane.margin>
+                                        <Insets left="2.0" right="2.0" />
+                                    </GridPane.margin>
+                                </TextField>
+                                <TextField fx:id="cellTfPoNumber" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
+                                    <GridPane.margin>
+                                        <Insets left="2.0" right="2.0" />
+                                    </GridPane.margin>
+                                </TextField>
+                                <TextField fx:id="cellTfUrl" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3">
+                                    <GridPane.margin>
+                                        <Insets left="2.0" right="2.0" />
+                                    </GridPane.margin>
+                                </TextField>
+                                <TextField fx:id="cellTfUsername" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4">
+                                    <GridPane.margin>
+                                        <Insets left="2.0" right="2.0" />
+                                    </GridPane.margin>
+                                </TextField>
+                                <TextField fx:id="cellTfPassword" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="5">
+                                    <GridPane.margin>
+                                        <Insets left="2.0" right="2.0" />
+                                    </GridPane.margin>
+                                </TextField>
+                            </children>
+                        </GridPane>
+                        <ListView fx:id="cellListView" maxWidth="1.7976931348623157E308" minWidth="280.0" prefWidth="280.0" style="-fx-background-color: white;" HBox.hgrow="ALWAYS" />
+                    </children>
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" />
+                    </VBox.margin>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</fx:root>
+
