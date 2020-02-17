@@ -4,6 +4,11 @@
  */
 package de.swingempire.fx.fxml.npe;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
 import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -63,16 +68,24 @@ public class NPEDiggingSO extends Application {
             } else {
                 cellListView.getItems().setAll(item);
                 setGraphic(cellListView);
+                // doesn't help
+//                cellListView.requestFocus();
             }
         }
 
     }
 
     private Parent createContent() {
+        List<String> items = Arrays.stream(Locale.getAvailableLocales())
+                .map(l -> l.getDisplayCountry())
+                .collect(Collectors.toList());
         ObservableList<String> model = FXCollections.observableArrayList(
-                "item1", "item2", "item3", "item4", "item5");
+                items);
         ListView<String> outer = new ListView<>(model);
+        // need nested listCell
         outer.setCellFactory(c -> new OuterListCell());
+        // this is fine
+        //outer.setCellFactory(c -> new InnerListCell());
         BorderPane content = new BorderPane(outer);
         return content;
     }
