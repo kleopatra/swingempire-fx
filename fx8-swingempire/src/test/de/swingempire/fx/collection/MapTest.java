@@ -4,7 +4,10 @@
  */
 package de.swingempire.fx.collection;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -46,6 +49,20 @@ public class MapTest {
     private ObservableList<String> list;
 
     private MapBackedObservableList backedList;
+    
+//------------ linked hashset
+    
+    @Test
+    public void testLinkedHashSet() {
+        HashSet<String> set = new LinkedHashSet<>();
+        
+        List<String> list = List.of("one", "two", "thress");
+        set.addAll(list);
+        System.out.println(set);
+        set.add("other");
+        System.out.println(set);
+        
+    }
     
 //------------------------- map-backed list
     
