@@ -11,6 +11,7 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -43,6 +44,10 @@ import javafx.stage.Stage;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class TableViewDemo extends Application {
 
+    // quick check for table cell navigation in RToL
+    static boolean rtl = true;
+    static boolean globalOrientation = false;
+    
     private TableView<Person> table;
     private TableColumn emailHeader;
     private TableColumn emailColumn;
@@ -158,8 +163,11 @@ public class TableViewDemo extends Application {
 //        table.getSelectionModel().select(0);
         // table always has initial focus (aka: focusOwner) due to being in the center?
 //        pane.setTop(new TextField("some dummy to focus"));
+        if (rtl && globalOrientation) pane.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         return pane;
     }
+    
+    
 
     /**
      * Resizes the email column such that column width fits content.
@@ -291,7 +299,10 @@ public class TableViewDemo extends Application {
         //---------end of row styling
         
         // quick check if nodeOrientation is working - yeah
-//        table.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        // fixed in fx8 https://bugs.openjdk.java.net/browse/JDK-8122932
+        // regression since fx9 https://bugs.openjdk.java.net/browse/JDK-8235480
+        if (rtl && !globalOrientation) table.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        table.getSelectionModel().setCellSelectionEnabled(true);
         TableColumn first = new TableColumn("First Name");
         first.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         first.setCellFactory(TextFieldTableCell.forTableColumn());
