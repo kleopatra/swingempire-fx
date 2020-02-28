@@ -44,7 +44,10 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
             // TBD: dynamic update on changing tabs at runtime
             addTabContentVisibilityListener(getChildren());
             registerChangeListener(control.focusedProperty(), this::focusChanged);
-            registerChangeListener(control.getSelectionModel().selectedItemProperty(), e -> isSelecting = true);
+            registerChangeListener(control.getSelectionModel().selectedItemProperty(), e -> {
+                isSelecting = true;
+                
+            });
         }
 
         /**

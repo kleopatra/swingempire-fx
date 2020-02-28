@@ -81,10 +81,10 @@ public class TabPaneFocusOnSelection extends Application {
             if (nv) {
                 Tab selected = tabPane.getSelectionModel().getSelectedItem();
                 if (selected != null && selected.getContent() != null) {
-                    System.out.println("selected in focusListener: " + selected.getText());
-                    final KeyEvent tabEvent = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
-                            false, false, false, false);
-                    Event.fireEvent(tabPane, tabEvent);
+//                    System.out.println("selected in focusListener: " + selected.getText());
+//                    final KeyEvent tabEvent = new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+//                            false, false, false, false);
+//                    Event.fireEvent(tabPane, tabEvent);
 //                    Node content = selected.getContent();
 //                    selected.getContent().requestFocus();
                 }
