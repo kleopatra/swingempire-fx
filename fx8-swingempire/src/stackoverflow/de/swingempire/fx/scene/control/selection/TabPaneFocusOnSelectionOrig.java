@@ -183,9 +183,8 @@ public class TabPaneFocusOnSelectionOrig extends Application {
                 tab.setOnSelectionChanged(event -> {
                     Node tabContent = tab.getContent();
                     if (tab.isSelected() && tab.getContent() != null && tab.getContent().getParent() != null ) {
-                        System.out.println("onSelection " + tab.getText() + tabContent.getParent().isVisible());
-    //                    Node ta = tabContent.getChildren().get(0);
-    //                    ta.requestFocus();
+                        System.out.println("onSelection " + tab.getText() 
+                        + tabContent.getParent().isVisible());
                     }
                 });
                 

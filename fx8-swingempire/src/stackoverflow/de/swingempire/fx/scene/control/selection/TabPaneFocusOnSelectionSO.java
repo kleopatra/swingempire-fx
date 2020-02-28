@@ -6,11 +6,9 @@ package de.swingempire.fx.scene.control.selection;
 
 import java.util.List;
 
-import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -29,9 +27,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
+ * Requirement: transfer focus into content on selection.
+ * https://stackoverflow.com/q/60404526/203657
+ * 
+ * answered ..
  * @author Jeanette Winzenburg, Berlin
  */
-public class TabPaneFocusOnSelectionWithSkin extends Application {
+public class TabPaneFocusOnSelectionSO extends Application {
     
     /**
      * Custom skin that tries to focus the first child of selected tab when 
@@ -40,7 +42,7 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
      */
     public static class MyTabPaneSkin extends TabPaneSkin {
 
-        private boolean isSelecting = true;
+        private boolean selecting = true;
         /**
          * @param control
          */
@@ -50,7 +52,7 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
             addTabContentVisibilityListener(getChildren());
             registerChangeListener(control.focusedProperty(), this::focusChanged);
             registerChangeListener(control.getSelectionModel().selectedItemProperty(), e -> {
-                isSelecting = true;
+                selecting = true;
             });
         }
 
@@ -59,27 +61,13 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
          * 
          * @param focusedProperty the property that's changed
          */
-        private void focusChanged(ObservableValue focusedProperty) {
-            System.out.println("focusChanged .. " + getSkinnable().getScene().getFocusOwner());
-            if (getSkinnable().isFocused() && isSelecting) {
+        protected void focusChanged(ObservableValue focusedProperty) {
+            if (getSkinnable().isFocused() && selecting) {
                 transferFocus();
-                isSelecting = false;
+                selecting = false;
             }
         }
-
-        /**
-         * No public api to transfer focus "away" from any node, hack by firing
-         * a TAB key on the TabPane.
-         */
-        protected void transferFocus() {
-            Tab selected = getSkinnable().getSelectionModel().getSelectedItem();
-            System.out.println("selected in focusListener: "
-                    + selected.getText() + " selecting? " + isSelecting);
-            final KeyEvent tabEvent = new KeyEvent(KeyEvent.KEY_PRESSED, "", "",
-                    KeyCode.TAB, false, false, false, false);
-            Event.fireEvent(getSkinnable(), tabEvent);
-        }
-
+        
         /**
          * Callback from listener to tab visibility.
          * 
@@ -88,11 +76,20 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
         protected void tabVisibilityChanged(ObservableValue visibleProperty) {
             BooleanProperty b = (BooleanProperty) visibleProperty;
             if (b.get()) {
-                System.out.println("visibleChanged: " + visibleProperty + " selecting: " + isSelecting);
                 transferFocus();
             }
         }
-        
+
+        /**
+         * No public api to transfer focus "away" from any node, hack by firing
+         * a TAB key on the TabPane.
+         */
+        protected void transferFocus() {
+            final KeyEvent tabEvent = new KeyEvent(KeyEvent.KEY_PRESSED, "", "",
+                    KeyCode.TAB, false, false, false, false);
+            Event.fireEvent(getSkinnable(), tabEvent);
+        }
+
         /**
          * Register the visibilityListener to each child in the given list that 
          * is a TabContentArea.
@@ -104,21 +101,6 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
                     registerChangeListener(node.visibleProperty(), this::tabVisibilityChanged);
                 }
             });
-        }
-        
-        /**
-         * Wire listener to visibleProperty of tab's content parent.
-         */
-        private void installTabContentVisibilityListener() {
-            getChildren().addListener((ListChangeListener<Node>) c -> {
-                while (c.next()) {
-                    if (c.wasAdded()) {
-                        addTabContentVisibilityListener(c.getAddedSubList());
-                    }
-                    // TBD: cleanup on remove
-                }
-            });
-            addTabContentVisibilityListener(getChildren());
         }
         
     }
@@ -151,7 +133,7 @@ public class TabPaneFocusOnSelectionWithSkin extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         stage.setScene(new Scene(createContent()));
-        stage.setTitle(FXUtils.version() + " custom skin ");
+        stage.setTitle(" TabPane with custom skin ");
         stage.show();
     }
 
