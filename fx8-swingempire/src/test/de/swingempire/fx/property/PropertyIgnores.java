@@ -64,7 +64,7 @@ public class PropertyIgnores {
         
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }

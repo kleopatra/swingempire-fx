@@ -21,6 +21,8 @@ import javafx.collections.ObservableListBase;
  * data structure. Implemented to fire as few changes as possible, particularly not
  * firing an added change if an index is already set.
  * <p>
+ * PENDING JW: what exactly does it mean, that index is already set?
+ * <p>
  * Note: this is-a kind-of transformation list, cannot use a TransformList directly, though,
  * because the sequential "source" might be of type other than List, f.i. a TreeView
  * 

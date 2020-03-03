@@ -300,6 +300,7 @@ public class IndicesListTest {
             assertEquals("expected value at " + i, indices[i], indicesList.get(i).intValue());
         }
         assertEquals(1, report.getEventCount());
+        // PENDING JW: really a good idea to fire a replaced?
         assertTrue("expected single replaced, but was " + report.getLastChange(), 
                 wasSingleReplaced(report.getLastChange()));
     }

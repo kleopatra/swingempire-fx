@@ -34,9 +34,12 @@ import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreFocus;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreNotificationIndicesOnRemove;
 import de.swingempire.fx.scene.control.selection.SelectionIgnores.IgnoreUncontained;
 import de.swingempire.fx.util.ChangeReport;
+import de.swingempire.fx.util.FXUtils;
 import de.swingempire.fx.util.FXUtils.ChangeType;
 import de.swingempire.fx.util.ListChangeReport;
 import de.swingempire.fx.util.StageLoader;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -549,8 +552,9 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
         ListChangeReport report = new ListChangeReport(indices);
         addItem(0, createItem("new item"));
-//        prettyPrint(c);
         Change c = report.getLastChange();
+//        LOG.info("initial selection: " + copy);
+//        prettyPrint(c, true);
         c.next();
         assertFalse("change must not be permutated", c.wasPermutated());
 //        if (!c.wasPermutated()) {
@@ -563,6 +567,37 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
 //        }
     }
     
+    /**
+     * suspected: when adding item above selected, the sequence of sub-changes is not
+     * ordered correctly?
+     */
+    @Test
+    public void testSelectedIndicesEventsOnAddedItemChangeSequence() {
+        int start = 3;
+        int end = 5;
+        getSelectionModel().selectRange(start, end);
+        ObservableList<Integer> indices = getSelectedIndices();
+        ObservableList<Integer> copy = FXCollections.observableArrayList(indices);
+        ListChangeReport report = new ListChangeReport(indices);
+        addItem(0, createItem("new item"));
+        Change c = report.getLastChange();
+        LOG.info("initial selection: " + copy);
+        prettyPrint(c, true);
+        IntegerProperty from = new SimpleIntegerProperty(-1);
+        assertEquals("count of subChanges: " + c, 2, getChangeCount(c));
+        c.reset();
+        while(c.next()) {
+            if (c.wasAdded() || c.wasRemoved() || c.wasReplaced()) {
+                if (from.get() >= 0) {
+                    assertTrue(
+                            "from must be ordered but was old/current: " 
+                            + from.get() + " / " + c.getFrom(), 
+                            c.getFrom() >= from.get());
+                }
+                from.set(c.getFrom());
+            }
+        }
+    }
     /**
      * Hmm ... 
      * The assumption might be not quite correct? The items are unchanged,
