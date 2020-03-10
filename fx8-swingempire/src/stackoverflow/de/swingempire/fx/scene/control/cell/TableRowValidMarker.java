@@ -10,6 +10,7 @@ import de.swingempire.fx.util.FXUtils;
 import javafx.application.Application;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -97,26 +98,45 @@ public class TableRowValidMarker extends Application {
         tableView.setRowFactory(tv -> new TableRow<RowTest>() {
             
             
+//            @Override
+//            protected boolean isItemChanged(RowTest oldItem, RowTest newItem) {
+//                boolean changed = super.isItemChanged(oldItem, newItem);
+//                // old and new are same instance - to actually check is not useful
+//                System.out.println("old/new: " + oldItem + oldItem.hashCode() 
+//                    + "/ " + newItem + newItem.hashCode());
+//                if (oldItem != null && newItem != null && newItem == oldItem) {
+//                    changed = changed || (oldItem.isValidRow() != newItem.isValidRow());
+//                }
+////                return changed;
+//                // unconditionally true works fine
+//                return true;
+//            }
+//
+            
             @Override
-            protected boolean isItemChanged(RowTest oldItem, RowTest newItem) {
-                boolean changed = super.isItemChanged(oldItem, newItem);
-                if (oldItem != null && newItem != null && newItem == oldItem) {
-                    changed = changed || (oldItem.isValidRow() != newItem.isValidRow());
-                }
-                return changed;
+            public void updateIndex(int i) {
+                super.updateIndex(i);
+                updateStyle(getItem());
             }
 
             @Override
             public void updateItem(RowTest item, boolean empty) {
                 super.updateItem(item, empty);
+                updateStyle(item);
+            }
+
+            /**
+             * @param item
+             */
+            protected void updateStyle(RowTest item) {
                 if (item == null) {
                     setStyle("");
                 } else if (item.isValidRow()) {
                     LOG.info("" + getIndex() + item);
-                    setStyle("-fx-background-color: LightGreen; -fx-text-fill: Black;");
+                    setStyle("-fx-background-color: LightGreen;");
                 } else if (!item.isValidRow()) {
                     LOG.info("" + item);
-                    setStyle("-fx-background-color: Red; -fx-text-fill: Black;");
+                    setStyle("-fx-background-color: Red; ");
                 } else {
                     setStyle("");
                 }
@@ -153,7 +173,7 @@ public class TableRowValidMarker extends Application {
             @Override
             public void onChanged(Change<? extends RowTest> c) {
                 while (c.next()) {
-                    FXUtils.prettyPrint(c);
+//                    FXUtils.prettyPrint(c);
                     if (c.wasUpdated()) {
                    }
                 }
@@ -162,12 +182,13 @@ public class TableRowValidMarker extends Application {
     }
 
     private void populateData() {
-        data = FXCollections.observableArrayList(e -> new Observable[] {e.validRowProperty()});
+        data = FXCollections.observableArrayList(); //e -> new Observable[] {e.validRowProperty()});
         
         data.add(new RowTest(1, 1));
         data.add(new RowTest(2, 0));
 
-        data.get(1).validRowProperty().addListener(o -> LOG.info("getting change: " + o));
+//        data.get(1).validRowProperty().addListener(o -> LOG.info("getting change invalidListener: " + o));
+//        data.get(1).validRowProperty().addListener((src, ov, nv) -> System.out.println("  changeListener" + nv));
         tableView.setItems(data);
     }
 
