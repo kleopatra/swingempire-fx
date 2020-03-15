@@ -1,0 +1,11 @@
+/**
+ */
+
+
+.styled .text {
+    -fx-strikethrough: true;
+}
+
+.styled {
+    -fx-background-color: gray;
+}
