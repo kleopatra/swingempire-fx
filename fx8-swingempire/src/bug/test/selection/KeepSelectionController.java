@@ -20,7 +20,7 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableView;
 
 
-public class FXMLDocumentController implements Initializable {
+public class KeepSelectionController implements Initializable {
 
     List<SomeData> dataList = new ArrayList();
     private ObservableList<SomeData> observedList = FXCollections.observableArrayList(dataList); 

@@ -8,7 +8,8 @@
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 
 
-<AnchorPane id="AnchorPane" prefHeight="684.0" prefWidth="827.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.111" fx:controller="test.selection.FXMLDocumentController">
+<AnchorPane id="AnchorPane" prefHeight="684.0" prefWidth="827.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.111" 
+	fx:controller="test.selection.KeepSelectionController">
     <children>
         <Button fx:id="button" layoutX="694.0" layoutY="616.0" onAction="#handleButtonAction" text="Update" />
         <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />

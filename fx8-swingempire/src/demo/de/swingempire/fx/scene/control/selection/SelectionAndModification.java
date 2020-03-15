@@ -115,10 +115,18 @@ import javafx.stage.Stage;
 public class SelectionAndModification extends Application {
 
     String[] actionKeys = {"insertAt0", "insertAtSelectedIndex", "removeAtSelectedIndex",
-            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", "setAtSecondarySelected"};
+            "setAtSelectedIndex", "removeAll(3, 5, 7)", "removeAt0", "setAtSecondarySelected",
+            "setAll"
+            };
     // PENDING - how to unify KeyCode and KeyCombination?
-    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4, KeyCode.F5, KeyCode.F6, KeyCode.F7};
-    KeyCombination.Modifier[] modifiers = {null, null, null, null, null, null, null};
+    KeyCode[] keys = {KeyCode.F1, KeyCode.F2, KeyCode.F3, 
+            KeyCode.F4, KeyCode.F5, KeyCode.F6, KeyCode.F7,
+            KeyCode.F8
+            };
+    KeyCombination.Modifier[] modifiers = {null, null, null, null, 
+            null, null, null,
+            null
+            };
     
     protected Map<String, Consumer<Facade>> createActions() {
         Map<String, Consumer<Facade>> actions = new HashMap<>();
@@ -157,6 +165,12 @@ public class SelectionAndModification extends Application {
                 }
             }
         });
+        actions.put("setAll", f -> {
+            int lastSize = f.getItems().size();
+            f.getItems().setAll(lastSize > 10 ? createList(10): createList());
+            
+        });
+        
         return actions ;
     }
 
@@ -200,6 +214,11 @@ public class SelectionAndModification extends Application {
         return list;
     }
     
+    private ObservableList<Locale> createList(int max) {
+        ObservableList<Locale> list = createList();
+        list.add(0, createItem(max));
+        return FXCollections.observableArrayList(list.subList(0,  max));
+    }
     protected Parent getContent() {
         
         SelectionMode initialMode = SelectionMode.MULTIPLE;
@@ -246,7 +265,7 @@ public class SelectionAndModification extends Application {
         listView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) ch -> {
             while (ch.next()) {
                 if (ch.wasAdded()) {
-                    System.out.println("+" + ch.getAddedSubList());
+//                    System.out.println("+" + ch.getAddedSubList());
                 }
             }
         });
@@ -255,7 +274,7 @@ public class SelectionAndModification extends Application {
         listSView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<String>) ch -> {
             while (ch.next()) {
                 if (ch.wasAdded()) {
-                    System.out.println("+" + ch.getAddedSubList());
+//                    System.out.println("+" + ch.getAddedSubList());
                 }
             }
         });
