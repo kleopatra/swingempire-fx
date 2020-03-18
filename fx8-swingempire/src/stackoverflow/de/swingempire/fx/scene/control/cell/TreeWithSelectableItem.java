@@ -28,6 +28,10 @@ import javafx.stage.Stage;
  */
 public class TreeWithSelectableItem extends Application {
 
+    /**
+     * Specialized TreeItem with a selected property. Fires a 
+     * TreeModificationEvent on change.
+     */
     public static class SelectableTreeItem<T> extends TreeItem<T> {
 
         private BooleanProperty selected;
@@ -61,25 +65,31 @@ public class TreeWithSelectableItem extends Application {
         }
         
         protected void selectedChanged() {
-            Event.fireEvent(this, new TreeModificationEvent<T>(valueChangedEvent(), this, getValue()));
+            // tbd: update the value properties if needed
+            Event.fireEvent(this, new TreeModificationEvent<T>(valueChangedEvent(), this));
         }
         
     }
     
-    public static class TreeItemSelectionModel<T> extends SingleSelectionModel<SelectableTreeItem<T>> {
+    /**
+     * Specialized SingleSelectionModel that updates the selected property of 
+     * contained SelectableTreeItems.
+     * 
+     */
+    public static class SelectableTreeItemToggler<T> extends SingleSelectionModel<SelectableTreeItem<T>> {
 
         private ObservableList<SelectableTreeItem<T>> items;
 
-        public TreeItemSelectionModel(ObservableList<SelectableTreeItem<T>> items) {
+        public SelectableTreeItemToggler(ObservableList<SelectableTreeItem<T>> items) {
             this.items = items;
-            // tbd: listen to changes of list
-            // listen to changes of our selectedItem and update the state of the treeItem
+            // tbd: listen to modification of items list
+            // listen to changes of our selectedItem and update the state of the treeItems
             selectedItemProperty().addListener((src, ov, nv) -> selectedItemChanged(ov));
         }
         
         /**
-         * @param ov
-         * @return
+         * Callback from notification on selectedItem.
+         * 
          */
         protected void selectedItemChanged(SelectableTreeItem<T> oldSelected) {
             if (oldSelected != null) {
@@ -101,7 +111,6 @@ public class TreeWithSelectableItem extends Application {
         }
         
     }
-//    private TreeCell<TreeData> previous;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -112,8 +121,10 @@ public class TreeWithSelectableItem extends Application {
         TreeItem<TreeData> root = new TreeItem<>(new TreeData("root", "root"));
         root.setExpanded(true);
         for (int i = 0; i <= 4; i++) {
+            // use custom treeItem for level1
             SelectableTreeItem<TreeData> level1 = new SelectableTreeItem<>(new TreeData("Number " + i, "level"));
             level1.setExpanded(true);
+            // add to selected items
             selectableItems.add(level1);
             for (int j = 0; j <= 2; j++)
                 level1.getChildren().add(new TreeItem<>(new TreeData("Subnumber " + i + "." + j, "child")));
@@ -121,25 +132,23 @@ public class TreeWithSelectableItem extends Application {
         }
         treeView.setRoot(root);
 
-        TreeItemSelectionModel<TreeData> sm = new TreeItemSelectionModel<>(selectableItems);
+        // create custom selectionModel
+        SelectableTreeItemToggler<TreeData> sm = new SelectableTreeItemToggler<>(selectableItems);
         treeView.setCellFactory(tv -> {
             TreeCellImpl treeCell = new TreeCellImpl();
 
             treeCell.addEventFilter(MouseEvent.MOUSE_PRESSED, (MouseEvent e) -> {
-                TreeData cellItem = ((TreeCellImpl) e.getSource()).getItem();
-                TreeItem<TreeData> treeItem = ((TreeCell<TreeData>) e.getSource()).getTreeItem();
+                TreeData cellItem = treeCell.getItem();
+                TreeItem<TreeData> treeItem = treeCell.getTreeItem();
                 // disable double click expand/collapse
                 if (e.getClickCount() % 2 == 0 && e.getButton().equals(MouseButton.PRIMARY)) {
-                    if (cellItem.type.equals("root") || cellItem.type.equals("level"))
+                    if (cellItem.type.equals("root") || treeItem instanceof SelectableTreeItem)
                         e.consume();
                 }
                 // on one double click
                 if (e.getClickCount() == 2 && e.getButton().equals(MouseButton.PRIMARY)
-//                        && cellItem.type.equals("level")) {
                         && treeItem instanceof SelectableTreeItem) {
                     sm.select((SelectableTreeItem<TreeData>) treeItem);
-                    // go into edit mode
-//                    treeView.edit(((TreeCellImpl) e.getSource()).getTreeItem());
                 }
             });
 
@@ -160,67 +169,17 @@ public class TreeWithSelectableItem extends Application {
           } else {
               setText(item.toString());
               if (getTreeItem() instanceof SelectableTreeItem) {
-                  SelectableTreeItem treeItem = (SelectableTreeItem) getTreeItem();
+                  SelectableTreeItem<TreeData> treeItem = (SelectableTreeItem<TreeData>) getTreeItem();
                   setTextFill(treeItem.isSelected() ? Color.GREEN : Color.BLACK);
               } else {
                   setTextFill(Color.BLACK);
               }
-//              if (getItem().type.equals("level") && getItem().flag)
-//                  setTextFill(Color.GREEN);
           }
           setGraphic(null);
       }
         
     }
-    // original, mis-using editing
-//    private final class TreeCellImpl extends TreeCell<TreeData> {
-//
-//        @Override
-//        protected void updateItem(TreeData item, boolean empty) {
-//            super.updateItem(item, empty);
-//            boolean editable = !empty && item != null && item.type.equals("level");
-//            setEditable(editable);
-//            if (empty || item == null) {
-//                setText(null);
-//            } else {
-//                setText(item.toString());
-//                setTextFill(Color.BLACK);
-////                if (getItem().type.equals("level") && getItem().flag)
-////                    setTextFill(Color.GREEN);
-//            }
-//            setGraphic(null);
-//        }
-//
-//        @Override
-//        public void startEdit() {
-//            super.startEdit();
-//            if (isEditing()) {
-//              setTextFill(Color.GREEN);
-//            } else {
-//                setTextFill(Color.BLACK);
-//            }
-//            System.out.println("EDIT started " + getItem() + isEditing());
-////            if (getItem().type.equals("level")) {
-////                if (previous != null)
-////                    previous.cancelEdit();
-////                previous = this;
-////                getItem().flag = true;
-////                commitEdit(getItem());
-////            }
-//        }
-//
-//        @Override
-//        public void cancelEdit() {
-//            super.cancelEdit();
-//            System.out.println("CANCEL");
-//            setTextFill(Color.BLACK);
-////            if (getItem().type.equals("level")) {
-////                getItem().flag = false;
-////                commitEdit(getItem());
-////            }
-//        }
-//    }
-//
+    
     private static final class TreeData {
         String text;
         String type;
