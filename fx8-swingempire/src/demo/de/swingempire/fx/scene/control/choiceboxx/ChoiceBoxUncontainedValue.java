@@ -34,6 +34,9 @@ import javafx.stage.Stage;
  *   -> old selection shown in choicebox, old selection marker in popup (bug) 
  *  
  * reported: https://javafx-jira.kenai.com/browse/RT-38826
+ * new bug coord:https://bugs.openjdk.java.net/browse/JDK-8087555
+ * 
+ * workaround by M.S. 
  * 
  * @author Jeanette Winzenburg, Berlin
  */
