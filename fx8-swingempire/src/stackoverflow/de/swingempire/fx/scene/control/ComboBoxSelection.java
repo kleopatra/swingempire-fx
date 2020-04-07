@@ -29,6 +29,10 @@ public class ComboBoxSelection extends Application {
         comboBox.setOnAction(event -> System.out.println("Selected " + comboBox.getValue()));
         layout.getChildren().addAll(comboBox);
 
+        // quick check - valueProperty notifies on any change?
+        comboBox.setEditable(true);
+        comboBox.valueProperty().addListener((src, ov, nv) -> System.out.println("change: " + nv));
+        // end quick check
         Scene scene = new Scene(layout);
         primaryStage.setScene(scene);
         primaryStage.show();

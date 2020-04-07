@@ -5,6 +5,7 @@
 package de.swingempire.fx.scene.control;
 
 import javafx.application.Application;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
@@ -23,6 +24,13 @@ import javafx.stage.Stage;
  * indicating that it's a Menu is moved away from the right border.
  * 
  * Same for ContextMenu - no wonder, the popup of the MenuButton is-a ContextMenu.
+ * 
+ * <p>
+ * 
+ * Also taken as test for https://bugs.openjdk.java.net/browse/JDK-8241710
+ * NPE when entering empty submenu
+ * 
+ * 
  */
 public class MenuWidthDemo extends Application {
 
@@ -60,6 +68,7 @@ public class MenuWidthDemo extends Application {
         
         // ContextMenu
         Button dummy = new Button("dummy ........................ ");
+        dummy.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         ContextMenu contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(otherItem, menu, otherMenu);
         dummy.setContextMenu(contextMenu);
@@ -83,6 +92,6 @@ public class MenuWidthDemo extends Application {
         });
 
         menu.getItems().add(switchItem);
-        otherMenu.getItems().add(otherSubItem);
+//        otherMenu.getItems().add(otherSubItem);
     }
 }
