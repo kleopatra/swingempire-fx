@@ -497,6 +497,7 @@ public abstract class AbstractChoiceInterfaceSelectionIssues<V extends Control, 
         int index = 2;
         items.set(index, new Separator());
         getSelectionModel().select(index);
+//        System.out.println("separator selected at? " + index + " / selected: " + getSelectionModel().getSelectedIndex());
         assertEquals("selecting index with unselectable item must not change selected index",
                 -1, getSelectionModel().getSelectedIndex());
     }
