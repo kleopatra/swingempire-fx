@@ -13,7 +13,7 @@
             <Button text="*print*" VBox.vgrow="NEVER" onAction="#print"/>
             <TextArea VBox.vgrow="ALWAYS"/>
         </VBox>
-        <VBox minHeight="20" spacing="5">
+        <VBox fx:id= "last" minHeight="20" spacing="5">
             <Label text="*Title*" VBox.vgrow="NEVER"/>
             <TableView fx:id= "tableView" >
                 <columns>
@@ -30,7 +30,7 @@
                 </columns>
             </TableView>
         </VBox>
-        <VBox minHeight="20" spacing="5">
+        <VBox fx:id= "last" minHeight="20" spacing="5">
             <Label text="*Title*" VBox.vgrow="NEVER"/>
             <TextArea VBox.vgrow="NEVER"/>
         </VBox>

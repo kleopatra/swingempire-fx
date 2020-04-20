@@ -12,7 +12,6 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -32,10 +31,12 @@ public class DragOnCanvas extends Application {
 
         Circle circle = new Circle(32, 32, 32);
 
-        Line path = new Line(circle.getCenterX(), circle.getCenterY(), 0, 0);
+        Line path = new Line(circle.getCenterX(), circle.getCenterY(), -200, -200);
+//        Path path = new Path();
+//        path.getElements().addAll(new LineTo(200, 200));
         PathTransition move = new PathTransition();
         move.setDuration(Duration.millis(2000));
-        move.setNode(canvas);
+        move.setNode(circle);
         move.setPath(path);
         move.setAutoReverse(false);
         move.setCycleCount(1);
@@ -46,6 +47,7 @@ public class DragOnCanvas extends Application {
         stage.setScene(scene);
         stage.show();
     }
+    
     
     public static void main(String[] args) {
         launch(args);

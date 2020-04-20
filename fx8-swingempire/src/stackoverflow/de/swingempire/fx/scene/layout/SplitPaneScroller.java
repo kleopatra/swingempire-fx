@@ -12,17 +12,20 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 
 public class SplitPaneScroller implements Initializable {
 
     @FXML
     SplitPane splitPane;
     @FXML TableView tableView;
-    
+    @FXML
+    Region last;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         splitPane.setDividerPositions(0d,.33d, .66d,1d);
+        last.setMaxHeight(Region.USE_PREF_SIZE);
     }
     
     @FXML
