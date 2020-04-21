@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import javafx.collections.ObservableList;
 import static javafx.collections.FXCollections.*;
+import static org.junit.Assert.*;
 
 import de.swingempire.fx.util.ListChangeReport;
 
@@ -32,6 +33,19 @@ public class ObservableCollectionsTest {
         ObservableList<String> data = observableArrayList("one", "two", "other");
         ListChangeReport report =  new ListChangeReport(data);
         data.add(0, "added");
+        prettyPrint(report.getLastChange());
+    }
+    
+    /**
+     * Looking at indices in notifcation - getFrom is the index at the time of the modification, 
+     * that is with the ordering constraints of the spec. F.i. for additions, 
+     * assertSame(c.getAddedSubList().get(0), c.getList().get(c.getFrom())) 
+     */
+    @Test
+    public void testRemoved() {
+        ObservableList<Integer> data =  observableArrayList(1, 2, 3, 4, 5, 6);
+        ListChangeReport report = new ListChangeReport(data);
+        data.retainAll(5);
         prettyPrint(report.getLastChange());
     }
 }
