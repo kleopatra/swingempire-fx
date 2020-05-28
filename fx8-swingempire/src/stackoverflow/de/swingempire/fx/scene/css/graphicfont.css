@@ -1,0 +1,12 @@
+
+.button > .text {
+    -fx-font-family: "Tahoma";
+    -fx-font-size: 9pt;
+}
+
+
+.button > .graphic {
+    -fx-font-family: "Monospaced" !important;
+    -fx-text-fill: red;
+    -fx-font-size: 15pt;
+}
