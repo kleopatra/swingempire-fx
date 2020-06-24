@@ -1616,6 +1616,21 @@ public abstract class MultipleSelectionIssues<V extends Control, M extends Multi
         assertEmptySelection();
     }
     
+    /**
+     * Setting items to same but modified order.
+     * 
+     * Core implementations keep selection state in that case .. should they?
+     */
+    @Test
+    public void testSelectedOnSetItemsReverted() {
+        int index = 2;
+        getSelectionModel().select(index);
+        ObservableList reverted = FXCollections.observableArrayList(items);
+        FXCollections.reverse(reverted);
+        setItems(reverted);
+        assertEmptySelection();
+    }
+    
     protected void assertEmptySelection() {
         assertEquals("selectedIndex must be cleared", -1, getSelectedIndex());
         assertEquals("selectedItem must be null", null, getSelectedItem());
