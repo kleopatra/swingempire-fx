@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.ComboBox?>
+
+<ComboBox  fx:id="combo1" items="${itemLoader.items}"  
+	cellFactory="${cellFactoryProvider.cellFactory}" 
+	buttonCell = "${cellFactoryProvider.buttonCell}"
+	prefWidth="150.0" 
+   xmlns:fx="http://javafx.com/fxml/1">
+</ComboBox>
