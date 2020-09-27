@@ -1,0 +1,3 @@
+.chart-symbol:selected {
+  -fx-background-color: blue;
+}
