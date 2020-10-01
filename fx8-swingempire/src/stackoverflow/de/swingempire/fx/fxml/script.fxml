@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?language javascript?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml">
+    <Label fx:id="mainTitle" text="Hello world!"/>
+    <Label fx:id="subTitle" text="This is a simple demo application."/>
+    <Button fx:id="mainButton" text="Click me!" onAction="buttonClicked()"/>
+    <fx:script>       
+     function buttonClicked() {         
+        mainButton.setText("Click me again!")   
+     }    
+     </fx:script>
+</VBox>
