@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.control.Label?>
+
+<FlowPane  xmlns:fx="http://javafx.com/fxml/1" >
+   <children>
+       <Label text="Subwidget"/>
+   </children>
+</FlowPane>

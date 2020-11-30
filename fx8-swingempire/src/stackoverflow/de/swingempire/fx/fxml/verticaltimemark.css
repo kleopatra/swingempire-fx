@@ -1,0 +1,7 @@
+#timeMark {
+  -fx-background-color: red;
+}
+#label {
+  -fx-background-color: bisque;
+  -fx-padding: 40px;
+}
