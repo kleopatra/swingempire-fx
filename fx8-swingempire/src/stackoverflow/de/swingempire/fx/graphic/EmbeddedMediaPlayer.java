@@ -95,17 +95,21 @@ public class EmbeddedMediaPlayer extends Application {
             timeSlider.setMinWidth(50);
             timeSlider.setMaxWidth(Double.MAX_VALUE);
 
-            timeSlider.setOnMouseReleased(event -> {
-                timeSlider.setValueChanging(true);
-                timeSlider.setValue((event.getX() / timeSlider.getWidth())
-                        * timeSlider.getMax());
-                timeSlider.setValueChanging(false);
+            timeSlider.setOnMousePressed(event -> {
+                double pressedLoc = (event.getX() / timeSlider.getWidth())
+                        * timeSlider.getMax();
+                System.out.println("pressedLoc " + pressedLoc);
+//                timeSlider.setValueChanging(true);
+//                timeSlider.setValue(pressedLoc);
+//                timeSlider.setValueChanging(false);
 
-                double value = timeSlider.getValue();
+                double value = pressedLoc; //timeSlider.getValue();
                 controlMediaPlayer.seek(Duration.millis(value));
                 for (MediaPlayer mp : mpList) {
                     if (mp == controlMediaPlayer) continue;
+                    Duration old = mp.getCurrentTime();
                     mp.seek(Duration.millis(value));
+                    System.out.println("currentTime: " + old + " " + mp.getCurrentTime());
                 }
             });
 
@@ -124,7 +128,29 @@ public class EmbeddedMediaPlayer extends Application {
                 updateSliderValue(controlMediaPlayer);
             });
 
+            initMedia(mpList, videoRows);
+
+            mediaBar.getChildren().add(playButton);
+            mediaBar.getChildren().add(timeSlider);
+            setTop(mediaBar);
+            
+            timeSlider.valueChangingProperty().addListener((src, ov, nv) -> {
+                System.out.println("changing: " + nv);
+            });
+            timeSlider.valueProperty().addListener((src, ov, nv) -> {
+                System.out.println("value: " + ov + " / " + nv);
+            });
+        }
+
+        /**
+         * @param mpList
+         * @param videoRows
+         */
+        protected void initMedia(List<MediaPlayer> mpList, int videoRows) {
             for (MediaPlayer mp : mpList) {
+                mp.statusProperty().addListener((src, ov, nv) -> {
+                    System.out.println("status changed: " + ov + " / " + nv);
+                });
                 mp.setOnReady(() -> {
                     int videosPerRow = mpList.size() / videoRows;
                     if (setupComplete == 0) {
@@ -161,17 +187,6 @@ public class EmbeddedMediaPlayer extends Application {
                 });
                 mp.setCycleCount(MediaPlayer.INDEFINITE);
             }
-
-            mediaBar.getChildren().add(playButton);
-            mediaBar.getChildren().add(timeSlider);
-            setTop(mediaBar);
-            
-            timeSlider.valueChangingProperty().addListener((src, ov, nv) -> {
-                System.out.println("changing: " + nv);
-            });
-            timeSlider.valueProperty().addListener((src, ov, nv) -> {
-                System.out.println("value: " + ov + " / " + nv);
-            });
         }
 
         private void playAll() {
@@ -191,7 +206,8 @@ public class EmbeddedMediaPlayer extends Application {
                 timeSlider.setDisable(duration.isUnknown());
                 if (!timeSlider.isDisabled()
                         && duration.greaterThan(Duration.ZERO)
-                        && !timeSlider.isValueChanging()) {
+//                        && !timeSlider.isValueChanging()
+                        ) {
                     timeSlider.setValue(currentTime.toMillis());
                 }
                 Platform.runLater(() -> {
@@ -201,26 +217,15 @@ public class EmbeddedMediaPlayer extends Application {
         }
     }
 
-//    public static final String[] MEDIA_URL = {
-////            "https://video.fogodosamba.de/media/SambaReggae_Sticks.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Fundo1.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Dobra.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Fundo2.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Ansage.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Timbal.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Caixa.mp4",
-//            "https://video.fogodosamba.de/media/SambaReggae_Repi.mp4"
-//    };
-
     public static final String[] LOCAL = {
             "SambaReggae_Fundo1.mp4",
             "SambaReggae_Fundo1.mp4",
             "SambaReggae_Fundo1.mp4",
             "SambaReggae_Fundo1.mp4",
             "SambaReggae_Fundo1.mp4",
-//            "SambaReggae_Fundo1.mp4",
-//            "SambaReggae_Fundo1.mp4",
-//            "SambaReggae_Fundo1.mp4",
+            "SambaReggae_Fundo1.mp4",
+            "SambaReggae_Fundo1.mp4",
+            "SambaReggae_Fundo1.mp4",
     };
     @Override
     public void start(Stage primaryStage) {
@@ -264,4 +269,17 @@ public class EmbeddedMediaPlayer extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+//  public static final String[] MEDIA_URL = {
+////"https://video.fogodosamba.de/media/SambaReggae_Sticks.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Fundo1.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Dobra.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Fundo2.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Ansage.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Timbal.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Caixa.mp4",
+//"https://video.fogodosamba.de/media/SambaReggae_Repi.mp4"
+//};
+
+
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+        prefWidth="450.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+        fx:controller="de.swingempire.fx.scene.control.table.TreeItemDisappearController">
+<center>
+    <TreeTableView fx:id="treeTableView" prefHeight="100.0" prefWidth="430.0" BorderPane.alignment="CENTER">
+        <columns>
+            <TreeTableColumn fx:id="columnC1" prefWidth="430.0" text="C1" />
+        </columns>
+    </TreeTableView>
+</center>
+<bottom>
+    <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <children>
+            <Button fx:id="btnAdd" mnemonicParsing="false" prefHeight="35.0" prefWidth="113.0" text="Add" />
+            <Button fx:id="btnDelete" mnemonicParsing="false" prefHeight="35.0" prefWidth="95.0" text="Delete" />
+        </children>
+    </HBox>
+</bottom>
+</BorderPane>
