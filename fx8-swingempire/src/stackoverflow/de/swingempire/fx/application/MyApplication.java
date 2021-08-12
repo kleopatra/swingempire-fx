@@ -23,6 +23,8 @@ import javafx.util.Duration;
  * https://blog.codecentric.de/en/2015/09/javafx-how-to-easily-implement-application-preloader-2/
  * 
  * Also see https://docs.oracle.com/javafx/2/deployment/preloaders.htm
+ * 
+ * dummy change .. ignore
  */
 public class MyApplication extends Application {
 
