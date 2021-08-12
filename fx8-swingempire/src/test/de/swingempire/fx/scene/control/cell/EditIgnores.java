@@ -26,7 +26,7 @@ public class EditIgnores {
 
         @Override
         public boolean isSatisfied() {
-            return true;
+            return false;
         }
         
     }
