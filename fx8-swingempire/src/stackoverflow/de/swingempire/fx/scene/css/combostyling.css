@@ -1,0 +1,70 @@
+.combo-box {
+/*
+    -fx-background-color: transparent;
+    -fx-border-color:     #44494F;
+    -fx-border-width:     1px;
+ */   
+}
+
+.combo-box .arrow {
+/*
+    -fx-background-color: white;
+*/    
+    -fx-shape: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+    
+/*    
+-fx-shape: -arrow;
+*/
+}
+
+.combo-box:showing .arrow {
+    -fx-rotate: 180;
+}
+
+.combo-box .list-cell {
+    -fx-font-size: 10px;
+    -fx-text-fill: white;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #2F353D;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #2F353D;
+    -fx-border-width:     0px
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected, .combo-box-popup .list-view .list-cell:filled:selected:hover{
+    -fx-font-weight: bold;
+    -fx-shape: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover{
+    -fx-background-color: #393E44;
+}
+
+.icon {
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    
+    -fx-pref-width: 10;
+    -fx-pref-height: 10;
+    
+    -fx-max-height: 10;
+    -fx-max-width: 10;
+    
+    -fx-shape: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+    -fx-background-color: white;
+}
+
+.label .graphic {
+    -fx-shape: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+}
+/*
+.label {
+	-fx-text-fill: red;
+	-fx-graphic: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+    -fx-shape: "m184.405 461.013-184.405-184.405 24.354-24.354 160.051 160.051 332.279-332.279 24.354 24.354z";
+}
+*/
