@@ -56,29 +56,29 @@ public class ObservableTest {
     
 //--------- using method references
     
-    public static class ClassWithProperty {
-        private ObjectProperty<LocalDate> baseDate = new SimpleObjectProperty(this, "baseDate");
-        private ObjectProperty<LocalDate> derivedDate = new SimpleObjectProperty(this, "derivedDate");
-        
-        public ClassWithProperty() {
-            baseDate.addListener(this::dateChanged);
-        }
-        
-        protected void dateChanged(ObservableValue sender, LocalDate ov, LocalDate nv) {
-//            derivedDate.set(nv.plusDays(10));
-        }
-        
-        protected void dateChanged(LocalDate ov) {
-            derivedDate.set(baseDate.get().minusDays(10));
-        }
-    }
-    
-    @Test
-    public void testMethod() {
-        ClassWithProperty cl = new ClassWithProperty();
-        cl.baseDate.set(LocalDate.now());
-        assertEquals(10, ChronoUnit.DAYS.between(cl.baseDate.get(), cl.derivedDate.get()));
-    }
+//    public static class ClassWithProperty {
+//        private ObjectProperty<LocalDate> baseDate = new SimpleObjectProperty(this, "baseDate");
+//        private ObjectProperty<LocalDate> derivedDate = new SimpleObjectProperty(this, "derivedDate");
+//        
+//        public ClassWithProperty() {
+//            baseDate.addListener(this::dateChanged);
+//        }
+//        
+//        protected void dateChanged(ObservableValue sender, LocalDate ov, LocalDate nv) {
+////            derivedDate.set(nv.plusDays(10));
+//        }
+//        
+//        protected void dateChanged(LocalDate ov) {
+//            derivedDate.set(baseDate.get().minusDays(10));
+//        }
+//    }
+//    
+//    @Test
+//    public void testMethod() {
+//        ClassWithProperty cl = new ClassWithProperty();
+//        cl.baseDate.set(LocalDate.now());
+//        assertEquals(10, ChronoUnit.DAYS.between(cl.baseDate.get(), cl.derivedDate.get()));
+//    }
 //--------------------------
 
     @Test
