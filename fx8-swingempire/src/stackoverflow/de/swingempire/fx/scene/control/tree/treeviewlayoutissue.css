@@ -1,0 +1,6 @@
+
+.tree-cell > .tree-disclosure-node{
+    -fx-padding: 4 6 4 50;
+    -fx-background-color: yellow;
+}
+
