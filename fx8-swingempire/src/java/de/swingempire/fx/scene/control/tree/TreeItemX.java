@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import de.swingempire.testfx.util.FXUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -28,6 +29,13 @@ import javafx.scene.control.TreeItem;
  * change received from its children list as-is.
  * 
  * https://javafx-jira.kenai.com/browse/RT-39644
+ * 
+ * CHANGED: as of Sept 22
+ * - leave actual firing to super (not using TreeModificationEventX): it's updateChildren is
+ *   passing the change (since when?)
+ * - just replace the children list, on its change notification dirty expandedDescandentCount,
+ *   updateLeaf and reflectively delegate to super updateChildren
+ * this fixes the NPEs (with core selection model), but might have other side effects ..     
  * 
  * @author Jeanette Winzenburg, Berlin
  */
@@ -52,9 +60,9 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
         updateChildren(c);
         // then fire an extended TreeModificationEvent that carries the complete change
         // (vs. one event for each sub-change as core does).
-        c.reset();
-        Event.fireEvent(this, new TreeModificationEventX<T>(
-                childrenModificationEvent(), this, null, null, c));
+//        c.reset();
+//        Event.fireEvent(this, new TreeModificationEventX<T>(
+//                childrenModificationEvent(), this, null, null, c));
     }
 
     /**
@@ -65,16 +73,17 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
     private void updateChildren(ListChangeListener.Change<? extends TreeItem<T>> c) {
         invokeExpandedDescendentCountDirty();
         updateLeaf(c.getList());
-        while (c.next()) {
-            final List<? extends TreeItem<T>> added = c.getAddedSubList();
-            final List<? extends TreeItem<T>> removed = c.getRemoved();
-            
-            // update the relationships such that all added children point to
-            // this node as the parent (and all removed children point to null)
-            invokeUpdateChildrenParent(removed, null);
-            invokeUpdateChildrenParent(added, this);
-        }
-
+        invokeUpdateChildren(c);
+//        while (c.next()) {
+//            final List<? extends TreeItem<T>> added = c.getAddedSubList();
+//            final List<? extends TreeItem<T>> removed = c.getRemoved();
+//            
+//            // update the relationships such that all added children point to
+//            // this node as the parent (and all removed children point to null)
+//            invokeUpdateChildrenParent(removed, null);
+//            invokeUpdateChildrenParent(added, this);
+//        }
+//
         // fire an event up the parent hierarchy such that any listening
         // TreeViews (which only listen to their root node) can redraw
         
@@ -82,6 +91,9 @@ public class TreeItemX<T> extends TreeItem<T> implements Leafness<T> {
 //                CHILDREN_MODIFICATION_EVENT, this, added, removed, c));
     }
 
+    private void invokeUpdateChildren(ListChangeListener.Change<? extends TreeItem<T>> c) {
+        FXUtils.invokeGetMethodValue(TreeItem.class, this, "updateChildren", ListChangeListener.Change.class, c);
+    }
     /**
      * Overridden to sneak in our own listener to the children.
      */

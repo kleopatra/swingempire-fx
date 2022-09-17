@@ -17,6 +17,7 @@ import javafx.scene.control.TreeItem.TreeModificationEvent;
  * must be aware of extension if they are listening the changes of the children:
  * super installed internal state regarding removed/added is rather meaningless. 
  * 
+ * Note: this is un-used since Sept 22 - not tested ..
  * @author Jeanette Winzenburg, Berlin
  */
 public class TreeModificationEventX<T> extends TreeModificationEvent<T> {
@@ -36,6 +37,7 @@ public class TreeModificationEventX<T> extends TreeModificationEvent<T> {
             Change<? extends TreeItem<T>> change) {
         super(eventType, treeItem, added, removed);
         this.change = change;
+        System.out.println("ever used this constructor?");
     }
 
     /**

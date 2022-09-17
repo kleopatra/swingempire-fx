@@ -15,9 +15,16 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 
 /**
+ * https://stackoverflow.com/q/49905047/203657 
+ * about Node, answered by JamesD
+ * 
+ * https://stackoverflow.com/q/73231079/203657 
+ * about Shape, answered by Slaw - speculates about future use-case for sealed classes
+ * 
  * Quick check on subclassing Node/Shape/Shape3D directly - doesn't work
  * (read the doc, dude ;) Concrete subclasses can be extended, though.
  * 
@@ -29,6 +36,7 @@ public class NodeSubclassExample extends Application {
     public static class NodeSub extends Node {
         
         public NodeSub() {
+            System.out.println("in constructor of " + getClass());
         }
 
         /**
@@ -39,6 +47,18 @@ public class NodeSubclassExample extends Application {
         }
     }
     
+    public static class NodeSub2 extends Node {
+        public NodeSub2() {
+            System.out.println("in constructor of " + getClass());
+        }
+    }
+    
+    public static class MyShape extends Shape {
+        public MyShape() {
+            System.out.println("in constructor of " + getClass());
+            
+        }
+    }
     // extending a concrete class is okay
     public static class SubLine extends Line {
 
@@ -54,12 +74,14 @@ public class NodeSubclassExample extends Application {
     }
     private Parent createContent() {
         
-        NodeSub node = new NodeSub();
-        NodeHelper helper = node.getNodeHelper();
-        LOG.info("creating - helper?" + helper);
-        BorderPane content =  new BorderPane(node);
+//        NodeSub node = new NodeSub();
+//        BorderPane content =  new BorderPane(node);
+//        NodeHelper helper = node.getNodeHelper();
+//        LOG.info("creating - helper?" + helper);
 //        Line line = new SubLine(20, 20, 200, 200);
 //        BorderPane content =  new BorderPane(line);
+        Shape shape = new MyShape();
+        BorderPane content = new BorderPane(shape);
         return content;
     }
 

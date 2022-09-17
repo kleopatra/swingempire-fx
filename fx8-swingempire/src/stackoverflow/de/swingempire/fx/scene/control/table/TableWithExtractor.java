@@ -5,8 +5,8 @@
 package de.swingempire.fx.scene.control.table;
 
 import javafx.application.Application;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,6 +26,10 @@ import javafx.util.StringConverter;
  * 
  * weird behavior when not exposing the bound property - probably thinks it
  * can't change?
+ * 
+ * The weirdness is the jumping selection (to last cell) when editing 
+ * (actually mere changing is enough) a value that's in the extractor
+ * probably due to selection not handling update notifications at all
  */
 public class TableWithExtractor extends Application {
 
@@ -83,9 +87,10 @@ public class TableWithExtractor extends Application {
 
         table.getColumns().addAll(nameColumn, priceColumn, quantityColumn, totalColumn);
 
-        ObservableList<Bean> list = FXCollections.observableArrayList();
-//                bean -> 
-//            new Observable[]{bean.priceProperty(), bean.quantityProperty()});
+        ObservableList<Bean> list = FXCollections.observableArrayList(
+//                );
+                bean -> 
+            new Observable[]{bean.priceProperty(), bean.quantityProperty()});
         list.add(new Bean("Tomato", 20, 100));
         list.add(new Bean("Orange", 10, 200));
 

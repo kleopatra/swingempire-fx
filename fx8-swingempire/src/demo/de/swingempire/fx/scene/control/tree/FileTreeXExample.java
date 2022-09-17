@@ -37,6 +37,11 @@ import javafx.stage.Stage;
  * <li> if they somehow (going dirty or with protected setter) sync initially,  treeItem
  *     breaks the invariant in its listener to children 
  * 
+ * 
+ * PENDING: we need to complete stack (TreeItemX, TreeModificationEventX, SimpleTreeSelectionModel) to
+ * make this work - with any not available, it's throwing NPEs and/or selection not updated as expected)
+ * 
+ * 
  * @author Jeanette Winzenburg, Berlin
  */
 public class FileTreeXExample extends Application {
@@ -106,7 +111,9 @@ public class FileTreeXExample extends Application {
     private TreeView<File> buildFileSystemBrowser() {
         TreeItem<File> root = createNode(new File("."));
         TreeView<File> treeView = new TreeView<File>(root);
-        treeView.setSelectionModel(new SimpleTreeSelectionModel<>(treeView));
+        // NPE with core selection model
+        //      at javafx.controls/javafx.scene.control.TreeView$TreeViewBitSetSelectionModel.lambda$new$2(TreeView.java:1403)
+//        treeView.setSelectionModel(new SimpleTreeSelectionModel<>(treeView));
         return treeView;
     }
 
